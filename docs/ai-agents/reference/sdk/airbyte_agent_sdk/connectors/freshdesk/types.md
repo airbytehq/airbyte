@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AgentsAnyCondition"></a>
@@ -101,7 +101,7 @@ Classes
 <a id="AgentsContainsCondition"></a>
 
 `AgentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -110,6 +110,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AgentsEndswithCondition"></a>
+
+`AgentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.AgentsStringFilter`
     :   The type of the None singleton.
 
 <a id="AgentsEqCondition"></a>
@@ -262,20 +276,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.AgentsStringFilter`
     :   The type of the None singleton.
 
-<a id="AgentsLikeCondition"></a>
-
-`AgentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.AgentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AgentsListParams"></a>
 
 `AgentsListParams(*args, **kwargs)`
@@ -354,7 +354,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AgentsOrCondition"></a>
@@ -376,7 +376,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AgentsSearchFilter"></a>
@@ -434,7 +434,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.AgentsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.AgentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.AgentsSortFilter]`
@@ -484,10 +484,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Agent last update timestamp
 
+<a id="AgentsStartswithCondition"></a>
+
+`AgentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.AgentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AgentsStringFilter"></a>
 
 `AgentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -570,7 +584,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompaniesAnyCondition"></a>
@@ -645,7 +659,7 @@ Classes
 <a id="CompaniesContainsCondition"></a>
 
 `CompaniesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -654,6 +668,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CompaniesEndswithCondition"></a>
+
+`CompaniesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
 <a id="CompaniesEqCondition"></a>
@@ -809,20 +837,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
-<a id="CompaniesLikeCondition"></a>
-
-`CompaniesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CompaniesListParams"></a>
 
 `CompaniesListParams(*args, **kwargs)`
@@ -901,7 +915,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CompaniesOrCondition"></a>
@@ -923,7 +937,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompaniesSearchFilter"></a>
@@ -984,7 +998,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.CompaniesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.CompaniesSortFilter]`
@@ -1037,10 +1051,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Company last update timestamp
 
+<a id="CompaniesStartswithCondition"></a>
+
+`CompaniesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.CompaniesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CompaniesStringFilter"></a>
 
 `CompaniesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1103,7 +1131,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsAnyCondition"></a>
@@ -1202,7 +1230,7 @@ Classes
 <a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1211,6 +1239,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ContactsEndswithCondition"></a>
+
+`ContactsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.ContactsStringFilter`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -1390,20 +1432,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.ContactsStringFilter`
     :   The type of the None singleton.
 
-<a id="ContactsLikeCondition"></a>
-
-`ContactsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.ContactsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ContactsListParams"></a>
 
 `ContactsListParams(*args, **kwargs)`
@@ -1485,7 +1513,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ContactsOrCondition"></a>
@@ -1507,7 +1535,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsSearchFilter"></a>
@@ -1592,7 +1620,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.ContactsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.ContactsSortFilter]`
@@ -1669,10 +1697,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Contact last update timestamp
 
+<a id="ContactsStartswithCondition"></a>
+
+`ContactsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.ContactsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ContactsStringFilter"></a>
 
 `ContactsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1759,7 +1801,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsAnyCondition"></a>
@@ -1828,7 +1870,7 @@ Classes
 <a id="GroupsContainsCondition"></a>
 
 `GroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1837,6 +1879,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="GroupsEndswithCondition"></a>
+
+`GroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.GroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="GroupsEqCondition"></a>
@@ -1986,20 +2042,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.GroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="GroupsLikeCondition"></a>
-
-`GroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.GroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="GroupsListParams"></a>
 
 `GroupsListParams(*args, **kwargs)`
@@ -2078,7 +2120,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="GroupsOrCondition"></a>
@@ -2100,7 +2142,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsSearchFilter"></a>
@@ -2155,7 +2197,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.GroupsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.GroupsSortFilter]`
@@ -2202,10 +2244,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Group last update timestamp
 
+<a id="GroupsStartswithCondition"></a>
+
+`GroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.GroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="GroupsStringFilter"></a>
 
 `GroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2262,7 +2318,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RolesAnyCondition"></a>
@@ -2319,7 +2375,7 @@ Classes
 <a id="RolesContainsCondition"></a>
 
 `RolesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2328,6 +2384,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="RolesEndswithCondition"></a>
+
+`RolesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.RolesStringFilter`
     :   The type of the None singleton.
 
 <a id="RolesEqCondition"></a>
@@ -2465,20 +2535,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.RolesStringFilter`
     :   The type of the None singleton.
 
-<a id="RolesLikeCondition"></a>
-
-`RolesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.RolesStringFilter`
-    :   The type of the None singleton.
-
 <a id="RolesListParams"></a>
 
 `RolesListParams(*args, **kwargs)`
@@ -2557,7 +2613,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition`
     :   The type of the None singleton.
 
 <a id="RolesOrCondition"></a>
@@ -2579,7 +2635,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RolesSearchFilter"></a>
@@ -2622,7 +2678,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.RolesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.RolesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.RolesSortFilter]`
@@ -2657,10 +2713,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Role last update timestamp
 
+<a id="RolesStartswithCondition"></a>
+
+`RolesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.RolesStringFilter`
+    :   The type of the None singleton.
+
 <a id="RolesStringFilter"></a>
 
 `RolesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2705,7 +2775,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsAnyCondition"></a>
@@ -2774,7 +2844,7 @@ Classes
 <a id="SatisfactionRatingsContainsCondition"></a>
 
 `SatisfactionRatingsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2783,6 +2853,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SatisfactionRatingsEndswithCondition"></a>
+
+`SatisfactionRatingsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStringFilter`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsEqCondition"></a>
@@ -2918,20 +3002,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStringFilter`
     :   The type of the None singleton.
 
-<a id="SatisfactionRatingsLikeCondition"></a>
-
-`SatisfactionRatingsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SatisfactionRatingsListParams"></a>
 
 `SatisfactionRatingsListParams(*args, **kwargs)`
@@ -3013,7 +3083,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsOrCondition"></a>
@@ -3035,7 +3105,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SatisfactionRatingsSearchFilter"></a>
@@ -3090,7 +3160,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsSortFilter]`
@@ -3137,10 +3207,24 @@ Classes
     `user_id: Literal['asc', 'desc']`
     :   ID of the user (requester)
 
+<a id="SatisfactionRatingsStartswithCondition"></a>
+
+`SatisfactionRatingsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.SatisfactionRatingsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SatisfactionRatingsStringFilter"></a>
 
 `SatisfactionRatingsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3197,7 +3281,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SurveysAnyCondition"></a>
@@ -3254,7 +3338,7 @@ Classes
 <a id="SurveysContainsCondition"></a>
 
 `SurveysContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3263,6 +3347,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SurveysEndswithCondition"></a>
+
+`SurveysEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.SurveysStringFilter`
     :   The type of the None singleton.
 
 <a id="SurveysEqCondition"></a>
@@ -3386,20 +3484,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.SurveysStringFilter`
     :   The type of the None singleton.
 
-<a id="SurveysLikeCondition"></a>
-
-`SurveysLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.SurveysStringFilter`
-    :   The type of the None singleton.
-
 <a id="SurveysListParams"></a>
 
 `SurveysListParams(*args, **kwargs)`
@@ -3478,7 +3562,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition`
     :   The type of the None singleton.
 
 <a id="SurveysOrCondition"></a>
@@ -3500,7 +3584,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SurveysSearchFilter"></a>
@@ -3543,7 +3627,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.SurveysEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysInCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.SurveysAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.SurveysSortFilter]`
@@ -3578,10 +3662,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Survey last update timestamp
 
+<a id="SurveysStartswithCondition"></a>
+
+`SurveysStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.SurveysStringFilter`
+    :   The type of the None singleton.
+
 <a id="SurveysStringFilter"></a>
 
 `SurveysStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3626,7 +3724,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFieldsAnyCondition"></a>
@@ -3719,7 +3817,7 @@ Classes
 <a id="TicketFieldsContainsCondition"></a>
 
 `TicketFieldsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3728,6 +3826,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketFieldsEndswithCondition"></a>
+
+`TicketFieldsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketFieldsEqCondition"></a>
@@ -3887,20 +3999,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketFieldsLikeCondition"></a>
-
-`TicketFieldsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketFieldsListParams"></a>
 
 `TicketFieldsListParams(*args, **kwargs)`
@@ -3979,7 +4077,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketFieldsOrCondition"></a>
@@ -4001,7 +4099,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketFieldsSearchFilter"></a>
@@ -4080,7 +4178,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsSortFilter]`
@@ -4151,10 +4249,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Field last update timestamp
 
+<a id="TicketFieldsStartswithCondition"></a>
+
+`TicketFieldsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.TicketFieldsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketFieldsStringFilter"></a>
 
 `TicketFieldsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4235,7 +4347,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketsAnyCondition"></a>
@@ -4376,7 +4488,7 @@ Classes
 <a id="TicketsContainsCondition"></a>
 
 `TicketsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4385,6 +4497,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TicketsEndswithCondition"></a>
+
+`TicketsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.TicketsStringFilter`
     :   The type of the None singleton.
 
 <a id="TicketsEqCondition"></a>
@@ -4606,20 +4732,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.TicketsStringFilter`
     :   The type of the None singleton.
 
-<a id="TicketsLikeCondition"></a>
-
-`TicketsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.TicketsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TicketsListParams"></a>
 
 `TicketsListParams(*args, **kwargs)`
@@ -4707,7 +4819,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TicketsOrCondition"></a>
@@ -4729,7 +4841,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TicketsSearchFilter"></a>
@@ -4856,7 +4968,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.TicketsEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TicketsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.TicketsSortFilter]`
@@ -4975,10 +5087,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Ticket last update timestamp
 
+<a id="TicketsStartswithCondition"></a>
+
+`TicketsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.TicketsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TicketsStringFilter"></a>
 
 `TicketsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5107,7 +5233,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeEntriesAnyCondition"></a>
@@ -5182,7 +5308,7 @@ Classes
 <a id="TimeEntriesContainsCondition"></a>
 
 `TimeEntriesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5191,6 +5317,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TimeEntriesEndswithCondition"></a>
+
+`TimeEntriesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStringFilter`
     :   The type of the None singleton.
 
 <a id="TimeEntriesEqCondition"></a>
@@ -5332,20 +5472,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStringFilter`
     :   The type of the None singleton.
 
-<a id="TimeEntriesLikeCondition"></a>
-
-`TimeEntriesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStringFilter`
-    :   The type of the None singleton.
-
 <a id="TimeEntriesListParams"></a>
 
 `TimeEntriesListParams(*args, **kwargs)`
@@ -5424,7 +5550,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="TimeEntriesOrCondition"></a>
@@ -5446,7 +5572,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeEntriesSearchFilter"></a>
@@ -5507,7 +5633,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLikeCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesSortFilter]`
@@ -5560,10 +5686,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Time entry last update timestamp
 
+<a id="TimeEntriesStartswithCondition"></a>
+
+`TimeEntriesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.freshdesk.types.TimeEntriesStringFilter`
+    :   The type of the None singleton.
+
 <a id="TimeEntriesStringFilter"></a>
 
 `TimeEntriesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
