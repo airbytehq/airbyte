@@ -72,6 +72,7 @@ definitions:
       primary_key:
         - organization
         - role
+        - roleAssignee
       retriever:
         type: SimpleRetriever
         requester:
@@ -80,9 +81,12 @@ definitions:
           http_method: GET
           request_parameters:
             q: roleAssignee
+            # organizationAcls is a Rest.li finder paged with start/count (it does not
+            # support pageToken); count must match the OffsetIncrement page_size below.
+            count: "500"
           request_headers:
             Linkedin-Version: "202601"
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -98,16 +102,20 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: request_parameter
-            field_name: pageToken
-          page_size_option:
-            type: RequestOption
-            inject_into: request_parameter
-            field_name: pageSize
+            field_name: start
           pagination_strategy:
-            type: CursorPagination
+            type: OffsetIncrement
             page_size: 500
-            cursor_value: '{{ response.get("metadata", {}).get("nextPageToken", {}) }}'
-            stop_condition: '{{ not response.get("metadata", {}).get("nextPageToken", {}) }}'
+      transformations:
+        - type: AddFields
+          fields:
+            # LinkedIn docs show the organization URN as `organization` in some
+            # organizationAcls samples and `organizationTarget` in others; normalize
+            # to `organization` so the primary key is never null.
+            - path:
+                - organization
+              value: "{{ record.get('organization') or record.get('organizationTarget') }}"
+              value_type: string
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -2067,6 +2075,7 @@ spec:
 metadata:
   autoImportSchema:
     accounts: false
+    organizations: false
     account_users: false
     campaigns: false
     campaign_groups: false
@@ -2201,8 +2210,8 @@ schemas:
         type:
           - "null"
           - string
-      organizationalTarget:
-        description: The URN of the organizational target.
+      organizationTarget:
+        description: The URN of the organization as returned by API responses that use the organizationTarget field name instead of organization.
         type:
           - "null"
           - string
