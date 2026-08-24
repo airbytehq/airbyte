@@ -27,7 +27,7 @@ The Linear source connector supports OAuth 2.0 and API key authentication. Start
 1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
 2. For a self-managed deployment, add the redirect callback URL shown during the Airbyte OAuth setup to the application's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app. Copy the application's client ID and client secret.
 3. In Airbyte, choose **OAuth 2.0**. For self-managed deployments, enter the client ID and client secret from your Linear application, then complete the authorization flow.
-4. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns a new refresh token and invalidates the previous one, and the connector stores the replacement in the source configuration.
+4. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns a new refresh token, and the connector stores it in the source configuration. Linear rotates the refresh token on every exchange, so the previous token stops working apart from a short replay window that lets the connector retry an interrupted refresh.
 
 The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
 
@@ -35,7 +35,7 @@ If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete 
 
 1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&state=<STATE>&scope=read,customer:read&actor=app&prompt=consent` in a browser and approve the app. Generate a random `state` value and verify it on the callback to protect against CSRF. The `prompt=consent` parameter forces Linear to show the consent screen. Linear redirects to your redirect URI with a `code` parameter.
 2. Exchange the code for tokens by sending a form-encoded `POST` request to `https://api.linear.app/oauth/token` with `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`.
-3. Copy the `refresh_token` from the response into the connector configuration. The connector uses it to mint access tokens, which Linear expires after 24 hours. Because Linear invalidates a refresh token as soon as it's used, don't reuse the same token in another source or keep a copy for later.
+3. Copy the `refresh_token` from the response into the connector configuration. The connector uses it to mint access tokens, which Linear expires after 24 hours. The first refresh replaces this token, so don't reuse the same value in another source or keep a copy to paste in later.
 
 #### API key
 
@@ -128,7 +128,7 @@ Linear's GraphQL API hides archived records from paginated responses unless the 
 
 ### OAuth authorization stops working
 
-If an OAuth source starts failing with an authorization error, re-run the authorization flow in the source settings to issue a fresh refresh token. Linear invalidates each refresh token when the connector exchanges it, so an OAuth source breaks permanently if its stored token is replaced with an older value. Avoid restoring an earlier copy of a source's configuration, and don't paste the same refresh token into more than one source.
+If an OAuth source starts failing with an authorization error, re-authenticate the source from its settings page to issue a fresh refresh token. Linear rotates the refresh token every time the connector exchanges it, so a source breaks permanently once its stored token is replaced with an older value. Don't restore an earlier copy of a source's configuration, and don't paste the same refresh token into more than one source.
 
 ### Data availability
 
