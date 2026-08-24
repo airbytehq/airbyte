@@ -47,3 +47,7 @@ The Monday.com GraphQL API supports filtering by `updated_at` on boards and item
 ### Future incremental stream candidates
 
 - **All streams deferred for Python code review:** This connector defines its streams in Python code rather than declarative manifest YAML. A full stream-by-stream incremental analysis table (per the standard CONTRIBUTING.md schema) should be added by a future agent after reviewing the Python stream definitions, their `cursor_field` properties, and the API endpoints they call.
+
+## 4. Page Size Must Be Set Per Stream
+
+The GraphQL `limit` argument comes from each stream's `items_per_page` `$parameters` value. A stream that inherits the shared paginator but omits `items_per_page` sends no `limit` argument, so Monday.com applies its default page size and the paginator can stop after the first short page.
