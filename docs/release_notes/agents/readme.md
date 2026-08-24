@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## August 24, 2026
+
+SDK
+
+- Text filters when searching your synced data now use `startswith` and `endswith` for prefix and suffix matches, and `contains` for a case-insensitive substring match on text fields. These replace the previous `like` operator, so your filters no longer depend on wildcard patterns.
+
 ## August 12, 2026
 
 Web app
