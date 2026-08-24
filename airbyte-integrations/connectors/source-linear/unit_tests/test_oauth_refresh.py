@@ -5,6 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 import requests
 
 from airbyte_cdk.models import FailureType, SyncMode, Type
@@ -39,6 +40,7 @@ def _response(url: str, status_code: int, payload: dict, request=None) -> reques
 
 def test_oauth_refresh_persists_rotated_token_and_uses_new_access_token():
     config = deepcopy(CONFIG)
+    config["credentials"]["token_expiry_date"] = "2000-01-01T00:00:00.000Z"
     source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config)
     graphql_requests = []
 
@@ -78,7 +80,38 @@ def test_oauth_refresh_persists_rotated_token_and_uses_new_access_token():
     assert graphql_requests[0].headers["Authorization"] == "Bearer new-access-token"
 
 
-def test_invalid_refresh_token_is_reported_as_configuration_error():
+def test_oauth_access_token_is_used_until_expiry():
+    config = deepcopy(CONFIG)
+    config["credentials"]["access_token"] = "existing-access-token"
+    config["credentials"]["token_expiry_date"] = "2099-01-01T00:00:00.000Z"
+    source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config)
+    graphql_requests = []
+
+    def token_request(*args, **kwargs):
+        raise AssertionError("The token endpoint should not be called before expiry")
+
+    def graphql_request(request, **kwargs):
+        graphql_requests.append(request)
+        return _response(
+            GRAPHQL_URL,
+            200,
+            {"data": {"issues": {"nodes": [], "pageInfo": {"hasNextPage": False, "endCursor": None}}}},
+            request,
+        )
+
+    catalog = CatalogBuilder().with_stream("issues", SyncMode.full_refresh).build()
+    with patch("requests.request", side_effect=token_request), patch("requests.sessions.Session.send", side_effect=graphql_request):
+        output = read(source, config, catalog)
+
+    assert not output.errors
+    assert graphql_requests[0].headers["Authorization"] == "Bearer existing-access-token"
+
+
+@pytest.mark.parametrize(
+    "error_value",
+    ["invalid_grant", "invalid_request", "invalid_client", "unauthorized_client"],
+)
+def test_invalid_refresh_token_is_reported_as_configuration_error(error_value):
     config = deepcopy(CONFIG)
     source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config)
 
@@ -87,7 +120,7 @@ def test_invalid_refresh_token_is_reported_as_configuration_error():
             TOKEN_URL,
             400,
             {
-                "error": "invalid_request",
+                "error": error_value,
                 "error_description": "Refresh token revoked",
             },
         )

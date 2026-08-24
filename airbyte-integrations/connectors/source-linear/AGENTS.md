@@ -6,9 +6,11 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 ## Rotating Refresh Tokens
 
-Linear's OAuth implementation rotates refresh tokens on every exchange. Each successful access-token refresh invalidates the old refresh token and returns a replacement. The connector uses `refresh_token_updater` to persist the replacement token back to the connection configuration.
+Linear's OAuth implementation rotates refresh tokens on every exchange. Each successful access-token refresh invalidates the old refresh token and returns a replacement. The connector uses `refresh_token_updater` to persist the replacement token back to the connection configuration. The OAuth consent flow also persists the access token and expiry returned by the initial code exchange, so the first sync can use that token without immediately refreshing it.
 
-**Why this matters:** If a refresh succeeds but the replacement token is not persisted, subsequent refreshes will fail and the connection will require re-authentication.
+**Why this matters:** Linear refresh tokens are single-use. An unnecessary first refresh can consume the newly issued refresh token, and the 30-minute replay grace period does not make relying on the old token safe indefinitely. If a refresh succeeds but the replacement token is not persisted, subsequent refreshes will fail and the connection will require re-authentication.
+
+The consent URL pins `actor=app`, which provides a rate-limit uplift but requires a workspace administrator to install the application. With this actor, the connector can see only teams granted by the administrator, rather than everything visible to the installing user's normal permissions. This differs from the API-key path. Do not change `actor=app` in the manifest without maintainer approval.
 
 ## Incremental Stream Considerations
 
