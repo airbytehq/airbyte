@@ -23,6 +23,20 @@ The Google-Analytics-Data-Api connector supports the following entities and acti
 
 Returns website overview metrics including total users, new users, sessions, bounce rate, page views, and average session duration by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -51,16 +65,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -89,6 +103,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter website overview records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "website_overview",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -116,7 +150,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -171,6 +205,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns daily active user counts (1-day active users) by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "daily_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -199,16 +247,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -237,6 +285,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter daily active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "daily_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active1DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -264,7 +332,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -305,6 +373,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns weekly active user counts (7-day active users) by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "weekly_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -333,16 +415,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -371,6 +453,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "weekly_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active7DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -398,7 +500,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -439,6 +541,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns 28-day active user counts by date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "four_weekly_active_users",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -467,16 +583,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -505,6 +621,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter four weekly active users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "four_weekly_active_users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active28DayUsers": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -532,7 +668,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -573,6 +709,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns traffic source metrics broken down by session source, session medium, and date, including users, sessions, bounce rate, and page views.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "traffic_sources",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -601,16 +751,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -639,6 +789,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter traffic sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "traffic_sources",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -666,7 +836,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -725,6 +895,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns page-level metrics including page views and bounce rate, broken down by host name, page path, and date.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "pages",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -753,16 +937,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -791,6 +975,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter pages records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "pages",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "bounceRate": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -818,7 +1022,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -865,6 +1069,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns device-related metrics broken down by device category, operating system, browser, and date, including users, sessions, and page views.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "devices",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -893,16 +1111,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -931,6 +1149,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter devices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "devices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -958,7 +1196,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1019,6 +1257,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns geographic metrics broken down by region, country, city, and date, including users, sessions, bounce rate, and page views.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "locations",
+  "action": "list",
+  "params": {
+    "property_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1047,16 +1299,16 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `dateRanges` | `array<object>` | No |  |
+| `dateRanges` | `array<object>` | No | Date ranges of data to read, in YYYY-MM-DD or relative format (e.g., 30daysAgo, today). Defaults to the last 30 days. |
 | `dateRanges.startDate` | `string` | No | Start date in YYYY-MM-DD format or relative (e.g., 30daysAgo) |
 | `dateRanges.endDate` | `string` | No | End date in YYYY-MM-DD format or relative (e.g., today) |
-| `dimensions` | `array<object>` | No |  |
-| `dimensions.name` | `string` | No |  |
-| `metrics` | `array<object>` | No |  |
-| `metrics.name` | `string` | No |  |
-| `keepEmptyRows` | `boolean` | No |  |
-| `returnPropertyQuota` | `boolean` | No |  |
-| `limit` | `integer` | No |  |
+| `dimensions` | `array<object>` | No | GA4 dimensions to group results by. Defaults match the equivalent Data Replication report. |
+| `dimensions.name` | `string` | No | GA4 API dimension name (e.g., date, country, deviceCategory) |
+| `metrics` | `array<object>` | No | GA4 metrics to aggregate. Defaults match the equivalent Data Replication report. |
+| `metrics.name` | `string` | No | GA4 API metric name (e.g., totalUsers, sessions, bounceRate) |
+| `keepEmptyRows` | `boolean` | No | If false, rows whose metrics are all zero are omitted from the response. |
+| `returnPropertyQuota` | `boolean` | No | Whether to include the Analytics property's current quota state in the response. |
+| `limit` | `integer` | No | Maximum number of rows to return (the GA4 API caps a single request at 250,000 rows). |
 | `property_id` | `string` | Yes | GA4 property ID |
 
 
@@ -1085,6 +1337,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter locations records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "google-analytics-data-api",
+  "entity": "locations",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "averageSessionDuration": 0.0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1112,7 +1384,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |

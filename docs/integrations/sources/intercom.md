@@ -123,6 +123,10 @@ To prevent conflicts, the connector blocks simultaneous reads from the Companies
 
 Because these streams must read all records on every sync, syncing Companies and Company Segments alongside other streams in the same connection can increase the total sync duration for that connection. To avoid this, sync the Companies and Company Segments streams in a separate connection from your other Intercom streams.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -130,6 +134,7 @@ Because these streams must read all records on every sync, syncing Companies and
 
 | Version      | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:-------------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| 0.13.24 | 2026-05-21 | | Fix sub-daily incremental syncs for `contacts`, `conversations`, and `tickets` |
 | 0.13.23 | 2026-05-19 | [78171](https://github.com/airbytehq/airbyte/pull/78171) | Promoted release candidate to GA |
 | 0.13.23-rc.1 | 2026-05-12 | [78023](https://github.com/airbytehq/airbyte/pull/78023) | Bump CDK to 7.18.1.post8.dev25490693965 for block_simultaneous_read regression validation |
 | 0.13.22 | 2026-04-28 | [70464](https://github.com/airbytehq/airbyte/pull/70464) | Update dependencies |

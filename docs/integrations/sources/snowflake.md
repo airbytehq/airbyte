@@ -118,7 +118,7 @@ You'll need the following information to configure the Snowflake source:
 4. **Database**
 5. **Schema**
 6. **Username**
-7. **Password**
+7. **Password, private key, or programmatic access token**
 8. **JDBC URL Params** (Optional)
 
 Additionally, create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
@@ -166,7 +166,13 @@ Your database user should now be ready for use with Airbyte.
 
 ### Authentication
 
-#### Login and Password
+Source Snowflake supports the following authentication methods:
+
+- Username and password
+- Key pair authentication
+- Programmatic access token
+
+#### Username and password
 
 | Field                                                                                                 | Description                                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -179,9 +185,29 @@ Your database user should now be ready for use with Airbyte.
 | Password                                                                                              | The password associated with the username.                                                                                                                                                        |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
 
-### Key pair authentication
+#### Key pair authentication
 
  <KeypairExample/>
+
+#### Programmatic access token authentication
+
+To authenticate with a Snowflake [programmatic access token](https://docs.snowflake.com/en/user-guide/programmatic-access-tokens), select **Programmatic Access Token** as the authorization method and provide the token. A username is not required; the token identifies the Snowflake user it was created for.
+
+Create a programmatic access token in Snowflake with:
+
+```sql
+ALTER USER <user_name> ADD PROGRAMMATIC ACCESS TOKEN <token_name>
+  ROLE_RESTRICTION = '<airbyte_role>'
+  DAYS_TO_EXPIRY = <days>;
+```
+
+The token secret is only shown when the token is created. Store it securely before closing the result.
+
+For service users, Snowflake requires `ROLE_RESTRICTION` by default. Snowflake also requires a network policy for service users to generate or use programmatic access tokens unless your authentication policy changes this behavior. If an authentication policy restricts allowed methods, include `PROGRAMMATIC_ACCESS_TOKEN` in `AUTHENTICATION_METHODS`.
+
+:::note Network policy required for Programmatic Access Token authentication
+When using Programmatic Access Token authentication, the Snowflake user's network policy must allow connections from Airbyte's IP addresses. Add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to the network policy attached to the PAT user, or to the account-level network policy.
+:::
 
 ### Network policies
 
@@ -205,6 +231,10 @@ SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 
 To read more, please check the official [Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -212,6 +242,9 @@ To read more, please check the official [Snowflake documentation](https://docs.s
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.2   | 2026-08-21 | [84927](https://github.com/airbytehq/airbyte/pull/84927) | Bump Bulk CDK extract version from 1.0.1 to 1.1.10                                                                                        |
+| 1.1.1   | 2026-07-21 | [82705](https://github.com/airbytehq/airbyte/pull/82705) | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down                |
+| 1.1.0   | 2026-05-28 | [78481](https://github.com/airbytehq/airbyte/pull/78481) | Support Snowflake Programmatic Access Token authentication.                                                                               |
 | 1.0.11  | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787) | Make the hidden additional properties fields in spec optional. No functional change.                                                      |
 | 1.0.10  | 2026-03-13 | [74834](https://github.com/airbytehq/airbyte/pull/74834) | Truncate timestamp precision to 6 digits (microseconds) to prevent precision errors in destinations                                       |
 | 1.0.9   | 2025-09-16 | [74081](https://github.com/airbytehq/airbyte/pull/74081) | Security update                                                                                                                           |

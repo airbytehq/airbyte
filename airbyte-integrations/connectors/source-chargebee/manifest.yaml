@@ -2073,35 +2073,16 @@ spec:
         order: 3
       num_workers:
         type: integer
-        title: Number of Concurrent Workers
-        minimum: 2
+        title: Number of concurrent threads
+        minimum: 1
         maximum: 50
-        default: 5
-        examples: [2, 5, 10]
+        default: 3
+        examples: [1, 2, 3]
         description: >-
-          Number of concurrent threads for syncing. Higher values can speed up syncs but may
-          provoke rate-limit errors on lower-tier Chargebee plans. The default of 5 is calibrated
-          to be safe on the Starter tier (150 req/min, 2.5 req/sec). Customers on Performance
-          (1000 req/min) or Enterprise (3500 req/min) can raise this value to take advantage of
-          their plan's higher rate limit. More info about the rate limit plan tiers can be found on
-          Chargebee's <a href="https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits">API docs</a>.
+          The number of worker threads to use for the sync.
+          The performance upper boundary is based on the limit of your Chargebee plan.
+          More info about the rate limit plan tiers can be found on Chargebee's API <a href="https://support.chargebee.com/support/solutions/articles/243576-what-are-the-chargebee-api-limits-">docs</a>.
         order: 4
-      subscription_tier:
-        type: string
-        title: Chargebee Subscription Plan
-        description: >-
-          Your Chargebee subscription plan. Once tier-aware rate-limit enforcement is activated
-          in a follow-up release, this field selects the per-minute request budget the connector
-          will respect locally (Starter: 150 req/min, Performance: 1000 req/min, Enterprise: 3500 req/min).
-          Defaults to `starter` (the lowest documented tier) so unconfigured users are never
-          over-budgeted relative to their actual plan. Customers on Performance or Enterprise
-          should set this explicitly to take advantage of their plan's higher rate limit.
-        enum:
-          - starter
-          - performance
-          - enterprise
-        default: starter
-        order: 5
     additionalProperties: true
 
 metadata:
@@ -11831,56 +11812,14 @@ schemas:
         description: The timestamp when the differential price data was last updated.
 
 
-# Rate limits: https://www.chargebee.com/docs/billing/2.0/kb/platform/what-are-the-chargebee-api-limits
-# Chargebee offers three tiers of rate limits (all endpoints share a single global limit):
+# Chargebee offers three tiers of rate limits:
 # - Starter: 150 req/min (2.5 req/sec)
 # - Performance: 1000 req/min (16 req/sec)
-# - Enterprise (default): 3500 req/min (58 req/sec)
-# - Enterprise (custom): no upper limit (Enterprise-custom customers can leave subscription_tier
-#   on the highest enum value 'enterprise' — the 3500 req/min local budget simply leaves their
-#   higher Chargebee-side cap unused once the budget is activated for GA).
-# TEST sites are always capped at 150 req/min regardless of plan.
-# Rate-limit errors return HTTP 429 with a Retry-After header.
+# - Enterprise: 3500 req/min (58 req/sec)
 #
-# No active HTTPAPIBudget is shipped during concurrency tuning so the tuned default_concurrency
-# can be validated empirically. Two budget shapes are recorded below as YAML comments:
-#
-# (1) Starter-tier 150/min budget:
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: 150
-#           interval: PT1M
-#       matchers: []
-#   ratelimit_reset_header: Retry-After
-#   status_codes_for_ratelimit_hit:
-#     - 429
-#
-# (2) Tier-aware budget for a follow-up release. Its per-minute limit is interpolated from
-#     config.subscription_tier (default 'starter' from the spec keeps unconfigured users at the
-#     lowest tier's budget):
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: MovingWindowCallRatePolicy
-#       rates:
-#         - limit: "{{ {'starter': 150, 'performance': 1000, 'enterprise': 3500}[config.get('subscription_tier', 'starter')] }}"
-#           interval: PT1M
-#       matchers: []
-#   ratelimit_reset_header: Retry-After
-#   status_codes_for_ratelimit_hit:
-#     - 429
-#
-# default_concurrency is set to 5 — calibrated against the LOWEST documented tier (Starter,
-# 150 req/min = 2.5 req/sec) per the Path B rule: floor(2.5/4) = 0, then the
-# special-case override applies, with manual tuning to 5.
-# It is intentionally a single value, not tier-aware: tuning is performed empirically against
-# this baseline and the same value applies to all customers. Higher-tier customers (Performance,
-# Enterprise) can raise num_workers in their connection config to fully exploit their plan;
-# unconfigured users on lower tiers stay safe at the lowest-tier-aware default.
+# We use defer to a level of 3 because we assume by default that customers are on the Starter tier, but
+# customers can specify a higher concurrency level as needed up to the theoretical max rate limit.
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 5) }}"
+  default_concurrency: "{{ config.get('num_workers', 3) }}"
   max_concurrency: 50

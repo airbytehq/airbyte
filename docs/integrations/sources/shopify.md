@@ -146,6 +146,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Customer Address (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Customer#field-customer-addresses)
 - [Deleted Products (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/queries/events) — Product deletion events
 - [Discount Codes (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode)
+- [Discount Codes Sync (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/unions/DiscountCode) — Synchronous variant of Discount Codes that returns all redeem codes for discounts with more than ~100 codes. See [Syncing discount codes](#syncing-discount-codes).
 - [Disputes](https://shopify.dev/docs/api/admin-rest/latest/resources/dispute)
 - [Draft Orders](https://shopify.dev/api/admin-rest/latest/resources/draftorder#top)
 - [Fulfillments](https://shopify.dev/api/admin-rest/latest/resources/fulfillment)
@@ -180,6 +181,21 @@ For deleted products, use the dedicated `Deleted Products` stream, which queries
 
 Check the following Shopify documentation for more information about [retrieving deleted records](https://shopify.dev/docs/api/admin-rest/latest/resources/event).
 
+## Syncing discount codes
+
+The connector provides two streams for discount codes:
+
+| Stream | Method | Best for |
+|---|---|---|
+| **Discount Codes** | Bulk Operations (async) | Stores where every discount has fewer than ~100 redeem codes. High throughput, low API cost. |
+| **Discount Codes Sync** | Synchronous cursor-paginated GraphQL | Stores that have one or more discounts with **more than ~100 redeem codes**. Guarantees every code is returned. |
+
+Shopify's Bulk Operations API silently truncates the nested `codes` connection at approximately 100 records per parent discount, even with `groupObjects: true`. If a discount has 500 codes, the bulk stream will only return ~100 of them without any error or warning.
+
+**Discount Codes Sync** avoids this limitation by querying parent discounts with cursor pagination, then explicitly paging through each parent's child codes (up to 250 per page). The trade-off is higher per-record API cost and lower throughput compared to the bulk stream.
+
+**Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
+
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
@@ -193,6 +209,10 @@ Data related to [marketing attribution](https://www.shopify.com/au/blog/marketin
 | Full Refresh Sync         | Yes                  |
 | Incremental - Append Sync | Yes                  |
 | Namespaces                | No                   |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Data type map
 
@@ -241,15 +261,41 @@ Version 3.3.3 fixes an issue where some incremental GraphQL Bulk streams could s
 
 If you synced one of these streams on an earlier connector version and suspect missing historical records, clear the affected stream and run a sync to backfill data. Clearing a stream deletes the data Airbyte wrote for that stream in your destination. For more information, see [Clearing your data](/platform/operator-guides/clear).
 
+#### BULK job checkpoint collisions
+
+Incremental GraphQL Bulk streams checkpoint a bulk job once it has collected **BULK Job checkpoint (rows collected)** lines, then start the next job from the newest cursor value they saw. If a single cursor value holds more lines than that threshold, the next job cannot advance past it, and the sync fails with:
+
+```text
+The stream: `<stream_name>` checkpoint collision is detected. Try to increase the
+`BULK Job checkpoint (rows collected)` to the bigger value. The stream will be
+synced again during the next sync attempt.
+```
+
+This most often affects the metafield streams and `discount_codes`, where many child rows hang off one parent record, and it usually follows a bulk change in your store that stamped a large set of records with the same `updated_at` value.
+
+**First, check whether it cleared itself.** Look at whether any sync has succeeded since the collision:
+
+- **A later sync succeeded.** The next attempt got past the cluster on its own. No action needed, though the failed attempts still counted toward your usage.
+- **No sync has succeeded since.** The stream is blocked and will not recover without a configuration change. Recent records are not reaching your destination, so treat it as urgent.
+
+**To unblock a stream that is not recovering,** raise **BULK Job checkpoint (rows collected)** in your source configuration. The value must exceed the number of lines sharing that one cursor value, and the maximum is 1,000,000. Increase it in steps rather than jumping straight to the maximum: each bulk job then covers more data, so syncs take longer and use more temporary disk space while results are sorted.
+
+Two things that do not help:
+
+- **Lowering GraphQL BULK Date Range in Days.** A collision means the sync could not get past a single cursor value, and no date range can subdivide a single value.
+- **Clearing the stream.** The cluster is in your source data, so a fresh sync reaches it again.
+
+If the stream still collides at 1,000,000, or if raising the value does not change the behavior, [contact Airbyte Support](https://docs.airbyte.com/community/getting-support) — the affected cursor value is in the sync logs, on the line reading `Stream <stream_name>, continue from checkpoint:`.
+
 ### Troubleshooting
 
 - If you encounter access errors while using **OAuth2.0** authentication, please make sure you've followed this [Shopify Article](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) to request the access to the client's store first. Once the access is granted, you should be able to proceed with **OAuth2.0** authentication.
 - If you receive a "The BULK job couldn't be created at this time, since another job is running." error, please [check your operation's progress](https://shopify.dev/docs/api/usage/bulk-operations/queries#check-an-operations-progress) with the `Shopify GraphQL BULK` api.
+- If you receive a "checkpoint collision is detected" error for a stream, see [BULK job checkpoint collisions](#bulk-job-checkpoint-collisions) above to tell a self-clearing failure from a blocked stream.
 - If you need to cancel a `Shopify GraphQL BULK`job, please follow [these steps](https://shopify.dev/docs/api/usage/bulk-operations/queries#canceling-an-operation).  You will need the current in-progress job ID to cancel.
 - Check out common troubleshooting issues for the Shopify source connector on our Airbyte Forum [here](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
-
 
 ## Changelog
 
@@ -258,7 +304,11 @@ If you synced one of these streams on an earlier connector version and suspect m
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                   |
 |:-----------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.4.0 | 2026-05-12 | [76192](https://github.com/airbytehq/airbyte/pull/76192) | Add `lookback_window_in_days` config option to re-fetch recent records during incremental syncs, preventing missing data from race conditions or late-arriving updates. |
+| 4.0.0 | 2026-08-11 | [81339](https://github.com/airbytehq/airbyte/pull/81339) | Add missing `format: date-time` annotations to datetime fields in `orders` and `order_refunds`. `orders.processed_at` and `order_refunds.processed_at` change column type in typed destinations and require a schema refresh and resync. See the [migration guide](./shopify-migrations.md#upgrading-to-400). |
+| 3.5.1 | 2026-06-24 | [80787](https://github.com/airbytehq/airbyte/pull/80787) | Validate and normalize the `shop` config value: accept a bare subdomain or full myshopify URL, and reject malformed input with a clear config error. The normalized handle is also written to the `shop_url` record field, so previously-malformed configs now emit a clean value. |
+| 3.5.0 | 2026-06-11 | [79624](https://github.com/airbytehq/airbyte/pull/79624) | Add new synchronous cursor-paginated `discount_codes_sync` stream with support for >100 redeem codes per discount |
+| 3.4.1 | 2026-06-10 | [78513](https://github.com/airbytehq/airbyte/pull/78513) | Enable `groupObjects: true` on the `discount_codes` bulk query to preserve grouped output for stores with many redeem codes per discount. |
+| 3.4.0 | 2026-05-19 | [76192](https://github.com/airbytehq/airbyte/pull/76192) | Add `lookback_window_in_days` config option to re-fetch recent records during incremental syncs, preventing missing data from race conditions or late-arriving updates. |
 | 3.3.3 | 2026-05-11 | [77005](https://github.com/airbytehq/airbyte/pull/77005) | Fix some incremental GraphQL Bulk streams silently skipping parent records when a bulk job checkpoints mid-output. Use the parent cursor tracked by the bulk record producer to advance the next slice, not the child record's cursor. |
 | 3.3.2 | 2026-04-24 | [76969](https://github.com/airbytehq/airbyte/pull/76969) | Replace in-memory sort of bulk GraphQL records with a disk-backed external merge sort to fix OOM failures on large metafield syncs |
 | 3.3.1 | 2026-04-22 | [76920](https://github.com/airbytehq/airbyte/pull/76920) | Fix `AttributeError` from null logger in `LimitReducingErrorHandler` when handling non-500 HTTP errors |

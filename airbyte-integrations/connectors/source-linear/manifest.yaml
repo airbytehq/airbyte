@@ -1384,6 +1384,28 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.linear.app/graphql
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Endpoint-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Complexity-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+      response_filters:
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'RATELIMITED' }}"
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Rate limit exceeded for Linear API."
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_type"]
@@ -1467,12 +1489,17 @@ spec:
             properties:
               auth_type:
                 type: string
+                title: Authentication Method
                 const: "API Key"
                 order: 0
               api_key:
                 type: string
                 title: API Key
-                description: Your Linear API key. Generate one from Linear Settings → API.
+                description: >-
+                  Your Linear personal API key. In Linear, go to Settings →
+                  Security & access → Personal API keys, then click Create key
+                  and copy the generated key. The key inherits your Linear
+                  user's workspace permissions.
                 airbyte_secret: true
                 order: 1
           - type: object
@@ -1485,24 +1512,34 @@ spec:
             properties:
               auth_type:
                 type: string
+                title: Authentication Method
                 const: "OAuth2.0"
                 order: 0
               client_id:
                 type: string
                 title: Client ID
-                description: The Client ID of your Linear OAuth application.
+                description: >-
+                  The Client ID of your Linear OAuth application. Create or view
+                  your applications in Linear under Settings → API →
+                  Applications.
                 airbyte_secret: true
                 order: 1
               client_secret:
                 type: string
                 title: Client Secret
-                description: The Client Secret of your Linear OAuth application.
+                description: >-
+                  The Client Secret of your Linear OAuth application, shown
+                  alongside the Client ID in Linear under Settings → API →
+                  Applications.
                 airbyte_secret: true
                 order: 2
               refresh_token:
                 type: string
                 title: Refresh Token
-                description: The Refresh Token obtained after completing the OAuth flow.
+                description: >-
+                  The Refresh Token that Linear returns when your OAuth
+                  application completes the OAuth 2.0 authorization flow. The
+                  connector uses it to refresh expired access tokens.
                 airbyte_secret: true
                 order: 3
       start_date:

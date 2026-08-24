@@ -8,6 +8,16 @@ check:
     - accounts
 
 definitions:
+  ad_analytics_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+    max_retries: 5
+    max_time: 1800
+    backoff_strategies:
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.LinkedInAdsDataVolumeBackoffStrategy
+      - type: ExponentialBackoffStrategy
+        factor: 5
   streams:
     accounts:
       type: DeclarativeStream
@@ -24,7 +34,7 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202601"
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -120,7 +130,7 @@ definitions:
             accounts: "urn:li:sponsoredAccount:{{ stream_slice.get('account_id') }}"
           request_headers:
             Linkedin-Version: "202601"
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -186,7 +196,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -258,7 +268,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -326,7 +336,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-RestLi-Method: FINDER
-          error_handlers:
+          error_handler:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
@@ -342,10 +352,10 @@ definitions:
                       - 500
                       - 503
               - type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+                class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -409,7 +419,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -472,7 +482,7 @@ definitions:
           request_headers:
             LinkedIn-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -524,7 +534,7 @@ definitions:
           request_headers:
             LinkedIn-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -581,18 +591,14 @@ definitions:
             q: analytics
             pivot: "(value:CAMPAIGN)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id', []) | join(',urn%3Ali%3AsponsoredCampaign%3A') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -602,16 +608,20 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: campaign_id
-              stream:
-                $ref: "#/definitions/streams/campaigns"
+          type: GroupingPartitionRouter
+          group_size: 50
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: campaign_id
+                stream:
+                  $ref: "#/definitions/streams/campaigns"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: end_date
+        global_substream_cursor: true
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -627,7 +637,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('pivotValues', [''])[0].split(':')[-1] }}"
               value_type: string
         - type: AddFields
           fields:
@@ -660,18 +670,14 @@ definitions:
             q: analytics
             pivot: "(value:CREATIVE)"
             timeGranularity: "(value:DAILY)"
-            creatives: "List(urn%3Ali%3AsponsoredCreative%3A{{ stream_partition.get('creative_id').split(':')[-1] }})"
+            creatives: "List({{ stream_partition.get('creative_id', []) | map('replace', ':', '%3A') | join(',') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -681,7 +687,10 @@ definitions:
         paginator:
           type: NoPagination
         partition_router:
-          - type: SubstreamPartitionRouter
+          type: GroupingPartitionRouter
+          group_size: 50
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
             parent_stream_configs:
               - type: ParentStreamConfig
                 parent_key: id
@@ -691,6 +700,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: end_date
+        global_substream_cursor: true
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -706,7 +716,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCreative
-              value: "{{ stream_partition.get('creative_id').split(':')[-1] }}"
+              value: "{{ record.get('pivotValues', [''])[0].split(':')[-1] }}"
               value_type: string
         - type: AddFields
           fields:
@@ -724,6 +734,7 @@ definitions:
       primary_key:
         - string_of_pivot_values
         - end_date
+        - sponsoredCampaign
       retriever:
         type: SimpleRetriever
         $parameters:
@@ -736,40 +747,41 @@ definitions:
           path: adAnalytics
           http_method: GET
           request_parameters:
-            q: analytics
-            pivot: "(value:IMPRESSION_DEVICE_TYPE)"
+            q: statistics
+            pivots: "List(CAMPAIGN,IMPRESSION_DEVICE_TYPE)"
             timeGranularity: "(value:DAILY)"
-            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id', []) | join(',urn%3Ali%3AsponsoredCampaign%3A') }})"
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
-            fields: "#/definitions/analytics_query_properties"
+            fields: "#/definitions/impression_device_analytics_query_properties"
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
             type: CustomRecordExtractor
             class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
+            transform_campaign_statistics_pivots: true
           schema_normalization: Default
         paginator:
           type: NoPagination
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: campaign_id
-              stream:
-                $ref: "#/definitions/streams/campaigns"
+          type: GroupingPartitionRouter
+          group_size: 50
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: campaign_id
+                stream:
+                  $ref: "#/definitions/streams/campaigns"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: end_date
+        global_substream_cursor: true
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -785,7 +797,7 @@ definitions:
           fields:
             - path:
                 - sponsoredCampaign
-              value: "{{ stream_partition.get('campaign_id') }}"
+              value: "{{ record.get('sponsoredCampaign') }}"
               value_type: string
         - type: AddFields
           fields:
@@ -824,12 +836,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -903,12 +911,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -982,12 +986,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1061,12 +1061,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1140,12 +1136,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1219,12 +1211,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1298,12 +1286,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1377,12 +1361,8 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+          error_handler:
+            $ref: "#/definitions/ad_analytics_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1455,43 +1435,17 @@ definitions:
             dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
             fields: "#/definitions/analytics_query_properties"
           request_headers:
-            Linkedin-Version: "202601"
-            X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
-            type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+            $ref: "#/definitions/custom_report_request_headers"
+          error_handler:
+            $ref: "#/definitions/custom_report_error_handler"
         record_selector:
-          type: RecordSelector
-          extractor:
-            type: CustomRecordExtractor
-            class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
-          schema_normalization: Default
+          $ref: "#/definitions/custom_report_record_selector"
         paginator:
-          type: NoPagination
+          $ref: "#/definitions/custom_report_paginator"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: campaign_id
-              stream:
-                $ref: "#/definitions/streams/campaigns"
+          $ref: "#/definitions/custom_report_partition_router"
       incremental_sync:
-        type: DatetimeBasedCursor
-        cursor_field: end_date
-        cursor_datetime_formats:
-          - "%Y-%m-%d"
-        datetime_format: "%Y-%m-%d"
-        cursor_granularity: P0D
-        step: P30D
-        lookback_window: P{{ config.get('lookback_window', 0) }}D
-        start_datetime:
-          type: MinMaxDatetime
-          datetime: "{{ config['start_date'] }}"
-          datetime_format: "%Y-%m-%d"
+        $ref: "#/definitions/custom_report_incremental_sync"
       transformations:
         - type: AddFields
           fields:
@@ -1506,9 +1460,105 @@ definitions:
               value: "DYNAMIC_FIELD"
               value_type: string
       schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/ad_campaign_analytics"
+        $ref: "#/definitions/custom_report_schema_loader"
+    custom_statistics_report:
+      type: DeclarativeStream
+      name: custom_statistics_report
+      primary_key:
+        - string_of_pivot_values
+        - end_date
+        - sponsoredCampaign
+      retriever:
+        type: SimpleRetriever
+        $parameters:
+          name: custom_statistics_report
+        requester:
+          type: CustomRequester
+          class_name: source_declarative_manifest.components.SafeEncodeHttpRequester
+          url_base: https://api.linkedin.com/rest/
+          authenticator: "#/definitions/authenticator"
+          path: adAnalytics
+          http_method: GET
+          request_parameters:
+            q: statistics
+            pivots: "DYNAMIC_FIELD"
+            timeGranularity: "DYNAMIC_FIELD"
+            campaigns: "List(urn%3Ali%3AsponsoredCampaign%3A{{ stream_partition.get('campaign_id') }})"
+            dateRange: "(start:(year:{{ str_to_datetime(stream_interval.get('start_time')).year }},month:{{ str_to_datetime(stream_interval.get('start_time')).month }},day:{{ str_to_datetime(stream_interval.get('start_time')).day }}),end:(year:{{ str_to_datetime(stream_interval.get('end_time')).year }},month:{{ str_to_datetime(stream_interval.get('end_time')).month }},day:{{ str_to_datetime(stream_interval.get('end_time')).day }}))"
+            fields: "#/definitions/analytics_query_properties"
+          request_headers:
+            $ref: "#/definitions/custom_report_request_headers"
+          error_handler:
+            $ref: "#/definitions/custom_report_error_handler"
+        record_selector:
+          $ref: "#/definitions/custom_report_record_selector"
+        paginator:
+          $ref: "#/definitions/custom_report_paginator"
+        partition_router:
+          $ref: "#/definitions/custom_report_partition_router"
+      incremental_sync:
+        $ref: "#/definitions/custom_report_incremental_sync"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sponsoredCampaign
+              value: "{{ stream_partition.get('campaign_id') }}"
+              value_type: string
+        - type: AddFields
+          fields:
+            - path:
+                - pivot
+              value: "DYNAMIC_FIELD"
+              value_type: string
+      schema_loader:
+        $ref: "#/definitions/custom_report_schema_loader"
+  custom_report_request_headers:
+    Linkedin-Version: "202601"
+    X-Restli-Protocol-Version: 2.0.0
+  custom_report_error_handler:
+    type: CustomErrorHandler
+    class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+    max_retries: 5
+    max_time: 1800
+    backoff_strategies:
+      - type: CustomBackoffStrategy
+        class_name: source_declarative_manifest.components.LinkedInAdsDataVolumeBackoffStrategy
+      - type: ExponentialBackoffStrategy
+        factor: 5
+  custom_report_record_selector:
+    type: RecordSelector
+    extractor:
+      type: CustomRecordExtractor
+      class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
+    schema_normalization: Default
+  custom_report_paginator:
+    type: NoPagination
+  custom_report_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        parent_key: id
+        partition_field: campaign_id
+        stream:
+          $ref: "#/definitions/streams/campaigns"
+  custom_report_incremental_sync:
+    type: DatetimeBasedCursor
+    cursor_field: end_date
+    cursor_datetime_formats:
+      - "%Y-%m-%d"
+    datetime_format: "%Y-%m-%d"
+    cursor_granularity: P0D
+    step: P30D
+    lookback_window: P{{ config.get('lookback_window', 0) }}D
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config['start_date'] }}"
+      datetime_format: "%Y-%m-%d"
+  custom_report_schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $ref: "#/schemas/ad_campaign_analytics"
   base_requester:
     type: HttpRequester
     url_base: https://api.linkedin.com/rest/
@@ -1537,7 +1587,7 @@ definitions:
   # the entire record
   analytics_query_properties:
     type: QueryProperties
-    property_list:
+    property_list: &analytics_query_property_list
       - actionClicks
       - adUnitClicks
       - approximateMemberReach
@@ -1646,6 +1696,21 @@ definitions:
         key: ["end_date", "string_of_pivot_values"]
     property_selector:
       type: JsonSchemaPropertySelector
+  impression_device_analytics_query_properties:
+    type: QueryProperties
+    property_list: *analytics_query_property_list
+    always_include_properties:
+      - dateRange
+      - pivotValues
+    property_chunking:
+      type: PropertyChunking
+      property_limit_type: property_count
+      property_limit: 18
+      record_merge_strategy:
+        type: GroupByKeyMergeStrategy
+        key: ["end_date", "string_of_pivot_values", "sponsoredCampaign"]
+    property_selector:
+      type: JsonSchemaPropertySelector
 
 streams:
   - $ref: "#/definitions/streams/accounts"
@@ -1692,17 +1757,32 @@ dynamic_streams:
           value: "(value:{{components_values['time_granularity']}})"
         - type: ComponentMappingDefinition
           field_path:
-            [
-              "retriever",
-              "record_selector",
-              "**",
-              "transformations",
-              "1",
-              "fields",
-              "0",
-              "value",
-            ]
+            ["transformations","1","fields","0","value"]
           value: "{{components_values['pivot_by']}}"
+  - type: DynamicDeclarativeStream
+    stream_template:
+      $ref: "#/definitions/streams/custom_statistics_report"
+    components_resolver:
+      type: ConfigComponentsResolver
+      stream_config:
+        type: StreamConfig
+        configs_pointer:
+          - ad_statistics_reports
+      components_mapping:
+        - type: ComponentMappingDefinition
+          field_path: ["name"]
+          value: "custom_statistics_{{components_values['name']}}"
+        - type: ComponentMappingDefinition
+          field_path: ["retriever", "requester", "request_parameters", "pivots"]
+          value: "List({{ ','.join(components_values['pivots']) }})"
+        - type: ComponentMappingDefinition
+          field_path:
+            ["retriever", "requester", "request_parameters", "timeGranularity"]
+          value: "(value:{{components_values['time_granularity']}})"
+        - type: ComponentMappingDefinition
+          field_path:
+            ["transformations","1","fields","0","value"]
+          value: "{{ ','.join(components_values['pivots']) }}"
 
 # LinkedIn Ads does not publish their standard API rate limits.
 # https://learn.microsoft.com/en-us/linkedin/shared/api-guide/concepts/rate-limits
@@ -1855,6 +1935,58 @@ spec:
                 - MEMBER_COMPANY
                 - PLACEMENT_NAME
                 - IMPRESSION_DEVICE_TYPE
+                - EVENT_STAGE
+            time_granularity:
+              title: Time Granularity
+              description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."
+              type: string
+              enum:
+                - ALL
+                - DAILY
+                - MONTHLY
+                - YEARLY
+        default: []
+      ad_statistics_reports:
+        title: Custom Ad Statistics Reports
+        type: array
+        items:
+          type: object
+          title: Ad Statistics Report Configuration
+          description: "Config for custom ad Statistics Finder report"
+          required:
+            - name
+            - pivots
+            - time_granularity
+          properties:
+            name:
+              title: Report Name
+              description: "The name for the custom report."
+              type: string
+            pivots:
+              title: Pivot Categories
+              description: "Choose up to three categories to pivot your Statistics Finder report around."
+              type: array
+              minItems: 1
+              maxItems: 3
+              uniqueItems: true
+              items:
+                type: string
+                enum:
+                  - COMPANY
+                  - ACCOUNT
+                  - SHARE
+                  - CAMPAIGN
+                  - CREATIVE
+                  - CAMPAIGN_GROUP
+                  - CONVERSION
+                  - CONVERSATION_NODE
+                  - CONVERSATION_NODE_OPTION_INDEX
+                  - SERVING_LOCATION
+                  - OBJECTIVE_TYPE
+                  - CARD_INDEX
+                  - PLACEMENT_NAME
+                  - IMPRESSION_DEVICE_TYPE
+                  - EVENT_STAGE
             time_granularity:
               title: Time Granularity
               description: "Choose how to group the data in your report by time. The options are:<br>- 'ALL': A single result summarizing the entire time range.<br>- 'DAILY': Group results by each day.<br>- 'MONTHLY': Group results by each month.<br>- 'YEARLY': Group results by each year.<br>Selecting a time grouping helps you analyze trends and patterns over different time periods."

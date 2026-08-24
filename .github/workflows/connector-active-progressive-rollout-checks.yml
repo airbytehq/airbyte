@@ -178,8 +178,12 @@ jobs:
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: |
-          VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master)
-          echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
+          if VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master 2>/dev/null); then
+            echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
+          else
+            echo "Connector ${CONNECTOR_NAME} not found on master (net-new connector). Skipping version check."
+            echo "version=" | tee -a "${GITHUB_OUTPUT}"
+          fi
 
       - name: Resolve rollout gate state
         if: matrix.connector
@@ -188,6 +192,23 @@ jobs:
           ROLLOUT_STATUS_JSON: ${{ steps.rollout-status.outputs.json }}
           MASTER_VERSION: ${{ steps.master-version.outputs.version }}
         run: |
+          retool_base_url="https://airbyte.retool.com/apps/7aa774a0-8750-11ef-896b-236cbc10fa7e/Connector%20Rollout%20Manager"
+          actor_definition_id="$(jq -r '.actor_definition_id // empty' <<< "${ROLLOUT_STATUS_JSON}")"
+          retool_url="${retool_base_url}"
+          if [[ -n "${actor_definition_id}" ]]; then
+            retool_url="${retool_base_url}?actorDefinitionId=${actor_definition_id}"
+          fi
+          active_rollout='[.rollouts[]? | select(.state | IN("initialized", "workflow_started", "in_progress", "paused", "finalizing", "errored"))][0] // {}'
+          updated_by_name="$(jq -r "(${active_rollout}).updated_by_user_name // empty" <<< "${ROLLOUT_STATUS_JSON}")"
+          updated_by_email="$(jq -r "(${active_rollout}).updated_by_user_email // empty" <<< "${ROLLOUT_STATUS_JSON}")"
+          updated_by_display="unknown"
+          if [[ -n "${updated_by_name}" && -n "${updated_by_email}" ]]; then
+            updated_by_display="${updated_by_name} <${updated_by_email}>"
+          elif [[ -n "${updated_by_email}" ]]; then
+            updated_by_display="${updated_by_email}"
+          elif [[ -n "${updated_by_name}" ]]; then
+            updated_by_display="${updated_by_name}"
+          fi
           has_active_rollout="$(jq -r '.has_active_rollout' <<< "${ROLLOUT_STATUS_JSON}")"
           has_master_rc_marker="false"
           if [[ "${MASTER_VERSION}" == *"-rc."* ]]; then
@@ -200,6 +221,8 @@ jobs:
           echo "has-active-rollout=${has_active_rollout}" | tee -a "${GITHUB_OUTPUT}"
           echo "has-master-rc-marker=${has_master_rc_marker}" | tee -a "${GITHUB_OUTPUT}"
           echo "requires-ack=${requires_ack}" | tee -a "${GITHUB_OUTPUT}"
+          echo "rollout-updated-by=${updated_by_display}" | tee -a "${GITHUB_OUTPUT}"
+          echo "retool-url=${retool_url}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Detect rollout bypass checkbox
         if: >
@@ -372,6 +395,8 @@ jobs:
             rollout_state: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].state || 'none' }}
             master_version: ${{ steps.master-version.outputs.version }}
             master_rc_marker: ${{ contains(steps.master-version.outputs.version, '-rc.') }}
+            rollout_updated_by: ${{ steps.rollout-gate-state.outputs.rollout-updated-by }}
+            retool_url: ${{ steps.rollout-gate-state.outputs.retool-url }}
             bypass_ack_checked: ${{ steps.bypass-state.outputs.approved }}
             ack_checkbox_text: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
             rollout_comment_url: ${{ steps.rollout-comment.outputs.url }}
