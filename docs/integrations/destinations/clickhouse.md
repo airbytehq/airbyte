@@ -45,14 +45,13 @@ The fallback to `_airbyte_extracted_at` keeps the most recently synced version o
 
 :::warning
 
-Airbyte's ClickHouse connector leverages the [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) table engine to handle deduplication.
-To guarantee deduplicated results at query time, you can add the `FINAL` operator to your query string. For example:
+ClickHouse collapses duplicate rows during background merges, so a query can return duplicate rows until the merge for the affected parts completes. To guarantee deduplicated results at query time, add the [`FINAL`](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree#query-time-de-duplication--final) modifier to your query. For example:
 
 ```sql
 SELECT * FROM your_table FINAL
 ```
 
-Without this, you may see duplicated or deleted results when querying your data.
+Without `FINAL`, you may see duplicated or deleted records in your query results.
 
 :::
 
@@ -145,7 +144,7 @@ Replace `{namespace}` with each custom namespace you plan to use.
     - **Username**: The ClickHouse user you created (for example, `airbyte_user`)
     - **Password**: The password for the ClickHouse user
     - **Enable JSON**: Whether to write object fields to ClickHouse's `JSON` type instead of `String`. This requires ClickHouse 24.8 or later. The connector sets the `allow_experimental_json_type` setting on its own session, so you don't need to enable it server-wide.
-    - **Record Window Size** (advanced): The maximum number of records to write in a single batch. Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
+    - **Record Window Size** (advanced): The maximum number of records to write in a single batch. The default is `100000`. Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
 
 ### 4. SSH tunnel (optional)
 
@@ -195,7 +194,7 @@ This connector supports automatic schema evolution. When the source schema chang
 
 ## Namespace support
 
-This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
+This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database, and the connector creates that database if it doesn't exist. If a stream has no namespace, the connector writes it to the database you configure in the destination settings.
 
 ## Changelog
 
