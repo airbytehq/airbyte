@@ -252,6 +252,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.24 | 2026-08-16 | [76904](https://github.com/airbytehq/airbyte/pull/76904) | Fix schema-change `INSERT ... SELECT` when a stream's name collides with one of its own column names. |
 | 3.0.23 | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
 | 3.0.21 | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346) | Remove unnecessary NULL PK equality checks from merge SQL |
