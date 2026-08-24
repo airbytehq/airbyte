@@ -35,7 +35,7 @@ The connector uses your cursor column as the version column, but only when the c
 - `Date32`
 - `DateTime64(3)`
 
-In all other cases, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering, and logs a warning. This happens when:
+In all other cases, the connector falls back to using the `_airbyte_extracted_at` timestamp for deduplication ordering. This happens when:
 
 - The cursor maps to another type, such as `String`.
 - The stream has no cursor.
