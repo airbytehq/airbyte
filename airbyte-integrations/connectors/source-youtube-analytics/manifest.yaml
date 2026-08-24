@@ -511,14 +511,9 @@ definitions:
           predicate: >-
             {{ response.get('error', {}).get('code') == 429 and
             'FreeQuotaRequestsPerDayPerProject' not in response|string }}
-      # Google documents exponential backoff rather than a Retry-After header for these 429s.
-      # The effective retry window is bounded by the CDK's 600-second max_time.
-      max_retries: 8
       backoff_strategies:
-        # Jitter avoids synchronized retries across connections sharing a Google project quota.
-        - type: ExponentialBackoffStrategy
-          factor: 15
-          jitter_range_in_seconds: 5
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 30
   base_retriever:
     type: SimpleRetriever
     requester:
