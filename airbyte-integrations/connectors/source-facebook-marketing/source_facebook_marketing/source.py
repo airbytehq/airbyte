@@ -3,6 +3,7 @@
 #
 
 import logging
+import re
 from datetime import timedelta
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
@@ -61,6 +62,8 @@ from .utils import validate_end_date, validate_start_date
 
 logger = logging.getLogger("airbyte")
 UNSUPPORTED_FIELDS = {"unique_conversions", "unique_ctr", "unique_clicks"}
+VERBATIM_CUSTOM_INSIGHT_NAME_GRAMMAR = r"^custom_[a-z0-9]+(_[a-z0-9]+)*$"
+VERBATIM_CUSTOM_INSIGHT_NAME_PATTERN = re.compile(VERBATIM_CUSTOM_INSIGHT_NAME_GRAMMAR)
 
 
 class SourceFacebookMarketing(AbstractSource):
@@ -340,10 +343,20 @@ class SourceFacebookMarketing(AbstractSource):
                     message=message,
                     failure_type=FailureType.config_error,
                 )
+            if config.verbatim_custom_insight_stream_names:
+                if not VERBATIM_CUSTOM_INSIGHT_NAME_PATTERN.match(insight.name):
+                    raise AirbyteTracedException(
+                        message=f'Field "name" in "custom_insights" must match "{VERBATIM_CUSTOM_INSIGHT_NAME_GRAMMAR}".',
+                        internal_message=f"Custom insight name {insight.name!r} is not a valid verbatim stream name.",
+                        failure_type=FailureType.config_error,
+                    )
+                stream_name = insight.name
+            else:
+                stream_name = f"Custom{insight.name}"
             stream = AdsInsights(
                 api=api,
                 account_ids=config.account_ids,
-                name=f"Custom{insight.name}",
+                name=stream_name,
                 fields=list(insight_fields),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),

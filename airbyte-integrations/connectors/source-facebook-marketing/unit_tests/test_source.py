@@ -19,6 +19,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteStream,
     ConnectorSpecification,
     DestinationSyncMode,
+    FailureType,
     Status,
     SyncMode,
 )
@@ -184,6 +185,71 @@ class TestSourceFacebookMarketing:
         assert len(streams) == 1
         assert streams[0].breakdowns == ["ad_format_asset"]
         assert streams[0].action_breakdowns == []
+
+    def test_verbatim_custom_insight_stream_names_is_hidden_and_off_by_default(self, config, fb_marketing):
+        spec = fb_marketing.spec(None).connectionSpecification
+        declared = spec["properties"]["verbatim_custom_insight_stream_names"]
+
+        assert declared["type"] == "boolean"
+        assert declared["default"] is False
+        assert declared["airbyte_hidden"] is True
+        assert "verbatim_custom_insight_stream_names" not in spec.get("required", [])
+        assert ConnectorConfig.parse_obj(config).verbatim_custom_insight_stream_names is False
+
+    def test_custom_insight_stream_name_is_prefixed_by_default(self, api, config, fb_marketing):
+        config["custom_insights"] = [
+            {
+                "name": "HourlySpend",
+                "fields": ["account_id"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+
+        assert [stream.name for stream in streams] == ["custom_hourly_spend"]
+
+    def test_verbatim_custom_insight_stream_name_is_used_as_configured(self, api, config, fb_marketing):
+        config["verbatim_custom_insight_stream_names"] = True
+        config["custom_insights"] = [
+            {
+                "name": "custom_hourly_spend",
+                "fields": ["account_id"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+            },
+        ]
+        streams = fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+
+        assert [stream.name for stream in streams] == ["custom_hourly_spend"]
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "hourly_spend",
+            "custom_Hourly_Spend",
+            "custom_hourly-spend",
+            "custom_hourly spend",
+            "custom_",
+            "custom_hourly__spend",
+        ],
+    )
+    def test_verbatim_custom_insight_stream_name_rejects_invalid_names(self, api, config, fb_marketing, name):
+        config["verbatim_custom_insight_stream_names"] = True
+        config["custom_insights"] = [
+            {
+                "name": name,
+                "fields": ["account_id"],
+                "breakdowns": [],
+                "action_breakdowns": ["action_type"],
+            },
+        ]
+
+        with pytest.raises(AirbyteTracedException) as exc_info:
+            fb_marketing.get_custom_insights_streams(api, ConnectorConfig.parse_obj(config))
+
+        assert exc_info.value.failure_type == FailureType.config_error
+        assert exc_info.value.message == 'Field "name" in "custom_insights" must match "^custom_[a-z0-9]+(_[a-z0-9]+)*$".'
 
     def test_deprecated_dma_breakdown_removed_from_spec(self, fb_marketing):
         # Meta replaced `dma` with `comscore_market` (oncall #12940). `dma` must no longer be a
