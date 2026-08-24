@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 24, 2026
+
+Platform
+
+- If you're an organization admin on the Enterprise Flex plan, you can now view audit logs directly in Airbyte. The new Audit Logs page in your organization settings shows who changed what and when across your organization, with filters for date range, workspace, actor, and operation. Click any entry to see the full details of that event and copy them to your clipboard.
+
 ## August 12, 2026
 
 Connections
