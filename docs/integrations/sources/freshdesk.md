@@ -68,11 +68,11 @@ Several output streams are available from this source:
 
 Freshdesk's API has no endpoint for ticket activity history. Instead, this stream reads the daily files that Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) produces, requesting one file per day and using `performed_at` as the cursor. That design has consequences you should know about before you enable the stream.
 
-- **The export must already be enabled on your account.** Freshdesk deprecated the export along with Legacy Reports in October 2023. Accounts that had it enabled before then keep it under **Admin** > **Account** > **Scheduled Exports**; other accounts can no longer turn it on, and for them the stream syncs without error but returns no records.
+- **The export must already be enabled on your account.** Freshdesk deprecated the export along with Legacy Reports in October 2023. Accounts that had it enabled before then keep it under **Admin** > **Account** > **Scheduled Exports**; other accounts can no longer turn it on, and without it the stream returns no data.
 - **You can only sync about the last 30 days.** Freshdesk keeps each daily export file for 30 days, so the connector clamps the sync window to the last 30 days regardless of the **Start Date** you configure. Longer history isn't recoverable through this stream.
 - **Two fields are added by Airbyte, not Freshdesk.** Export rows have no identifier of their own, so the connector adds `_airbyte_ticket_activity_id`, derived from the contents of the row, as the primary key. It also adds `export_date`, the day whose export file the row came from. Every other field comes from Freshdesk unchanged.
 - **Export files are downloaded from Amazon S3.** If you restrict outbound traffic, allow `s3.amazonaws.com`, `*.s3.amazonaws.com`, and `*.cloudfront.net` alongside your Freshdesk domain. Without them, the connector can request the export but not download it.
-- **Missing days are skipped, but authorization errors aren't.** If Freshdesk has no export file for a given day, the connector logs that and moves on to the next day. If Freshdesk answers with 401 or 403, the sync fails: check that the API key belongs to an account admin and that the export is still enabled.
+- **A missing export file is skipped; an authorization error isn't.** When Freshdesk reports no export for a given day, the connector logs that and moves on to the next day, so the sync succeeds with fewer records. When Freshdesk answers 401 or 403, the sync fails as a configuration error: check that the API key belongs to an account admin and that the export is still enabled.
 
 ## Performance considerations
 
