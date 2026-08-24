@@ -146,7 +146,7 @@ The stats streams flatten Snapchat's nested `stats` object, so each metric is a 
 
 Spend metrics are reported in [micro-currency](https://developers.snap.com/api/marketing-api/Ads-API/measurement#core-metrics), so divide the value by 1,000,000 to get an amount in whole currency units. This applies to `spend`, `coupon_used_local`, and `coupon_used_usd`. `coupon_used_local` uses the currency assigned to the ad account, and `coupon_used_usd` is always in US dollars.
 
-The coupon fields are only available in the Ads, AdSquads, and Campaigns stats streams, starting with version 1.6.0. The three AdAccounts stats streams return `spend` only, because Snapchat's ad account stats endpoint rejects requests for any other metric.
+The coupon fields are only available in the Ads, AdSquads, and Campaigns stats streams. They were added in version 1.6.0-rc.1, the release candidate for 1.6.0. The three AdAccounts stats streams return `spend` only, because Snapchat's ad account stats endpoint rejects requests for any other metric.
 
 ## Performance considerations
 
