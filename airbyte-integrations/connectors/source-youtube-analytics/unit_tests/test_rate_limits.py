@@ -29,7 +29,7 @@ def _register_token(mocker):
     )
 
 
-def test_429_without_daily_quota_marker_retries_and_succeeds(config, monkeypatch):
+def test_429_without_daily_quota_marker_retries_and_succeeds(config, monkeypatch, capsys):
     waits = []
     monkeypatch.setattr(time, "sleep", waits.append)
 
@@ -48,6 +48,7 @@ def test_429_without_daily_quota_marker_retries_and_succeeds(config, monkeypatch
     assert output.records
     assert report_types_mock.call_count == 2
     assert len([wait for wait in waits if wait > 0]) == 1
+    assert '"reasons":[{"type":"RATE_LIMITED"}]' in capsys.readouterr().out
 
 
 def test_429_backoff_waits_grow_exponentially(config, monkeypatch):
@@ -116,8 +117,11 @@ def test_429_retry_after_above_cap_fails_as_transient_error(config, monkeypatch)
     assert report_types_mock.call_count == 1
     assert not [wait for wait in waits if wait > 0]
     assert output.errors
-    error = output.errors[0].trace.error
-    assert error.failure_type == FailureType.transient_error
+    assert any(
+        error.trace.error.failure_type == FailureType.transient_error
+        and error.trace.error.message == "The rate limit is greater than max waiting time has been reached."
+        for error in output.errors
+    )
 
 
 def test_daily_quota_429_fails_without_retry(config, monkeypatch):

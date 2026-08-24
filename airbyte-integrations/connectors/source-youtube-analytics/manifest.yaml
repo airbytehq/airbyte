@@ -507,7 +507,7 @@ definitions:
             {{ response.get('error', {}).get('code', 0) >= 500 and
             response.get('error', {}).get('code', 0) < 600 }}
         - type: HttpResponseFilter
-          action: RETRY
+          action: RATE_LIMITED
           predicate: >-
             {{ response.get('error', {}).get('code') == 429 and
             'FreeQuotaRequestsPerDayPerProject' not in response|string }}
