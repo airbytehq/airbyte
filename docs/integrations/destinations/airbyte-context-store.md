@@ -32,6 +32,6 @@ stored on the destination.
 
 | Version | Date       | Pull Request | Subject                 |
 | :------ | :--------- | :----------- | :---------------------- |
-| 0.1.0   | 2026-08-22 |              | Initial release.        |
+| 0.1.0   | 2026-08-22 | [84956](https://github.com/airbytehq/airbyte/pull/84956) | Initial release. |
 
 </details>
