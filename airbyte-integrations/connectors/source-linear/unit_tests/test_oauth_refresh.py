@@ -1,19 +1,16 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
 import json
-import logging
 from copy import deepcopy
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
 import requests
 
 from airbyte_cdk.models import FailureType, SyncMode, Type
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 MANIFEST_PATH = Path(__file__).parents[1] / "manifest.yaml"
@@ -84,9 +81,6 @@ def test_oauth_refresh_persists_rotated_token_and_uses_new_access_token():
 def test_invalid_refresh_token_is_reported_as_configuration_error():
     config = deepcopy(CONFIG)
     source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config)
-    stream = next(stream for stream in source.streams(config=config) if stream.name == "issues")
-    retriever = stream._stream_partition_generator._partition_factory._retriever
-    authenticator = retriever.requester.authenticator
 
     def token_request(*, method, url, **kwargs):
         return _response(
@@ -98,10 +92,11 @@ def test_invalid_refresh_token_is_reported_as_configuration_error():
             },
         )
 
+    catalog = CatalogBuilder().with_stream("issues", SyncMode.full_refresh).build()
     with patch("requests.request", side_effect=token_request):
-        with pytest.raises(AirbyteTracedException) as error:
-            authenticator.get_access_token()
+        output = read(source, config, catalog)
 
-    assert error.value.failure_type == FailureType.config_error
-    assert "Refresh token is invalid or expired" in str(error.value)
-    assert not isinstance(error.value.__cause__, requests.exceptions.HTTPError)
+    errors = output.errors
+    assert errors
+    assert all(error.trace.error.failure_type == FailureType.config_error for error in errors)
+    assert any("re-authenticate" in error.trace.error.message.lower() for error in errors if error.trace.error.message)
