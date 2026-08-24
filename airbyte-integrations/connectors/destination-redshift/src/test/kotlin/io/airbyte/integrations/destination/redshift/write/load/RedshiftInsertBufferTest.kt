@@ -5,11 +5,13 @@
 package io.airbyte.integrations.destination.redshift.write.load
 
 import io.airbyte.cdk.load.data.IntegerValue
+import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.redshift.client.RedshiftAirbyteClient
 import io.airbyte.integrations.destination.redshift.config.RedshiftConfiguration
 import io.airbyte.integrations.destination.redshift.config.S3StagingConfiguration
+import io.airbyte.integrations.destination.redshift.sql.RedshiftSqlGenerator
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -156,6 +158,80 @@ internal class RedshiftInsertBufferTest {
         val dataRow = lines[1]
         assertTrue(dataRow.contains("id-1"), "Data should contain raw_id value")
         assertTrue(dataRow.contains("Bob"), "Data should contain name value")
+    }
+
+    @Test
+    fun `uploaded data preserves empty strings separately from nulls`() = runTest {
+        val testColumns = listOf("_airbyte_raw_id", "str_col", "int_col")
+        val sentinelColumns = setOf("_airbyte_raw_id", "str_col") // varchar columns
+        val testBuffer =
+            RedshiftInsertBuffer(
+                tableName,
+                testColumns,
+                redshiftClient,
+                configuration,
+                sentinelColumns,
+            )
+
+        val record =
+            mapOf(
+                "_airbyte_raw_id" to StringValue("id-1"),
+                "str_col" to StringValue(""), // empty string — should be preserved
+                "int_col" to NullValue, // null — non-sentinel column, empty field
+            )
+
+        testBuffer.accumulate(record)
+        testBuffer.flush()
+
+        val dataSlot = slot<ByteArray>()
+        coVerify { redshiftClient.uploadToS3(any(), any(), capture(dataSlot)) }
+
+        val csvContent =
+            java.util.zip
+                .GZIPInputStream(java.io.ByteArrayInputStream(dataSlot.captured))
+                .bufferedReader()
+                .readText()
+        val dataRow = csvContent.trim().split("\n")[1]
+
+        // Expected: id-1,,  (empty field for empty string, empty field for int null)
+        // The sentinel is NOT used for empty strings or non-sentinel nulls
+        assertEquals("id-1,,", dataRow)
+    }
+
+    @Test
+    fun `uploaded data writes sentinel for null in sentinel columns`() = runTest {
+        val testColumns = listOf("_airbyte_raw_id", "str_col", "int_col")
+        val sentinelColumns = setOf("_airbyte_raw_id", "str_col")
+        val testBuffer =
+            RedshiftInsertBuffer(
+                tableName,
+                testColumns,
+                redshiftClient,
+                configuration,
+                sentinelColumns,
+            )
+
+        val record =
+            mapOf(
+                "_airbyte_raw_id" to StringValue("id-1"),
+                "str_col" to NullValue, // null varchar → sentinel
+                "int_col" to NullValue, // null int → empty field
+            )
+
+        testBuffer.accumulate(record)
+        testBuffer.flush()
+
+        val dataSlot = slot<ByteArray>()
+        coVerify { redshiftClient.uploadToS3(any(), any(), capture(dataSlot)) }
+
+        val csvContent =
+            java.util.zip
+                .GZIPInputStream(java.io.ByteArrayInputStream(dataSlot.captured))
+                .bufferedReader()
+                .readText()
+        val dataRow = csvContent.trim().split("\n")[1]
+
+        assertEquals("id-1,${RedshiftSqlGenerator.NULL_SENTINEL},", dataRow)
     }
 
     @Test

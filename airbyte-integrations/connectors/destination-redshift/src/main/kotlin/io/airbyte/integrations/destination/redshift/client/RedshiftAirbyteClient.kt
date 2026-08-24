@@ -190,6 +190,21 @@ class RedshiftAirbyteClient(
             }
         }
 
+    /**
+     * Returns the column names and their Redshift data types in ordinal order. Used to determine
+     * which columns require the null sentinel encoding (VARCHAR and SUPER columns).
+     */
+    fun describeTableWithTypes(tableName: TableName): LinkedHashMap<String, String> =
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+            val columns = linkedMapOf<String, String>()
+            while (rs.next()) {
+                val columnName = rs.getString(COLUMN_NAME_COLUMN)
+                val dataType = normalizeRedshiftType(rs.getString("data_type"))
+                columns[columnName] = dataType
+            }
+            columns
+        }
+
     override fun computeSchema(
         stream: DestinationStream,
         columnNameMapping: ColumnNameMapping

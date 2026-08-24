@@ -728,6 +728,33 @@ internal class RedshiftAirbyteClientTest {
     }
 
     // ================================================================
+    // describeTableWithTypes
+    // ================================================================
+
+    @Test
+    fun `describeTableWithTypes returns column names and types in ordinal order`() {
+        every { sqlGenerator.getTableSchema(testTable) } returns "SCHEMA SQL"
+        every { mockStatement.executeQuery("SCHEMA SQL") } returns mockResultSet
+        every { mockResultSet.next() } returnsMany listOf(true, true, true, false)
+        every { mockResultSet.getString("column_name") } returnsMany
+            listOf("_airbyte_raw_id", "name", "data")
+        every { mockResultSet.getString("data_type") } returnsMany
+            listOf("character varying", "character varying", "super")
+        every { mockResultSet.close() } returns Unit
+
+        val result = client.describeTableWithTypes(testTable)
+
+        assertEquals(3, result.size)
+        val entries = result.entries.toList()
+        assertEquals("_airbyte_raw_id", entries[0].key)
+        assertEquals("varchar(65535)", entries[0].value) // normalized
+        assertEquals("name", entries[1].key)
+        assertEquals("varchar(65535)", entries[1].value) // normalized
+        assertEquals("data", entries[2].key)
+        assertEquals("super", entries[2].value)
+    }
+
+    // ================================================================
     // addColumn
     // ================================================================
 

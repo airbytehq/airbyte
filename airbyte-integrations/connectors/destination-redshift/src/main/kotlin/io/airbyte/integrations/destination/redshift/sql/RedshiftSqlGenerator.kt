@@ -26,6 +26,14 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         get() = if (config.dropCascade) " CASCADE" else ""
 
     companion object {
+        /**
+         * Static sentinel token written into CSV fields to represent SQL NULL for VARCHAR and SUPER
+         * columns. The Redshift COPY command's `NULL AS` option maps this token back to SQL NULL on
+         * load. Using a distinctive literal avoids the ambiguity between genuine empty strings and
+         * nulls that `EMPTYASNULL` could not resolve (it nullifies quoted empty fields too).
+         */
+        const val NULL_SENTINEL = "_AB_NULL_"
+
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
@@ -558,7 +566,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |STATUPDATE OFF
             |ROUNDEC
             |IGNOREHEADER 1
-            |EMPTYASNULL;
+            |NULL AS '$NULL_SENTINEL';
         """.trimMargin()
 
     // ================================================================

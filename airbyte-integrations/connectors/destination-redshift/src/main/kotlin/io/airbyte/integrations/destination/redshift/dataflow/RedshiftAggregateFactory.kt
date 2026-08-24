@@ -24,13 +24,21 @@ class RedshiftAggregateFactory(
 
     override fun create(key: StoreKey): Aggregate {
         val tableName = streamStateStore.get(key)!!.tableName
-        val columns = redshiftClient.describeTable(tableName)
+        val columnsWithTypes = redshiftClient.describeTableWithTypes(tableName)
+        val columns = columnsWithTypes.keys.toList()
+        val sentinelColumns =
+            columnsWithTypes
+                .filter { (_, type) ->
+                    type.contains("varchar", ignoreCase = true) || type == "super"
+                }
+                .keys
         val buffer =
             RedshiftInsertBuffer(
                 tableName = tableName,
                 columns = columns,
                 redshiftClient = redshiftClient,
                 configuration = redshiftConfiguration,
+                sentinelColumns = sentinelColumns,
             )
         return RedshiftAggregate(buffer = buffer)
     }
