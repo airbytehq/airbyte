@@ -284,21 +284,21 @@ In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte writes 
 
 This is the full mapping between Airbyte types and Iceberg types.
 
-| Airbyte type               | Iceberg type                   |
-|----------------------------|--------------------------------|
-| Boolean                    | Boolean                        |
-| Date                       | Date                           |
-| Integer                    | Long                           |
-| Number                     | Double (String for primary keys)|
-| String                     | String                         |
-| Time with timezone*        | Time                           |
-| Time without timezone      | Time                           |
-| Timestamp with timezone*   | Timestamp with timezone        |
-| Timestamp without timezone | Timestamp without timezone     |
-| Object                     | String (JSON-serialized value) |
-| Array with a declared item type | List of the mapped item type |
-| Array without a declared item type | String (JSON-serialized value) |
-| Union                      | String (JSON-serialized value) |
+| Airbyte type                           | Iceberg type                     |
+|----------------------------------------|----------------------------------|
+| Boolean                                | Boolean                          |
+| Date                                   | Date                             |
+| Integer                                | Long                             |
+| Number                                 | Double (String for primary keys) |
+| String                                 | String                           |
+| Time with timezone*                    | Time                             |
+| Time without timezone                  | Time                             |
+| Timestamp with timezone*               | Timestamp with timezone          |
+| Timestamp without timezone             | Timestamp without timezone       |
+| Object                                 | String (JSON-serialized value)   |
+| Array with a declared item type        | List of the mapped item type     |
+| Array without a declared item type     | String (JSON-serialized value)   |
+| Union                                  | String (JSON-serialized value)   |
 
 *Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
 
