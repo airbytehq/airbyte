@@ -140,7 +140,7 @@ class SftpClient:
         mode = self.host_key_checking.get("mode", self.HOST_KEY_AUTO_ADD)
         if mode == self.HOST_KEY_AUTO_ADD:
             ssh.load_system_host_keys()
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            ssh.set_missing_host_key_policy(paramiko.WarningPolicy())
         elif mode == self.HOST_KEY_STRICT:
             key_type = self.host_key_checking.get("host_key_type")
             key_str = self.host_key_checking.get("host_key")
