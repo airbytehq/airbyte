@@ -14,7 +14,7 @@ This page contains the setup guide and reference information for the [Linear](ht
 - One of the following authentication methods:
   - **API Key**: A Linear personal API key.
   - **OAuth 2.0 (Airbyte Cloud)**: A Linear workspace administrator account with permission to authorize the required workspace data. Airbyte supplies the OAuth application.
-  - **OAuth 2.0 (Self-managed)**: A Linear OAuth application and its client ID and client secret. You also need a Linear account with permission to authorize the required workspace data.
+  - **OAuth 2.0 (Self-managed)**: A Linear OAuth application and its client ID and client secret. You also need a Linear workspace administrator account with permission to authorize the required workspace data, because the connector installs the app at the workspace level.
 
 ## Setup guide
 
@@ -37,12 +37,18 @@ For more information, see the [Linear GraphQL API documentation](https://linear.
 
 #### OAuth 2.0
 
-1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create an application in Linear under **Settings** > **API** > **Applications**.
-2. For a self-managed deployment, copy the redirect URI shown during the Airbyte OAuth setup and enter it in the application's **Redirect URI** field. Copy the application's client ID and client secret.
+1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
+2. For a self-managed deployment, add the redirect callback URL shown during the Airbyte OAuth setup to the application's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app. Copy the application's client ID and client secret.
 3. In Airbyte, choose **OAuth 2.0**. For self-managed deployments, enter the client ID and client secret from your Linear application, then complete the authorization flow.
-4. The connector requests the `read` and `customer:read` scopes. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns and stores a new refresh token.
+4. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns and stores a new refresh token.
 
-For more information, see the [Linear OAuth 2.0 authentication documentation](https://linear.app/developers/oauth-2-0-authentication).
+The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
+
+If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete Linear's [authorization code flow](https://linear.app/developers/oauth-2-0-authentication) yourself and use the resulting refresh token:
+
+1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&state=<STATE>&scope=read,customer:read&actor=app&prompt=consent` in a browser and approve the app. Generate a random `state` value and verify it on the callback to protect against CSRF. The `prompt=consent` parameter forces Linear to show the consent screen. Linear redirects to your redirect URI with a `code` parameter.
+2. Exchange the code for tokens by sending a form-encoded `POST` request to `https://api.linear.app/oauth/token` with `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`.
+3. Copy the `refresh_token` from the response. The connector uses it to mint access tokens, which Linear expires after 24 hours.
 
 ### Step 2: Configure the Linear connector in Airbyte
 
@@ -85,13 +91,19 @@ The Linear source connector supports the following streams. Streams marked as in
 | `cycles` | Yes | Cycles (sprints) for each team. |
 | `issue_labels` | Yes | Labels that can be applied to issues. |
 | `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
-| `issues` | Yes | Issues in every team, including archived issues. |
+| `issues` | Yes | Issues in every team. |
 | `project_milestones` | Yes | Milestones defined inside projects. |
 | `project_statuses` | No | Status definitions for projects. |
 | `projects` | Yes | Projects across all teams. |
 | `teams` | Yes | Teams in your Linear workspace. |
 | `users` | Yes | Users in your Linear workspace. |
 | `workflow_states` | Yes | Workflow states (for example, Todo, In Progress, Done) defined by each team. |
+
+Starting with connector version `0.2.16`, new connections pre-select `issues`, `projects`, `teams`, `users`, `comments`, `cycles`, `issue_labels`, and `workflow_states`. Enable the other streams yourself if you need them. Existing connections keep the streams you already selected.
+
+### Customer Requests streams
+
+The `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams read Linear's Customer Requests data. An admin has to enable Customer Requests in [Workspace Settings > Customer requests](https://linear.app/settings/customers) before your workspace has any of this data to sync, so these streams return no records in workspaces where the feature is off. Customer tiers are also defined in those settings, so the `customer_tiers` stream stays empty until someone configures tiers. See Linear's [Customer Requests documentation](https://linear.app/docs/customer-requests) for details.
 
 ## Limitations and troubleshooting
 
@@ -107,9 +119,16 @@ Linear enforces three types of rate limits:
 
 Workspace-level OAuth applications receive dynamically increased limits based on the number of paid seats. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
 
+### Archived records aren't synced
+
+Linear's GraphQL API hides archived records from paginated responses unless the caller requests them explicitly, and the connector doesn't request them. As a result:
+
+- Archived issues, projects, cycles, comments, and other archived entities never appear in your synced data. The `archivedAt` field is present in the schemas but is `null` for every synced record.
+- When a record you already synced is archived or deleted in Linear, it stops appearing in the API response, and Airbyte doesn't delete rows it already synced, so whatever was written stays in the destination. If you need to detect these records, compare a full refresh of the stream against your destination table.
+
 ### Data availability
 
-The connector retrieves data that the authenticated user has access to. If you cannot see certain teams, projects, or issues in your synced data, verify that your Linear account has the appropriate permissions.
+The connector retrieves only the data its credentials can see. With API key authentication, that's everything the key's owner can see in Linear. With OAuth, it's what the installed app can see in the workspace. If teams, projects, or issues are missing from your synced data, check those permissions in Linear first.
 
 ## IP allow list
 
