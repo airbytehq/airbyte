@@ -134,6 +134,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.20 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Persist rotated OAuth refresh tokens so OAuth connections keep working after the first token refresh. |
 | 0.2.19 | 2026-08-21 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Make OAuth 2.0 the default authentication method in the connector setup form |
 | 0.2.18 | 2026-08-21 | [84948](https://github.com/airbytehq/airbyte/pull/84948) | Clarify authentication field titles and descriptions in the connector setup form. |
 | 0.2.17 | 2026-08-21 | [84951](https://github.com/airbytehq/airbyte/pull/84951) | Enable acceptance test suites with GSM test secrets for API key and OAuth |

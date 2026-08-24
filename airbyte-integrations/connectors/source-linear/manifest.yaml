@@ -1425,6 +1425,14 @@ definitions:
           token_refresh_endpoint: "https://api.linear.app/oauth/token"
           access_token_name: access_token
           grant_type: refresh_token
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path: ["credentials", "access_token"]
+            refresh_token_config_path: ["credentials", "refresh_token"]
+            token_expiry_date_config_path: ["credentials", "token_expiry_date"]
+            refresh_token_error_status_codes: [400, 401]
+            refresh_token_error_key: "error"
+            refresh_token_error_values: ["invalid_grant", "invalid_request"]
 
 streams:
   - $ref: "#/definitions/streams/issues"
@@ -1521,6 +1529,22 @@ spec:
                   connector uses it to refresh expired access tokens.
                 airbyte_secret: true
                 order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The access token that Linear returns when the connector
+                  refreshes your OAuth 2.0 credentials.
+                airbyte_secret: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: >-
+                  The date and time when the current OAuth 2.0 access token
+                  expires.
+                format: date-time
+                order: 5
           - type: object
             title: API Key
             required:

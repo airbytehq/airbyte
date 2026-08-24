@@ -4,6 +4,12 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+## Rotating Refresh Tokens
+
+Linear's OAuth implementation rotates refresh tokens on every exchange. Each successful access-token refresh invalidates the old refresh token and returns a replacement. The connector uses `refresh_token_updater` to persist the replacement token back to the connection configuration.
+
+**Why this matters:** If a refresh succeeds but the replacement token is not persisted, subsequent refreshes will fail and the connection will require re-authentication.
+
 ## Incremental Stream Considerations
 
 The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: { gte: ... } }` on most entity types, which the connector uses extensively — 12 streams are already incremental (added in PR airbytehq/airbyte#76429). The remaining 4 FR parent streams are config-style lookups (`customer_statuses`, `customer_tiers`, `project_statuses`) and `issue_relations` which lacks a documented `updatedAt` filter in the GraphQL schema.
