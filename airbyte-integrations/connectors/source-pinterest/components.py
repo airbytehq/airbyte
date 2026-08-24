@@ -9,12 +9,14 @@ from typing import Any, Iterable, List, Mapping, Optional, Union
 
 import requests
 
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.partition_routers.partition_router import PartitionRouter
 from airbyte_cdk.sources.declarative.types import Record
 from airbyte_cdk.sources.streams.http.error_handlers import BackoffStrategy
 from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 PINTEREST_STATUS_CHUNK_SIZE = 6
@@ -23,6 +25,36 @@ STATUS_CHUNK_PARTITION_KEYS = (
     "ad_group_statuses_chunk",
     "ad_statuses_chunk",
 )
+# Splitting a status filter into multiple requests is only correct when every report row
+# belongs to exactly one entity of the filtered dimension - otherwise the same aggregated
+# row comes back from several chunks with partial metric sums. A filter may therefore only
+# be chunked when the report level is at or below the filtered dimension.
+CHUNKABLE_LEVELS_PER_STATUS_FIELD = {
+    "campaign_statuses": (
+        "CAMPAIGN",
+        "CAMPAIGN_TARGETING",
+        "AD_GROUP",
+        "AD_GROUP_TARGETING",
+        "PIN_PROMOTION",
+        "PIN_PROMOTION_TARGETING",
+        "KEYWORD",
+        "PRODUCT_GROUP",
+        "PRODUCT_GROUP_TARGETING",
+    ),
+    "ad_group_statuses": (
+        "AD_GROUP",
+        "AD_GROUP_TARGETING",
+        "PIN_PROMOTION",
+        "PIN_PROMOTION_TARGETING",
+        "KEYWORD",
+        "PRODUCT_GROUP",
+        "PRODUCT_GROUP_TARGETING",
+    ),
+    "ad_statuses": (
+        "PIN_PROMOTION",
+        "PIN_PROMOTION_TARGETING",
+    ),
+}
 
 
 class AdAccountRecordExtractor(RecordExtractor):
@@ -68,19 +100,54 @@ class PinterestAnalyticsBackoffStrategy(BackoffStrategy):
 
 @dataclass
 class StatusChunkPartitionRouter(PartitionRouter):
+    """Chunk custom report status filters into groups of <=6 for Pinterest API compliance.
+
+    Pinterest's async report API limits each status filter field to at most 6 values per
+    request. This router splits larger selections into chunks and yields one StreamSlice per
+    cartesian combination of chunks; the CDK's CartesianProductStreamSlicer composes these
+    with the ad-account SubstreamPartitionRouter so each ad-account x status-chunk pair is
+    fetched independently. `level` is the report level from the same custom report config;
+    it gates which filters may be chunked (see CHUNKABLE_LEVELS_PER_STATUS_FIELD).
+    """
+
     config: Config
     parameters: InitVar[Mapping[str, Any]]
     campaign_statuses: Optional[List[str]] = field(default=None)
     ad_group_statuses: Optional[List[str]] = field(default=None)
     ad_statuses: Optional[List[str]] = field(default=None)
+    level: Optional[str] = field(default=None)
 
     @staticmethod
     def _chunk(values: Optional[List[str]]) -> List[Optional[List[str]]]:
+        # Sorted so the same status SET always yields the same chunks (and therefore the
+        # same partition keys) regardless of config array order - reordering values in the
+        # UI must not orphan per-partition cursors. Returns [None] for an unconfigured
+        # field so the cartesian product still yields exactly one iteration for it.
         if not values:
             return [None]
+        values = sorted(values)
         return [values[i : i + PINTEREST_STATUS_CHUNK_SIZE] for i in range(0, len(values), PINTEREST_STATUS_CHUNK_SIZE)]
 
+    def _validate_chunkable_levels(self) -> None:
+        if not self.level:
+            return
+        for field_name, values in (
+            ("campaign_statuses", self.campaign_statuses),
+            ("ad_group_statuses", self.ad_group_statuses),
+            ("ad_statuses", self.ad_statuses),
+        ):
+            if values and len(values) > PINTEREST_STATUS_CHUNK_SIZE and self.level not in CHUNKABLE_LEVELS_PER_STATUS_FIELD[field_name]:
+                message = (
+                    f"Custom report: {len(values)} {field_name} values require splitting into multiple API requests, "
+                    f"but at report level {self.level} the same aggregated rows would be returned by several requests "
+                    f"with partial metric sums. Select at most {PINTEREST_STATUS_CHUNK_SIZE} {field_name} values, or use "
+                    f"a report level at or below the filtered dimension "
+                    f"({', '.join(CHUNKABLE_LEVELS_PER_STATUS_FIELD[field_name])})."
+                )
+                raise AirbyteTracedException(message=message, internal_message=message, failure_type=FailureType.config_error)
+
     def stream_slices(self) -> Iterable[StreamSlice]:
+        self._validate_chunkable_levels()
         for campaign_chunk, ad_group_chunk, ad_chunk in itertools.product(
             self._chunk(self.campaign_statuses),
             self._chunk(self.ad_group_statuses),
@@ -145,6 +212,9 @@ class CustomReportStatusChunkStateMigration(StateMigration):
     start date.
     """
 
+    # These bare annotations are load-bearing: create_custom_component filters injected
+    # kwargs to get_type_hints(cls), so removing them would stop config/status values
+    # from reaching __init__. Do not "clean them up".
     config: Config
     campaign_statuses: Optional[List[str]]
     ad_group_statuses: Optional[List[str]]
@@ -172,7 +242,7 @@ class CustomReportStatusChunkStateMigration(StateMigration):
             if not isinstance(entry, Mapping):
                 continue
             partition = entry.get("partition")
-            if not isinstance(partition, Mapping):
+            if not isinstance(partition, Mapping) or "cursor" not in entry:
                 continue
             if "id" in partition and not any(key in partition for key in STATUS_CHUNK_PARTITION_KEYS):
                 legacy_entries.append(entry)
@@ -196,20 +266,17 @@ class CustomReportStatusChunkStateMigration(StateMigration):
                 ad_statuses=self._ad_statuses,
             ).stream_slices()
         ]
+        legacy_entries = self._legacy_partition_entries(stream_state)
         migrated_states: List[Mapping[str, Any]] = []
         for entry in stream_state.get("states", []):
-            if not isinstance(entry, Mapping):
-                migrated_states.append(entry)
-                continue
-            partition = entry.get("partition")
-            if not isinstance(partition, Mapping) or any(key in partition for key in STATUS_CHUNK_PARTITION_KEYS):
+            if entry not in legacy_entries:
                 migrated_states.append(entry)
                 continue
             for chunk_partition in chunk_partitions:
                 migrated_states.append(
                     {
-                        "partition": {**partition, **chunk_partition},
-                        "cursor": entry.get("cursor"),
+                        "partition": {**entry["partition"], **chunk_partition},
+                        "cursor": entry["cursor"],
                     }
                 )
         migrated_state = dict(stream_state)

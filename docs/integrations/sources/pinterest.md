@@ -236,9 +236,14 @@ syncs.
 Custom report status filters are sent in chunks of at most six values per dimension. Selecting
 many campaign, ad group, and ad statuses multiplies async report-creation requests by
 `ceil(campaign_statuses / 6) × ceil(ad_group_statuses / 6) × ceil(ad_statuses / 6)` for each
-account and date window. The connector retries those calls with
-`PinterestAnalyticsBackoffStrategy` when Pinterest returns `Retry after N seconds`. If you hit
-analytics rate limits, select fewer statuses or lower concurrent workers.
+account and date window (at most 8x, since each field has eight possible values). Every entity
+has exactly one status, so chunked requests return disjoint row sets - no rows are duplicated
+or lost. Selecting more than six values for a filter requires the report level to be at or
+below the filtered dimension (for example, more than six ad statuses require a
+`PIN_PROMOTION`-level report); at coarser levels the same aggregated rows would be returned by
+several chunks, so the connector rejects such configurations. The connector retries
+rate-limited report calls automatically. If you hit analytics rate limits, select fewer
+statuses or lower concurrent workers.
 
 ## IP allow list
 
