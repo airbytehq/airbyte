@@ -368,11 +368,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
         }
     }
 
-    /**
-     * Determines if we can directly upsert without additional processing. The existence of a
-     * temporary table does not indicate the state of the real table, so this always checks the real
-     * table's generation directly.
-     */
+    /** Determines if we can directly upsert without additional processing */
     private suspend fun shouldUpsertDirectly(): Boolean {
         return when {
             // Case 1: Real table doesn't exist yet
