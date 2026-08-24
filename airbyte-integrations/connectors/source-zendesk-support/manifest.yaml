@@ -145,7 +145,11 @@ definitions:
     datetime_format: "%s"
     cursor_field: "{{ parameters.get('cursor_field',  'updated_at') }}"
     start_datetime:
-      datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
+      # `strftime('%s')` is not used to render epochs anywhere in this manifest: the directive is
+      # resolved by the C library, which ignores the datetime's tzinfo and applies the host's
+      # timezone, so it silently shifts the value by the host's UTC offset. `.timestamp()` is
+      # timezone-correct. See the CDK's DatetimeParser, which avoids `%s` for the same reason.
+      datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else (now_utc() - duration('P730D')).timestamp() | int }}"
     start_time_option:
       inject_into: request_parameter
       field_name: "{{ parameters['cursor_filter'] }}"
@@ -1246,10 +1250,12 @@ definitions:
       datetime_format: "%s"
       cursor_field: "updated_at"
       lookback_window: "P{{ config.get('ticket_search_lookback_days', 0) }}D"
+      # Epochs are rendered with `.timestamp()`, never `strftime('%s')` — see the note on
+      # `cursor_incremental_sync.start_datetime`.
       start_datetime:
-        datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else day_delta(-730, '%s') }}"
+        datetime: "{{ timestamp(config.get('start_date')) | int if config.get('start_date') else (now_utc() - duration('P730D')).timestamp() | int }}"
       end_datetime:
-        datetime: "{{ now_utc().strftime('%s') }}"
+        datetime: "{{ now_utc().timestamp() | int }}"
       step: "P30D"
       cursor_granularity: "PT1S"
     schema_loader:
