@@ -7,7 +7,7 @@ import io
 
 import paramiko
 import pytest
-from destination_sftp_json.client import HostKeyError, SftpClient, SshKeyError, _load_host_key, _load_private_key
+from destination_sftp_json.client import HostKeyError, SftpClient, SshKeyError, _TrustOnFirstUsePolicy, _load_host_key, _load_private_key
 
 
 @pytest.fixture
@@ -70,7 +70,7 @@ def test_default_host_key_checking_is_auto_add(client):
 def test_auto_add_policy_used_by_default(client):
     ssh = paramiko.SSHClient()
     client._apply_host_key_policy(ssh)
-    assert isinstance(ssh._policy, paramiko.WarningPolicy)
+    assert isinstance(ssh._policy, _TrustOnFirstUsePolicy)
 
 
 def test_strict_policy_pins_host_key_and_rejects_unknown(password_credentials, host_key):
