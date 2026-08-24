@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import freezegun
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -17,8 +18,10 @@ from .response_builder import (
     ErrorResponseBuilder,
     SideConversationsRecordBuilder,
     SideConversationsResponseBuilder,
+    TicketsRecordBuilder,
+    TicketsResponseBuilder,
 )
-from .utils import datetime_to_string, read_stream, string_to_datetime
+from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
 
 
 _NOW = ab_datetime_now()
@@ -214,3 +217,77 @@ class TestSideConversationsErrorHandling(TestCase):
 
         # Verify no records returned (error was ignored, not retried endlessly)
         assert len(output.records) == 0
+
+    @HttpMocker()
+    def test_given_403_for_one_ticket_when_read_then_skip_partition_and_continue(self, http_mocker):
+        api_token_authenticator = self._get_authenticator(self._config)
+        start_date = string_to_datetime(self._config["start_date"])
+        generated_timestamp = int(start_date.timestamp())
+        inaccessible_ticket = TicketsRecordBuilder.tickets_record().with_id(1001).with_cursor(generated_timestamp)
+        accessible_ticket = TicketsRecordBuilder.tickets_record().with_id(1002).with_cursor(generated_timestamp + 1)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(generated_timestamp).build(),
+            TicketsResponseBuilder.tickets_response().with_record(inaccessible_ticket).with_record(accessible_ticket).build(),
+        )
+        valid_record = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("valid-after-403")
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(days=1))))
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, 1001).with_per_page(100).build(),
+            ErrorResponseBuilder.response_with_status(403).build(),
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, 1002).with_per_page(100).build(),
+            SideConversationsResponseBuilder.side_conversations_response().with_record(valid_record).build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.full_refresh, self._config)
+
+        assert [record.record.data["id"] for record in output.records] == ["valid-after-403"]
+
+    @HttpMocker()
+    def test_given_404_for_one_ticket_when_read_then_skip_partition_and_continue(self, http_mocker):
+        api_token_authenticator = self._get_authenticator(self._config)
+        start_date = string_to_datetime(self._config["start_date"])
+        generated_timestamp = int(start_date.timestamp())
+        deleted_ticket = TicketsRecordBuilder.tickets_record().with_id(2001).with_cursor(generated_timestamp)
+        accessible_ticket = TicketsRecordBuilder.tickets_record().with_id(2002).with_cursor(generated_timestamp + 1)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.tickets_endpoint(api_token_authenticator).with_start_time(generated_timestamp).build(),
+            TicketsResponseBuilder.tickets_response().with_record(deleted_ticket).with_record(accessible_ticket).build(),
+        )
+        valid_record = (
+            SideConversationsRecordBuilder.side_conversations_record()
+            .with_id("valid-after-404")
+            .with_field(FieldPath("updated_at"), datetime_to_string(start_date.add(timedelta(days=1))))
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, 2001).with_per_page(100).build(),
+            ErrorResponseBuilder.response_with_status(404).build(),
+        )
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, 2002).with_per_page(100).build(),
+            SideConversationsResponseBuilder.side_conversations_response().with_record(valid_record).build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.full_refresh, self._config)
+
+        assert [record.record.data["id"] for record in output.records] == ["valid-after-404"]
+
+    @HttpMocker()
+    def test_given_401_for_one_ticket_when_read_then_fail_stream(self, http_mocker):
+        api_token_authenticator = self._get_authenticator(self._config)
+        start_date = string_to_datetime(self._config["start_date"])
+        ticket = given_tickets(http_mocker, start_date, api_token_authenticator).build()
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.side_conversations_endpoint(api_token_authenticator, ticket["id"]).with_per_page(100).build(),
+            ErrorResponseBuilder.response_with_status(401).build(),
+        )
+
+        output = read_stream("side_conversations", SyncMode.full_refresh, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("401" in message for message in error_logs)
