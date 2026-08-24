@@ -994,9 +994,9 @@ schemas:
                 - "null"
                 - boolean
             slot:
-                type:
-                  - "null"
-                  - integer
+              type:
+                - "null"
+                - integer
       base_experience:
         type:
           - "null"
