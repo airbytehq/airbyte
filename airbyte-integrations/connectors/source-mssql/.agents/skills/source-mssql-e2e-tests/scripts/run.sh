@@ -132,7 +132,7 @@ if [[ "$TEST_VERSION" == "dev" ]] && { [[ "$BUILD" == true ]] \
   || ! docker image inspect "airbyte/$CONNECTOR:dev" >/dev/null 2>&1; }; then
   REPO_ROOT="$(git -C "$SKILL_DIR" rev-parse --show-toplevel)"
   echo "[run] building airbyte/$CONNECTOR:dev from the current checkout" >&2
-  "$REPO_ROOT/gradlew" ":airbyte-integrations:connectors:$CONNECTOR:airbyteDocker" \
+  "$REPO_ROOT/gradlew" ":airbyte-integrations:connectors:$CONNECTOR:dockerBuildx" \
     --configure-on-demand
 fi
 
@@ -206,6 +206,17 @@ for cmd in "${COMMANDS[@]}"; do
       run_step "$cmd" "--config-path=$WORKING_CONFIG"
       ;;
     read)
+      # A derived catalog needs a discover that produced one. When discover
+      # already failed in this sweep — which is the correct outcome for, say,
+      # an invalid config — read did not run, so it is neither a verdict nor
+      # an infrastructure failure. An explicit --catalog needs no discover,
+      # so that case still runs.
+      if [[ -z "$CATALOG" && -n "${STATUS[discover]:-}" \
+        && "${STATUS[discover]}" != pass ]]; then
+        STATUS[read]=skipped
+        NOTE[read]="discover did not produce a catalog"
+        continue
+      fi
       # The workflow generates the configured catalog from the discover
       # step's own output rather than running a second discover, and
       # prefers the target's messages. Derive it mechanically for the
@@ -263,6 +274,7 @@ for cmd in spec check discover read; do
     "")       [[ "$COMMAND" == all ]] && cell="_(skipped)_" ;;
     pass)     cell="PASS" ;;
     fail)     cell="FAIL"; ALL_PASSED=false ;;
+    skipped)  cell="SKIPPED" ;;
     internal) cell="ERROR"; ALL_PASSED=false; INTERNAL_FAILURE=true ;;
   esac
   [[ -z "$cell" ]] && continue
