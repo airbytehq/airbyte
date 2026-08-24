@@ -74,11 +74,13 @@ def _mount_timeout_adapter(requester: Any) -> None:
 REPORT_MAPPING = {
     "account_performance_report": "customer",
     "ad_group_ad_legacy": "ad_group_ad",
+    "ad_performance": "ad_group_ad",
     "ad_group_bidding_strategy": "ad_group",
     "ad_listing_group_criterion": "ad_group_criterion",
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
     "geographic_view_with_metrics": "geographic_view",
+    "geo_performance": "geographic_view",
     "service_accounts": "customer",
 }
 
@@ -1108,8 +1110,8 @@ class CustomGAQuerySchemaLoader(SchemaLoader):
         except ValueError:
             raise AirbyteTracedException(
                 failure_type=FailureType.config_error,
-                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
-                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v20/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v20/query_validator",
+                internal_message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
+                message=f"The provided query is invalid: {query}. Please refer to the Google Ads API documentation for the correct syntax: https://developers.google.com/google-ads/api/fields/v23/overview and test validate your query using the Google Ads Query Builder: https://developers.google.com/google-ads/api/fields/v23/query_validator",
             )
 
 

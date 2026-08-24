@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsAnyCondition"></a>
@@ -107,7 +107,7 @@ Classes
 <a id="AdGroupsContainsCondition"></a>
 
 `AdGroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -116,6 +116,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdGroupsEndswithCondition"></a>
+
+`AdGroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdGroupsEqCondition"></a>
@@ -260,20 +274,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdGroupsLikeCondition"></a>
-
-`AdGroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdGroupsListParams"></a>
 
 `AdGroupsListParams(*args, **kwargs)`
@@ -355,7 +355,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdGroupsOrCondition"></a>
@@ -377,7 +377,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportsDailyAndCondition"></a>
@@ -399,7 +399,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportsDailyAnyCondition"></a>
@@ -582,7 +582,7 @@ Classes
 <a id="AdGroupsReportsDailyContainsCondition"></a>
 
 `AdGroupsReportsDailyContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -591,6 +591,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdGroupsReportsDailyEndswithCondition"></a>
+
+`AdGroupsReportsDailyEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStringFilter`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportsDailyEqCondition"></a>
@@ -840,20 +854,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStringFilter`
     :   The type of the None singleton.
 
-<a id="AdGroupsReportsDailyLikeCondition"></a>
-
-`AdGroupsReportsDailyLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdGroupsReportsDailyListParams"></a>
 
 `AdGroupsReportsDailyListParams(*args, **kwargs)`
@@ -956,7 +956,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportsDailyOrCondition"></a>
@@ -978,7 +978,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsReportsDailySearchFilter"></a>
@@ -1147,7 +1147,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailySortFilter]`
@@ -1308,10 +1308,24 @@ Classes
     `video_watched_6s: Literal['asc', 'desc']`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdGroupsReportsDailyStartswithCondition"></a>
+
+`AdGroupsReportsDailyStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsReportsDailyStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupsReportsDailyStringFilter"></a>
 
 `AdGroupsReportsDailyStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1524,7 +1538,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsSortFilter]`
@@ -1580,10 +1594,24 @@ Classes
     `secondary_status: Literal['asc', 'desc']`
     :   The secondary status of the ad group
 
+<a id="AdGroupsStartswithCondition"></a>
+
+`AdGroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdGroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupsStringFilter"></a>
 
 `AdGroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1649,7 +1677,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsAnyCondition"></a>
@@ -1733,7 +1761,7 @@ Classes
 <a id="AdsContainsCondition"></a>
 
 `AdsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1742,6 +1770,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdsEndswithCondition"></a>
+
+`AdsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStringFilter`
     :   The type of the None singleton.
 
 <a id="AdsEqCondition"></a>
@@ -1892,20 +1934,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStringFilter`
     :   The type of the None singleton.
 
-<a id="AdsLikeCondition"></a>
-
-`AdsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdsListParams"></a>
 
 `AdsListParams(*args, **kwargs)`
@@ -1987,7 +2015,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdsOrCondition"></a>
@@ -2009,7 +2037,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsReportsDailyAndCondition"></a>
@@ -2031,7 +2059,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsReportsDailyAnyCondition"></a>
@@ -2223,7 +2251,7 @@ Classes
 <a id="AdsReportsDailyContainsCondition"></a>
 
 `AdsReportsDailyContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2232,6 +2260,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsDailyEndswithCondition"></a>
+
+`AdsReportsDailyEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStringFilter`
     :   The type of the None singleton.
 
 <a id="AdsReportsDailyEqCondition"></a>
@@ -2490,20 +2532,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStringFilter`
     :   The type of the None singleton.
 
-<a id="AdsReportsDailyLikeCondition"></a>
-
-`AdsReportsDailyLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdsReportsDailyListParams"></a>
 
 `AdsReportsDailyListParams(*args, **kwargs)`
@@ -2606,7 +2634,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdsReportsDailyOrCondition"></a>
@@ -2628,7 +2656,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsReportsDailySearchFilter"></a>
@@ -2806,7 +2834,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailySortFilter]`
@@ -2976,10 +3004,24 @@ Classes
     `video_watched_6s: Literal['asc', 'desc']`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdsReportsDailyStartswithCondition"></a>
+
+`AdsReportsDailyStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsDailyStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdsReportsDailyStringFilter"></a>
 
 `AdsReportsDailyStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3140,6 +3182,2275 @@ Classes
     `video_watched_6s: str`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="AdsReportsHourlyAndCondition"></a>
+
+`AdsReportsHourlyAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyAnyCondition"></a>
+
+`AdsReportsHourlyAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyAnyValueFilter"></a>
+
+`AdsReportsHourlyAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: Any`
+    :   The unique identifier for the ad.
+
+    `ad_name: Any`
+    :   The name of the ad.
+
+    `ad_text: Any`
+    :   The text content of the ad.
+
+    `adgroup_id: Any`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: Any`
+    :   The name of the ad group.
+
+    `app_install: Any`
+    :   Number of app installations.
+
+    `average_video_play: Any`
+    :   Average video play duration.
+
+    `average_video_play_per_user: Any`
+    :   Average video play duration per user.
+
+    `campaign_id: Any`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: Any`
+    :   The name of the marketing campaign.
+
+    `clicks: Any`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: Any`
+    :   Number of clicks on the music disc.
+
+    `comments: Any`
+    :   Number of comments.
+
+    `conversion: Any`
+    :   Number of conversions.
+
+    `conversion_rate: Any`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: Any`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: Any`
+    :   Cost per conversion.
+
+    `cost_per_result: Any`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: Any`
+    :   Cost per secondary goal result.
+
+    `cpc: Any`
+    :   Cost per click.
+
+    `cpm: Any`
+    :   Cost per thousand impressions.
+
+    `ctr: Any`
+    :   Click-through rate.
+
+    `follows: Any`
+    :   Number of follows.
+
+    `frequency: Any`
+    :   Average number of times each person saw the ad.
+
+    `impressions: Any`
+    :   Number of times the ad was displayed.
+
+    `likes: Any`
+    :   Number of likes.
+
+    `placement_type: Any`
+    :   Type of ad placement.
+
+    `profile_visits: Any`
+    :   Number of profile visits.
+
+    `reach: Any`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: Any`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: Any`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: Any`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: Any`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: Any`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: Any`
+    :   Real-time cost per result.
+
+    `real_time_result: Any`
+    :   Real-time results.
+
+    `real_time_result_rate: Any`
+    :   Real-time result rate.
+
+    `result: Any`
+    :   Number of results.
+
+    `result_rate: Any`
+    :   Rate of results.
+
+    `secondary_goal_result: Any`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: Any`
+    :   Rate of secondary goal results.
+
+    `shares: Any`
+    :   Number of shares.
+
+    `spend: Any`
+    :   Total amount of money spent.
+
+    `stat_time_hour: Any`
+    :   The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+
+    `video_play_actions: Any`
+    :   Number of video play actions.
+
+    `video_views_p100: Any`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: Any`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: Any`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: Any`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: Any`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: Any`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsHourlyContainsCondition"></a>
+
+`AdsReportsHourlyContainsCondition(*args, **kwargs)`
+:   Literal case-insensitive substring on scalar fields or exact array membership.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyEndswithCondition"></a>
+
+`AdsReportsHourlyEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyEqCondition"></a>
+
+`AdsReportsHourlyEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlySearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyFuzzyCondition"></a>
+
+`AdsReportsHourlyFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyGtCondition"></a>
+
+`AdsReportsHourlyGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlySearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyGteCondition"></a>
+
+`AdsReportsHourlyGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlySearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyInCondition"></a>
+
+`AdsReportsHourlyInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyInFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyInFilter"></a>
+
+`AdsReportsHourlyInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: list[int]`
+    :   The unique identifier for the ad.
+
+    `ad_name: list[str]`
+    :   The name of the ad.
+
+    `ad_text: list[str]`
+    :   The text content of the ad.
+
+    `adgroup_id: list[int]`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: list[str]`
+    :   The name of the ad group.
+
+    `app_install: list[float]`
+    :   Number of app installations.
+
+    `average_video_play: list[float]`
+    :   Average video play duration.
+
+    `average_video_play_per_user: list[float]`
+    :   Average video play duration per user.
+
+    `campaign_id: list[int]`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: list[str]`
+    :   The name of the marketing campaign.
+
+    `clicks: list[str]`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: list[float]`
+    :   Number of clicks on the music disc.
+
+    `comments: list[float]`
+    :   Number of comments.
+
+    `conversion: list[str]`
+    :   Number of conversions.
+
+    `conversion_rate: list[str]`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: list[str]`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: list[str]`
+    :   Cost per conversion.
+
+    `cost_per_result: list[str]`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: list[str]`
+    :   Cost per secondary goal result.
+
+    `cpc: list[str]`
+    :   Cost per click.
+
+    `cpm: list[str]`
+    :   Cost per thousand impressions.
+
+    `ctr: list[str]`
+    :   Click-through rate.
+
+    `follows: list[float]`
+    :   Number of follows.
+
+    `frequency: list[str]`
+    :   Average number of times each person saw the ad.
+
+    `impressions: list[str]`
+    :   Number of times the ad was displayed.
+
+    `likes: list[float]`
+    :   Number of likes.
+
+    `placement_type: list[str]`
+    :   Type of ad placement.
+
+    `profile_visits: list[float]`
+    :   Number of profile visits.
+
+    `reach: list[str]`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: list[float]`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: list[float]`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: list[str]`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: list[str]`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: list[str]`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: list[str]`
+    :   Real-time cost per result.
+
+    `real_time_result: list[str]`
+    :   Real-time results.
+
+    `real_time_result_rate: list[str]`
+    :   Real-time result rate.
+
+    `result: list[str]`
+    :   Number of results.
+
+    `result_rate: list[str]`
+    :   Rate of results.
+
+    `secondary_goal_result: list[str]`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: list[str]`
+    :   Rate of secondary goal results.
+
+    `shares: list[float]`
+    :   Number of shares.
+
+    `spend: list[str]`
+    :   Total amount of money spent.
+
+    `stat_time_hour: list[str]`
+    :   The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+
+    `video_play_actions: list[float]`
+    :   Number of video play actions.
+
+    `video_views_p100: list[float]`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: list[float]`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: list[float]`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: list[float]`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: list[float]`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: list[float]`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsHourlyKeywordCondition"></a>
+
+`AdsReportsHourlyKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyListParams"></a>
+
+`AdsReportsHourlyListParams(*args, **kwargs)`
+:   Parameters for ads_reports_hourly.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `advertiser_id: str`
+    :   The type of the None singleton.
+
+    `data_level: str`
+    :   The type of the None singleton.
+
+    `dimensions: str`
+    :   The type of the None singleton.
+
+    `end_date: str`
+    :   The type of the None singleton.
+
+    `metrics: str`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
+
+    `page_size: int`
+    :   The type of the None singleton.
+
+    `report_type: str`
+    :   The type of the None singleton.
+
+    `service_type: str`
+    :   The type of the None singleton.
+
+    `start_date: str`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyLtCondition"></a>
+
+`AdsReportsHourlyLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlySearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyLteCondition"></a>
+
+`AdsReportsHourlyLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlySearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyNeqCondition"></a>
+
+`AdsReportsHourlyNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlySearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyNotCondition"></a>
+
+`AdsReportsHourlyNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAnyCondition`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyOrCondition"></a>
+
+`AdsReportsHourlyOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlySearchFilter"></a>
+
+`AdsReportsHourlySearchFilter(*args, **kwargs)`
+:   Available fields for filtering ads_reports_hourly search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: int | None`
+    :   The unique identifier for the ad.
+
+    `ad_name: str | None`
+    :   The name of the ad.
+
+    `ad_text: str | None`
+    :   The text content of the ad.
+
+    `adgroup_id: int | None`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str | None`
+    :   The name of the ad group.
+
+    `app_install: float | None`
+    :   Number of app installations.
+
+    `average_video_play: float | None`
+    :   Average video play duration.
+
+    `average_video_play_per_user: float | None`
+    :   Average video play duration per user.
+
+    `campaign_id: int | None`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str | None`
+    :   The name of the marketing campaign.
+
+    `clicks: str | None`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: float | None`
+    :   Number of clicks on the music disc.
+
+    `comments: float | None`
+    :   Number of comments.
+
+    `conversion: str | None`
+    :   Number of conversions.
+
+    `conversion_rate: str | None`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str | None`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str | None`
+    :   Cost per conversion.
+
+    `cost_per_result: str | None`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str | None`
+    :   Cost per secondary goal result.
+
+    `cpc: str | None`
+    :   Cost per click.
+
+    `cpm: str | None`
+    :   Cost per thousand impressions.
+
+    `ctr: str | None`
+    :   Click-through rate.
+
+    `follows: float | None`
+    :   Number of follows.
+
+    `frequency: str | None`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str | None`
+    :   Number of times the ad was displayed.
+
+    `likes: float | None`
+    :   Number of likes.
+
+    `placement_type: str | None`
+    :   Type of ad placement.
+
+    `profile_visits: float | None`
+    :   Number of profile visits.
+
+    `reach: str | None`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: float | None`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: float | None`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str | None`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str | None`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str | None`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str | None`
+    :   Real-time cost per result.
+
+    `real_time_result: str | None`
+    :   Real-time results.
+
+    `real_time_result_rate: str | None`
+    :   Real-time result rate.
+
+    `result: str | None`
+    :   Number of results.
+
+    `result_rate: str | None`
+    :   Rate of results.
+
+    `secondary_goal_result: str | None`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str | None`
+    :   Rate of secondary goal results.
+
+    `shares: float | None`
+    :   Number of shares.
+
+    `spend: str | None`
+    :   Total amount of money spent.
+
+    `stat_time_hour: str | None`
+    :   The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+
+    `video_play_actions: float | None`
+    :   Number of video play actions.
+
+    `video_views_p100: float | None`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: float | None`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: float | None`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: float | None`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: float | None`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: float | None`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsHourlySearchQuery"></a>
+
+`AdsReportsHourlySearchQuery(*args, **kwargs)`
+:   Search query for ads_reports_hourly entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlySortFilter]`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlySortFilter"></a>
+
+`AdsReportsHourlySortFilter(*args, **kwargs)`
+:   Available fields for sorting ads_reports_hourly search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: Literal['asc', 'desc']`
+    :   The unique identifier for the ad.
+
+    `ad_name: Literal['asc', 'desc']`
+    :   The name of the ad.
+
+    `ad_text: Literal['asc', 'desc']`
+    :   The text content of the ad.
+
+    `adgroup_id: Literal['asc', 'desc']`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: Literal['asc', 'desc']`
+    :   The name of the ad group.
+
+    `app_install: Literal['asc', 'desc']`
+    :   Number of app installations.
+
+    `average_video_play: Literal['asc', 'desc']`
+    :   Average video play duration.
+
+    `average_video_play_per_user: Literal['asc', 'desc']`
+    :   Average video play duration per user.
+
+    `campaign_id: Literal['asc', 'desc']`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: Literal['asc', 'desc']`
+    :   The name of the marketing campaign.
+
+    `clicks: Literal['asc', 'desc']`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: Literal['asc', 'desc']`
+    :   Number of clicks on the music disc.
+
+    `comments: Literal['asc', 'desc']`
+    :   Number of comments.
+
+    `conversion: Literal['asc', 'desc']`
+    :   Number of conversions.
+
+    `conversion_rate: Literal['asc', 'desc']`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: Literal['asc', 'desc']`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: Literal['asc', 'desc']`
+    :   Cost per conversion.
+
+    `cost_per_result: Literal['asc', 'desc']`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: Literal['asc', 'desc']`
+    :   Cost per secondary goal result.
+
+    `cpc: Literal['asc', 'desc']`
+    :   Cost per click.
+
+    `cpm: Literal['asc', 'desc']`
+    :   Cost per thousand impressions.
+
+    `ctr: Literal['asc', 'desc']`
+    :   Click-through rate.
+
+    `follows: Literal['asc', 'desc']`
+    :   Number of follows.
+
+    `frequency: Literal['asc', 'desc']`
+    :   Average number of times each person saw the ad.
+
+    `impressions: Literal['asc', 'desc']`
+    :   Number of times the ad was displayed.
+
+    `likes: Literal['asc', 'desc']`
+    :   Number of likes.
+
+    `placement_type: Literal['asc', 'desc']`
+    :   Type of ad placement.
+
+    `profile_visits: Literal['asc', 'desc']`
+    :   Number of profile visits.
+
+    `reach: Literal['asc', 'desc']`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: Literal['asc', 'desc']`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: Literal['asc', 'desc']`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: Literal['asc', 'desc']`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: Literal['asc', 'desc']`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: Literal['asc', 'desc']`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: Literal['asc', 'desc']`
+    :   Real-time cost per result.
+
+    `real_time_result: Literal['asc', 'desc']`
+    :   Real-time results.
+
+    `real_time_result_rate: Literal['asc', 'desc']`
+    :   Real-time result rate.
+
+    `result: Literal['asc', 'desc']`
+    :   Number of results.
+
+    `result_rate: Literal['asc', 'desc']`
+    :   Rate of results.
+
+    `secondary_goal_result: Literal['asc', 'desc']`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: Literal['asc', 'desc']`
+    :   Rate of secondary goal results.
+
+    `shares: Literal['asc', 'desc']`
+    :   Number of shares.
+
+    `spend: Literal['asc', 'desc']`
+    :   Total amount of money spent.
+
+    `stat_time_hour: Literal['asc', 'desc']`
+    :   The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+
+    `video_play_actions: Literal['asc', 'desc']`
+    :   Number of video play actions.
+
+    `video_views_p100: Literal['asc', 'desc']`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: Literal['asc', 'desc']`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: Literal['asc', 'desc']`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: Literal['asc', 'desc']`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: Literal['asc', 'desc']`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: Literal['asc', 'desc']`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsHourlyStartswithCondition"></a>
+
+`AdsReportsHourlyStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsHourlyStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsHourlyStringFilter"></a>
+
+`AdsReportsHourlyStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: str`
+    :   The unique identifier for the ad.
+
+    `ad_name: str`
+    :   The name of the ad.
+
+    `ad_text: str`
+    :   The text content of the ad.
+
+    `adgroup_id: str`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str`
+    :   The name of the ad group.
+
+    `app_install: str`
+    :   Number of app installations.
+
+    `average_video_play: str`
+    :   Average video play duration.
+
+    `average_video_play_per_user: str`
+    :   Average video play duration per user.
+
+    `campaign_id: str`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str`
+    :   The name of the marketing campaign.
+
+    `clicks: str`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: str`
+    :   Number of clicks on the music disc.
+
+    `comments: str`
+    :   Number of comments.
+
+    `conversion: str`
+    :   Number of conversions.
+
+    `conversion_rate: str`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str`
+    :   Cost per conversion.
+
+    `cost_per_result: str`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str`
+    :   Cost per secondary goal result.
+
+    `cpc: str`
+    :   Cost per click.
+
+    `cpm: str`
+    :   Cost per thousand impressions.
+
+    `ctr: str`
+    :   Click-through rate.
+
+    `follows: str`
+    :   Number of follows.
+
+    `frequency: str`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str`
+    :   Number of times the ad was displayed.
+
+    `likes: str`
+    :   Number of likes.
+
+    `placement_type: str`
+    :   Type of ad placement.
+
+    `profile_visits: str`
+    :   Number of profile visits.
+
+    `reach: str`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: str`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: str`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str`
+    :   Real-time cost per result.
+
+    `real_time_result: str`
+    :   Real-time results.
+
+    `real_time_result_rate: str`
+    :   Real-time result rate.
+
+    `result: str`
+    :   Number of results.
+
+    `result_rate: str`
+    :   Rate of results.
+
+    `secondary_goal_result: str`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str`
+    :   Rate of secondary goal results.
+
+    `shares: str`
+    :   Number of shares.
+
+    `spend: str`
+    :   Total amount of money spent.
+
+    `stat_time_hour: str`
+    :   The hour for which the statistical data is recorded (YYYY-MM-DD HH:MM:SS format).
+
+    `video_play_actions: str`
+    :   Number of video play actions.
+
+    `video_views_p100: str`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: str`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: str`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: str`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: str`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: str`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsLifetimeAndCondition"></a>
+
+`AdsReportsLifetimeAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeAnyCondition"></a>
+
+`AdsReportsLifetimeAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeAnyValueFilter"></a>
+
+`AdsReportsLifetimeAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: Any`
+    :   The unique identifier for the ad.
+
+    `ad_name: Any`
+    :   The name of the ad.
+
+    `ad_text: Any`
+    :   The text content of the ad.
+
+    `adgroup_id: Any`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: Any`
+    :   The name of the ad group.
+
+    `app_install: Any`
+    :   Number of app installations.
+
+    `average_video_play: Any`
+    :   Average video play duration.
+
+    `average_video_play_per_user: Any`
+    :   Average video play duration per user.
+
+    `campaign_id: Any`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: Any`
+    :   The name of the marketing campaign.
+
+    `clicks: Any`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: Any`
+    :   Number of clicks on the music disc.
+
+    `comments: Any`
+    :   Number of comments.
+
+    `conversion: Any`
+    :   Number of conversions.
+
+    `conversion_rate: Any`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: Any`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: Any`
+    :   Cost per conversion.
+
+    `cost_per_result: Any`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: Any`
+    :   Cost per secondary goal result.
+
+    `cpc: Any`
+    :   Cost per click.
+
+    `cpm: Any`
+    :   Cost per thousand impressions.
+
+    `ctr: Any`
+    :   Click-through rate.
+
+    `follows: Any`
+    :   Number of follows.
+
+    `frequency: Any`
+    :   Average number of times each person saw the ad.
+
+    `impressions: Any`
+    :   Number of times the ad was displayed.
+
+    `likes: Any`
+    :   Number of likes.
+
+    `placement_type: Any`
+    :   Type of ad placement.
+
+    `profile_visits: Any`
+    :   Number of profile visits.
+
+    `reach: Any`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: Any`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: Any`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: Any`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: Any`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: Any`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: Any`
+    :   Real-time cost per result.
+
+    `real_time_result: Any`
+    :   Real-time results.
+
+    `real_time_result_rate: Any`
+    :   Real-time result rate.
+
+    `result: Any`
+    :   Number of results.
+
+    `result_rate: Any`
+    :   Rate of results.
+
+    `secondary_goal_result: Any`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: Any`
+    :   Rate of secondary goal results.
+
+    `shares: Any`
+    :   Number of shares.
+
+    `spend: Any`
+    :   Total amount of money spent.
+
+    `video_play_actions: Any`
+    :   Number of video play actions.
+
+    `video_views_p100: Any`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: Any`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: Any`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: Any`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: Any`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: Any`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsLifetimeContainsCondition"></a>
+
+`AdsReportsLifetimeContainsCondition(*args, **kwargs)`
+:   Literal case-insensitive substring on scalar fields or exact array membership.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeEndswithCondition"></a>
+
+`AdsReportsLifetimeEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeEqCondition"></a>
+
+`AdsReportsLifetimeEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeFuzzyCondition"></a>
+
+`AdsReportsLifetimeFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeGtCondition"></a>
+
+`AdsReportsLifetimeGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeGteCondition"></a>
+
+`AdsReportsLifetimeGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeInCondition"></a>
+
+`AdsReportsLifetimeInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeInFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeInFilter"></a>
+
+`AdsReportsLifetimeInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: list[int]`
+    :   The unique identifier for the ad.
+
+    `ad_name: list[str]`
+    :   The name of the ad.
+
+    `ad_text: list[str]`
+    :   The text content of the ad.
+
+    `adgroup_id: list[int]`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: list[str]`
+    :   The name of the ad group.
+
+    `app_install: list[float]`
+    :   Number of app installations.
+
+    `average_video_play: list[float]`
+    :   Average video play duration.
+
+    `average_video_play_per_user: list[float]`
+    :   Average video play duration per user.
+
+    `campaign_id: list[int]`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: list[str]`
+    :   The name of the marketing campaign.
+
+    `clicks: list[str]`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: list[float]`
+    :   Number of clicks on the music disc.
+
+    `comments: list[float]`
+    :   Number of comments.
+
+    `conversion: list[str]`
+    :   Number of conversions.
+
+    `conversion_rate: list[str]`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: list[str]`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: list[str]`
+    :   Cost per conversion.
+
+    `cost_per_result: list[str]`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: list[str]`
+    :   Cost per secondary goal result.
+
+    `cpc: list[str]`
+    :   Cost per click.
+
+    `cpm: list[str]`
+    :   Cost per thousand impressions.
+
+    `ctr: list[str]`
+    :   Click-through rate.
+
+    `follows: list[float]`
+    :   Number of follows.
+
+    `frequency: list[str]`
+    :   Average number of times each person saw the ad.
+
+    `impressions: list[str]`
+    :   Number of times the ad was displayed.
+
+    `likes: list[float]`
+    :   Number of likes.
+
+    `placement_type: list[str]`
+    :   Type of ad placement.
+
+    `profile_visits: list[float]`
+    :   Number of profile visits.
+
+    `reach: list[str]`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: list[float]`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: list[float]`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: list[str]`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: list[str]`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: list[str]`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: list[str]`
+    :   Real-time cost per result.
+
+    `real_time_result: list[str]`
+    :   Real-time results.
+
+    `real_time_result_rate: list[str]`
+    :   Real-time result rate.
+
+    `result: list[str]`
+    :   Number of results.
+
+    `result_rate: list[str]`
+    :   Rate of results.
+
+    `secondary_goal_result: list[str]`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: list[str]`
+    :   Rate of secondary goal results.
+
+    `shares: list[float]`
+    :   Number of shares.
+
+    `spend: list[str]`
+    :   Total amount of money spent.
+
+    `video_play_actions: list[float]`
+    :   Number of video play actions.
+
+    `video_views_p100: list[float]`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: list[float]`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: list[float]`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: list[float]`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: list[float]`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: list[float]`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsLifetimeKeywordCondition"></a>
+
+`AdsReportsLifetimeKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeListParams"></a>
+
+`AdsReportsLifetimeListParams(*args, **kwargs)`
+:   Parameters for ads_reports_lifetime.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `advertiser_id: str`
+    :   The type of the None singleton.
+
+    `data_level: str`
+    :   The type of the None singleton.
+
+    `dimensions: str`
+    :   The type of the None singleton.
+
+    `end_date: str`
+    :   The type of the None singleton.
+
+    `metrics: str`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
+
+    `page_size: int`
+    :   The type of the None singleton.
+
+    `report_type: str`
+    :   The type of the None singleton.
+
+    `service_type: str`
+    :   The type of the None singleton.
+
+    `start_date: str`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeLtCondition"></a>
+
+`AdsReportsLifetimeLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeLteCondition"></a>
+
+`AdsReportsLifetimeLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeNeqCondition"></a>
+
+`AdsReportsLifetimeNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeSearchFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeNotCondition"></a>
+
+`AdsReportsLifetimeNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAnyCondition`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeOrCondition"></a>
+
+`AdsReportsLifetimeOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeSearchFilter"></a>
+
+`AdsReportsLifetimeSearchFilter(*args, **kwargs)`
+:   Available fields for filtering ads_reports_lifetime search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: int | None`
+    :   The unique identifier for the ad.
+
+    `ad_name: str | None`
+    :   The name of the ad.
+
+    `ad_text: str | None`
+    :   The text content of the ad.
+
+    `adgroup_id: int | None`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str | None`
+    :   The name of the ad group.
+
+    `app_install: float | None`
+    :   Number of app installations.
+
+    `average_video_play: float | None`
+    :   Average video play duration.
+
+    `average_video_play_per_user: float | None`
+    :   Average video play duration per user.
+
+    `campaign_id: int | None`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str | None`
+    :   The name of the marketing campaign.
+
+    `clicks: str | None`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: float | None`
+    :   Number of clicks on the music disc.
+
+    `comments: float | None`
+    :   Number of comments.
+
+    `conversion: str | None`
+    :   Number of conversions.
+
+    `conversion_rate: str | None`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str | None`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str | None`
+    :   Cost per conversion.
+
+    `cost_per_result: str | None`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str | None`
+    :   Cost per secondary goal result.
+
+    `cpc: str | None`
+    :   Cost per click.
+
+    `cpm: str | None`
+    :   Cost per thousand impressions.
+
+    `ctr: str | None`
+    :   Click-through rate.
+
+    `follows: float | None`
+    :   Number of follows.
+
+    `frequency: str | None`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str | None`
+    :   Number of times the ad was displayed.
+
+    `likes: float | None`
+    :   Number of likes.
+
+    `placement_type: str | None`
+    :   Type of ad placement.
+
+    `profile_visits: float | None`
+    :   Number of profile visits.
+
+    `reach: str | None`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: float | None`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: float | None`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str | None`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str | None`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str | None`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str | None`
+    :   Real-time cost per result.
+
+    `real_time_result: str | None`
+    :   Real-time results.
+
+    `real_time_result_rate: str | None`
+    :   Real-time result rate.
+
+    `result: str | None`
+    :   Number of results.
+
+    `result_rate: str | None`
+    :   Rate of results.
+
+    `secondary_goal_result: str | None`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str | None`
+    :   Rate of secondary goal results.
+
+    `shares: float | None`
+    :   Number of shares.
+
+    `spend: str | None`
+    :   Total amount of money spent.
+
+    `video_play_actions: float | None`
+    :   Number of video play actions.
+
+    `video_views_p100: float | None`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: float | None`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: float | None`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: float | None`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: float | None`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: float | None`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsLifetimeSearchQuery"></a>
+
+`AdsReportsLifetimeSearchQuery(*args, **kwargs)`
+:   Search query for ads_reports_lifetime entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeSortFilter]`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeSortFilter"></a>
+
+`AdsReportsLifetimeSortFilter(*args, **kwargs)`
+:   Available fields for sorting ads_reports_lifetime search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: Literal['asc', 'desc']`
+    :   The unique identifier for the ad.
+
+    `ad_name: Literal['asc', 'desc']`
+    :   The name of the ad.
+
+    `ad_text: Literal['asc', 'desc']`
+    :   The text content of the ad.
+
+    `adgroup_id: Literal['asc', 'desc']`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: Literal['asc', 'desc']`
+    :   The name of the ad group.
+
+    `app_install: Literal['asc', 'desc']`
+    :   Number of app installations.
+
+    `average_video_play: Literal['asc', 'desc']`
+    :   Average video play duration.
+
+    `average_video_play_per_user: Literal['asc', 'desc']`
+    :   Average video play duration per user.
+
+    `campaign_id: Literal['asc', 'desc']`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: Literal['asc', 'desc']`
+    :   The name of the marketing campaign.
+
+    `clicks: Literal['asc', 'desc']`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: Literal['asc', 'desc']`
+    :   Number of clicks on the music disc.
+
+    `comments: Literal['asc', 'desc']`
+    :   Number of comments.
+
+    `conversion: Literal['asc', 'desc']`
+    :   Number of conversions.
+
+    `conversion_rate: Literal['asc', 'desc']`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: Literal['asc', 'desc']`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: Literal['asc', 'desc']`
+    :   Cost per conversion.
+
+    `cost_per_result: Literal['asc', 'desc']`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: Literal['asc', 'desc']`
+    :   Cost per secondary goal result.
+
+    `cpc: Literal['asc', 'desc']`
+    :   Cost per click.
+
+    `cpm: Literal['asc', 'desc']`
+    :   Cost per thousand impressions.
+
+    `ctr: Literal['asc', 'desc']`
+    :   Click-through rate.
+
+    `follows: Literal['asc', 'desc']`
+    :   Number of follows.
+
+    `frequency: Literal['asc', 'desc']`
+    :   Average number of times each person saw the ad.
+
+    `impressions: Literal['asc', 'desc']`
+    :   Number of times the ad was displayed.
+
+    `likes: Literal['asc', 'desc']`
+    :   Number of likes.
+
+    `placement_type: Literal['asc', 'desc']`
+    :   Type of ad placement.
+
+    `profile_visits: Literal['asc', 'desc']`
+    :   Number of profile visits.
+
+    `reach: Literal['asc', 'desc']`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: Literal['asc', 'desc']`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: Literal['asc', 'desc']`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: Literal['asc', 'desc']`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: Literal['asc', 'desc']`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: Literal['asc', 'desc']`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: Literal['asc', 'desc']`
+    :   Real-time cost per result.
+
+    `real_time_result: Literal['asc', 'desc']`
+    :   Real-time results.
+
+    `real_time_result_rate: Literal['asc', 'desc']`
+    :   Real-time result rate.
+
+    `result: Literal['asc', 'desc']`
+    :   Number of results.
+
+    `result_rate: Literal['asc', 'desc']`
+    :   Rate of results.
+
+    `secondary_goal_result: Literal['asc', 'desc']`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: Literal['asc', 'desc']`
+    :   Rate of secondary goal results.
+
+    `shares: Literal['asc', 'desc']`
+    :   Number of shares.
+
+    `spend: Literal['asc', 'desc']`
+    :   Total amount of money spent.
+
+    `video_play_actions: Literal['asc', 'desc']`
+    :   Number of video play actions.
+
+    `video_views_p100: Literal['asc', 'desc']`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: Literal['asc', 'desc']`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: Literal['asc', 'desc']`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: Literal['asc', 'desc']`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: Literal['asc', 'desc']`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: Literal['asc', 'desc']`
+    :   Number of times video was watched for at least 6 seconds.
+
+<a id="AdsReportsLifetimeStartswithCondition"></a>
+
+`AdsReportsLifetimeStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsReportsLifetimeStringFilter`
+    :   The type of the None singleton.
+
+<a id="AdsReportsLifetimeStringFilter"></a>
+
+`AdsReportsLifetimeStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `ad_id: str`
+    :   The unique identifier for the ad.
+
+    `ad_name: str`
+    :   The name of the ad.
+
+    `ad_text: str`
+    :   The text content of the ad.
+
+    `adgroup_id: str`
+    :   The unique identifier for the ad group.
+
+    `adgroup_name: str`
+    :   The name of the ad group.
+
+    `app_install: str`
+    :   Number of app installations.
+
+    `average_video_play: str`
+    :   Average video play duration.
+
+    `average_video_play_per_user: str`
+    :   Average video play duration per user.
+
+    `campaign_id: str`
+    :   The unique identifier for the campaign.
+
+    `campaign_name: str`
+    :   The name of the marketing campaign.
+
+    `clicks: str`
+    :   Number of clicks on the ad.
+
+    `clicks_on_music_disc: str`
+    :   Number of clicks on the music disc.
+
+    `comments: str`
+    :   Number of comments.
+
+    `conversion: str`
+    :   Number of conversions.
+
+    `conversion_rate: str`
+    :   Rate of conversions.
+
+    `cost_per_1000_reached: str`
+    :   Cost per 1000 unique users reached.
+
+    `cost_per_conversion: str`
+    :   Cost per conversion.
+
+    `cost_per_result: str`
+    :   Cost per result.
+
+    `cost_per_secondary_goal_result: str`
+    :   Cost per secondary goal result.
+
+    `cpc: str`
+    :   Cost per click.
+
+    `cpm: str`
+    :   Cost per thousand impressions.
+
+    `ctr: str`
+    :   Click-through rate.
+
+    `follows: str`
+    :   Number of follows.
+
+    `frequency: str`
+    :   Average number of times each person saw the ad.
+
+    `impressions: str`
+    :   Number of times the ad was displayed.
+
+    `likes: str`
+    :   Number of likes.
+
+    `placement_type: str`
+    :   Type of ad placement.
+
+    `profile_visits: str`
+    :   Number of profile visits.
+
+    `reach: str`
+    :   Total number of unique users reached.
+
+    `real_time_app_install: str`
+    :   Real-time app installations.
+
+    `real_time_app_install_cost: str`
+    :   Cost of real-time app installations.
+
+    `real_time_conversion: str`
+    :   Real-time conversions.
+
+    `real_time_conversion_rate: str`
+    :   Real-time conversion rate.
+
+    `real_time_cost_per_conversion: str`
+    :   Real-time cost per conversion.
+
+    `real_time_cost_per_result: str`
+    :   Real-time cost per result.
+
+    `real_time_result: str`
+    :   Real-time results.
+
+    `real_time_result_rate: str`
+    :   Real-time result rate.
+
+    `result: str`
+    :   Number of results.
+
+    `result_rate: str`
+    :   Rate of results.
+
+    `secondary_goal_result: str`
+    :   Results for secondary goals.
+
+    `secondary_goal_result_rate: str`
+    :   Rate of secondary goal results.
+
+    `shares: str`
+    :   Number of shares.
+
+    `spend: str`
+    :   Total amount of money spent.
+
+    `video_play_actions: str`
+    :   Number of video play actions.
+
+    `video_views_p100: str`
+    :   Number of times video was watched to 100%.
+
+    `video_views_p25: str`
+    :   Number of times video was watched to 25%.
+
+    `video_views_p50: str`
+    :   Number of times video was watched to 50%.
+
+    `video_views_p75: str`
+    :   Number of times video was watched to 75%.
+
+    `video_watched_2s: str`
+    :   Number of times video was watched for at least 2 seconds.
+
+    `video_watched_6s: str`
+    :   Number of times video was watched for at least 6 seconds.
+
 <a id="AdsSearchFilter"></a>
 
 `AdsSearchFilter(*args, **kwargs)`
@@ -3207,7 +5518,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsSortFilter]`
@@ -3269,10 +5580,24 @@ Classes
     `video_id: Literal['asc', 'desc']`
     :   The unique identifier of the video
 
+<a id="AdsStartswithCondition"></a>
+
+`AdsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdsStringFilter"></a>
 
 `AdsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3344,7 +5669,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdvertisersAnyCondition"></a>
@@ -3470,7 +5795,7 @@ Classes
 <a id="AdvertisersContainsCondition"></a>
 
 `AdvertisersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3479,6 +5804,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdvertisersEndswithCondition"></a>
+
+`AdvertisersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStringFilter`
     :   The type of the None singleton.
 
 <a id="AdvertisersEqCondition"></a>
@@ -3671,20 +6010,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStringFilter`
     :   The type of the None singleton.
 
-<a id="AdvertisersLikeCondition"></a>
-
-`AdvertisersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdvertisersListParams"></a>
 
 `AdvertisersListParams(*args, **kwargs)`
@@ -3766,7 +6091,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdvertisersOrCondition"></a>
@@ -3788,7 +6113,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportsDailyAndCondition"></a>
@@ -3810,7 +6135,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportsDailyAnyCondition"></a>
@@ -3942,7 +6267,7 @@ Classes
 <a id="AdvertisersReportsDailyContainsCondition"></a>
 
 `AdvertisersReportsDailyContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3951,6 +6276,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AdvertisersReportsDailyEndswithCondition"></a>
+
+`AdvertisersReportsDailyEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStringFilter`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportsDailyEqCondition"></a>
@@ -4149,20 +6488,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStringFilter`
     :   The type of the None singleton.
 
-<a id="AdvertisersReportsDailyLikeCondition"></a>
-
-`AdvertisersReportsDailyLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStringFilter`
-    :   The type of the None singleton.
-
 <a id="AdvertisersReportsDailyListParams"></a>
 
 `AdvertisersReportsDailyListParams(*args, **kwargs)`
@@ -4265,7 +6590,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportsDailyOrCondition"></a>
@@ -4287,7 +6612,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdvertisersReportsDailySearchFilter"></a>
@@ -4405,7 +6730,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailySortFilter]`
@@ -4515,10 +6840,24 @@ Classes
     `voucher_spend: Literal['asc', 'desc']`
     :   Amount spent using vouchers.
 
+<a id="AdvertisersReportsDailyStartswithCondition"></a>
+
+`AdvertisersReportsDailyStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersReportsDailyStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdvertisersReportsDailyStringFilter"></a>
 
 `AdvertisersReportsDailyStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4728,7 +7067,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersSortFilter]`
@@ -4832,10 +7171,24 @@ Classes
     `timezone: Literal['asc', 'desc']`
     :   The timezone setting for the advertiser's activities.
 
+<a id="AdvertisersStartswithCondition"></a>
+
+`AdvertisersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AdvertisersStringFilter`
+    :   The type of the None singleton.
+
 <a id="AdvertisersStringFilter"></a>
 
 `AdvertisersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4972,7 +7325,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AudiencesAnyCondition"></a>
@@ -5032,7 +7385,7 @@ Classes
 <a id="AudiencesContainsCondition"></a>
 
 `AudiencesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5041,6 +7394,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AudiencesEndswithCondition"></a>
+
+`AudiencesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStringFilter`
     :   The type of the None singleton.
 
 <a id="AudiencesEqCondition"></a>
@@ -5167,20 +7534,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStringFilter`
     :   The type of the None singleton.
 
-<a id="AudiencesLikeCondition"></a>
-
-`AudiencesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStringFilter`
-    :   The type of the None singleton.
-
 <a id="AudiencesListParams"></a>
 
 `AudiencesListParams(*args, **kwargs)`
@@ -5262,7 +7615,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition`
     :   The type of the None singleton.
 
 <a id="AudiencesOrCondition"></a>
@@ -5284,7 +7637,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AudiencesSearchFilter"></a>
@@ -5330,7 +7683,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesSortFilter]`
@@ -5368,10 +7721,24 @@ Classes
     `shared: Literal['asc', 'desc']`
     :   Flag indicating if the audience is shared
 
+<a id="AudiencesStartswithCondition"></a>
+
+`AudiencesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.AudiencesStringFilter`
+    :   The type of the None singleton.
+
 <a id="AudiencesStringFilter"></a>
 
 `AudiencesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5419,7 +7786,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -5527,7 +7894,7 @@ Classes
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5536,6 +7903,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CampaignsEndswithCondition"></a>
+
+`CampaignsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsEqCondition"></a>
@@ -5710,20 +8091,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsLikeCondition"></a>
-
-`CampaignsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
@@ -5805,7 +8172,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -5827,7 +8194,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsReportsDailyAndCondition"></a>
@@ -5849,7 +8216,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsReportsDailyAnyCondition"></a>
@@ -5978,7 +8345,7 @@ Classes
 <a id="CampaignsReportsDailyContainsCondition"></a>
 
 `CampaignsReportsDailyContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5987,6 +8354,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CampaignsReportsDailyEndswithCondition"></a>
+
+`CampaignsReportsDailyEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsReportsDailyEqCondition"></a>
@@ -6182,20 +8563,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsReportsDailyLikeCondition"></a>
-
-`CampaignsReportsDailyLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsReportsDailyListParams"></a>
 
 `CampaignsReportsDailyListParams(*args, **kwargs)`
@@ -6298,7 +8665,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsReportsDailyOrCondition"></a>
@@ -6320,7 +8687,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsReportsDailySearchFilter"></a>
@@ -6435,7 +8802,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailySortFilter]`
@@ -6542,10 +8909,24 @@ Classes
     `video_watched_6s: Literal['asc', 'desc']`
     :   Number of times video was watched for at least 6 seconds.
 
+<a id="CampaignsReportsDailyStartswithCondition"></a>
+
+`CampaignsReportsDailyStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsReportsDailyStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsReportsDailyStringFilter"></a>
 
 `CampaignsReportsDailyStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6734,7 +9115,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsSortFilter]`
@@ -6820,10 +9201,24 @@ Classes
     `split_test_variable: Literal['asc', 'desc']`
     :   Variable being tested in a split test campaign
 
+<a id="CampaignsStartswithCondition"></a>
+
+`CampaignsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CampaignsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsStringFilter"></a>
 
 `CampaignsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6900,6 +9295,29 @@ Classes
     `split_test_variable: str`
     :   Variable being tested in a split test campaign
 
+<a id="CatalogsListParams"></a>
+
+`CatalogsListParams(*args, **kwargs)`
+:   Parameters for catalogs.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `advertiser_id: str`
+    :   The type of the None singleton.
+
+    `bc_id: str`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
+
+    `page_size: int`
+    :   The type of the None singleton.
+
 <a id="CreativeAssetsImagesAndCondition"></a>
 
 `CreativeAssetsImagesAndCondition(*args, **kwargs)`
@@ -6919,7 +9337,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsImagesAnyCondition"></a>
@@ -6985,7 +9403,7 @@ Classes
 <a id="CreativeAssetsImagesContainsCondition"></a>
 
 `CreativeAssetsImagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -6994,6 +9412,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CreativeAssetsImagesEndswithCondition"></a>
+
+`CreativeAssetsImagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStringFilter`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsImagesEqCondition"></a>
@@ -7126,20 +9558,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStringFilter`
     :   The type of the None singleton.
 
-<a id="CreativeAssetsImagesLikeCondition"></a>
-
-`CreativeAssetsImagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CreativeAssetsImagesListParams"></a>
 
 `CreativeAssetsImagesListParams(*args, **kwargs)`
@@ -7221,7 +9639,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsImagesOrCondition"></a>
@@ -7243,7 +9661,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsImagesSearchFilter"></a>
@@ -7295,7 +9713,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesSortFilter]`
@@ -7339,10 +9757,24 @@ Classes
     `width: Literal['asc', 'desc']`
     :   The width dimension of the image.
 
+<a id="CreativeAssetsImagesStartswithCondition"></a>
+
+`CreativeAssetsImagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsImagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CreativeAssetsImagesStringFilter"></a>
 
 `CreativeAssetsImagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7396,7 +9828,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsVideosAnyCondition"></a>
@@ -7465,7 +9897,7 @@ Classes
 <a id="CreativeAssetsVideosContainsCondition"></a>
 
 `CreativeAssetsVideosContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -7474,6 +9906,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CreativeAssetsVideosEndswithCondition"></a>
+
+`CreativeAssetsVideosEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStringFilter`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsVideosEqCondition"></a>
@@ -7609,20 +10055,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStringFilter`
     :   The type of the None singleton.
 
-<a id="CreativeAssetsVideosLikeCondition"></a>
-
-`CreativeAssetsVideosLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStringFilter`
-    :   The type of the None singleton.
-
 <a id="CreativeAssetsVideosListParams"></a>
 
 `CreativeAssetsVideosListParams(*args, **kwargs)`
@@ -7704,7 +10136,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition`
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsVideosOrCondition"></a>
@@ -7726,7 +10158,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CreativeAssetsVideosSearchFilter"></a>
@@ -7781,7 +10213,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLikeCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosSortFilter]`
@@ -7828,10 +10260,24 @@ Classes
     `width: Literal['asc', 'desc']`
     :   Width of the video in pixels.
 
+<a id="CreativeAssetsVideosStartswithCondition"></a>
+
+`CreativeAssetsVideosStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.CreativeAssetsVideosStringFilter`
+    :   The type of the None singleton.
+
 <a id="CreativeAssetsVideosStringFilter"></a>
 
 `CreativeAssetsVideosStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7868,3 +10314,419 @@ Classes
 
     `width: str`
     :   Width of the video in pixels.
+
+<a id="SparkAdsAndCondition"></a>
+
+`SparkAdsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SparkAdsAnyCondition"></a>
+
+`SparkAdsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsAnyValueFilter"></a>
+
+`SparkAdsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: Any`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: Any`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: Any`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: Any`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsContainsCondition"></a>
+
+`SparkAdsContainsCondition(*args, **kwargs)`
+:   Literal case-insensitive substring on scalar fields or exact array membership.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsEndswithCondition"></a>
+
+`SparkAdsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsEqCondition"></a>
+
+`SparkAdsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsFuzzyCondition"></a>
+
+`SparkAdsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsGtCondition"></a>
+
+`SparkAdsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsGteCondition"></a>
+
+`SparkAdsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsInCondition"></a>
+
+`SparkAdsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsInFilter"></a>
+
+`SparkAdsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: list[dict[str, typing.Any]]`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: list[dict[str, typing.Any]]`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: list[dict[str, typing.Any]]`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: list[dict[str, typing.Any]]`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsKeywordCondition"></a>
+
+`SparkAdsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsListParams"></a>
+
+`SparkAdsListParams(*args, **kwargs)`
+:   Parameters for spark_ads.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `advertiser_id: str`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
+
+    `page_size: int`
+    :   The type of the None singleton.
+
+<a id="SparkAdsLtCondition"></a>
+
+`SparkAdsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsLteCondition"></a>
+
+`SparkAdsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsNeqCondition"></a>
+
+`SparkAdsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsNotCondition"></a>
+
+`SparkAdsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="SparkAdsOrCondition"></a>
+
+`SparkAdsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="SparkAdsSearchFilter"></a>
+
+`SparkAdsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering spark_ads search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: dict[str, typing.Any] | None`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: dict[str, typing.Any] | None`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: dict[str, typing.Any] | None`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: dict[str, typing.Any] | None`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsSearchQuery"></a>
+
+`SparkAdsSearchQuery(*args, **kwargs)`
+:   Search query for spark_ads entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNeqCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsGteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLtCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsLteCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsInCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStartswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsEndswithCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsFuzzyCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsKeywordCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsContainsCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsNotCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAndCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsOrCondition | airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="SparkAdsSortFilter"></a>
+
+`SparkAdsSortFilter(*args, **kwargs)`
+:   Available fields for sorting spark_ads search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: Literal['asc', 'desc']`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: Literal['asc', 'desc']`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: Literal['asc', 'desc']`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: Literal['asc', 'desc']`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.
+
+<a id="SparkAdsStartswithCondition"></a>
+
+`SparkAdsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.tiktok_marketing.types.SparkAdsStringFilter`
+    :   The type of the None singleton.
+
+<a id="SparkAdsStringFilter"></a>
+
+`SparkAdsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `auth_info: str`
+    :   Authorization details including invite_start_time, auth_start_time, auth_end_time, and ad_auth_status.
+
+    `item_info: str`
+    :   Information about the Spark Ads post including item_id, auth_code, text, status, and item_type.
+
+    `user_info: str`
+    :   Information about the TikTok account including tiktok_name, identity_id, and identity_type.
+
+    `video_info: str`
+    :   Video post details including duration, preview_url, poster_url, height, width, and size.

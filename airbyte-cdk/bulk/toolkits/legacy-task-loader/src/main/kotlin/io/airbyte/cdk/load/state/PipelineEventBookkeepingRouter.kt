@@ -13,10 +13,8 @@ import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.message.CheckpointMessageWrapped
 import io.airbyte.cdk.load.message.DestinationFile
 import io.airbyte.cdk.load.message.DestinationFileStreamComplete
-import io.airbyte.cdk.load.message.DestinationFileStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationRecord
 import io.airbyte.cdk.load.message.DestinationRecordStreamComplete
-import io.airbyte.cdk.load.message.DestinationRecordStreamIncomplete
 import io.airbyte.cdk.load.message.DestinationStreamAffinedMessage
 import io.airbyte.cdk.load.message.FileTransferQueueEndOfStream
 import io.airbyte.cdk.load.message.FileTransferQueueMessage
@@ -143,14 +141,6 @@ class PipelineEventBookkeepingRouter(
                 }
                 PipelineEndOfStream(stream.mappedDescriptor)
             }
-            is DestinationRecordStreamIncomplete -> {
-                log.warn { "Source read INCOMPLETE for stream ${stream.mappedDescriptor}." }
-                recordTerminalStatus(stream.mappedDescriptor, isComplete = false)
-                if (!markEndOfStreamAtEndOfSync) {
-                    manager.markEndOfStream(false)
-                }
-                PipelineEndOfStream(stream.mappedDescriptor)
-            }
 
             // DEPRECATED: Legacy file transfer
             is DestinationFile -> {
@@ -163,12 +153,6 @@ class PipelineEventBookkeepingRouter(
             }
             is DestinationFileStreamComplete -> {
                 manager.markEndOfStream(true)
-                fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
-                PipelineHeartbeat()
-            }
-            is DestinationFileStreamIncomplete -> {
-                log.warn { "Source read INCOMPLETE for stream ${stream.mappedDescriptor}." }
-                manager.markEndOfStream(false)
                 fileTransferQueue.publish(FileTransferQueueEndOfStream(stream))
                 PipelineHeartbeat()
             }

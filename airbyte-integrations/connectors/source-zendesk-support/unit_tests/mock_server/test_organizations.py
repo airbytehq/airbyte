@@ -5,6 +5,7 @@ from unittest import TestCase
 
 import freezegun
 
+from airbyte_cdk.models import Level as LogLevel
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.mock_http import HttpMocker
 from airbyte_cdk.test.mock_http.response_builder import FieldPath
@@ -13,8 +14,8 @@ from airbyte_cdk.utils.datetime_helpers import ab_datetime_now
 
 from .config import ConfigBuilder
 from .request_builder import ApiTokenAuthenticator, ZendeskSupportRequestBuilder
-from .response_builder import OrganizationsRecordBuilder, OrganizationsResponseBuilder
-from .utils import datetime_to_string, read_stream, string_to_datetime
+from .response_builder import ErrorResponseBuilder, OrganizationsRecordBuilder, OrganizationsResponseBuilder
+from .utils import datetime_to_string, get_log_messages_by_log_level, read_stream, string_to_datetime
 
 
 _NOW = ab_datetime_now()
@@ -149,3 +150,62 @@ class TestOrganizationsStreamIncremental(TestCase):
         assert len(output.records) == 1
         assert output.most_recent_state is not None
         assert output.most_recent_state.stream_descriptor.name == "organizations"
+
+    @HttpMocker()
+    def test_given_403_permission_denied_when_read_organizations_then_ignore_and_skip_stream(self, http_mocker):
+        """When Zendesk returns 403 with 'You do not have access', the stream should be skipped."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_any_query_params()
+            .build(),
+            ErrorResponseBuilder.response_with_status(403)
+            .with_error_message(
+                "You do not have access to this page. You do not have permission to access this page. Please contact the account owner of this help desk for further help."
+            )
+            .build(),
+        )
+
+        output = read_stream("organizations", SyncMode.incremental, self._config)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert not any("403" in msg for msg in error_logs), "403 permission-denied should not produce ERROR logs"
+
+    @HttpMocker()
+    def test_given_403_other_error_when_read_organizations_then_fail(self, http_mocker):
+        """When Zendesk returns 403 without the permission-denied message, the sync should fail."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_any_query_params()
+            .build(),
+            ErrorResponseBuilder.response_with_status(403).with_error_message("Forbidden").build(),
+        )
+
+        output = read_stream("organizations", SyncMode.incremental, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("403" in msg for msg in error_logs), "Expected 403 error code in logs"
+        assert any("Forbidden" in msg for msg in error_logs), "Expected error message in logs"
+
+    @HttpMocker()
+    def test_given_404_error_when_read_organizations_then_fail(self, http_mocker):
+        """404 errors should still fail the sync."""
+        api_token_authenticator = self._get_authenticator(self._config)
+        http_mocker.get(
+            ZendeskSupportRequestBuilder.organizations_endpoint(api_token_authenticator)
+            .with_start_time(self._config["start_date"])
+            .with_any_query_params()
+            .build(),
+            ErrorResponseBuilder.response_with_status(404).build(),
+        )
+
+        output = read_stream("organizations", SyncMode.incremental, self._config, expecting_exception=True)
+
+        assert len(output.records) == 0
+        error_logs = list(get_log_messages_by_log_level(output.logs, LogLevel.ERROR))
+        assert any("404" in msg for msg in error_logs), "Expected 404 error code in logs"

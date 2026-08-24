@@ -23,6 +23,17 @@ The Monday connector supports the following entities and actions.
 
 Returns all users in the Monday.com account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -42,6 +53,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ```
 
 
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `page` | `integer` | No | Page number for pagination |
+| `limit` | `integer` | No | Number of users to return per page (API 2026-07 maximum is 1000) |
+
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -53,28 +71,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `id` | `null \| string` |  |
 | `name` | `null \| string` |  |
 | `email` | `null \| string` |  |
-| `enabled` | `null \| boolean` |  |
 | `birthday` | `null \| string` |  |
 | `country_code` | `null \| string` |  |
 | `created_at` | `null \| string` |  |
-| `join_date` | `null \| string` |  |
-| `is_admin` | `null \| boolean` |  |
-| `is_guest` | `null \| boolean` |  |
-| `is_pending` | `null \| boolean` |  |
-| `is_view_only` | `null \| boolean` |  |
-| `is_verified` | `null \| boolean` |  |
+| `kind` | `null \| string` |  |
+| `status` | `null \| string` |  |
+| `is_email_confirmed` | `null \| boolean` |  |
+| `became_active_at` | `null \| string` |  |
 | `location` | `null \| string` |  |
 | `mobile_phone` | `null \| string` |  |
 | `phone` | `null \| string` |  |
-| `photo_original` | `null \| string` |  |
-| `photo_small` | `null \| string` |  |
-| `photo_thumb` | `null \| string` |  |
-| `photo_thumb_small` | `null \| string` |  |
-| `photo_tiny` | `null \| string` |  |
+| `photo_url` | `null \| object` |  |
 | `time_zone_identifier` | `null \| string` |  |
 | `title` | `null \| string` |  |
 | `url` | `null \| string` |  |
-| `utc_hours_diff` | `null \| integer` |  |
+| `utc_hours_diff` | `null \| number` |  |
 
 
 </details>
@@ -82,6 +93,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Users Get
 
 Returns a single user by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -118,6 +143,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "birthday": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -145,7 +190,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -160,27 +205,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `country_code` | `string` | User's country code |
 | `created_at` | `string` | When the user was created |
 | `email` | `string` | User's email address |
-| `enabled` | `boolean` | Whether the user account is enabled |
 | `id` | `string` | Unique user identifier |
-| `is_admin` | `boolean` | Whether the user is an admin |
-| `is_guest` | `boolean` | Whether the user is a guest |
-| `is_pending` | `boolean` | Whether the user is pending |
-| `is_view_only` | `boolean` | Whether the user is view-only |
-| `is_verified` | `boolean` | Whether the user is verified |
-| `join_date` | `string` | When the user joined |
 | `location` | `string` | User's location |
 | `mobile_phone` | `string` | User's mobile phone number |
 | `name` | `string` | User's display name |
 | `phone` | `string` | User's phone number |
-| `photo_original` | `string` | URL to original size photo |
-| `photo_small` | `string` | URL to small photo |
-| `photo_thumb` | `string` | URL to thumbnail photo |
-| `photo_thumb_small` | `string` | URL to small thumbnail photo |
-| `photo_tiny` | `string` | URL to tiny photo |
 | `time_zone_identifier` | `string` | User's timezone identifier |
 | `title` | `string` | User's job title |
 | `url` | `string` | User's Monday.com profile URL |
-| `utc_hours_diff` | `integer` | UTC hours difference for the user's timezone |
+| `utc_hours_diff` | `number` | UTC hours difference for the user's timezone (Float under API 2026-07) |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -196,27 +229,15 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].country_code` | `string` | User's country code |
 | `data[].created_at` | `string` | When the user was created |
 | `data[].email` | `string` | User's email address |
-| `data[].enabled` | `boolean` | Whether the user account is enabled |
 | `data[].id` | `string` | Unique user identifier |
-| `data[].is_admin` | `boolean` | Whether the user is an admin |
-| `data[].is_guest` | `boolean` | Whether the user is a guest |
-| `data[].is_pending` | `boolean` | Whether the user is pending |
-| `data[].is_view_only` | `boolean` | Whether the user is view-only |
-| `data[].is_verified` | `boolean` | Whether the user is verified |
-| `data[].join_date` | `string` | When the user joined |
 | `data[].location` | `string` | User's location |
 | `data[].mobile_phone` | `string` | User's mobile phone number |
 | `data[].name` | `string` | User's display name |
 | `data[].phone` | `string` | User's phone number |
-| `data[].photo_original` | `string` | URL to original size photo |
-| `data[].photo_small` | `string` | URL to small photo |
-| `data[].photo_thumb` | `string` | URL to thumbnail photo |
-| `data[].photo_thumb_small` | `string` | URL to small thumbnail photo |
-| `data[].photo_tiny` | `string` | URL to tiny photo |
 | `data[].time_zone_identifier` | `string` | User's timezone identifier |
 | `data[].title` | `string` | User's job title |
 | `data[].url` | `string` | User's Monday.com profile URL |
-| `data[].utc_hours_diff` | `integer` | UTC hours difference for the user's timezone |
+| `data[].utc_hours_diff` | `number` | UTC hours difference for the user's timezone (Float under API 2026-07) |
 
 </details>
 
@@ -225,6 +246,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Boards List
 
 Returns all boards in the Monday.com account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "boards",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -278,6 +310,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single board by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "boards",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -313,6 +359,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter boards records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "boards",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "board_kind": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -340,7 +406,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -411,6 +477,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns items from boards. Queries items through the boards endpoint using items_page for pagination.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "items",
+  "action": "list",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -468,6 +548,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single item by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "items",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -503,6 +597,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter items records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "items",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "assets": []
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -530,7 +644,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -589,6 +703,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all teams in the Monday.com account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "teams",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -628,6 +753,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single team by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "teams",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -663,6 +802,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter teams records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "teams",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -690,7 +849,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -728,6 +887,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Tags List
 
 Returns all tags in the Monday.com account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "tags",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -767,6 +937,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter tags records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "tags",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "color": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -794,7 +984,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -830,6 +1020,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Updates List
 
 Returns all updates (comments/posts) in the Monday.com account
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "updates",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -882,6 +1083,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single update by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "updates",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -917,6 +1132,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter updates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "updates",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "assets": []
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -944,7 +1179,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -993,6 +1228,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns all workspaces in the Monday.com account
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "workspaces",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1040,6 +1286,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a single workspace by ID
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "workspaces",
+  "action": "get",
+  "params": {
+    "id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1075,6 +1335,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter workspaces records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "workspaces",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "account_product": {}
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1102,7 +1382,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1157,6 +1437,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns activity logs from boards. Requires a board_id parameter.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "activity_logs",
+  "action": "list",
+  "params": {
+    "board_id": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1209,6 +1503,26 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Search and filter activity logs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "monday",
+  "entity": "activity_logs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "board_id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1236,7 +1550,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |

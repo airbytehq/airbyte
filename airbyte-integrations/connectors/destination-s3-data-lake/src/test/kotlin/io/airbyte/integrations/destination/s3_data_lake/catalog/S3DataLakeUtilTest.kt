@@ -80,8 +80,7 @@ internal class S3DataLakeUtilTest {
 
     @BeforeEach
     fun setup() {
-        icebergUtil =
-            IcebergUtil(tableIdGenerator, AirbyteValueCoercer(useFastTimestampParsing = true))
+        icebergUtil = IcebergUtil(tableIdGenerator, AirbyteValueCoercer())
         s3DataLakeUtil = S3DataLakeUtil(icebergUtil, assumeRoleCredentials = null)
     }
 

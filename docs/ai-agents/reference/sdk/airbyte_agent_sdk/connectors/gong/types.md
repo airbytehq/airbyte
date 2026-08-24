@@ -64,7 +64,7 @@ Classes
 
     ### Class variables
 
-    `exposedFields: airbyte_agent_sdk.connectors.gong.types.CallAudioDownloadParamsContentselectorExposedfields`
+    `exposed_fields: airbyte_agent_sdk.connectors.gong.types.CallAudioDownloadParamsContentselectorExposedfields`
     :   The type of the None singleton.
 
 <a id="CallAudioDownloadParamsContentselectorExposedfields"></a>
@@ -92,7 +92,211 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsAndCondition"></a>
+
+`CallTranscriptsAndCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `and: list[airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsAnyCondition"></a>
+
+`CallTranscriptsAnyCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `any: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsAnyValueFilter"></a>
+
+`CallTranscriptsAnyValueFilter(*args, **kwargs)`
+:   Available fields with Any value type. Used for 'contains' and 'any' conditions.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: Any`
+    :   Unique identifier for the call.
+
+    `started: Any`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: Any`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsContainsCondition"></a>
+
+`CallTranscriptsContainsCondition(*args, **kwargs)`
+:   Literal case-insensitive substring on scalar fields or exact array membership.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `contains: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsEndswithCondition"></a>
+
+`CallTranscriptsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStringFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsEqCondition"></a>
+
+`CallTranscriptsEqCondition(*args, **kwargs)`
+:   Equal to: field equals value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `eq: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsFuzzyCondition"></a>
+
+`CallTranscriptsFuzzyCondition(*args, **kwargs)`
+:   Ordered word text match (case-insensitive).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `fuzzy: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStringFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsGtCondition"></a>
+
+`CallTranscriptsGtCondition(*args, **kwargs)`
+:   Greater than: field > value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gt: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsGteCondition"></a>
+
+`CallTranscriptsGteCondition(*args, **kwargs)`
+:   Greater than or equal: field >= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `gte: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsInCondition"></a>
+
+`CallTranscriptsInCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `in: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsInFilter"></a>
+
+`CallTranscriptsInFilter(*args, **kwargs)`
+:   Available fields for 'in' condition (values are lists).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: list[str]`
+    :   Unique identifier for the call.
+
+    `started: list[str]`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: list[list[typing.Any]]`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsKeywordCondition"></a>
+
+`CallTranscriptsKeywordCondition(*args, **kwargs)`
+:   Keyword text match (any word present).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `keyword: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStringFilter`
     :   The type of the None singleton.
 
 <a id="CallTranscriptsListParams"></a>
@@ -123,14 +327,191 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
-    `fromDateTime: str`
+    `from_date_time: str`
     :   The type of the None singleton.
 
-    `toDateTime: str`
+    `to_date_time: str`
     :   The type of the None singleton.
+
+<a id="CallTranscriptsLtCondition"></a>
+
+`CallTranscriptsLtCondition(*args, **kwargs)`
+:   Less than: field &lt; value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lt: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsLteCondition"></a>
+
+`CallTranscriptsLteCondition(*args, **kwargs)`
+:   Less than or equal: field &lt;= value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `lte: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsNeqCondition"></a>
+
+`CallTranscriptsNeqCondition(*args, **kwargs)`
+:   Not equal to: field does not equal value.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `neq: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSearchFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsNotCondition"></a>
+
+`CallTranscriptsNotCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `not: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsOrCondition"></a>
+
+`CallTranscriptsOrCondition(*args, **kwargs)`
+:   dict() -> new empty dictionary
+    dict(mapping) -> new dictionary initialized from a mapping object's
+        (key, value) pairs
+    dict(iterable) -> new dictionary initialized as if via:
+        d = \{\}
+        for k, v in iterable:
+            d[k] = v
+    dict(**kwargs) -> new dictionary initialized with the name=value pairs
+        in the keyword argument list.  For example:  dict(one=1, two=2)
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `or: list[airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition]`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsSearchFilter"></a>
+
+`CallTranscriptsSearchFilter(*args, **kwargs)`
+:   Available fields for filtering call_transcripts search queries.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: str | None`
+    :   Unique identifier for the call.
+
+    `started: str | None`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: list[typing.Any] | None`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsSearchQuery"></a>
+
+`CallTranscriptsSearchQuery(*args, **kwargs)`
+:   Search query for call_transcripts entity.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `filter: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsInCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallTranscriptsAnyCondition`
+    :   The type of the None singleton.
+
+    `sort: list[airbyte_agent_sdk.connectors.gong.types.CallTranscriptsSortFilter]`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsSortFilter"></a>
+
+`CallTranscriptsSortFilter(*args, **kwargs)`
+:   Available fields for sorting call_transcripts search results.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: Literal['asc', 'desc']`
+    :   Unique identifier for the call.
+
+    `started: Literal['asc', 'desc']`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: Literal['asc', 'desc']`
+    :   Gong transcript speaker turns.
+
+<a id="CallTranscriptsStartswithCondition"></a>
+
+`CallTranscriptsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gong.types.CallTranscriptsStringFilter`
+    :   The type of the None singleton.
+
+<a id="CallTranscriptsStringFilter"></a>
+
+`CallTranscriptsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `call_id: str`
+    :   Unique identifier for the call.
+
+    `started: str`
+    :   Timestamp the call started. Filterable for narrowing transcript search by call time.
+
+    `transcript: str`
+    :   Gong transcript speaker turns.
 
 <a id="CallVideoDownloadParams"></a>
 
@@ -163,7 +544,7 @@ Classes
 
     ### Class variables
 
-    `exposedFields: airbyte_agent_sdk.connectors.gong.types.CallVideoDownloadParamsContentselectorExposedfields`
+    `exposed_fields: airbyte_agent_sdk.connectors.gong.types.CallVideoDownloadParamsContentselectorExposedfields`
     :   The type of the None singleton.
 
 <a id="CallVideoDownloadParamsContentselectorExposedfields"></a>
@@ -191,7 +572,7 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="CallsAndCondition"></a>
@@ -213,7 +594,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsAnyCondition"></a>
@@ -312,7 +693,7 @@ Classes
 <a id="CallsContainsCondition"></a>
 
 `CallsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -321,6 +702,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.gong.types.CallsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CallsEndswithCondition"></a>
+
+`CallsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gong.types.CallsStringFilter`
     :   The type of the None singleton.
 
 <a id="CallsEqCondition"></a>
@@ -356,7 +751,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveAnyCondition"></a>
@@ -422,7 +817,7 @@ Classes
 <a id="CallsExtensiveContainsCondition"></a>
 
 `CallsExtensiveContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -431,6 +826,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CallsExtensiveEndswithCondition"></a>
+
+`CallsExtensiveEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStringFilter`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveEqCondition"></a>
@@ -563,20 +972,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStringFilter`
     :   The type of the None singleton.
 
-<a id="CallsExtensiveLikeCondition"></a>
-
-`CallsExtensiveLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStringFilter`
-    :   The type of the None singleton.
-
 <a id="CallsExtensiveListParams"></a>
 
 `CallsExtensiveListParams(*args, **kwargs)`
@@ -611,10 +1006,10 @@ Classes
     `context: str`
     :   The type of the None singleton.
 
-    `contextTiming: list[str]`
+    `context_timing: list[str]`
     :   The type of the None singleton.
 
-    `exposedFields: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveListParamsContentselectorExposedfields`
+    `exposed_fields: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveListParamsContentselectorExposedfields`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveListParamsContentselectorExposedfields"></a>
@@ -654,7 +1049,7 @@ Classes
 
     ### Class variables
 
-    `publicComments: bool`
+    `public_comments: bool`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveListParamsContentselectorExposedfieldsContent"></a>
@@ -671,19 +1066,19 @@ Classes
     `brief: bool`
     :   The type of the None singleton.
 
-    `callOutcome: bool`
+    `call_outcome: bool`
     :   The type of the None singleton.
 
     `highlights: bool`
     :   The type of the None singleton.
 
-    `keyPoints: bool`
+    `key_points: bool`
     :   The type of the None singleton.
 
     `outline: bool`
     :   The type of the None singleton.
 
-    `pointsOfInterest: bool`
+    `points_of_interest: bool`
     :   The type of the None singleton.
 
     `structure: bool`
@@ -692,7 +1087,7 @@ Classes
     `topics: bool`
     :   The type of the None singleton.
 
-    `trackerOccurrences: bool`
+    `tracker_occurrences: bool`
     :   The type of the None singleton.
 
     `trackers: bool`
@@ -709,7 +1104,7 @@ Classes
 
     ### Class variables
 
-    `personInteractionStats: bool`
+    `person_interaction_stats: bool`
     :   The type of the None singleton.
 
     `questions: bool`
@@ -732,16 +1127,16 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
-    `fromDateTime: str`
+    `from_date_time: str`
     :   The type of the None singleton.
 
-    `toDateTime: str`
+    `to_date_time: str`
     :   The type of the None singleton.
 
-    `workspaceId: str`
+    `workspace_id: str`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveLtCondition"></a>
@@ -805,7 +1200,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveOrCondition"></a>
@@ -827,7 +1222,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsExtensiveSearchFilter"></a>
@@ -879,7 +1274,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveInCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsExtensiveAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gong.types.CallsExtensiveSortFilter]`
@@ -923,10 +1318,24 @@ Classes
     `startdatetime: Literal['asc', 'desc']`
     :   Datetime for extensive calls.
 
+<a id="CallsExtensiveStartswithCondition"></a>
+
+`CallsExtensiveStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gong.types.CallsExtensiveStringFilter`
+    :   The type of the None singleton.
+
 <a id="CallsExtensiveStringFilter"></a>
 
 `CallsExtensiveStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1124,20 +1533,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gong.types.CallsStringFilter`
     :   The type of the None singleton.
 
-<a id="CallsLikeCondition"></a>
-
-`CallsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gong.types.CallsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CallsListParams"></a>
 
 `CallsListParams(*args, **kwargs)`
@@ -1219,7 +1614,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CallsOrCondition"></a>
@@ -1241,7 +1636,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsSearchFilter"></a>
@@ -1326,7 +1721,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsLikeCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gong.types.CallsEqCondition | airbyte_agent_sdk.connectors.gong.types.CallsNeqCondition | airbyte_agent_sdk.connectors.gong.types.CallsGtCondition | airbyte_agent_sdk.connectors.gong.types.CallsGteCondition | airbyte_agent_sdk.connectors.gong.types.CallsLtCondition | airbyte_agent_sdk.connectors.gong.types.CallsLteCondition | airbyte_agent_sdk.connectors.gong.types.CallsInCondition | airbyte_agent_sdk.connectors.gong.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.CallsContainsCondition | airbyte_agent_sdk.connectors.gong.types.CallsNotCondition | airbyte_agent_sdk.connectors.gong.types.CallsAndCondition | airbyte_agent_sdk.connectors.gong.types.CallsOrCondition | airbyte_agent_sdk.connectors.gong.types.CallsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gong.types.CallsSortFilter]`
@@ -1403,10 +1798,24 @@ Classes
     `workspace_id: Literal['asc', 'desc']`
     :   Identifier for the workspace to which the call belongs.
 
+<a id="CallsStartswithCondition"></a>
+
+`CallsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gong.types.CallsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CallsStringFilter"></a>
 
 `CallsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1547,7 +1956,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SettingsScorecardsAnyCondition"></a>
@@ -1610,7 +2019,7 @@ Classes
 <a id="SettingsScorecardsContainsCondition"></a>
 
 `SettingsScorecardsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1619,6 +2028,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SettingsScorecardsEndswithCondition"></a>
+
+`SettingsScorecardsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStringFilter`
     :   The type of the None singleton.
 
 <a id="SettingsScorecardsEqCondition"></a>
@@ -1748,20 +2171,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStringFilter`
     :   The type of the None singleton.
 
-<a id="SettingsScorecardsLikeCondition"></a>
-
-`SettingsScorecardsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SettingsScorecardsListParams"></a>
 
 `SettingsScorecardsListParams(*args, **kwargs)`
@@ -1837,7 +2246,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SettingsScorecardsOrCondition"></a>
@@ -1859,7 +2268,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SettingsScorecardsSearchFilter"></a>
@@ -1908,7 +2317,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsSortFilter]`
@@ -1949,10 +2358,24 @@ Classes
     `workspace_id: Literal['asc', 'desc']`
     :   The unique identifier of the workspace associated with the scorecard
 
+<a id="SettingsScorecardsStartswithCondition"></a>
+
+`SettingsScorecardsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gong.types.SettingsScorecardsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SettingsScorecardsStringFilter"></a>
 
 `SettingsScorecardsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2023,13 +2446,13 @@ Classes
 
     ### Class variables
 
-    `fromDate: str`
+    `from_date: str`
     :   The type of the None singleton.
 
-    `toDate: str`
+    `to_date: str`
     :   The type of the None singleton.
 
-    `userIds: list[str]`
+    `user_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="StatsActivityDayByDayListParams"></a>
@@ -2057,13 +2480,13 @@ Classes
 
     ### Class variables
 
-    `fromDate: str`
+    `from_date: str`
     :   The type of the None singleton.
 
-    `toDate: str`
+    `to_date: str`
     :   The type of the None singleton.
 
-    `userIds: list[str]`
+    `user_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsAndCondition"></a>
@@ -2085,7 +2508,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsAnyCondition"></a>
@@ -2154,7 +2577,7 @@ Classes
 <a id="StatsActivityScorecardsContainsCondition"></a>
 
 `StatsActivityScorecardsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2163,6 +2586,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="StatsActivityScorecardsEndswithCondition"></a>
+
+`StatsActivityScorecardsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStringFilter`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsEqCondition"></a>
@@ -2298,20 +2735,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStringFilter`
     :   The type of the None singleton.
 
-<a id="StatsActivityScorecardsLikeCondition"></a>
-
-`StatsActivityScorecardsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStringFilter`
-    :   The type of the None singleton.
-
 <a id="StatsActivityScorecardsListParams"></a>
 
 `StatsActivityScorecardsListParams(*args, **kwargs)`
@@ -2340,22 +2763,22 @@ Classes
 
     ### Class variables
 
-    `callIds: list[str]`
+    `call_ids: list[str]`
     :   The type of the None singleton.
 
-    `fromDateTime: str`
+    `from_date_time: str`
     :   The type of the None singleton.
 
-    `reviewedUserIds: list[str]`
+    `reviewed_user_ids: list[str]`
     :   The type of the None singleton.
 
-    `reviewerUserIds: list[str]`
+    `reviewer_user_ids: list[str]`
     :   The type of the None singleton.
 
-    `scorecardIds: list[str]`
+    `scorecard_ids: list[str]`
     :   The type of the None singleton.
 
-    `toDateTime: str`
+    `to_date_time: str`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsLtCondition"></a>
@@ -2419,7 +2842,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsOrCondition"></a>
@@ -2441,7 +2864,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="StatsActivityScorecardsSearchFilter"></a>
@@ -2496,7 +2919,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLikeCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNeqCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsGteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLtCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsLteCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsInCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStartswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsEndswithCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsKeywordCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsContainsCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsNotCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAndCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsOrCondition | airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsSortFilter]`
@@ -2543,10 +2966,24 @@ Classes
     `visibility_type: Literal['asc', 'desc']`
     :   Type indicating the visibility permissions for the answered scorecard.
 
+<a id="StatsActivityScorecardsStartswithCondition"></a>
+
+`StatsActivityScorecardsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gong.types.StatsActivityScorecardsStringFilter`
+    :   The type of the None singleton.
+
 <a id="StatsActivityScorecardsStringFilter"></a>
 
 `StatsActivityScorecardsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2609,13 +3046,13 @@ Classes
 
     ### Class variables
 
-    `fromDate: str`
+    `from_date: str`
     :   The type of the None singleton.
 
-    `toDate: str`
+    `to_date: str`
     :   The type of the None singleton.
 
-    `userIds: list[str]`
+    `user_ids: list[str]`
     :   The type of the None singleton.
 
 <a id="UsersAndCondition"></a>
@@ -2637,7 +3074,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersLikeCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -2724,7 +3161,7 @@ Classes
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2733,6 +3170,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.gong.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gong.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -2900,20 +3351,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gong.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gong.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -2989,7 +3426,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersLikeCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -3011,7 +3448,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersLikeCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -3084,7 +3521,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersLikeCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gong.types.UsersEqCondition | airbyte_agent_sdk.connectors.gong.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gong.types.UsersGtCondition | airbyte_agent_sdk.connectors.gong.types.UsersGteCondition | airbyte_agent_sdk.connectors.gong.types.UsersLtCondition | airbyte_agent_sdk.connectors.gong.types.UsersLteCondition | airbyte_agent_sdk.connectors.gong.types.UsersInCondition | airbyte_agent_sdk.connectors.gong.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gong.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gong.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gong.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gong.types.UsersNotCondition | airbyte_agent_sdk.connectors.gong.types.UsersAndCondition | airbyte_agent_sdk.connectors.gong.types.UsersOrCondition | airbyte_agent_sdk.connectors.gong.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gong.types.UsersSortFilter]`
@@ -3149,10 +3586,24 @@ Classes
     `trusted_email_address: Literal['asc', 'desc']`
     :   An email address that is considered trusted for the user
 
+<a id="UsersStartswithCondition"></a>
+
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gong.types.UsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

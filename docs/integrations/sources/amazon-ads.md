@@ -42,10 +42,11 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 5. Click **Authenticate your Amazon Ads account**.
 6. Log in and Authorize to the Amazon account.
 7. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-8. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, yesterday's date (UTC) is used. The date is treated in the timezone of the processed profile.
+8. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). Dates older than 60 days are automatically adjusted to 60 days ago, because Amazon Ads does not retain report data beyond that window. The date is treated in the timezone of the processed profile.
 9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-11. Click **Set up source**.
+11. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
+12. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -58,15 +59,17 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 4. **Client Secret** of your Amazon Ads developer application. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 5. **Refresh Token**. See [onboarding process](https://advertising.amazon.com/API/docs/en-us/setting-up/overview) for more details.
 6. Select **Region** to pull data from **North America (NA)**, **Europe (EU)**, **Far East (FE)**. See [docs](https://advertising.amazon.com/API/docs/en-us/info/api-overview#api-endpoints) for more details.
-7. **Start Date (Optional)** is used for generating reports starting from the specified start date. This should be in YYYY-MM-DD format and not more than 60 days in the past. If a date is not specified, yesterday's date (UTC) is used. The date is treated in the timezone of the processed profile.
+7. **Start Date (Optional)** is used for generating reports starting from the specified start date. Use YYYY-MM-DD format. If not specified, the connector defaults to yesterday's date (UTC). Dates older than 60 days are automatically adjusted to 60 days ago, because Amazon Ads does not retain report data beyond that window. The date is treated in the timezone of the processed profile.
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
-10. Click **Set up source**.
+10. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
+11. Click **Set up source**.
 <!-- /env:oss -->
 
 :::note
-The Amazon Ads source connector uses Sponsored Products, Sponsored Brands, and Sponsored Display APIs which are not compatible with agency account type. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
-If you have only agency profile, please use accounts associated with the profile of seller/vendor type.
+The Amazon Ads source connector supports only **seller** and **vendor** profile types. Profiles with the **agency** type are not compatible with the Sponsored Products, Sponsored Brands, and Sponsored Display APIs and will be ignored. See [Amazon Ads profile documentation](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
+
+Both **view** and **edit** access levels are supported. Accounts with view-only permissions (common for Vendor Central accounts) will retrieve profiles and sync data normally.
 :::
 
 ## Supported sync modes
@@ -84,6 +87,7 @@ This source is capable of syncing the following streams:
 - [Portfolios](https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios#/Portfolios%20extended)
 - [Sponsored Brands Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns)
 - [Sponsored Brands Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups)
+- [Sponsored Brands Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod#tag/Ads/operation/ListSponsoredBrandsAds)
 - [Sponsored Brands Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords)
 - [Sponsored Display Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns)
 - [Sponsored Display Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups)
@@ -94,13 +98,13 @@ This source is capable of syncing the following streams:
 - [Sponsored Products Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Campaigns)
 - [Sponsored Products Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Ad%20groups)
 - [Sponsored Products Ad Group Bid Recommendations](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Bid%20recommendations/getAdGroupBidRecommendations)
-- [Sponsored Products Ad Group Suggested Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Suggested%20keywords)
+- [Sponsored Products Ad Group Suggested Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/3-0/openapi/prod#tag/Keyword-Recommendations)
 - [Sponsored Products Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Keywords)
 - [Sponsored Products Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
 - [Sponsored Products Campaign Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
 - [Sponsored Products Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads)
 - [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
-- [Sponsored Brands V3 Report](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview)
+- [Sponsored Brands Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview) (Purchased Products, Campaigns, Ad Groups, Ads)
 - Sponsored Display Reports (Campaigns, Ad Groups, Product Ads, Targets, ASINs)
 - Sponsored Products Reports (Campaigns, Ad Groups, Keywords, Targets, Product Ads, ASINs Keywords, ASINs Targets)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
@@ -119,22 +123,66 @@ All the reports are generated relative to the target profile's timezone.
 
 Campaign reports may sometimes have no data or may not appear in records. This can occur when there are no clicks or views associated with the campaigns on the requested day. For details, see [Why is my report empty?](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/faq#why-is-my-report-empty)
 
-Report data synchronization only covers the last 60 days. For details, see [Get started with v3 reporting](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started).
+Amazon Ads retains report data for 60 days. The connector automatically caps the start date to 60 days ago, so any configured or saved start date older than that is adjusted at sync time. For details, see [Get started with v3 reporting](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started).
 
-:::note
+### Report stream variants
+
 Each report stream is available in two variants:
 
-- A summary variant (for example, `sponsored_brands_v3_report_stream`) that uses `timeUnit=SUMMARY`. These streams use `reportDate` as the primary key and cursor, where `reportDate` reflects the end of the report's time window.
-- A daily variant with a `_daily` suffix (for example, `sponsored_brands_v3_report_stream_daily`) that uses `timeUnit=DAILY` for more granular, per-day data. As of connector version 8.0.0, daily variants use the API-native `date` field (the actual report date) as the primary key and cursor. If you are upgrading from an earlier version, see the [migration guide](/integrations/sources/amazon-ads-migrations).
+- A **summary** variant (for example, `sponsored_brands_v3_report_stream`) that uses `timeUnit=SUMMARY`. These streams use `reportDate` as the primary key and cursor, where `reportDate` reflects the end of the report's time window.
+- A **daily** variant with a `_daily` suffix (for example, `sponsored_brands_v3_report_stream_daily`) that uses `timeUnit=DAILY` for more granular, per-day data. As of connector version 8.0.0, daily variants use the API-native `date` field (the actual report date) as the primary key and cursor. If you are upgrading from an earlier version, see the [migration guide](/integrations/sources/amazon-ads-migrations).
 
 For more information on time units, see the Amazon Ads documentation on [timeUnit and supported columns](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/get-started#timeunit-and-supported-columns).
 
-**Important limitation**: Amazon may incorrectly detect duplicate report requests when syncing both summary and daily versions of the same report type simultaneously (for example, `sponsored_brands_v3_report_stream` and `sponsored_brands_v3_report_stream_daily`). If you encounter this issue, create a separate source with only the needed report streams and set the **Number of concurrent threads** to 2 to ensure sequential processing.
+:::warning
+Amazon may incorrectly detect duplicate report requests when syncing both summary and daily versions of the same report type simultaneously (for example, `sponsored_brands_v3_report_stream` and `sponsored_brands_v3_report_stream_daily`). If you encounter this issue, create a separate source with only the needed report streams and set the **Number of concurrent threads** to 2 to ensure sequential processing.
+:::
+
+### Sponsored Brands report types
+
+The connector provides four types of Sponsored Brands V3 reports, each using a different Amazon Ads report type:
+
+| Stream prefix | Report type | Use case |
+| :--- | :--- | :--- |
+| `sponsored_brands_v3_report_stream` | `sbPurchasedProduct` | Purchased-product attribution data. Does not include `cost`, `clicks`, or `impressions`. |
+| `sponsored_brands_campaigns_report_stream` | `sbCampaigns` | Campaign-level spend, traffic, conversion, and video metrics. |
+| `sponsored_brands_adgroups_report_stream` | `sbAdGroup` | Ad-group-level spend, traffic, conversion, and video metrics. |
+| `sponsored_brands_ads_report_stream` | `sbAds` | Ad-level metrics, keyed by `adId`. Join to `sponsored_brands_ads` to attribute metrics to a creative. |
+
+Each stream above is available in both summary and daily variants.
+
+### Identifying Sponsored Brands Video campaigns
+
+Sponsored Brands V3 reports do not carry a creative-type or ad-format column. Creative type moved to the ad entity when Amazon released Sponsored Brands V4, so use the `sponsored_brands_ads` stream: its `creative.type` field is one of `AUTO_COLLECTION`, `BRAND_VIDEO`, `MANUAL_COLLECTION`, `PRODUCT_COLLECTION`, `STORE_SPOTLIGHT`, or `VIDEO`. Join `sponsored_brands_ads.adId` to `sponsored_brands_ads_report_stream.adId` to split reporting by creative type.
+
+The connector does not set `creativeVersionToReturn` on the ads request, so Amazon returns its default `LATEST` creative for each ad — the newest revision, which may still be moderation-pending or rejected rather than the one that served during the report period. `creative.type` is fixed when an ad is created and is unaffected, but the editable fields (`creative.headline`, `creative.asins`, `creative.customImageUrl`, and so on) can describe an unapproved revision. Filter on `creative.creativeStatus` and `creative.creativeVersion`, both of which the stream emits, if you need only the serving creative.
+
+:::note
+Amazon types `adId` as a string on the ads entity API but as an integer in reporting v3, so the two streams land with different column types in your destination. Cast one side when joining — for example `... ON CAST(ads.adId AS STRING) = CAST(rpt.adId AS STRING)`. The same applies to `adGroupId` and `campaignId`.
+
+The same cast is needed between two _report_ streams. `sponsored_brands_ads_report_stream` declares `campaignId`, `adGroupId`, and `adId` as integers, matching Amazon's reporting v3 column reference. `sponsored_brands_campaigns_report_stream` and `sponsored_brands_adgroups_report_stream` still declare `campaignId` and `adGroupId` as strings; that typing predates these streams and cannot be corrected without a breaking schema change, so it is scheduled for the next major version. Until then, cast both sides when rolling ad-level metrics up to ad group or campaign level.
+
+Ads that belong to a legacy version 3 (non-multi-ad-group) Sponsored Brands campaign carry no `adId` and no `name` — Amazon lists only `adGroupId`, `campaignId`, and `state` as required on the [`Ad` object](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod#tag/Ads/operation/ListSponsoredBrandsAds) and repeats the caveat in [Managing Sponsored Brands campaigns](https://advertising.amazon.com/API/docs/en-us/guides/sponsored-brands/campaigns/managing-multi-ad-group-campaigns#ads). Those rows arrive with `adId` null, so they never match the join above, and the `sponsored_brands_ads` primary key (`campaignId` + `adGroupId` + `adId`) effectively degrades to `campaignId` + `adGroupId` for them — pick a deduplicating destination sync mode for this stream only if one row per `(campaignId, adGroupId)` is acceptable for your legacy campaigns. This is the same population the `sbAds` preview excludes (see the warning below), so while the preview is in effect those ads have no report rows to join to anyway.
+:::
+
+The `sbCampaigns`, `sbAdGroup`, and `sbAds` reports carry the video metrics that the removed V2 `sponsored_brands_video_report_stream` returned. These are video-only metrics, so they are populated only for video creatives. Amazon does not offer every metric on every report type:
+
+| Metric | `sbCampaigns` | `sbAdGroup` | `sbAds` |
+| :--- | :---: | :---: | :---: |
+| `video5SecondViews`, `video5SecondViewRate`, `videoCompleteViews`, `videoFirstQuartileViews`, `videoMidpointViews`, `videoThirdQuartileViews`, `videoUnmutes` | ✅ | ✅ | ✅ |
+| `viewabilityRate` (V2 `vtr`) | ✅ | ✅ | ✅ |
+| `viewableImpressions` | ✅ | — | ✅ |
+| `viewClickThroughRate` (V2 `vctr`) | ✅ | — | — |
+
+Amazon's own references disagree on three of those cells. The [ad group](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad-group) and [ad](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad) report-type pages leave `viewableImpressions` and `viewClickThroughRate` out of the `sbAdGroup` metric list and `viewClickThroughRate` out of the `sbAds` list, while the [column reference](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/columns) lists `sbAdGroups` and `sbAds` under the "Report types" of both metrics. The connector follows the report-type pages, because Amazon rejects an entire report request when one column is not accepted for that report type, so guessing wrong returns no rows at all rather than one empty column. If you need these metrics at the ad group or ad level, open an issue and we will confirm against a live account.
+
+:::warning
+Amazon ships the `sbCampaigns`, `sbAdGroup`, and `sbAds` report types in preview. While they are in preview, Amazon excludes all data for Sponsored Brands campaigns whose `isMultiAdGroupsEnabled` flag is `false`, as noted on the [campaign](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/campaign), [ad group](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad-group), and [ad](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad) report-type pages. Those campaigns return no rows and the sync still succeeds, so the gap is silent. Sync the `sponsored_brands_campaigns` stream and check its `isMultiAdGroupsEnabled` field to see which of your campaigns are excluded; enabling multiple ad groups on a campaign in the Amazon Ads console brings it into V3 reporting. When a campaign becomes V3-eligible — because you enabled multiple ad groups, or because Amazon ends the preview — clear the state of the affected report streams and resync. These streams are incremental with a 3-day lookback (`look_back_window`), so without a state reset they resume from the current cursor and the newly-available history inside Amazon's 60-day retention window is never fetched. `sponsored_brands_v3_report_stream` (`sbPurchasedProduct`) is not in preview and is unaffected.
 :::
 
 ## Performance considerations
 
-Information about expected report generation waiting time can be found [here](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
+Report generation can take up to three hours. For details, see the [Amazon Ads developer notes](https://advertising.amazon.com/API/docs/en-us/get-started/developer-notes).
 
 ### Rate Limits
 
@@ -157,6 +205,10 @@ If you need better sync performance and are not experiencing rate limiting error
 | `array`                  | `array`      |
 | `object`                 | `object`     |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -164,6 +216,22 @@ If you need better sync performance and are not experiencing rate limiting error
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.1.0 | 2026-08-20 | [83744](https://github.com/airbytehq/airbyte/pull/83744) | Add `sponsored_brands_ads` (`POST /sb/v4/ads/list`), `sponsored_brands_ads_report_stream`, and `sponsored_brands_ads_report_stream_daily`; request the full documented column set for the `sbCampaigns`, `sbAdGroup`, and `sbAds` report types, which restores the removed V2 `sponsored_brands_video_report_stream` video metrics in full on `sbCampaigns`, all but `viewClickThroughRate` (V2 `vctr`) on `sbAds`, and all but `viewClickThroughRate` and `viewableImpressions` on `sbAdGroup` — Amazon's report-type pages do not list those columns for those report types, and the V2 keyword grain has no V3 equivalent (see [Identifying Sponsored Brands Video campaigns](#identifying-sponsored-brands-video-campaigns)); add `goal`, `isMultiAdGroupsEnabled`, `kpi`, `siteRestrictions`, and `targetedPGDealId` to the `sponsored_brands_campaigns` schema; retry throttling and server errors on the entity streams instead of treating them as an empty page. All changes are additive — refresh the source schema in each connection to pick up the new fields. |
+| 9.0.7 | 2026-08-11 | [83379](https://github.com/airbytehq/airbyte/pull/83379) | Update dependencies |
+| 9.0.6 | 2026-07-28 | [82817](https://github.com/airbytehq/airbyte/pull/82817) | Update dependencies |
+| 9.0.5 | 2026-07-21 | [82341](https://github.com/airbytehq/airbyte/pull/82341) | Update dependencies |
+| 9.0.4 | 2026-07-14 | [81732](https://github.com/airbytehq/airbyte/pull/81732) | Update dependencies |
+| 9.0.3 | 2026-07-01 | [81333](https://github.com/airbytehq/airbyte/pull/81333) | Use `min_datetime` to cap report start date to Amazon's 60-day data retention limit, fixing off-by-one that requested 61 days back |
+| 9.0.2 | 2026-06-30 | [80957](https://github.com/airbytehq/airbyte/pull/80957) | Update dependencies |
+| 9.0.1 | 2026-06-23 | [80363](https://github.com/airbytehq/airbyte/pull/80363) | Update dependencies |
+| 9.0.0 | 2026-06-18 | [80201](https://github.com/airbytehq/airbyte/pull/80201) | Migrate `sponsored_product_ad_group_suggested_keywords` stream from deprecated V2 Suggested Keywords API to Keyword Recommendations API (`/sp/targets/keywords/recommendations`). |
+| 8.1.4 | 2026-06-18 | [80175](https://github.com/airbytehq/airbyte/pull/80175) | Fixed `sponsored_display_targets_report_stream_daily` schema: moved `date` field into `properties` block so the primary key is recognized by destinations |
+| 8.1.3 | 2026-06-17 | [79679](https://github.com/airbytehq/airbyte/pull/79679) | Add `accessLevel=view` to profiles endpoint so Vendor Central accounts with view-level OAuth grants return profiles |
+| 8.1.2 | 2026-06-16 | [79761](https://github.com/airbytehq/airbyte/pull/79761) | Update dependencies |
+| 8.1.1 | 2026-06-09 | [79217](https://github.com/airbytehq/airbyte/pull/79217) | Update dependencies |
+| 8.1.0 | 2026-06-02 | [78487](https://github.com/airbytehq/airbyte/pull/78487) | Added Sponsored Brands campaign and ad group report streams with spend and performance metrics. |
+| 8.0.4 | 2026-06-02 | [78596](https://github.com/airbytehq/airbyte/pull/78596) | Update dependencies |
+| 8.0.3 | 2026-05-18 | [78162](https://github.com/airbytehq/airbyte/pull/78162) | Promoted release candidate to GA |
 | 8.0.3-rc.2 | 2026-05-12 | [78055](https://github.com/airbytehq/airbyte/pull/78055) | Concurrency tuning iteration 2: bump default `num_workers` from 12 to 14 for progressive rollout |
 | 8.0.3-rc.1 | 2026-05-11 | [78010](https://github.com/airbytehq/airbyte/pull/78010) | Concurrency tuning iteration 1: bump default `num_workers` from 10 to 12 for progressive rollout |
 | 8.0.2 | 2026-05-05 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Skip profiles without Amazon Attribution access on attribution report performance streams instead of failing the sync |
@@ -190,7 +258,7 @@ If you need better sync performance and are not experiencing rate limiting error
 | 7.3.1 | 2025-07-19 | [60633](https://github.com/airbytehq/airbyte/pull/60633) | Update dependencies |
 | 7.3.0 | 2025-07-07 | [62839](https://github.com/airbytehq/airbyte/pull/62839) | Promoting release candidate 7.3.0-rc.1 to a main version. |
 | 7.3.0-rc.1 | 2025-06-26 | [61707](https://github.com/airbytehq/airbyte/pull/61707) | Convert to manifest-only format |
-| 7.2.3 | 2025-06-23 | [61652](https://github.com/airbytehq/airbyte/pull/61652) | Add Error Hanlding for 425 Errors With Report Streams & Configurable Concurrency Levels |
+| 7.2.3 | 2025-06-23 | [61652](https://github.com/airbytehq/airbyte/pull/61652) | Add error handling for 425 errors With Report Streams & Configurable Concurrency Levels |
 | 7.2.2 | 2025-05-10 | [59332](https://github.com/airbytehq/airbyte/pull/59332) | Update dependencies |
 | 7.2.1 | 2025-04-28 | [55745](https://github.com/airbytehq/airbyte/pull/55745) | Enable max concurrent async job count configurability |
 | 7.2.0 | 2025-04-28 | [59121](https://github.com/airbytehq/airbyte/pull/59121) | Promoting release candidate 7.2.0-rc.2 to a main version & 7.2.0-rc.1 since they were merged at the same time. |
