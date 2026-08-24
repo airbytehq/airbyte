@@ -6,7 +6,7 @@ This page contains the setup guide and reference information for the [Freshdesk]
 
 - A Freshdesk account with an [API key](https://support.freshdesk.com/support/solutions/articles/215517). The API key belongs to the agent whose credentials are used, and that agent must have access to the resources you want to sync.
 - Your Freshdesk [domain](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) in the format `yourcompany.freshdesk.com`.
-- To sync **Ticket Activities**, your account must have Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) enabled under **Admin > Account > Scheduled Exports**. Freshdesk deprecated this feature together with Legacy Reports (October 2023): it stays available only for accounts that had it enabled before the deprecation (Pro/Enterprise and legacy Estate/Forest plans) and cannot be newly enabled. Export files cover one day each and remain downloadable for 30 days, so the stream can only backfill about the last 30 days. Without the export enabled the stream syncs successfully but returns no records.
+- To sync the **Ticket Activities** stream, your account must already have Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) enabled, and the API key must belong to an account admin. See [Ticket Activities](#ticket-activities) for the limitations that come with this stream.
 
 ## Set up the Freshdesk connector in Airbyte
 
@@ -16,7 +16,7 @@ This page contains the setup guide and reference information for the [Freshdesk]
 4. Enter a name for the Freshdesk connector.
 5. For **Domain**, enter your Freshdesk domain, for example `mycompany.freshdesk.com`.
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
-7. For **Start Date**, optionally enter a date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date will be replicated for incremental streams. If not set, the connector syncs all available data.
+7. For **Start Date**, optionally enter a date in `YYYY-MM-DDTHH:mm:ssZ` format. Only data created or updated on or after this date will be replicated for incremental streams. If not set, the connector syncs all available data. The **Ticket Activities** stream ignores start dates older than 30 days, because Freshdesk deletes its export files after that.
 8. For **Requests per minute**, optionally enter a custom rate limit. If left empty, the connector uses the default for your plan. See [Performance considerations](#performance-considerations) for details.
 9. For **Rate Limit Plan**, select your Freshdesk subscription plan. This tells the connector the per-endpoint rate limits for the Tickets and Contacts APIs, which differ from the general rate limit. If you are unsure, select **Free Plan** for the most conservative limits.
 10. For **Lookback Window**, you may specify a number of days back from the current stream state to re-read data for the **Satisfaction Ratings** stream. This helps capture updates made to existing ratings after their initial creation. Records updated before the lookback window boundary are not re-synced. The default is 14 days.
@@ -60,9 +60,19 @@ Several output streams are available from this source:
 - [Solution Folders](https://developers.freshdesk.com/api/#solution_folder_attributes)
 - [Surveys](https://developers.freshdesk.com/api/#surveys)
 - [Tickets](https://developers.freshdesk.com/api/#tickets) \(Native Incremental Sync\)
-- [Ticket Activities](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) \(Incremental Sync\)
+- [Ticket Activities](#ticket-activities) \(Incremental Sync\)
 - [Ticket Fields](https://developers.freshdesk.com/api/#ticket-fields)
 - [Time Entries](https://developers.freshdesk.com/api/#time-entries)
+
+### Ticket Activities
+
+Freshdesk's API has no endpoint for ticket activity history. Instead, this stream reads the daily files that Freshdesk's [scheduled ticket activities export](https://support.freshdesk.com/support/solutions/articles/226460-export-ticket-activities-from-your-helpdesk) produces, requesting one file per day and using `performed_at` as the cursor. That design has consequences you should know about before you enable the stream.
+
+- **The export must already be enabled on your account.** Freshdesk deprecated the export along with Legacy Reports in October 2023. Accounts that had it enabled before then keep it under **Admin** > **Account** > **Scheduled Exports**; other accounts can no longer turn it on, and for them the stream syncs without error but returns no records.
+- **You can only sync about the last 30 days.** Freshdesk keeps each daily export file for 30 days, so the connector clamps the sync window to the last 30 days regardless of the **Start Date** you configure. Longer history isn't recoverable through this stream.
+- **Two fields are added by Airbyte, not Freshdesk.** Export rows have no identifier of their own, so the connector adds `_airbyte_ticket_activity_id`, derived from the contents of the row, as the primary key. It also adds `export_date`, the day whose export file the row came from. Every other field comes from Freshdesk unchanged.
+- **Export files are downloaded from Amazon S3.** If you restrict outbound traffic, allow `s3.amazonaws.com`, `*.s3.amazonaws.com`, and `*.cloudfront.net` alongside your Freshdesk domain. Without them, the connector can request the export but not download it.
+- **Missing days are skipped, but authorization errors aren't.** If Freshdesk has no export file for a given day, the connector logs that and moves on to the next day. If Freshdesk answers with 401 or 403, the sync fails: check that the API key belongs to an account admin and that the export is still enabled.
 
 ## Performance considerations
 
@@ -90,7 +100,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
-| 3.3.0 | 2026-08-21 | [80306](https://github.com/airbytehq/airbyte/pull/80306) | Add the `ticket_activities` stream (requires the deprecated Freshdesk scheduled ticket activities export to be enabled on the account) |
+| 3.3.0 | 2026-08-24 | [80306](https://github.com/airbytehq/airbyte/pull/80306) | Add the `ticket_activities` stream (requires the deprecated Freshdesk scheduled ticket activities export to be enabled on the account) |
 | 3.2.27 | 2026-08-18 | [84563](https://github.com/airbytehq/airbyte/pull/84563) | Update dependencies |
 | 3.2.26 | 2026-08-11 | [83944](https://github.com/airbytehq/airbyte/pull/83944) | Update dependencies |
 | 3.2.25 | 2026-08-04 | [83464](https://github.com/airbytehq/airbyte/pull/83464) | Update dependencies |
