@@ -126,8 +126,8 @@ class SourceS3(FileBasedSource):
             s4_spec["properties"]["endpoint"].update(
                 {
                     "description": "Endpoint to an S3 compatible service. Leave empty to use AWS. "
-                    "The custom endpoint must be secure, but the 'https' prefix is not required.",
-                    "pattern": "^(?!http://).*$",  # ignore-https-check
+                    "The custom endpoint must be a secure URL including the 'https://' prefix.",
+                    "pattern": "^$|^[Hh][Tt][Tt][Pp][Ss]://.+$",
                 }
             )
 

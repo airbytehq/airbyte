@@ -5,17 +5,19 @@
 
 import io
 import logging
+import re
 from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
 from unittest.mock import ANY, MagicMock, Mock, patch
 
+import boto3
 import pytest
 from botocore.stub import Stubber
 from moto import mock_sts
 from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
-from source_s3.v4.stream_reader import SourceS3StreamReader
+from source_s3.v4.stream_reader import SourceS3StreamReader, _get_s3_compatible_client_args
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
 from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
@@ -287,6 +289,26 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
 def test_get_s3_client_without_config_raises_exception():
     with pytest.raises(ValueError):
         SourceS3StreamReader().s3_client
+
+
+def _build_s3_client(endpoint: str):
+    # `construct` skips validation so that botocore's own endpoint handling is exercised.
+    config = Config.construct(bucket="test", streams=[], endpoint=endpoint)
+    return boto3.client(
+        "s3",
+        aws_access_key_id="dummy-access-key",
+        aws_secret_access_key="dummy-secret-key",
+        **_get_s3_compatible_client_args(config),
+    )
+
+
+def test_s3_compatible_client_args_accept_an_endpoint_with_a_scheme():
+    assert _build_s3_client("https://fake.com").meta.endpoint_url == "https://fake.com"
+
+
+def test_s3_compatible_client_args_are_rejected_by_botocore_without_a_scheme():
+    with pytest.raises(ValueError, match=re.escape("Invalid endpoint: fake.com")):
+        _build_s3_client("fake.com")
 
 
 def test_cannot_set_wrong_config_type():
