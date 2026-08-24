@@ -7,7 +7,7 @@
 #
 # Env:
 #   VERSION       source-mssql tag (default: 4.4.2). Use VERSION=dev
-#                 after `:dockerBuildx` to test a fix locally.
+#                 after `:airbyteDocker` to test a fix locally.
 #   REPRO_OUT     output parent dir (default: /tmp/source-mssql-repro)
 set -euo pipefail
 
