@@ -3,4 +3,6 @@ dependencies {
     implementation project(':airbyte-cdk:bulk:core:bulk-cdk-core-base')
 
     api project(':airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-legacy-task-load-object-storage')
+
+    testImplementation("io.mockk:mockk:1.13.12")
 }

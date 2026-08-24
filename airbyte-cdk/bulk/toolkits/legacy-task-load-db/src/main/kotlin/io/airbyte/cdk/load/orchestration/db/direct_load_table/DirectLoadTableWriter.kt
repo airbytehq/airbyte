@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.orchestration.db.direct_load_table
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
@@ -34,6 +35,21 @@ class DirectLoadTableWriter(
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
     override suspend fun setup() {
+        val streamsWithoutPrimaryKeys =
+            names.keys.filter { stream ->
+                val importType = stream.importType
+                importType is Dedupe && importType.primaryKey.isEmpty()
+            }
+        if (streamsWithoutPrimaryKeys.isNotEmpty()) {
+            val streamNames =
+                streamsWithoutPrimaryKeys.joinToString(", ") {
+                    it.mappedDescriptor.toPrettyString()
+                }
+            throw ConfigErrorException(
+                "Cannot deduplicate streams without a primary key. The following streams are configured to deduplicate but have no primary key: $streamNames. Configure a primary key for each stream or switch its sync mode to append/overwrite."
+            )
+        }
+
         val namespaces =
             names.values.map { (tableNames, _) -> tableNames.finalTableName!!.namespace }.toSet()
         destinationHandler.createNamespaces(namespaces + listOf(internalNamespace))
