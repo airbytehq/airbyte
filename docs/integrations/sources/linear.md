@@ -12,15 +12,30 @@ This page contains the setup guide and reference information for the [Linear](ht
 
 - A Linear account
 - One of the following authentication methods:
-  - **API Key**: A Linear personal API key.
   - **OAuth 2.0 (Airbyte Cloud)**: A Linear workspace administrator account with permission to authorize the required workspace data. Airbyte supplies the OAuth application.
   - **OAuth 2.0 (Self-managed)**: A Linear OAuth application and its client ID and client secret. You also need a Linear workspace administrator account with permission to authorize the required workspace data, because the connector installs the app at the workspace level.
+  - **API Key**: A Linear personal API key.
 
 ## Setup guide
 
 ### Step 1: Choose an authentication method
 
-The Linear source connector supports API key and OAuth 2.0 authentication.
+The Linear source connector supports OAuth 2.0 and API key authentication. Starting with connector version `0.2.19`, the setup form selects OAuth 2.0 by default.
+
+#### OAuth 2.0
+
+1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
+2. For a self-managed deployment, add the redirect callback URL shown during the Airbyte OAuth setup to the application's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app. Copy the application's client ID and client secret.
+3. In Airbyte, choose **OAuth 2.0**. For self-managed deployments, enter the client ID and client secret from your Linear application, then complete the authorization flow.
+4. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns a new refresh token and invalidates the previous one, and the connector stores the replacement in the source configuration.
+
+The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
+
+If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete Linear's [authorization code flow](https://linear.app/developers/oauth-2-0-authentication) yourself and use the resulting refresh token:
+
+1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&state=<STATE>&scope=read,customer:read&actor=app&prompt=consent` in a browser and approve the app. Generate a random `state` value and verify it on the callback to protect against CSRF. The `prompt=consent` parameter forces Linear to show the consent screen. Linear redirects to your redirect URI with a `code` parameter.
+2. Exchange the code for tokens by sending a form-encoded `POST` request to `https://api.linear.app/oauth/token` with `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`.
+3. Copy the `refresh_token` from the response into the connector configuration. The connector uses it to mint access tokens, which Linear expires after 24 hours. Because Linear invalidates a refresh token as soon as it's used, don't reuse the same token in another source or keep a copy for later.
 
 #### API key
 
@@ -35,27 +50,12 @@ The API key inherits your user's permissions in the workspace. The connector can
 
 For more information, see the [Linear GraphQL API documentation](https://linear.app/developers/graphql).
 
-#### OAuth 2.0
-
-1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
-2. For a self-managed deployment, add the redirect callback URL shown during the Airbyte OAuth setup to the application's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app. Copy the application's client ID and client secret.
-3. In Airbyte, choose **OAuth 2.0**. For self-managed deployments, enter the client ID and client secret from your Linear application, then complete the authorization flow.
-4. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns and stores a new refresh token.
-
-The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
-
-If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete Linear's [authorization code flow](https://linear.app/developers/oauth-2-0-authentication) yourself and use the resulting refresh token:
-
-1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&state=<STATE>&scope=read,customer:read&actor=app&prompt=consent` in a browser and approve the app. Generate a random `state` value and verify it on the callback to protect against CSRF. The `prompt=consent` parameter forces Linear to show the consent screen. Linear redirects to your redirect URI with a `code` parameter.
-2. Exchange the code for tokens by sending a form-encoded `POST` request to `https://api.linear.app/oauth/token` with `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`.
-3. Copy the `refresh_token` from the response. The connector uses it to mint access tokens, which Linear expires after 24 hours.
-
 ### Step 2: Configure the Linear connector in Airbyte
 
 1. In the Airbyte UI, navigate to **Sources** and click **+ New source**.
 2. Select **Linear** from the list of available sources.
 3. Enter a **Source name** of your choosing.
-4. For **Authentication**, choose **API Key** or **OAuth 2.0**.
+4. For **Authentication**, choose **OAuth 2.0** (the default) or **API Key**.
 5. Enter the required credentials for your authentication method.
 6. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
 7. Optionally, adjust the **Number of concurrent workers** (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting Linear's rate limits. OAuth provides more requests per hour (5,000 versus 2,500 for API keys), but a lower hourly complexity budget (2,000,000 versus 3,000,000). Because this connector uses GraphQL, complexity is usually the binding limit, so increase this value only after you have observed headroom.
@@ -126,6 +126,10 @@ Linear's GraphQL API hides archived records from paginated responses unless the 
 - Archived issues, projects, cycles, comments, and other archived entities never appear in your synced data. The `archivedAt` field is present in the schemas but is `null` for every synced record.
 - When a record you already synced is archived or deleted in Linear, it stops appearing in the API response, and Airbyte doesn't delete rows it already synced, so whatever was written stays in the destination. If you need to detect these records, compare a full refresh of the stream against your destination table.
 
+### OAuth authorization stops working
+
+If an OAuth source starts failing with an authorization error, re-run the authorization flow in the source settings to issue a fresh refresh token. Linear invalidates each refresh token when the connector exchanges it, so an OAuth source breaks permanently if its stored token is replaced with an older value. Avoid restoring an earlier copy of a source's configuration, and don't paste the same refresh token into more than one source.
+
 ### Data availability
 
 The connector retrieves only the data its credentials can see. With API key authentication, that's everything the key's owner can see in Linear. With OAuth, it's what the installed app can see in the workspace. If teams, projects, or issues are missing from your synced data, check those permissions in Linear first.
@@ -159,7 +163,7 @@ For programmatic configuration, use these parameter names:
 | ------- | ---- | ------------ | ------- |
 | 0.2.21 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Fix OAuth consent scope encoding and persist the access token issued during authorization. |
 | 0.2.20 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Persist rotated OAuth refresh tokens so OAuth connections keep working after the first token refresh. |
-| 0.2.19 | 2026-08-21 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Make OAuth 2.0 the default authentication method in the connector setup form |
+| 0.2.19 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Make OAuth 2.0 the default authentication method in the connector setup form |
 | 0.2.18 | 2026-08-21 | [84948](https://github.com/airbytehq/airbyte/pull/84948) | Clarify authentication field titles and descriptions in the connector setup form. |
 | 0.2.17 | 2026-08-21 | [84951](https://github.com/airbytehq/airbyte/pull/84951) | Enable acceptance test suites with GSM test secrets for API key and OAuth |
 | 0.2.16 | 2026-08-21 | [84944](https://github.com/airbytehq/airbyte/pull/84944) | Add suggested streams so new connections pre-select core streams and exclude Customer Requests streams |
