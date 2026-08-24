@@ -136,6 +136,7 @@ _JOB_START_FIELDS = [
     "video_play_retention_0_to_15s_actions",
     "video_play_retention_20_to_60s_actions",
     "video_play_retention_graph_actions",
+    "video_thruplay_watched_actions",
     "video_time_watched_actions",
     "website_ctr",
     "website_purchase_roas",

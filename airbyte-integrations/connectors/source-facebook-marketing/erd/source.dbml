@@ -236,6 +236,7 @@ Table "ads_insights" {
     "video_play_retention_0_to_15s_actions" array
     "video_play_retention_20_to_60s_actions" array
     "video_play_retention_graph_actions" array
+    "video_thruplay_watched_actions" array
     "video_time_watched_actions" array
     "website_ctr" array
     "website_purchase_roas" array
