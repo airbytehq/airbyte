@@ -1425,6 +1425,15 @@ definitions:
           token_refresh_endpoint: "https://api.linear.app/oauth/token"
           access_token_name: access_token
           grant_type: refresh_token
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path: ["credentials", "access_token"]
+            refresh_token_config_path: ["credentials", "refresh_token"]
+            token_expiry_date_config_path: ["credentials", "token_expiry_date"]
+          refresh_token_error_status_codes: [400, 401]
+          refresh_token_error_key: "error"
+          refresh_token_error_values:
+            ["invalid_grant", "invalid_request", "invalid_client", "unauthorized_client"]
 
 streams:
   - $ref: "#/definitions/streams/issues"
@@ -1482,27 +1491,6 @@ spec:
         order: 0
         oneOf:
           - type: object
-            title: API Key
-            required:
-              - auth_type
-              - api_key
-            properties:
-              auth_type:
-                type: string
-                title: Authentication Method
-                const: "API Key"
-                order: 0
-              api_key:
-                type: string
-                title: API Key
-                description: >-
-                  Your Linear personal API key. In Linear, go to Settings →
-                  Security & access → Personal API keys, then click Create key
-                  and copy the generated key. The key inherits your Linear
-                  user's workspace permissions.
-                airbyte_secret: true
-                order: 1
-          - type: object
             title: OAuth2.0
             required:
               - auth_type
@@ -1542,6 +1530,43 @@ spec:
                   connector uses it to refresh expired access tokens.
                 airbyte_secret: true
                 order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The access token that Linear returns when the connector
+                  refreshes your OAuth 2.0 credentials.
+                airbyte_secret: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: >-
+                  The date and time when the current OAuth 2.0 access token
+                  expires.
+                format: date-time
+                order: 5
+          - type: object
+            title: API Key
+            required:
+              - auth_type
+              - api_key
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: "API Key"
+                order: 0
+              api_key:
+                type: string
+                title: API Key
+                description: >-
+                  Your Linear personal API key. In Linear, go to Settings →
+                  Security & access → Personal API keys, then click Create key
+                  and copy the generated key. The key inherits your Linear
+                  user's workspace permissions.
+                airbyte_secret: true
+                order: 1
       start_date:
         type: string
         order: 1
@@ -1565,8 +1590,10 @@ spec:
           rate limits. The Linear API limits per-user requests by
           authentication type: API key auth allows 2,500 requests/hour, OAuth
           allows 5,000 requests/hour, and workspace OAuth scales dynamically
-          with paid seats. Stay at the default unless you are on OAuth and
-          have observed headroom in your rate-limit usage. See <a
+          with paid seats. OAuth has a lower hourly complexity budget
+          (2,000,000 points versus 3,000,000 for API keys), which is usually
+          the binding limit for this GraphQL connector. Stay at the default
+          unless you have observed headroom in your rate-limit usage. See <a
           href="https://linear.app/developers/rate-limiting">Linear API rate
           limits</a> for details.
         default: 4
@@ -1584,6 +1611,7 @@ spec:
         scopes:
           - scope: "read"
           - scope: "customer:read"
+        scopes_join_strategy: comma
         consent_url: "https://linear.app/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}&{{scopes_param}}&actor=app&prompt=consent"
         access_token_url: "https://api.linear.app/oauth/token"
         access_token_headers:
@@ -1595,7 +1623,9 @@ spec:
           client_secret: "{{ client_secret_value }}"
           redirect_uri: "{{ redirect_uri_value }}"
         extract_output:
+          - access_token
           - refresh_token
+          - expires_in
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
@@ -1605,6 +1635,16 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false

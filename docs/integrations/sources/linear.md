@@ -13,7 +13,8 @@ This page contains the setup guide and reference information for the [Linear](ht
 - A Linear account
 - One of the following authentication methods:
   - **API Key**: A Linear personal API key.
-  - **OAuth 2.0**: A Linear OAuth app with a client ID, client secret, and refresh token. A Linear workspace admin has to authorize the app, because the connector installs it at the workspace level.
+  - **OAuth 2.0 (Airbyte Cloud)**: A Linear workspace administrator account with permission to authorize the required workspace data. Airbyte supplies the OAuth application.
+  - **OAuth 2.0 (Self-managed)**: A Linear OAuth application and its client ID and client secret. You also need a Linear workspace administrator account with permission to authorize the required workspace data, because the connector installs the app at the workspace level.
 
 ## Setup guide
 
@@ -36,9 +37,10 @@ For more information, see the [Linear GraphQL API documentation](https://linear.
 
 #### OAuth 2.0
 
-1. Create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
-2. Add the redirect callback URL for your Airbyte deployment to the app's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app.
-3. Copy the app's client ID and client secret.
+1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
+2. For a self-managed deployment, add the redirect callback URL shown during the Airbyte OAuth setup to the application's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app. Copy the application's client ID and client secret.
+3. In Airbyte, choose **OAuth 2.0**. For self-managed deployments, enter the client ID and client secret from your Linear application, then complete the authorization flow.
+4. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns and stores a new refresh token.
 
 The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
 
@@ -56,7 +58,7 @@ If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete 
 4. For **Authentication**, choose **API Key** or **OAuth 2.0**.
 5. Enter the required credentials for your authentication method.
 6. Optionally, enter a **Start Date** in ISO 8601 format (for example, `2024-01-01T00:00:00.000Z`). Only records updated on or after this date are replicated for streams that support incremental sync. If you leave this field empty, the connector defaults to two years before the time of the first sync.
-7. Optionally, adjust the **Number of concurrent workers** (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting Linear's rate limits. Users on API key authentication (2,500 requests/hour) should generally stay at or below the default. Users on OAuth authentication (5,000 requests/hour) may increase this value if they have observed headroom in their rate-limit usage.
+7. Optionally, adjust the **Number of concurrent workers** (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting Linear's rate limits. OAuth provides more requests per hour (5,000 versus 2,500 for API keys), but a lower hourly complexity budget (2,000,000 versus 3,000,000). Because this connector uses GraphQL, complexity is usually the binding limit, so increase this value only after you have observed headroom.
 8. Click **Set up source** and wait for the connection test to complete.
 
 Existing connections that authenticated with a Linear API key continue to use API key authentication after upgrading to connector version `0.2.1` or later. If you upgraded an API key connection to `0.2.0` and it no longer passes connection checks, upgrade to `0.2.1` or later.
@@ -113,7 +115,7 @@ Linear enforces three types of rate limits:
 
 - **Request limits**: 2,500 requests per user per hour for API key authentication, 5,000 for OAuth app authentication. All requests by the same user share the same quota.
 - **Endpoint-specific limits**: Certain queries have lower per-endpoint limits. The connector respects the `X-RateLimit-Endpoint-Requests-Reset` header when these are hit.
-- **Complexity limits**: Each query's complexity is calculated based on the number of requested fields and pagination depth. The maximum single-query complexity is 10,000 points. The hourly complexity budget is 3,000,000 points for API key authentication and 2,000,000 for OAuth.
+- **Complexity limits**: Each query's complexity is calculated based on the number of requested fields and pagination depth. The maximum single-query complexity is 10,000 points. The hourly complexity budget is 3,000,000 points for API key authentication and 2,000,000 for OAuth. Because this connector uses GraphQL, the complexity budget is usually the binding limit before the request limit.
 
 Workspace-level OAuth applications receive dynamically increased limits based on the number of paid seats. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
 
@@ -155,6 +157,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.21 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Fix OAuth consent scope encoding and persist the access token issued during authorization. |
+| 0.2.20 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Persist rotated OAuth refresh tokens so OAuth connections keep working after the first token refresh. |
+| 0.2.19 | 2026-08-21 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Make OAuth 2.0 the default authentication method in the connector setup form |
 | 0.2.18 | 2026-08-21 | [84948](https://github.com/airbytehq/airbyte/pull/84948) | Clarify authentication field titles and descriptions in the connector setup form. |
 | 0.2.17 | 2026-08-21 | [84951](https://github.com/airbytehq/airbyte/pull/84951) | Enable acceptance test suites with GSM test secrets for API key and OAuth |
 | 0.2.16 | 2026-08-21 | [84944](https://github.com/airbytehq/airbyte/pull/84944) | Add suggested streams so new connections pre-select core streams and exclude Customer Requests streams |
