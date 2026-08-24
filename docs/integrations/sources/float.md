@@ -1,6 +1,10 @@
 # Float
 Float.com enables teams to plan and allocate resources effectively, manage team availability, and track project timelines. This connector automates the data flow between Float and other platforms, ensuring that resource schedules and project plans are up-to-date across all tools you use.
 
+## Prerequisites
+
+- A Float API token. Generate it from your Float **Account Settings** page. The token grants API access on behalf of the account owner, so treat it like a password.
+
 ## Configuration
 
 | Input | Type | Description | Default Value |
@@ -39,6 +43,10 @@ Use **full refresh | overwrite** for these streams. With **append** you accumula
 
 Set `end_date` on or after `start_date`. Float does not document how it handles an inverted range, so the results are unspecified rather than empty.
 
+## Rate limits
+
+Float allows up to 200 GET requests per minute per company for primary data endpoints, and 30 requests per minute for reports endpoints. The `reports-people` and `reports-projects` streams use the reports endpoints. Requests beyond these limits return a `429` error. For details, see [Float's rate limiting documentation](https://developer.float.com/overview_authentication.html#rate-limiting).
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -50,7 +58,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 0.1.0 | 2026-08-18 | [79087](https://github.com/airbytehq/airbyte/pull/79087) | Add reports-people and reports-projects streams |
+| 0.1.0 | 2026-08-24 | [79087](https://github.com/airbytehq/airbyte/pull/79087) | Add reports-people and reports-projects streams |
 | 0.0.57 | 2026-08-18 | [84594](https://github.com/airbytehq/airbyte/pull/84594) | Update dependencies |
 | 0.0.56 | 2026-08-11 | [83947](https://github.com/airbytehq/airbyte/pull/83947) | Update dependencies |
 | 0.0.55 | 2026-08-04 | [83470](https://github.com/airbytehq/airbyte/pull/83470) | Update dependencies |
