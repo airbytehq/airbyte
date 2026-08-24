@@ -6,7 +6,7 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Destination SFTP JSON",
     "type": "object",
-    "required": ["host", "username", "destination_path", "credentials"],
+    "required": ["host", "username", "destination_path"],
     "additionalProperties": false,
     "properties": {
       "host": {
@@ -77,6 +77,13 @@
             }
           }
         ]
+      },
+      "password": {
+        "title": "Password (legacy)",
+        "description": "[Deprecated] Password associated with the username. Use the 'credentials' block instead. Retained for backward compatibility with existing connections.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 99
       },
       "destination_path": {
         "title": "Destination path",

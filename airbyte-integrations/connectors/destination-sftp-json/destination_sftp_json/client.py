@@ -129,11 +129,10 @@ class SftpClient:
         Configure how ``ssh`` verifies the server's host key based on the
         ``host_key_checking`` configuration.
 
-        - ``auto_add`` (default): load system host keys and reject any host
-          whose key is not already present in the system known-hosts file.
-          On first connection to a new host you must add the key to
-          ``~/.ssh/known_hosts`` (e.g. via ``ssh-keyscan``) or switch to
-          ``strict`` mode with a pinned key.
+        - ``auto_add`` (default): load system host keys and automatically
+          accept and cache unknown host keys on first use (trust on first
+          use / TOFU).  Convenient but does not protect against
+          man-in-the-middle attacks on the initial connection.
         - ``strict``: pre-load the operator-supplied host key and use
           ``RejectPolicy`` so any unknown or mismatched key aborts the
           connection.
@@ -141,7 +140,7 @@ class SftpClient:
         mode = self.host_key_checking.get("mode", self.HOST_KEY_AUTO_ADD)
         if mode == self.HOST_KEY_AUTO_ADD:
             ssh.load_system_host_keys()
-            ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         elif mode == self.HOST_KEY_STRICT:
             key_type = self.host_key_checking.get("host_key_type")
             key_str = self.host_key_checking.get("host_key")

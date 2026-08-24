@@ -27,12 +27,15 @@ data:
     breakingChanges:
       1.0.0:
         message: >-
-          Version 1.0.0 replaces the top-level `password` configuration field with
-          a `credentials` block that supports both SSH password and SSH key
-          authentication. Existing connections using the legacy `password` field
-          will continue to work (the connector auto-converts to the new format),
-          but you must re-save your connection configuration in the UI to use the
-          new credential format. See the [migration guide](https://docs.airbyte.com/integrations/destinations/sftp-json-migrations).
+          Version 1.0.0 introduces a `credentials` block that supports both SSH
+          password and SSH key authentication, and adds optional host-key
+          verification. Existing connections using the legacy top-level `password`
+          field will continue to work without any action — the connector
+          automatically converts them to the new format at runtime. To take
+          advantage of SSH key authentication or strict host-key pinning,
+          re-save your connection in the UI and configure the new fields.
+          Note: once re-saved in the new format, the connection cannot be
+          rolled back to version 0.2.16.
         upgradeDeadline: "2026-11-20"
         deadlineAction: auto_upgrade
   supportLevel: community
