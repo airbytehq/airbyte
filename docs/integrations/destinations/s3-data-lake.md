@@ -27,6 +27,10 @@ Follow these steps to set up your S3 storage and Iceberg catalog permissions.
 
 S3 setup consists of creating a bucket policy and authenticating.
 
+:::note
+If you use S3-compatible storage instead of Amazon S3, set the **S3 Endpoint** field to your storage endpoint, for example `http://localhost:9000`. Leave this field empty for Amazon S3.
+:::
+
 #### Create a bucket policy
 
 Create a bucket policy.
@@ -254,6 +258,8 @@ To authenticate with Apache Polaris, follow these steps.
     - **Catalog Name**: The name of the catalog you created in Polaris (e.g., `quickstart_catalog`)
     - **Client ID**: The OAuth Client ID provided when creating the principal
     - **Client Secret**: The OAuth Client Secret provided when creating the principal
+    - **OAuth Scope**: The scope to request when authenticating, in the format `PRINCIPAL_ROLE:<role_name>`. For example: `PRINCIPAL_ROLE:catalog_admin`
+    - **OAuth2 Server URI**: The OAuth2 token endpoint, for example `https://polaris.example.com/oauth/tokens`. This field is optional today, but a future connector version requires it, so set it if you know it.
     - **Default namespace**: The namespace to be used for table identifiers when the destination namespace is set to "Destination-defined" or "Source-defined"
 
 5. Set the **Warehouse location** option to `s3://<bucket name>/path/within/bucket`.
@@ -274,7 +280,7 @@ To authenticate with Apache Polaris, follow these steps.
 
 ### How Airbyte generates the Iceberg schema
 
-In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte maps nested fields (objects, arrays, and unions) to string columns and writes them as serialized JSON.
+In each stream, Airbyte maps top-level fields to Iceberg fields. Airbyte writes objects and unions as string columns containing serialized JSON. Arrays keep their structure: if the source schema declares the array's item type, Airbyte writes an Iceberg `list` column of the mapped item type. Arrays without a declared item type become string columns containing serialized JSON.
 
 This is the full mapping between Airbyte types and Iceberg types.
 
@@ -290,7 +296,8 @@ This is the full mapping between Airbyte types and Iceberg types.
 | Timestamp with timezone*   | Timestamp with timezone        |
 | Timestamp without timezone | Timestamp without timezone     |
 | Object                     | String (JSON-serialized value) |
-| Array                      | String (JSON-serialized value) |
+| Array with a declared item type | List of the mapped item type |
+| Array without a declared item type | String (JSON-serialized value) |
 | Union                      | String (JSON-serialized value) |
 
 *Airbyte converts the `time with timezone` and `timestamp with timezone` types to Coordinated Universal Time (UTC) before writing to the Iceberg file.
