@@ -1,4 +1,5 @@
 # Float
+
 Float.com enables teams to plan and allocate resources effectively, manage team availability, and track project timelines. This connector automates the data flow between Float and other platforms, ensuring that resource schedules and project plans are up-to-date across all tools you use.
 
 ## Prerequisites
