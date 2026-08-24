@@ -7,7 +7,7 @@ import io
 
 import paramiko
 import pytest
-from destination_sftp_json.client import HostKeyError, SftpClient, SshKeyError, _TrustOnFirstUsePolicy, _load_host_key, _load_private_key
+from destination_sftp_json.client import HostKeyError, SftpClient, SshKeyError, _load_host_key, _load_private_key, _TrustOnFirstUsePolicy
 
 
 @pytest.fixture
