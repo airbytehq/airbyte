@@ -2,13 +2,16 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 import base64
+from datetime import datetime, timezone
 from urllib.parse import parse_qs
 
 import pytest
 import yaml
+from isodate import parse_duration
 from jsonschema import validate
 
 from airbyte_cdk.models import FailureType, SyncMode, Type
+from airbyte_cdk.sources.declarative.interpolation import jinja
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -22,6 +25,7 @@ CONFIG = {
         "refresh_token": "test-refresh-token",
     }
 }
+CONFIG_WITH_START_DATE = {**CONFIG, "start_date": "1970-01-01T00:00:00Z"}
 
 
 def _register_token(requests_mock):
@@ -61,9 +65,9 @@ def test_applications_cursor_pagination_uses_cursor_only_follow_up(requests_mock
 
     requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
 
-    source = get_source(CONFIG)
+    source = get_source(CONFIG_WITH_START_DATE)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(application_requests) == 2
@@ -199,6 +203,43 @@ def test_oauth_refresh_token_request_shape(requests_mock, get_source):
     assert "sub" not in token_params
 
 
+def _read_application_start_date_request(requests_mock, get_source, config):
+    _register_token(requests_mock)
+    application_requests = []
+
+    def applications_callback(request, context):
+        application_requests.append(request)
+        context.status_code = 200
+        return [{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
+
+    source = get_source(config)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    read(source, config=config, catalog=catalog)
+    return application_requests[0]
+
+
+def test_start_date_defaults_to_two_years_ago(requests_mock, get_source, monkeypatch):
+    fixed_now = datetime(2026, 8, 21, 12, 34, 56, tzinfo=timezone.utc)
+    monkeypatch.setitem(jinja._ENVIRONMENT.globals, "now_utc", lambda: fixed_now)
+
+    request = _read_application_start_date_request(requests_mock, get_source, CONFIG)
+
+    expected_start_date = (fixed_now - parse_duration("P2Y")).strftime("%Y-%m-%dT%H:%M:%S.000Z").lower()
+    assert request.qs["updated_at"] == [f"gte|{expected_start_date}"]
+
+
+def test_start_date_uses_configured_value(requests_mock, get_source):
+    request = _read_application_start_date_request(
+        requests_mock,
+        get_source,
+        {**CONFIG, "start_date": "2025-01-01T00:00:00Z"},
+    )
+
+    assert request.qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z"]
+
+
 def test_oauth_rotated_refresh_token_is_persisted(requests_mock, get_source):
     _register_token(requests_mock)
     requests_mock.get(
@@ -243,9 +284,9 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
         )
         .build()
     )
-    source = get_source(CONFIG, state=state)
+    source = get_source(CONFIG_WITH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
 
     assert application_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
     assert not output.errors
@@ -274,9 +315,9 @@ def test_flat_child_cursor_pagination_uses_cursor_only_follow_up(requests_mock, 
 
     requests_mock.get("https://harvest.greenhouse.io/v3/interviews", json=interviews_callback)
 
-    source = get_source(CONFIG)
+    source = get_source(CONFIG_WITH_START_DATE)
     catalog = CatalogBuilder().with_stream("applications_interviews", SyncMode.incremental).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(interview_requests) == 2
@@ -309,9 +350,9 @@ def test_manifest_flat_child_state_migration_reaches_request(requests_mock, get_
         )
         .build()
     )
-    source = get_source(CONFIG, state=state)
+    source = get_source(CONFIG_WITH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("applications_interviews", SyncMode.incremental).build()
-    read(source, config=CONFIG, catalog=catalog)
+    read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
 
     assert interview_requests[0].qs == {
         "per_page": ["500"],
@@ -332,9 +373,9 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
 
     requests_mock.get("https://harvest.greenhouse.io/v3/users", json=users_callback)
 
-    source = get_source(CONFIG)
+    source = get_source(CONFIG_WITH_START_DATE)
     catalog = CatalogBuilder().with_stream("users", SyncMode.incremental).build()
-    output = read(source, config=CONFIG, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
 
     assert not output.errors
     assert len(user_requests) == 2

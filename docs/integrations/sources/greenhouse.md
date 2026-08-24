@@ -14,7 +14,8 @@ To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code 
 4. Enter the name for the Greenhouse connector.
 5. Enter the **OAuth client ID** and **OAuth client secret** from your Greenhouse OAuth application.
 6. Click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token in **Refresh token**.
-7. If your deployment does not surface the **Authenticate** button, mint the refresh token manually and paste it into **Refresh token**:
+7. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates records updated in the last two years.
+8. If your deployment does not surface the **Authenticate** button, mint the refresh token manually and paste it into **Refresh token**:
    1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
    2. Within 1 minute (the authorization code TTL), exchange the `code` query parameter:
 
@@ -23,7 +24,7 @@ To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code 
       ```
 
    3. Copy `refresh_token` from the response into the **Refresh token** field.
-8. Click **Set up source**.
+9. Click **Set up source**.
 
 :::warning
 Greenhouse refresh tokens live for 24 hours and rotate on every refresh. A connection that stays idle longer than 24 hours cannot refresh and must be reauthenticated by repeating steps 6-7.
@@ -88,7 +89,7 @@ Greenhouse refresh tokens expire 24 hours after they are issued and rotate on ev
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates the 36 existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens; reauthenticate the source and review the [migration guide](./greenhouse-migrations.md) before upgrading.
+Version 1.0.0 migrates the 36 existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens, and introduces an optional **Start date** that defaults to two years ago when omitted; reauthenticate the source and review the [migration guide](./greenhouse-migrations.md) before upgrading.
 
 ## IP allow list
 

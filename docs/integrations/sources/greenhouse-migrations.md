@@ -10,6 +10,8 @@ Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 be
 
 Harvest v3 uses OAuth 2.0 Authorization Code authentication and refresh tokens instead of Harvest API keys. In Airbyte Cloud, enter the OAuth client ID and client secret and click **Authenticate** to complete the consent flow. In self-managed Airbyte, use the consent flow to mint a refresh token and provide it with the client ID and client secret. Reauthentication is required after upgrading to 1.0.0.
 
+Version 1.0.0 introduces an optional `start_date` configuration value for incremental streams. When it is unset, the connector starts two years before the current date instead of reading all history.
+
 Greenhouse issues OAuth client credentials to partners on request by email. Start that external request before the 2026-08-31 Harvest v1/v2 sunset; see the [Greenhouse connector setup](./greenhouse.md#set-up-the-greenhouse-connector-in-airbyte) for the complete setup steps.
 
 ### Stream and schema changes
