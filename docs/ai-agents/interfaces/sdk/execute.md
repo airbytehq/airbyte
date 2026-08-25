@@ -78,7 +78,7 @@ inspect_connector() -> read_skill_docs() -> read_skill_docs(section="...") -> ex
 ```
 
 - `inspect_connector()` returns the connector's hosted metadata and Context Store readiness, and resolves the skill-doc ID the other tools use.
-- `read_skill_docs()` with no section returns the outline and general guidance. `read_skill_docs(section="<id>")` returns the exact entity and action guidance the agent needs before it executes.
+- `read_skill_docs()` with no section returns the outline and general guidance. `read_skill_docs(section="<id>")` returns the exact entity and action guidance the agent needs before it executes. The section ID must be copied verbatim from the outline, including its prefix (`actions.issues.list`, not `issues.list`); anything else returns an error that the agent has to recover from.
 - `execute(entity, action, params)` runs the operation.
 
 The SDK binds the skill-doc ID internally, so the model only passes an optional `section`. This keeps the agent's context small: it reads the outline, drills into the one section it needs, then executes, instead of loading every entity and action up front. Skill docs are served by Airbyte from the same connector definition the SDK is generated from, so they stay in sync with the connector.
