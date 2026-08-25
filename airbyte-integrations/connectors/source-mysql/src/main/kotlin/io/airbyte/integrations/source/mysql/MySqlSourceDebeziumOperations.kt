@@ -260,8 +260,7 @@ class MySqlSourceDebeziumOperations(
         savedStateOffset: SavedOffset,
     ): DebeziumWarmStartState {
         val existingLogFiles: List<String> = getBinaryLogFileNames()
-        val found = existingLogFiles.contains(savedStateOffset.position.fileName)
-        if (!found) {
+        if (!savedBinlogIsPresent(savedStateOffset.position.fileName, existingLogFiles)) {
             return abortCdcSync(
                 "Connector last known binlog file ${savedStateOffset.position.fileName} is not found in the server. Server has $existingLogFiles"
             )
@@ -631,6 +630,15 @@ class MySqlSourceDebeziumOperations(
          */
         internal fun usesBinlogFallback(savedGtidSet: String?): Boolean =
             savedGtidSet.isNullOrBlank()
+
+        /**
+         * Null or unusable saved GTIDs only skip GTID checks. The binlog fallback still aborts
+         * when the saved file is no longer on the server.
+         */
+        internal fun savedBinlogIsPresent(
+            savedFileName: String,
+            existingLogFiles: List<String>,
+        ): Boolean = existingLogFiles.contains(savedFileName)
 
         /**
          * Whether GTID purge overlap would abort a warm start if GTID checks ran. Used to lock the

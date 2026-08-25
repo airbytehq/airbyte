@@ -112,9 +112,25 @@ class MySqlSourceDebeziumOperationsTest {
 
     @Test
     fun `real gtid set is left on the warm-start offset`() {
-        val sanitized =
-            sanitizeOffset("""{"file":"binlog.000001","pos":4,"gtids":"uuid:1-10"}""")
+        val sanitized = sanitizeOffset("""{"file":"binlog.000001","pos":4,"gtids":"uuid:1-10"}""")
         assertEquals("uuid:1-10", sanitized["gtids"].asText())
+    }
+
+    @Test
+    fun `missing saved binlog still aborts the warm start`() {
+        assertFalse(
+            MySqlSourceDebeziumOperations.savedBinlogIsPresent(
+                "binlog.000001",
+                listOf("binlog.000002", "binlog.000003"),
+            )
+        )
+        assertTrue(
+            MySqlSourceDebeziumOperations.savedBinlogIsPresent(
+                "binlog.000001",
+                listOf("binlog.000001", "binlog.000002"),
+            )
+        )
+        assertFalse(MySqlSourceDebeziumOperations.savedBinlogIsPresent("binlog.000001", emptyList()))
     }
 
     @Test

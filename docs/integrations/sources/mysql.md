@@ -230,7 +230,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.53.4      | 2026-08-15 | [84418](https://github.com/airbytehq/airbyte/pull/84418)   | Treat literal null saved GTIDs as absent and skip GTID purge checks so validation can use the saved binlog file.                                 |
+| 3.53.4      | 2026-08-15 | [84418](https://github.com/airbytehq/airbyte/pull/84418)   | Treat literal null saved GTIDs as absent, skip GTID purge checks, strip unusable GTIDs from the offset, and abort if the saved binlog is gone.   |
 | 3.53.3      | 2026-08-11 | [84207](https://github.com/airbytehq/airbyte/pull/84207)   | Promote to Bulk CDK 1.1.10: fix CDC meta-field decoration of full refresh streams with no source-defined primary key in speed mode.              |
 | 3.53.2      | 2026-08-06 | [83239](https://github.com/airbytehq/airbyte/pull/83239)   | Fix error 1267 (illegal mix of collations) when partitioning text primary keys with utf8mb3 or other legacy charset columns.                     |
 | 3.53.1      | 2026-07-13 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
