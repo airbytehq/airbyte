@@ -76,6 +76,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                                 | Subject                                                                         |
 | :------ | :--------- | :----------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 2.2.56 | 2026-08-11 | [83850](https://github.com/airbytehq/airbyte/pull/83850) | Update dependencies |
+| 2.2.55 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.2.54 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.2.52 — 2.2.53 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.2.53 | 2026-07-28 | [82834](https://github.com/airbytehq/airbyte/pull/82834) | Update dependencies |
+| 2.2.52 | 2026-07-21 | [82336](https://github.com/airbytehq/airbyte/pull/82336) | Update dependencies |
+| 2.2.51 | 2026-07-14 | [81739](https://github.com/airbytehq/airbyte/pull/81739) | Update dependencies |
+| 2.2.50 | 2026-06-30 | [80961](https://github.com/airbytehq/airbyte/pull/80961) | Update dependencies |
 | 2.2.49 | 2026-06-23 | [80380](https://github.com/airbytehq/airbyte/pull/80380) | Update dependencies |
 | 2.2.48 | 2026-06-16 | [79760](https://github.com/airbytehq/airbyte/pull/79760) | Update dependencies |
 | 2.2.47 | 2026-06-09 | [79203](https://github.com/airbytehq/airbyte/pull/79203) | Update dependencies |

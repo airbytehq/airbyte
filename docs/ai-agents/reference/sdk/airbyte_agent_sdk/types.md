@@ -288,6 +288,9 @@ Classes
     `context_store: airbyte_agent_sdk.schema.extensions.CacheConfig | None`
     :   The type of the None singleton.
 
+    `enrichment_configs: dict[str, list[airbyte_agent_sdk.schema.extensions.EnrichmentConfig]]`
+    :   The type of the None singleton.
+
     `entities: list[airbyte_agent_sdk.types.EntityDefinition]`
     :   The type of the None singleton.
 
@@ -376,6 +379,9 @@ Classes
     :   The type of the None singleton.
 
     `body_fields: list[str]`
+    :   The type of the None singleton.
+
+    `body_is_array: bool`
     :   The type of the None singleton.
 
     `content_type: airbyte_agent_sdk.types.ContentType`

@@ -92,6 +92,9 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [User Conversations](https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations) | Full refresh |
 | [Users](https://www.twilio.com/docs/conversations/api/user-resource) | Full refresh |
 | [Verify Services](https://www.twilio.com/docs/verify/api/service#maincontent) | Full refresh |
+| [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing) | Full refresh |
+| [Messaging Pricing Countries](https://www.twilio.com/docs/messaging/api/pricing) | Full refresh |
+| [Phone Number Pricing Countries](https://www.twilio.com/docs/phone-numbers/pricing) | Full refresh |
 
 ## Upgrading to 1.0.0
 
@@ -104,6 +107,12 @@ Version `1.0.0` moves the `services` and `roles` streams from the deprecated Pro
 The `messages`, `recordings`, and `message_media` streams only sync data from the last 400 days, regardless of the configured **Replication Start Date**. This matches [Twilio's default Message Log retention](https://www.twilio.com/en-us/blog/new-data-controls-twilio-messaging), which stores message records and media for up to 13 months (approximately 400 days). If your **Replication Start Date** is more than 400 days in the past, those streams begin from 400 days ago. Other streams respect the configured start date without this cap.
 
 To retrieve records older than 400 days, use Twilio's [Bulk Export API](https://www.twilio.com/docs/usage/bulkexport) outside of this connector.
+
+### Conference participants cover only active conferences
+
+The `conference_participants` stream returns participants only for conferences that are still active (`init` or `in-progress`). Twilio's [Participants subresource](https://www.twilio.com/docs/voice/api/conference-participant-resource#read-multiple-participant-resources) manages only active participants of in-progress conferences, so participants of a conference that has already completed aren't returned and can't be synced. To capture participant activity for the full lifetime of a conference, subscribe to Twilio [conference status callbacks](https://www.twilio.com/docs/voice/api/conference-resource) in your own application and store the events as participants join and leave.
+
+The `conferences` stream itself isn't affected by this limitation and syncs conferences in all statuses (`init`, `in-progress`, and `completed`).
 
 ## Performance considerations
 
@@ -154,6 +163,15 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.0-rc.1 | 2026-08-11 | [84203](https://github.com/airbytehq/airbyte/pull/84203) | Add voice, messaging, and phone number pricing country streams |
+| 1.0.13 | 2026-08-11 | [84128](https://github.com/airbytehq/airbyte/pull/84128) | Update dependencies |
+| 1.0.12 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 1.0.11 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.0.9 — 1.0.10 is built on SDM 7.23.7, which breaks bundled custom components |
+| 1.0.10 | 2026-07-28 | [83134](https://github.com/airbytehq/airbyte/pull/83134) | Update dependencies |
+| 1.0.9 | 2026-07-21 | [82618](https://github.com/airbytehq/airbyte/pull/82618) | Update dependencies |
+| 1.0.8 | 2026-07-14 | [82053](https://github.com/airbytehq/airbyte/pull/82053) | Update dependencies |
+| 1.0.7 | 2026-07-09 | [80330](https://github.com/airbytehq/airbyte/pull/80330) | Add `Status` filter to `conferences` and `conference_participants` streams to retrieve conferences in all statuses (`init`, `in-progress`, `completed`) after Twilio's July 2026 API default change |
+| 1.0.6 | 2026-06-30 | [81294](https://github.com/airbytehq/airbyte/pull/81294) | Update dependencies |
 | 1.0.5 | 2026-06-23 | [80703](https://github.com/airbytehq/airbyte/pull/80703) | Update dependencies |
 | 1.0.4 | 2026-06-22 | [80282](https://github.com/airbytehq/airbyte/pull/80282) | Fix `messages` and `recordings` incremental state getting stuck near the start date by aligning `cursor_granularity` with the second-precision `datetime_format`. |
 | 1.0.3 | 2026-06-16 | [80075](https://github.com/airbytehq/airbyte/pull/80075) | Update dependencies |
