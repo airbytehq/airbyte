@@ -249,6 +249,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
     def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
         config.setdefault("api_url", "https://api.github.com")
+        if not config["api_url"].endswith("/"):
+            config["api_url"] = config["api_url"] + "/"
         api_url_parsed = urlparse(config["api_url"])
 
         if not api_url_parsed.scheme.startswith("http"):

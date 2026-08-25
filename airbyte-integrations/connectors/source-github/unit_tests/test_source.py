@@ -5,15 +5,18 @@
 import logging
 import os
 from unittest.mock import MagicMock, patch
+from urllib.parse import urljoin
 
 import pytest
 import responses
 from source_github import constants
 from source_github.source import SourceGithub
+from source_github.streams import Branches
 
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -81,6 +84,26 @@ def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_m
     with pytest.raises(AirbyteTracedException) as e:
         source.check_connection(logging.getLogger(), config)
     assert e.value.message == expected_message
+
+
+@pytest.mark.parametrize("api_url", ("https://github.example.com/api/v3", "https://github.example.com/api/v3/"))
+def test_api_url_slash_normalization_keeps_python_and_manifest_urls_consistent(api_url):
+    """The manifest concatenates after `.rstrip('/')`, but Python streams `urljoin` their
+    `url_base` with a relative path — which silently drops the last path segment of a GHES
+    base URL lacking a trailing slash (`.../api/v3` + `repos/...` -> `.../api/repos/...`).
+    `_ensure_default_values` must normalize the slash so both halves resolve the same base."""
+    config = {"access_token": "test_token", "repository": "org/repo", "api_url": api_url}
+    source = SourceGithub()
+    config = source._validate_and_transform_config(config)
+    assert config["api_url"] == "https://github.example.com/api/v3/"
+
+    stream = Branches(repositories=["org/repo"], page_size_for_large_streams=10, api_url=config["api_url"])
+    joined = urljoin(stream.url_base, stream.path(stream_slice={"repository": "org/repo"}))
+    assert joined == "https://github.example.com/api/v3/repos/org/repo/branches"
+
+    manifest_url_base = SourceGithub(config=config).resolved_manifest["definitions"]["requester_base"]["url_base"]
+    interpolated = InterpolatedString.create(manifest_url_base, parameters={}).eval(config)
+    assert interpolated == "https://github.example.com/api/v3"
 
 
 def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
