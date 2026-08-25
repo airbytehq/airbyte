@@ -14,6 +14,19 @@
 - Rollout last updated by: `{{ .rollout_updated_by }}`
 - [Open Connector Rollout Manager in Retool]({{ .retool_url }}) to clean up or close out this rollout if appropriate.
 
+### ⚠️ What happens if you merge this PR now
+
+If this PR publishes a **new `-rc` version** of `{{ .connector }}`:
+
+1. The new RC is published and registered as the release candidate.
+2. **The rollout of `{{ .rollout_docker_image_tag }}` is auto-cancelled**, not finalized. Registering the new RC cancels every non-terminal rollout for this connector with `errorMsg = "Rollout was incomplete when a new rollout was started. Cancelled without unpinning."`
+3. **Actors already pinned to `{{ .rollout_docker_image_tag }}` stay pinned to it.** Cancellation does not unpin, so those connections keep syncing on the old RC image — they are *not* rolled back to the previous GA version, and they are *not* moved to the new RC by the merge itself.
+4. Nothing rolls out on its own. A new rollout is created in `initialized` and must be started (autopilot or manually in [Connector Rollout Manager]({{ .retool_url }})). Starting it migrates the previous rollout's pins onto the new RC by default (`migratePins`), which is what moves those stranded actors forward. Until then, they stay on the old RC.
+
+If this PR removes the `-rc` suffix (RC → GA), or does not change the version at all, see the other cases in **More Information** below.
+
+To avoid stranded pins, finalize or cancel the active rollout in [Connector Rollout Manager]({{ .retool_url }}) before merging.
+
 ### Version on `master` Branch: `{{ .master_version }}`
 
 - RC marker on `master` branch: `{{ .master_rc_marker }}`
@@ -40,9 +53,7 @@ No new connector version should be released, and the active rollout should conti
 
 <details><summary>If the connector version increments to a higher `-rc` version...</summary>
 
-After this PR is merged, the new RC will be published and registered, replacing the active RC marker. When the new RC is registered, the platform cancels any existing non-terminal rollout for this connector without unpinning actors.
-
-After merging, you still need to start the new rollout. During start, pinned actors from the previous rollout can be moved to the new RC.
+See the "What happens if you merge this PR now" section above: the new RC replaces the active RC marker, the in-flight rollout is cancelled without unpinning, and the new rollout still has to be started before the previously pinned actors move onto the new RC.
 
 </details>
 
