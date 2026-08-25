@@ -36,7 +36,7 @@ class ClickhouseSqlGenerator(
         if (config.resolvedUseReplicatedEngines) "Replicated$this" else this
 
     fun createNamespace(namespace: String): String {
-        return "CREATE DATABASE IF NOT EXISTS `$namespace` $onCluster;".andLog()
+        return "CREATE DATABASE IF NOT EXISTS `$namespace`$onCluster;".andLog()
     }
 
     fun createTable(

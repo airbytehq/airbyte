@@ -113,11 +113,12 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
 
-    @get:JsonSchemaTitle("Use Replicated Table Engines")
+    @get:JsonSchemaTitle("Enable Replication")
     @get:JsonPropertyDescription(
-        "Create tables with the Replicated* variant of the table engine the connector selects" +
-            " (ReplicatedMergeTree / ReplicatedReplacingMergeTree). Required on multi-replica" +
-            " ClickHouse clusters."
+        "Enable this to ensure synced data is replicated across all nodes in a self-managed" +
+            " ClickHouse cluster. Not needed for single-node deployments or ClickHouse Cloud." +
+            " See the <a href=\"https://clickhouse.com/docs/engines/table-engines/mergetree-family/replication\">" +
+            "ClickHouse replication docs</a> for more information."
     )
     @get:JsonProperty("use_replicated_engines")
     @get:JsonSchemaInject(json = """{"order": 9, "default": false, "group": "advanced"}""")
@@ -125,8 +126,11 @@ class ClickhouseSpecificationOss : ClickhouseSpecification() {
 
     @get:JsonSchemaTitle("Cluster Name")
     @get:JsonPropertyDescription(
-        "If set, every DDL statement is executed ON CLUSTER <name>, so tables are" +
-            " created/altered/dropped on all cluster nodes."
+        "Name of your ClickHouse cluster. When provided, table definitions are automatically" +
+            " propagated to all cluster nodes. Required for clusters using the Atomic database" +
+            " engine. Leave empty for single-node setups, ClickHouse Cloud, or databases using" +
+            " the <a href=\"https://clickhouse.com/docs/engines/database-engines/replicated\">" +
+            "Replicated database engine</a>."
     )
     @get:JsonProperty("cluster_name")
     @get:JsonSchemaInject(

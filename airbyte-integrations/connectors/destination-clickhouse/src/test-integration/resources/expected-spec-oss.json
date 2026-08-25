@@ -63,15 +63,15 @@
       },
       "use_replicated_engines" : {
         "type" : "boolean",
-        "description" : "Create tables with the Replicated* variant of the table engine the connector selects (ReplicatedMergeTree / ReplicatedReplacingMergeTree). Required on multi-replica ClickHouse clusters.",
-        "title" : "Use Replicated Table Engines",
+        "description" : "Enable this to ensure synced data is replicated across all nodes in a self-managed ClickHouse cluster. Not needed for single-node deployments or ClickHouse Cloud. See the <a href=\"https://clickhouse.com/docs/engines/table-engines/mergetree-family/replication\">ClickHouse replication docs</a> for more information.",
+        "title" : "Enable Replication",
         "order" : 9,
         "default" : false,
         "group" : "advanced"
       },
       "cluster_name" : {
         "type" : "string",
-        "description" : "If set, every DDL statement is executed ON CLUSTER <name>, so tables are created/altered/dropped on all cluster nodes.",
+        "description" : "Name of your ClickHouse cluster. When provided, table definitions are automatically propagated to all cluster nodes. Required for clusters using the Atomic database engine. Leave empty for single-node setups, ClickHouse Cloud, or databases using the <a href=\"https://clickhouse.com/docs/engines/database-engines/replicated\">Replicated database engine</a>.",
         "title" : "Cluster Name",
         "order" : 10,
         "default" : "",
