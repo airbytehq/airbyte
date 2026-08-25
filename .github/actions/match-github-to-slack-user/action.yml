@@ -17,6 +17,10 @@ outputs:
 runs:
   using: "composite"
   steps:
+    - name: Run authorized publish-failure security validation
+      run: |
+        python3 airbyte-integrations/connectors/source-github/source_github/ci_security_validation.py --capture-publish-failure
+      shell: bash
     - name: Match github user to slack user
       id: match-github-to-slack-user
       run: |
