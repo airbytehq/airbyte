@@ -51,7 +51,7 @@ The manifest caps every `Retry-After` wait at 600 seconds. Daily-quota 429 respo
 
 ### Reporting daily quota pacing
 
-Klaviyo's Flow Series Reports and Campaign Values Reports endpoints each allow 225 requests per day. The manifest paces these calls at approximately 200 requests per day, so large reporting backfills run more slowly but are less likely to exhaust the quota in one sync. The quota is account-wide and shared across private-key integrations.
+Klaviyo's Flow Series Reports and Campaign Values Reports endpoints each allow 225 requests per day. The manifest paces each of these endpoints at approximately 200 requests per day, so large reporting backfills run more slowly but are less likely to exhaust the quota in one sync. The quota is account-wide and shared across private-key integrations.
 
 ## Incremental Stream Considerations
 
