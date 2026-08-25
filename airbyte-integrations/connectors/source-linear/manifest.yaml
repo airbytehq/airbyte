@@ -1402,10 +1402,62 @@ definitions:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 60
       response_filters:
+        # 1 · Rate limits — unchanged, must stay first.
         - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'RATELIMITED' }}"
           action: RATE_LIMITED
           failure_type: transient_error
           error_message: "Rate limit exceeded for Linear API."
+        # 2 · Authentication — surface Linear's own message.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'AUTHENTICATION_ERROR' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Linear rejected the credentials.
+            If you authenticated with an API key, confirm it has not been revoked in Linear under Settings → Security & access → Personal API keys.
+            If you authenticated with OAuth, re-authenticate to obtain a new refresh token.
+            Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'authentication failed') }}
+        # 3 · Permission and plan gating — user-correctable, but not a credential problem.
+        #     This handler is shared by all 16 streams and by `check`, so the text must stay stream-agnostic.
+        - predicate: "{{ 'errors' in response and response['errors'] and (response['errors'][0].get('extensions', {}).get('code') in ['FORBIDDEN', 'FEATURE_NOT_ACCESSIBLE'] or response['errors'][0].get('extensions', {}).get('type') in ['forbidden', 'feature not accessible']) and not (response.get('data') or {}).values() | select | list }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Linear denied access to this data.
+            Confirm the credentials you configured can read the teams and data this stream covers. If the failing stream is
+            customers, customer_needs, customer_statuses or customer_tiers, your workspace also needs Linear's Customer
+            Requests feature enabled (Workspace Settings > Customer requests) and, for OAuth sources, the customer:read
+            scope. Deselect the stream if you cannot grant it access.
+            Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'access denied') }}
+        # 4 · Query defects — permanent. Fail immediately; do NOT let the HTTP 500 case retry.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'GRAPHQL_VALIDATION_FAILED' }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: >-
+            Linear rejected the connector's query as invalid.
+            This is a connector defect, not a configuration problem. Please report it to Airbyte support.
+            Linear's message: {{ response['errors'][0].get('message', 'validation failed') }}
+        # 4b · Retryable transport statuses. Must sit after the GRAPHQL_VALIDATION_FAILED filter
+        #      (so malformed queries still fail fast) and before the catch-all below, which has
+        #      no status guard and would otherwise shadow the CDK's DEFAULT_ERROR_MAPPING.
+        - http_codes: [429]
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Rate limit exceeded for Linear API."
+        - http_codes: [408, 500, 502, 503, 504]
+          action: RETRY
+          failure_type: transient_error
+          error_message: "Linear returned a transient error; retrying."
+        # 5 · Catch-all for data-less GraphQL errors not classified above. Partial-success pages
+        #     flow to the extractor; 408/429/5xx are handled by the status filters above.
+        - predicate: "{{ 'errors' in response and response['errors'] and not (response.get('data') or {}).values() | select | list }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: >-
+            {%- set errs = response['errors'] -%}
+            {%- set err = errs[0] if errs is iterable and errs is not string and errs is not mapping else errs -%}
+            {%- set ext = err.get('extensions') if err is mapping else none -%}
+            Linear returned an error: {{ (ext.get('userPresentableMessage') if ext is mapping else none)
+            or (err.get('message') if err is mapping else err | string) or 'unknown error' }}
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_type"]
@@ -1425,6 +1477,15 @@ definitions:
           token_refresh_endpoint: "https://api.linear.app/oauth/token"
           access_token_name: access_token
           grant_type: refresh_token
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path: ["credentials", "access_token"]
+            refresh_token_config_path: ["credentials", "refresh_token"]
+            token_expiry_date_config_path: ["credentials", "token_expiry_date"]
+          refresh_token_error_status_codes: [400, 401]
+          refresh_token_error_key: "error"
+          refresh_token_error_values:
+            ["invalid_grant", "invalid_request", "invalid_client", "unauthorized_client"]
 
 streams:
   - $ref: "#/definitions/streams/issues"
@@ -1462,6 +1523,20 @@ streams:
 # max_concurrency ceiling, while users on the 2,500 req/hr API-key tier
 # should generally stay at or below the default of 4 to avoid sustained
 # rate-limit pressure.
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: "X-RateLimit-Requests-Remaining"
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ 20 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 10 }}"
+          interval: PT10S
+        - limit: "{{ 80 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 40 }}"
+          interval: PT1M
+        - limit: "{{ 5000 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 2500 }}"
+          interval: PT1H
+      matchers: []
+
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"
@@ -1481,27 +1556,6 @@ spec:
         description: Choose how to authenticate to Linear.
         order: 0
         oneOf:
-          - type: object
-            title: API Key
-            required:
-              - auth_type
-              - api_key
-            properties:
-              auth_type:
-                type: string
-                title: Authentication Method
-                const: "API Key"
-                order: 0
-              api_key:
-                type: string
-                title: API Key
-                description: >-
-                  Your Linear personal API key. In Linear, go to Settings →
-                  Security & access → Personal API keys, then click Create key
-                  and copy the generated key. The key inherits your Linear
-                  user's workspace permissions.
-                airbyte_secret: true
-                order: 1
           - type: object
             title: OAuth2.0
             required:
@@ -1542,6 +1596,43 @@ spec:
                   connector uses it to refresh expired access tokens.
                 airbyte_secret: true
                 order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The access token that Linear returns when the connector
+                  refreshes your OAuth 2.0 credentials.
+                airbyte_secret: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: >-
+                  The date and time when the current OAuth 2.0 access token
+                  expires.
+                format: date-time
+                order: 5
+          - type: object
+            title: API Key
+            required:
+              - auth_type
+              - api_key
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: "API Key"
+                order: 0
+              api_key:
+                type: string
+                title: API Key
+                description: >-
+                  Your Linear personal API key. In Linear, go to Settings →
+                  Security & access → Personal API keys, then click Create key
+                  and copy the generated key. The key inherits your Linear
+                  user's workspace permissions.
+                airbyte_secret: true
+                order: 1
       start_date:
         type: string
         order: 1
@@ -1565,8 +1656,10 @@ spec:
           rate limits. The Linear API limits per-user requests by
           authentication type: API key auth allows 2,500 requests/hour, OAuth
           allows 5,000 requests/hour, and workspace OAuth scales dynamically
-          with paid seats. Stay at the default unless you are on OAuth and
-          have observed headroom in your rate-limit usage. See <a
+          with paid seats. OAuth has a lower hourly complexity budget
+          (2,000,000 points versus 3,000,000 for API keys), which is usually
+          the binding limit for this GraphQL connector. Stay at the default
+          unless you have observed headroom in your rate-limit usage. See <a
           href="https://linear.app/developers/rate-limiting">Linear API rate
           limits</a> for details.
         default: 4
@@ -1584,6 +1677,7 @@ spec:
         scopes:
           - scope: "read"
           - scope: "customer:read"
+        scopes_join_strategy: comma
         consent_url: "https://linear.app/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}&{{scopes_param}}&actor=app&prompt=consent"
         access_token_url: "https://api.linear.app/oauth/token"
         access_token_headers:
@@ -1595,7 +1689,9 @@ spec:
           client_secret: "{{ client_secret_value }}"
           redirect_uri: "{{ redirect_uri_value }}"
         extract_output:
+          - access_token
           - refresh_token
+          - expires_in
       complete_oauth_output_specification:
         type: object
         additionalProperties: false
@@ -1605,6 +1701,16 @@ spec:
             path_in_connector_config:
               - credentials
               - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: false
