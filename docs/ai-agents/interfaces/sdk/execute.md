@@ -176,9 +176,15 @@ for tool in build_connector_tools(github, framework="mcp").as_list():
 
 ### Custom tool bodies with `agent_tool`
 
-`build_connector_tools` writes the tool bodies for you. When you need your own, to log calls, post-process results, restrict which operations the agent can reach, or run a framework the SDK doesn't natively support, use the generated connector's `agent_tool` decorator instead. It keeps the same progressive flow: you write the three functions, and the decorator attaches the guidance that steers the agent from inspect to docs to execute.
+`build_connector_tools` writes the tool bodies for you. When you need your own to log calls, post-process results, restrict reachable agent operations, or run a framework the SDK doesn't natively support, use the generated connector's `agent_tool` decorator instead. It keeps the same progressive flow: you write the three functions, and the decorator attaches guidance that steers the agent from inspect to docs to execute.
 
-Decorate one function per role. The role is inferred from the signature: `(entity, action, ...)` is execute, `(section, ...)` is docs, and `()` is inspect. Pass it explicitly (`agent_tool("execute")`) if a wrapper's signature is ambiguous. The optional `inspect_tool=` and `docs_tool=` names are woven into the execute guidance so the agent refers to your registered tool names rather than generic ones.
+Decorate one function per role. The role is inferred from the signature:
+
+- `(entity, action, ...)` is execute
+- `(section, ...)` is docs
+- `()` is inspect
+
+Pass the role explicitly (such as `agent_tool("execute")`) if a wrapper has an ambiguous signature. The optional `inspect_tool=` and `docs_tool=` names are woven into the execute guidance so the agent refers to your registered tool names rather than generic ones.
 
 ```python title="agent.py"
 from pydantic_ai import Agent
@@ -208,7 +214,11 @@ async def github_read_docs(section: str | None = None):
     return await github.read_skill_docs(section)
 ```
 
-Because you name the functions, this is also the pattern for multi-connector agents: give each connector its own `<connector>_execute`, `<connector>_inspect`, and `<connector>_read_docs` trio.
+For multi-connector agents, add the connector name to the start of each function name to avoid naming ambiguity. Give each connector its own:
+
+- `<connector>_execute`
+- `<connector>_inspect`
+- `<connector>_read_docs`
 
 #### Choose a failure signal with `framework=`
 
