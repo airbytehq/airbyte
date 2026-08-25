@@ -38,3 +38,9 @@ The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: 
 ### Future incremental stream candidates
 
 - **No API date filter (4 streams):** `customer_statuses`, `customer_tiers`, `issue_relations`, `project_statuses` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+
+## Error handling
+
+Linear's GraphQL API returns errors in an `errors` array carrying a machine-readable `extensions.code` and a human-readable `extensions.userPresentableMessage`. HTTP status is an unreliable signal on its own — a malformed query returns 500, not 400 — so the ordered `response_filters` under `definitions.base_requester.error_handler` match on `extensions.code` rather than status. See `CONTRIBUTING.md` § Error handling for the code → action → failure-type table.
+
+**Why this matters:** the filter list is ordered and the CDK returns the first match, so the `RATELIMITED` filter must stay first, `GRAPHQL_VALIDATION_FAILED` must stay before the 4b transport-status filters, and the catch-all must stay last. All 16 streams and the `check` operation share this single handler through `$ref: "#/definitions/base_requester"` and no stream overrides it, so any remediation text written into a filter is emitted for every stream. `FORBIDDEN` and `FEATURE_NOT_ACCESSIBLE` are unverified code strings; if Linear's real values differ, the `extensions.type` branch or catch-all handles those errors instead of misclassifying them.
