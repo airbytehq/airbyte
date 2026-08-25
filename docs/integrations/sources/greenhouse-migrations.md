@@ -4,7 +4,23 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 1.0.0
 
-Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. This is a breaking release: refresh the source schema and reset affected streams after upgrading.
+Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. This is a breaking release; see the recommended upgrade path below before upgrading.
+
+### Recommended upgrade path: create a new connection
+
+**No stream in 1.0.0 is a one-to-one replacement for its Harvest v1 equivalent.** The migration changes authentication, the endpoint each stream reads, pagination, incremental cursors and state, and the record shape of every stream, so the rows and columns that 1.0.0 produces do not line up with the rows and columns already in your destination.
+
+Because of that, we highly recommend creating a **brand-new connection** with `source-greenhouse` 1.0.0 and a new destination namespace or table prefix, instead of upgrading the existing connection and refreshing its data. That keeps the historical Harvest v1 data already in your destination intact while v3 data lands cleanly alongside it, and it lets you reconcile the two before retiring the old tables. Refreshing an existing connection instead replaces that history with v3-shaped records, and any downstream model built on the v1 columns breaks at the same moment.
+
+Steps:
+
+1. Create a new Greenhouse source on 1.0.0 and complete the OAuth consent flow (see [Authentication](#authentication)).
+2. Create a new connection to your destination, writing to a different namespace or stream prefix than the existing Greenhouse connection.
+3. Enable the streams you need, optionally setting **Start date** to bound the initial backfill (omitting it replicates all history, matching the previous behavior).
+4. Sync, then update downstream models against the v3 columns — see [Stream and schema changes](#stream-and-schema-changes) for the removed and renamed fields.
+5. Disable the old connection once the new one has caught up, and keep its destination tables for as long as you need the v1 history.
+
+If you upgrade the existing connection in place instead, you must re-authenticate with OAuth, refresh the schema, and reset the affected streams; `applications` will backfill once because its legacy `applied_at` watermark is discarded.
 
 ### Authentication
 
@@ -52,7 +68,7 @@ The 36 existing streams now use their Harvest v3 collection endpoints, and this 
 | user_roles | `type` | |
 | users | `departments`, `offices` | `disabled` -> `deactivated`, `primary_email_address` -> `primary_email` |
 
-Refresh the schema in every destination and reset streams whose records or fields are used downstream. Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
+If you upgrade an existing connection in place, refresh the schema in every destination and reset streams whose records or fields are used downstream. Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
 
 `custom_fields.custom_field_options` is not removed in v3, only relocated: Harvest v3 serves it from `GET /v3/custom_field_options`. Enable the new `custom_field_options` stream and join it back to `custom_fields` on `custom_field_id` to rebuild the nested v1 array.
 
