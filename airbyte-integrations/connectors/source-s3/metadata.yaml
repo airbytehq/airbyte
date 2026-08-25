@@ -17,6 +17,15 @@ data:
     - title: Changelog
       url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/WhatsNew.html
       type: api_release_history
+    - title: Amazon S3 API reference
+      url: https://docs.aws.amazon.com/AmazonS3/latest/API/Welcome.html
+      type: api_reference
+    - title: Amazon S3 request authentication
+      url: https://docs.aws.amazon.com/AmazonS3/latest/API/specify-signature-version.html
+      type: authentication_guide
+    - title: Amazon S3 IAM and access management
+      url: https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-iam.html
+      type: authentication_guide
   githubIssueLabel: source-s3
   icon: s3.svg
   license: ELv2
