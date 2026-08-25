@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Facebook M
 
 ## Prerequisites
 
-- A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
+- A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762) (optional: if omitted, the connector syncs every ad account the authenticated user can access)
 <!-- env:cloud -->
 -  **For Airbyte Cloud**: If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
 <!-- /env:cloud -->
@@ -142,7 +142,7 @@ Refer to Facebook's official documentation on [Access Levels and Authorization](
 
 #### Facebook Marketing Source Settings
 <FieldAnchor field="account_ids">
-1. For **Account ID(s)**, enter one or multiple comma-separated [Facebook Ad Account ID Numbers](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information.
+1. (Optional) For **Account ID(s)**, enter one or multiple comma-separated [Facebook Ad Account ID Numbers](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information. If you leave this field empty, the connector discovers and syncs every ad account accessible to the authenticated user, re-evaluating that list on every sync. Prefer listing accounts explicitly when your token can access many accounts: the connection check and each sync scale with the account count and are more likely to hit Facebook's rate limits, and an account that becomes accessible later triggers a full backfill for that account.
 </FieldAnchor>
 
 <FieldAnchor field="start_date">

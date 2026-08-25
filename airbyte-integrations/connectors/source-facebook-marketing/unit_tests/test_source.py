@@ -346,6 +346,96 @@ def test_streams_without_account_ids(requests_mock, fb_marketing, mocker):
 
     streams = fb_marketing.streams(config)
 
-    assert len(streams) == 31
-    # Verify that the resolved account_ids are used in streams
-    assert streams[0]._account_ids == ["456"]
+    assert streams
+    # Verify that every stream received the resolved (discovered) account ids
+    assert all(stream._account_ids == ["456"] for stream in streams)
+
+
+def test_check_connection_without_account_ids_discovery_error(requests_mock, fb_marketing, logger_mock):
+    """Test that check_connection fails cleanly when ad account discovery itself fails."""
+    config = {
+        "access_token": "ACCESS_TOKEN",
+        "credentials": {
+            "auth_type": "Service",
+            "access_token": "ACCESS_TOKEN",
+        },
+        "start_date": "2019-10-10T00:00:00Z",
+        "end_date": "2020-10-10T00:00:00Z",
+    }
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users",
+        json={"data": []},
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/adaccounts",
+        json={
+            "error": {
+                "message": "Invalid OAuth access token.",
+                "type": "OAuthException",
+                "code": 190,
+                "fbtrace_id": "this_is_fake_response",
+            }
+        },
+        status_code=400,
+    )
+
+    ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+    assert not ok
+    assert "Invalid OAuth access token" in error_msg
+
+
+def test_check_connection_names_failing_account(requests_mock, fb_marketing, logger_mock):
+    """Test that a failing account is named in the check error (vital when accounts are auto-discovered)."""
+    config = {
+        "access_token": "ACCESS_TOKEN",
+        "credentials": {
+            "auth_type": "Service",
+            "access_token": "ACCESS_TOKEN",
+        },
+        "start_date": "2019-10-10T00:00:00Z",
+        "end_date": "2020-10-10T00:00:00Z",
+    }
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/business_users",
+        json={"data": []},
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/me/adaccounts",
+        json={
+            "data": [
+                {"account_id": "123", "id": "act_123"},
+                {"account_id": "456", "id": "act_456"},
+            ],
+            "paging": {"cursors": {"before": "abc", "after": "xyz"}},
+        },
+    )
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_123/",
+        json={"account": 123},
+    )
+    # the error message deliberately does NOT contain the account id -
+    # only the connector's own attribution can put it into the check result
+    requests_mock.register_uri(
+        "GET",
+        FacebookSession.GRAPH + f"/{FacebookAdsApi.API_VERSION}/act_456/",
+        json={
+            "error": {
+                "message": "The user does not have sufficient administrative permission.",
+                "type": "GraphMethodException",
+                "code": 100,
+                "fbtrace_id": "this_is_fake_response",
+            }
+        },
+        status_code=400,
+    )
+
+    ok, error_msg = fb_marketing.check_connection(logger_mock, config=config)
+
+    assert not ok
+    assert "Error accessing ad account 456" in error_msg

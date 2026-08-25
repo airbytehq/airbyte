@@ -138,15 +138,22 @@ class SourceFacebookMarketing(AbstractSource):
             account_ids = self._resolve_account_ids(api, config.account_ids)
             config.account_ids = account_ids
 
+            custom_insights_streams = self.get_custom_insights_streams(api, config)
             for account_id in account_ids:
-                # Get Ad Account to check creds
-                logger.info(f"Attempting to retrieve information for account with ID: {account_id}")
-                ad_account = api.get_account(account_id=account_id)
-                logger.info(f"Successfully retrieved account information for account: {ad_account}")
+                try:
+                    # Get Ad Account to check creds
+                    logger.info(f"Attempting to retrieve information for account with ID: {account_id}")
+                    ad_account = api.get_account(account_id=account_id)
+                    logger.info(f"Successfully retrieved account information for account: {ad_account}")
 
-                # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
-                for stream in self.get_custom_insights_streams(api, config):
-                    stream.check_breakdowns(account_id=account_id)
+                    # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
+                    for stream in custom_insights_streams:
+                        stream.check_breakdowns(account_id=account_id)
+                except facebook_business.exceptions.FacebookRequestError as e:
+                    # name the failing account so users can exclude it via account_ids (vital with auto-discovered accounts)
+                    return False, f"Error accessing ad account {account_id}: {e._api_error_message}"
+                except AirbyteTracedException as e:
+                    return False, f"Error accessing ad account {account_id}: {e.message}. Full error: {e.internal_message}"
 
         except facebook_business.exceptions.FacebookRequestError as e:
             return False, e._api_error_message
