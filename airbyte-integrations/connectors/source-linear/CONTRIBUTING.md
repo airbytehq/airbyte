@@ -2,6 +2,16 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+## Rate-Limit Budget
+
+The connector uses an `HttpAPIBudget` to proactively pace requests against Linear's documented request ceilings: 2,500 requests per hour for API-key authentication and 5,000 requests per hour for OAuth authentication. Workspace OAuth applications can receive dynamically increased limits based on the number of paid seats.
+
+The budget uses 10-second, 1-minute, and hourly `MovingWindowCallRatePolicy` rates instead of one hourly rate. Because the policy uses a moving window, a single hourly rate would allow the whole quota to be spent in a burst and then block until the window slid. The 1-minute rate averages requests below the documented hourly ceiling, the 10-second rate caps bursts across concurrent workers, and the hourly rate enforces the documented ceiling.
+
+`ratelimit_reset_header` is deliberately left unset. Linear sends `X-RateLimit-*-Reset` values as epoch milliseconds, while `HttpAPIBudget.get_reset_ts_from_response` passes the value to `datetime.fromtimestamp`, which expects seconds and raises on a 13-digit value. `MovingWindowCallRatePolicy.update` ignores a reset timestamp anyway, and supplying one suppresses the bucket-fill behavior used when no calls remain. The existing `WaitUntilTimeFromHeader` strategies already handle Linear's reset header with the `regex` `^\d{10}`.
+
+The reactive `DefaultErrorHandler` remains the safety net because the budget cannot see quota consumed elsewhere or model Linear's complexity and per-endpoint quotas.
+
 ## Incremental Stream Considerations
 
 The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: { gte: ... } }` on most entity types, which the connector uses extensively — 12 streams are already incremental (added in PR airbytehq/airbyte#76429). The remaining 4 FR parent streams are config-style lookups (`customer_statuses`, `customer_tiers`, `project_statuses`) and `issue_relations` which lacks a documented `updatedAt` filter in the GraphQL schema.
