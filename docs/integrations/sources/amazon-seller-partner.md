@@ -291,10 +291,11 @@ Because the Brand Analytics streams always request the same weekly window, they'
 
 ### Report window size
 
-**Period In Days** controls how much time each report request covers, and defaults to 90 days. Report streams cap it at 365 days, and four cap it lower because Amazon limits how much data those reports return per request:
+**Period In Days** controls how much time each report request covers, and defaults to 90 days. Report streams cap it at 365 days, and these streams cap it lower because Amazon limits how much data they return per request:
 
-| Report type | Maximum window |
-| :---------- | :------------- |
+| Stream or report type | Maximum window |
+| :-------------------- | :------------- |
+| Orders | 30 days |
 | `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` | 30 days |
 | `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` | 30 days |
 | `GET_AMAZON_FULFILLED_SHIPMENTS_DATA_GENERAL` | 30 days |
@@ -302,10 +303,9 @@ Because the Brand Analytics streams always request the same weekly window, they'
 
 If you set a larger value, the connector uses the cap for those streams and your value for the rest.
 
-Several streams ignore **Period In Days** entirely:
+Other streams ignore **Period In Days** entirely:
 
 - The daily report streams listed in [Daily report windows](#daily-report-windows) always request a single calendar day per report, and Sales and Traffic Business Report (Monthly) always requests a single calendar month.
-- Orders requests at most 30 days at a time.
 - Vendor Orders, Vendor Order Status, and Vendor Direct Fulfillment Shipping always request 7 days at a time.
 - Financial Events and Financial Event Groups use **Financial Events Step Size** instead.
 
