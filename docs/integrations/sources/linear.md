@@ -157,6 +157,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.2.22 | 2026-08-24 | [85001](https://github.com/airbytehq/airbyte/pull/85001) | Correct developer documentation for OAuth refresh-token rotation. |
 | 0.2.21 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Fix OAuth consent scope encoding and persist the access token issued during authorization. |
 | 0.2.20 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Persist rotated OAuth refresh tokens so OAuth connections keep working after the first token refresh. |
 | 0.2.19 | 2026-08-21 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Make OAuth 2.0 the default authentication method in the connector setup form |
