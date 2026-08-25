@@ -291,16 +291,14 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         return getenv("DEPLOYMENT_MODE", "").upper() != "CLOUD"
 
     def user_friendly_error_message(self, message: str) -> str:
+        # The two 404 branches this helper used to carry — "Repo name X is unknown" and
+        # "Organization name X is unknown" — are gone because nothing can reach them any more:
+        # repository resolution is declarative, and the manifest's shared error handler maps 404
+        # to IGNORE (skip the org/repo with a warning), so no 404 is ever raised for this helper
+        # to rewrite. `check_connection` reports the generic "couldn't be found" message for
+        # that case instead. The 401 branch below is still reached, via the quota-status request.
         user_message = ""
-        if "404 Client Error: Not Found for url: https://api.github.com/repos/" in message:
-            # 404 Client Error: Not Found for url: https://api.github.com/repos/airbytehq/airbyte3?per_page=100
-            full_repo_name = message.split("https://api.github.com/repos/")[1].split("?")[0]
-            user_message = f'Repo name: "{full_repo_name}" is unknown, "repository" config option should use existing full repo name <organization>/<repository>'
-        elif "404 Client Error: Not Found for url: https://api.github.com/orgs/" in message:
-            # 404 Client Error: Not Found for url: https://api.github.com/orgs/airbytehqBLA/repos?per_page=100
-            org_name = message.split("https://api.github.com/orgs/")[1].split("/")[0]
-            user_message = f'Organization name: "{org_name}" is unknown, "repository" config option should be updated. Please validate your repository config.'
-        elif "401 Client Error: Unauthorized for url" in message or ("Error: Unauthorized" in message and "401" in message):
+        if "401 Client Error: Unauthorized for url" in message or ("Error: Unauthorized" in message and "401" in message):
             user_message = (
                 "GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth credentials "
                 "are valid and not expired."
@@ -309,14 +307,23 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform_config(config)
-        # `check` is interactive and must answer in seconds, so it resolves with a zero wait
-        # budget. This replaces the deleted `exit_on_rate_limit = True if is_check_connection
-        # else False`: "PT0M" makes RateLimitedMultipleTokenAuthenticator._acquire_call raise
-        # "Rate limit is exceeded for all provided tokens." on an exhausted quota instead of
-        # sleeping up to `max_waiting_time` (120 minutes by default), which the platform would
-        # surface as an opaque timeout. `streams()` keeps the user-configured value, so
-        # sync-time waiting is unchanged.
-        check_config = {**config, "max_waiting_time": 0}
+        # `check` is interactive and must answer in seconds, so it resolves with the smallest
+        # budget the spec allows. This replaces the deleted `exit_on_rate_limit = True if
+        # is_check_connection else False`: "PT1M" makes
+        # RateLimitedMultipleTokenAuthenticator._acquire_call raise "Rate limit is exceeded for
+        # all provided tokens." on an exhausted quota instead of sleeping up to
+        # `max_waiting_time` (120 minutes by default), which the platform would surface as an
+        # opaque timeout. `streams()` keeps the user-configured value, so sync-time waiting is
+        # unchanged.
+        #
+        # 1 rather than 0: the manifest's backoff caps resolve to `max_waiting_time * 60 + 1`,
+        # and `WaitUntilTimeFromHeader` returns its `min_wait: 60` floor for *every* retryable
+        # response that carries no rate-limit header — a 500, a 429 without headers, a
+        # connection timeout. A cap of 1s refuses that floor, so one transient GitHub error
+        # failed `check` on the first attempt with the rate-limit message. 61s is above the
+        # floor and far below the distance to any real GitHub reset, so both fail-fast paths
+        # are unchanged and a blip is retried instead.
+        check_config = {**config, "max_waiting_time": 1}
         try:
             _, repositories = self._resolve_repositories_and_organizations(check_config)
             if not repositories:
@@ -367,7 +374,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             "access_token_type": access_token_type,
         }
         start_date = config.get("start_date")
-        organization_args_with_start_date = {**organization_args, "start_date": start_date}
 
         repository_args = {
             "authenticator": authenticator,

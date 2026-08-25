@@ -4,7 +4,6 @@
 
 import base64
 import binascii
-import re
 import struct
 from abc import ABC, abstractmethod
 from datetime import timedelta, timezone

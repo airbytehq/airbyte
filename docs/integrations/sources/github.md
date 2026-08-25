@@ -170,15 +170,15 @@ This connector outputs the following incremental streams:
 4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
-- `assignees`
-- `branches`
-- `collaborators`
-- `issue_labels`
-- `organizations`
-- `pull_request_commits`
-- `tags`
-- `teams`
-- `users`
+   - `assignees`
+   - `branches`
+   - `collaborators`
+   - `issue_labels`
+   - `organizations`
+   - `pull_request_commits`
+   - `tags`
+   - `teams`
+   - `users`
 
 5. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
 

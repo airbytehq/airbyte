@@ -7,13 +7,18 @@ definitions:
   # resolves to the scalar before component construction, so these behave exactly like the
   # literal strings they replace.
   #
-  # `wildcard_organizations` lists the orgs named by a wildcard entry (`org/*`, `org/prefix*`).
+  # `wildcard_organizations` lists the orgs named by a wildcard entry (`org/*`, `org/prefix*`,
+  # `org/pre*fix`). The star is matched wherever it sits in the repo part, which makes this
+  # expression the exact complement of the explicit-repo list below (`^([^*]+)$`, i.e. "contains
+  # no star") and consistent with `wildcard_repository_filter`. An earlier `[*]$` anchor left an
+  # entry with an interior star matching neither list, so it was dropped with no request and no
+  # warning while the legacy Python resolver expanded it.
   # `wildcard_repository_filter` keeps a repo whose `full_name` matches any wildcard entry —
   # and passes everything when config declares no wildcard at all, which is the legacy
   # `Repositories(pattern=None)` behavior. That pass-all clause is inert for the resolver
   # stream, whose partitions *are* the wildcard orgs: with no wildcards it has no partitions
   # and the filter never runs.
-  wildcard_organizations: "{{ config.get('repositories', []) | map('regex_search', '^([\\\\w.-]+)/[\\\\w.-]*[*]$') | select | unique | list }}"
+  wildcard_organizations: "{{ config.get('repositories', []) | map('regex_search', '^([^/]+)/[^/]*[*]') | select | unique | list }}"
   wildcard_repository_filter: >-
     {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
@@ -1097,10 +1102,11 @@ definitions:
 
 # Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
 # is per token, so this is conservative — a multi-token config could spend more than this
-# allows, and the /rate_limit probes are counted against it too. Left global on purpose,
-# because the CDK budget has no notion of which credential a request will be signed with, and
-# under-spending a secondary limit is much cheaper than tripping one. It also only covers
-# declarative requesters; the Python streams still spend the same GitHub budget outside it.
+# allows. Left global on purpose, because the CDK budget has no notion of which credential a
+# request will be signed with, and under-spending a secondary limit is much cheaper than
+# tripping one. It also only covers declarative requesters: the Python streams, and the
+# authenticator's own /rate_limit probes (RateLimitedMultipleTokenAuthenticator builds its
+# quota client without an api_budget), spend the same GitHub budget outside it.
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -1115,7 +1121,12 @@ api_budget:
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  # `is not none` rather than `.get('num_workers', 4)`, the same guard the wait budget uses: a
+  # default in `.get` only applies when the key is *absent*, so a present-but-null `num_workers`
+  # (reachable via the API, Terraform or embedded use) renders as "None" and
+  # `ConcurrencyLevel.get_concurrency_level` raises `ValueError: default_concurrency did not
+  # evaluate to an integer` — while the source is being constructed, so every command fails.
+  default_concurrency: "{{ config['num_workers'] if config.get('num_workers') is not none else 4 }}"
   max_concurrency: 25
 
 streams:

@@ -138,8 +138,9 @@ def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
 
 
 def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests_mock):
-    # A real GitHub listing page holds at most `per_page` (100) records; the paginator
-    # stops on the first page with fewer than that.
+    # A real GitHub listing page holds at most `per_page` (100) records. The paginator follows
+    # GitHub's `rel="next"` link and stops when the link is absent, which is why these mocked
+    # responses — no Link header — are a single page regardless of how many records they hold.
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(99)]
     requests_mock.get("https://api.github.com/orgs/airbytehq/repos", json=repos)
     requests_mock.get("https://api.github.com/orgs/org/repos", json=repos)
@@ -326,14 +327,8 @@ def test_streams_config_start_date(config, expected, rate_limit_mock_response, r
 @pytest.mark.parametrize(
     "error_message, expected_user_friendly_message",
     [
-        (
-            "404 Client Error: Not Found for url: https://api.github.com/repos/repo_name",
-            'Repo name: "repo_name" is unknown, "repository" config option should use existing full repo name <organization>/<repository>',
-        ),
-        (
-            "404 Client Error: Not Found for url: https://api.github.com/orgs/org_name",
-            'Organization name: "org_name" is unknown, "repository" config option should be updated. Please validate your repository config.',
-        ),
+        # No 404 cases: the shared manifest error handler maps 404 to IGNORE, so those two
+        # branches were unreachable and have been removed from the helper.
         (
             "401 Client Error: Unauthorized for url",
             "GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth credentials are valid and not expired.",
