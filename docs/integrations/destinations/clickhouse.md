@@ -27,34 +27,20 @@ Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com
 
 ## Self-managed clusters
 
-By default the connector creates tables with non-replicated engines (`MergeTree` /
-`ReplacingMergeTree`). On a self-managed multi-replica ClickHouse cluster, a
-non-replicated table stores its data only on the replica that receives the insert,
-so reads through a load balancer return incomplete data. Two advanced options make
-the connector cluster-aware (ClickHouse Cloud needs neither — it substitutes
-`SharedMergeTree` automatically):
+By default, the connector stores data only on the node that receives each insert. On a self-managed ClickHouse cluster with multiple replicas, this means reads through a load balancer may return incomplete data because the other nodes are unaware of the inserted rows. Similarly, table definitions (CREATE, ALTER, DROP) are only applied on the connected node.
 
-- **Use Replicated Table Engines** (`use_replicated_engines`): prefixes the engine
-  the connector selects with `Replicated`. Emitted without explicit Keeper path
-  arguments, so the server must be able to derive them — which is the case inside a
-  database using the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated),
-  or with `default_replica_path`/`default_replica_name` plus `{shard}`/`{replica}`
-  macros configured. Requires ClickHouse Keeper (or ZooKeeper).
-- **Cluster Name** (`cluster_name`): adds `ON CLUSTER <name>` to every DDL
-  statement (create/alter/drop/exchange), for clusters whose databases use the
-  default Atomic engine. Leave empty when the target database uses the `Replicated`
-  database engine — there, DDL replicates through the database itself and
-  `ON CLUSTER` is unnecessary. The name is validated against the identifier
-  charset `[A-Za-z0-9_.-]` (matching `remote_servers` cluster names, which are
-  XML element names) and the connection is rejected otherwise.
+Two advanced options make the connector cluster-aware. ClickHouse Cloud does not need either of these — it uses `SharedMergeTree` and handles replication automatically.
+
+- **Enable Replication** (`use_replicated_engines`): ensures synced data is [replicated](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replication) across all cluster nodes. The replicated engine is emitted without explicit Keeper path arguments, so the server must be able to derive them — which is the case inside a database using the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated), or when `default_replica_path`/`default_replica_name` macros are configured in the server. Requires ClickHouse Keeper (or ZooKeeper).
+- **Cluster Name** (`cluster_name`): when provided, table definitions are automatically propagated to all cluster nodes. Required for clusters whose databases use the default Atomic engine. Leave empty when the target database uses the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated) — there, DDL replicates through the database itself and a cluster name is unnecessary. The name is validated against the charset `[A-Za-z0-9_.-]` and the connection is rejected if invalid characters are used.
 
 Typical combinations:
 
-| Topology | `use_replicated_engines` | `cluster_name` |
+| Topology | Enable Replication | Cluster Name |
 | :--- | :--- | :--- |
 | Single node / ClickHouse Cloud | off | empty |
-| Cluster, target database uses `Replicated` database engine | on | empty |
-| Cluster, Atomic databases + `remote_servers` cluster | on | set |
+| Cluster with [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated) | on | empty |
+| Cluster with Atomic databases + `remote_servers` | on | set to your cluster name |
 
 ## Deduplication
 
@@ -169,6 +155,8 @@ Replace `{namespace}` with each custom namespace you plan to use.
     - **Password**: The password for the ClickHouse user
     - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
     - **Record Window Size** (advanced): The maximum number of records to write in a single batch. Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
+    - **Enable Replication** (advanced): Enable this for self-managed ClickHouse clusters with multiple replicas to ensure data is synchronized across all nodes. See [Self-managed clusters](#self-managed-clusters) for details.
+    - **Cluster Name** (advanced): Name of your ClickHouse cluster. When provided, table definitions are propagated to all cluster nodes. See [Self-managed clusters](#self-managed-clusters) for details.
 
 ### 4. SSH tunnel (optional)
 
