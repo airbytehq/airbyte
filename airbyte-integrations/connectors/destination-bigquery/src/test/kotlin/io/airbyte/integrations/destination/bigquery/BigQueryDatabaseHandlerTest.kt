@@ -4,9 +4,13 @@
 
 package io.airbyte.integrations.destination.bigquery
 
+import com.google.api.gax.paging.Page
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryError
+import com.google.cloud.bigquery.BigQueryOptions
+import com.google.cloud.bigquery.Job
 import com.google.cloud.bigquery.JobInfo
+import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobStatistics
 import com.google.cloud.bigquery.JobStatus
 import io.airbyte.cdk.ConfigErrorException
@@ -15,6 +19,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.BigQue
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -54,6 +59,54 @@ class BigQueryDatabaseHandlerTest {
         val capturedJobInfo = jobInfoSlot.captured
         assertEquals("my-job-project", capturedJobInfo.jobId.project)
         assertEquals("us-east1", capturedJobInfo.jobId.location)
+    }
+
+    @Test
+    fun `execute lists child jobs using the job project client`() {
+        val queryStats: JobStatistics.QueryStatistics = mockk {
+            every { startTime } returns 0L
+            every { endTime } returns 100L
+            every { totalBytesProcessed } returns 1024L
+            every { totalBytesBilled } returns 1024L
+            every { numChildJobs } returns 1L
+        }
+        val rootJobId = JobId.of("root-job")
+        val rootJob: Job = mockk {
+            every { jobId } returns rootJobId
+            every { status } returns
+                mockk {
+                    every { state } returns JobStatus.State.DONE
+                    every { error } returns null
+                }
+            every { reload() } returns this
+            every { getStatistics<JobStatistics.QueryStatistics>() } returns queryStats
+        }
+        val datasetProjectBq: BigQuery = mockk()
+        val jobProjectBq: BigQuery = mockk()
+        val datasetProjectOptions: BigQueryOptions = mockk {
+            every { projectId } returns "dataset-project"
+            every { toBuilder() } returns
+                mockk<BigQueryOptions.Builder> {
+                    every { setProjectId("job-project") } returns this
+                    every { build() } returns
+                        mockk {
+                            every { service } returns jobProjectBq
+                        }
+                }
+        }
+        val childJobs: Page<Job> = mockk {
+            every { iterateAll() } returns emptyList()
+        }
+        every { datasetProjectBq.options } returns datasetProjectOptions
+        every { datasetProjectBq.create(any<JobInfo>(), *anyVararg()) } returns rootJob
+        every { jobProjectBq.listJobs(*anyVararg()) } returns childJobs
+
+        val handler = BigQueryDatabaseHandler(datasetProjectBq, "location", "job-project")
+
+        handler.execute(Sql.of("SELECT 1"))
+
+        verify(exactly = 1) { jobProjectBq.listJobs(*anyVararg()) }
+        verify(exactly = 0) { datasetProjectBq.listJobs(*anyVararg()) }
     }
 
     @Test

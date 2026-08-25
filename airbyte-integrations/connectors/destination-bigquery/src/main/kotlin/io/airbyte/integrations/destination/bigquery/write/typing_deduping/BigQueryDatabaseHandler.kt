@@ -33,6 +33,14 @@ class BigQueryDatabaseHandler(
     private val datasetLocation: String,
     private val jobProjectId: String,
 ) : DatabaseHandler {
+    private val jobProjectBq: BigQuery by lazy {
+        if (jobProjectId == bq.options.projectId) {
+            bq
+        } else {
+            bq.options.toBuilder().setProjectId(jobProjectId).build().service
+        }
+    }
+
     /**
      * Some statements (e.g. ALTER TABLE) have strict rate limits. Bigquery recommends retrying
      * these statements with exponential backoff, and the SDK doesn't do it automatically. So this
@@ -123,7 +131,7 @@ class BigQueryDatabaseHandler(
         if (statistics.numChildJobs != null) {
             // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for
             // them
-            bq.listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
+            jobProjectBq.listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
                 .iterateAll()
                 .sortedBy { it.getStatistics<JobStatistics>().endTime }
                 .forEach { childJob: Job ->
