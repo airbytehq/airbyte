@@ -57,10 +57,10 @@ connectionSpecification:
     end_date:
       title: End Date
       description: >-
-        Enter the date (or date-time) in the YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ format. Airbyte will replicate the data updated before this date. If this field is blank, Airbyte will replicate data up to the current time.
+        Enter the date (or date-time) in the YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ format. For streams synced incrementally, Airbyte will replicate data updated before this date; the bound is exclusive, so a date-only value means midnight UTC and the named day itself is not included. Streams synced in full refresh mode ignore this field and replicate all data. If this field is blank, Airbyte will replicate data up to the current time.
       type: string
       pattern: >-
-        ^([0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?)$
+        ^$|^([0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)?)$
       pattern_descriptor: "YYYY-MM-DD or YYYY-MM-DDTHH:mm:ssZ"
       examples:
         - "2021-07-26"
