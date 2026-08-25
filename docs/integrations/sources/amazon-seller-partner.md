@@ -239,9 +239,14 @@ The Financial Events stream reads the Finances v0 `listFinancialEvents` operatio
 
 ### Daily report windows
 
-The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), and Vendor Sales Report (`GET_VENDOR_SALES_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
+The daily report streams — Sales and Traffic Business Report (`GET_SALES_AND_TRAFFIC_REPORT`), Sales and Traffic Report By Date (`GET_SALES_AND_TRAFFIC_REPORT_BY_DATE`), Vendor Sales Report (`GET_VENDOR_SALES_REPORT`), Vendor Traffic Report (`GET_VENDOR_TRAFFIC_REPORT`), Net Pure Product Margin Report (`GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`), and Rapid Retail Analytics Inventory Report (`GET_VENDOR_REAL_TIME_INVENTORY_REPORT`) — request one report per UTC calendar day, with the report window anchored to `00:00:00Z`–`23:59:59Z`. Amazon rounds any report window that doesn't start and end at midnight outward to every calendar day it touches and sums the results, so anchoring each request to a single day keeps each record's metrics scoped to that day.
 
-Versions before 5.9.2 could send off-midnight windows when a sync ended mid-day, which inflated the metrics for the days those windows overlapped. If you synced these streams with an earlier version and see days whose metrics look doubled, refresh the affected streams (or re-sync the affected date range) after upgrading to 5.9.2 or later.
+Earlier versions sent the wrong window on some of these streams, in two different ways. In both cases, upgrade and then refresh the affected streams (or re-sync the affected date range) to correct the stored data.
+
+| Streams | Affected versions | Symptom | Fixed in |
+| --- | --- | --- | --- |
+| Sales and Traffic Business Report, Sales and Traffic Report By Date, Vendor Sales Report | before 5.9.2 | Off-midnight windows when a sync ended mid-day, inflating the metrics for the days those windows overlapped. Days look doubled. | 5.9.2 |
+| Vendor Traffic Report, Net Pure Product Margin Report, Rapid Retail Analytics Inventory Report | 5.8.0 through 5.10.0 | No report window was sent at all, so Amazon returned its own default reporting period and every daily record was labelled with a date the report didn't cover. | 5.10.1 |
 
 ### Time zone of vendor retail analytics data
 
@@ -462,6 +467,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.10.1 | 2026-08-20 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
 | 5.10.0 | 2026-08-24 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
 | 5.9.5 | 2026-08-18 | [84482](https://github.com/airbytehq/airbyte/pull/84482) | Update dependencies |
 | 5.9.4 | 2026-08-11 | [83818](https://github.com/airbytehq/airbyte/pull/83818) | Update dependencies |
