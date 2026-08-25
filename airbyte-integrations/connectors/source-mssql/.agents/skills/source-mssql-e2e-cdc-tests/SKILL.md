@@ -39,8 +39,7 @@ source-mssql-e2e-cdc-tests/
 ├── scripts/
 │   ├── repro-11451.sh                # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+
 │   ├── repro-12094.sh                # airbytehq/oncall#12094 — schema-history bloat
-│   ├── repro-12162.sh                # airbytehq/oncall#12162 — whitespace in stream name
-│   └── extract-state.py              # uv-PEP-723; pulls STATE messages out of stdout.txt
+│   └── repro-12162.sh                # airbytehq/oncall#12162 — whitespace in stream name
 └── fixtures/
     ├── configs/
     │   └── cdc.template.json
@@ -53,6 +52,11 @@ source-mssql-e2e-cdc-tests/
         ├── repro-12094-schema-history.sql
         └── repro-12162-spaces-in-name.sql
 ```
+
+`extract-state.py` lives in the generic skill
+([`../source-mssql-e2e-tests/scripts/extract-state.py`](../source-mssql-e2e-tests/scripts/extract-state.py)) —
+it walks Airbyte STATE messages, which is protocol-level and not
+CDC-specific.
 
 ## Conventions
 
@@ -70,9 +74,12 @@ source-mssql-e2e-cdc-tests/
   to test a fix.
 - Assertions are inline in driver scripts: `grep -c '<substring>'` on
   `stderr.txt`, `jq -e` on `stdout.txt`, exit-non-zero on miss.
-- The repro-11451 driver captures and uses Airbyte STATE messages. The
-  `extract-state.py` helper is `uv`-PEP-723 standalone; run with
-  `./scripts/extract-state.py <stdout.txt>` or pipe stdin.
+- Multi-phase drivers (repro-11451, and any future read → mutate →
+  read-with-state repros) capture Airbyte STATE messages between
+  reads. The generic skill's `extract-state.py` helper is
+  `uv`-PEP-723 standalone; run with
+  `./scripts/extract-state.py <stdout.txt>` or pipe stdin. `run.sh`'s
+  `--state=PATH` flag feeds the state file back into the second read.
 
 ## Usage
 
