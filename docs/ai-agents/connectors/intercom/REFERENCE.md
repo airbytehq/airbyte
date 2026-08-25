@@ -9,7 +9,7 @@ The Intercom connector supports the following entities and actions.
 | Entity | Actions |
 |--------|---------|
 | Contacts | [List](#contacts-list), [Create](#contacts-create), [Get](#contacts-get), [Update](#contacts-update), [Delete](#contacts-delete), [Context Store Search](#contacts-context-store-search) |
-| Conversations | [List](#conversations-list), [Create](#conversations-create), [Get](#conversations-get), [Update](#conversations-update), [Delete](#conversations-delete), [Context Store Search](#conversations-context-store-search) |
+| Conversations | [List](#conversations-list), [Create](#conversations-create), [Get](#conversations-get), [Update](#conversations-update), [Delete](#conversations-delete), [Context Store Search](#conversations-context-store-search), [Semantic Search](#conversations-semantic-search) |
 | Companies | [List](#companies-list), [Create](#companies-create), [Get](#companies-get), [Update](#companies-update), [Delete](#companies-delete), [Context Store Search](#companies-context-store-search) |
 | Teams | [List](#teams-list), [Get](#teams-get), [Context Store Search](#teams-context-store-search) |
 | Admins | [List](#admins-list), [Get](#admins-get) |
@@ -1265,8 +1265,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `sent_at` | `integer` | The timestamp when the conversation was sent |
 | `sla_applied` | `object` | Service Level Agreement details applied to the conversation. |
 | `snoozed_until` | `integer` | Timestamp until the conversation is snoozed |
-| `source` | `object` | Source details of the conversation. |
-| `state` | `string` | The state of the conversation (e.g., new, in progress) |
+| `source` | `object` | Source details of the conversation, including the opening message body. |
+| `state` | `string` | The state of the conversation: open, closed, or snoozed |
 | `statistics` | `object` | Statistics related to the conversation. |
 | `tags` | `object` | Tags applied to the conversation. |
 | `team_assignee_id` | `integer` | The ID of the team assigned to the conversation |
@@ -1309,8 +1309,8 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].sent_at` | `integer` | The timestamp when the conversation was sent |
 | `data[].sla_applied` | `object` | Service Level Agreement details applied to the conversation. |
 | `data[].snoozed_until` | `integer` | Timestamp until the conversation is snoozed |
-| `data[].source` | `object` | Source details of the conversation. |
-| `data[].state` | `string` | The state of the conversation (e.g., new, in progress) |
+| `data[].source` | `object` | Source details of the conversation, including the opening message body. |
+| `data[].state` | `string` | The state of the conversation: open, closed, or snoozed |
 | `data[].statistics` | `object` | Statistics related to the conversation. |
 | `data[].tags` | `object` | Tags applied to the conversation. |
 | `data[].team_assignee_id` | `integer` | The ID of the team assigned to the conversation |
@@ -1321,6 +1321,95 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].updated_at` | `integer` | The timestamp when the conversation was last updated |
 | `data[].user` | `object` | The user related to the conversation. |
 | `data[].waiting_since` | `integer` | Timestamp since waiting for a response |
+
+</details>
+
+### Conversations Semantic Search
+
+Search conversations records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "intercom",
+  "entity": "conversations",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "source", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `conversations.context_store_search` helper only accepts `query`.
+
+```python
+await intercom.execute(
+    "conversations",
+    "context_store_search",
+    {"semantic": {"field": "source", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "conversations",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "source", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `source` | 2048 | Source details of the conversation, including the opening message body. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.state` | `string` | Source record field |
+| `data[].entity.priority` | `string` | Source record field |
+| `data[].entity.title` | `string` | Source record field |
+| `data[].entity.author_name` | `string` | Source record field |
+| `data[].entity.delivered_as` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
