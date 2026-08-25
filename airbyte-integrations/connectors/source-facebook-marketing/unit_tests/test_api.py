@@ -233,3 +233,68 @@ class TestMyFacebookAdsApi:
         account = api.get_account(account_id)
         assert isinstance(account, AdAccount)
         assert account.get_id() == "act_test"
+
+    def test_get_all_ad_accounts(self, api, requests_mock):
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts",
+            [
+                {
+                    "json": {
+                        "data": [
+                            {"account_id": "111111111111111", "id": "act_111111111111111"},
+                            {"account_id": "222222222222222", "id": "act_222222222222222"},
+                        ],
+                        "paging": {"cursors": {"before": "abc", "after": "xyz"}},
+                    },
+                    "status_code": 200,
+                }
+            ],
+        )
+        account_ids = api.get_all_ad_accounts()
+        assert account_ids == ["111111111111111", "222222222222222"]
+
+    def test_get_all_ad_accounts_paginated(self, api, requests_mock):
+        """Iterating the SDK cursor must fetch ALL pages, not just the first one."""
+        page_2_url = FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts?after=xyz"
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts",
+            [
+                {
+                    "json": {
+                        "data": [
+                            {"account_id": "111111111111111", "id": "act_111111111111111"},
+                            {"account_id": "222222222222222", "id": "act_222222222222222"},
+                        ],
+                        "paging": {"cursors": {"before": "abc", "after": "xyz"}, "next": page_2_url},
+                    },
+                    "status_code": 200,
+                },
+                {
+                    "json": {
+                        "data": [
+                            {"account_id": "333333333333333", "id": "act_333333333333333"},
+                        ],
+                        "paging": {"cursors": {"before": "xyz", "after": "zzz"}},
+                    },
+                    "status_code": 200,
+                },
+            ],
+        )
+        account_ids = api.get_all_ad_accounts()
+        assert account_ids == ["111111111111111", "222222222222222", "333333333333333"]
+
+    def test_get_all_ad_accounts_empty(self, api, requests_mock):
+        requests_mock.register_uri(
+            "GET",
+            FacebookSession.GRAPH + f"/{FB_API_VERSION}/me/adaccounts",
+            [
+                {
+                    "json": {"data": [], "paging": {"cursors": {"before": "abc", "after": "xyz"}}},
+                    "status_code": 200,
+                }
+            ],
+        )
+        account_ids = api.get_all_ad_accounts()
+        assert account_ids == []

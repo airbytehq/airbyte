@@ -8,9 +8,9 @@ This page contains the setup guide and reference information for the [Facebook M
 
 ## Prerequisites
 
-- A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762)
+- A [Facebook Ad Account ID](https://www.facebook.com/business/help/1492627900875762) (optional: if omitted, the connector syncs every ad account the authenticated user can access)
 <!-- env:cloud -->
--  **For Airbyte Cloud**: If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
+- **For Airbyte Cloud**: If you are not the owner/admin of the Ad account, you must be granted [permissions to access the Ad account](https://www.facebook.com/business/help/155909647811305?id=829106167281625) by an admin.
 <!-- /env:cloud -->
 <!-- env:oss -->
 -  **For Airbyte Open Source**:
@@ -141,8 +141,9 @@ Refer to Facebook's official documentation on [Access Levels and Authorization](
 <!-- /env:oss -->
 
 #### Facebook Marketing Source Settings
+
 <FieldAnchor field="account_ids">
-1. For **Account ID(s)**, enter one or multiple comma-separated [Facebook Ad Account ID Numbers](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information.
+1. (Optional) For **Account ID(s)**, enter one or multiple comma-separated [Facebook Ad Account ID Numbers](https://www.facebook.com/business/help/1492627900875762) to use when pulling data from the Facebook Marketing API. To find this ID, open your Meta Ads Manager. The Ad Account ID number is in the **Account** dropdown menu or in your browser's address bar. Refer to the [Facebook docs](https://www.facebook.com/business/help/1492627900875762) for more information. If you leave this field empty, the connector discovers and syncs every ad account accessible to the authenticated user, re-evaluating that list on every sync. Prefer listing accounts explicitly when your token can access many accounts: the connection check and each sync scale with the account count and are more likely to hit Facebook's rate limits, and an account that becomes accessible later triggers a full backfill for that account.
 </FieldAnchor>
 
 <FieldAnchor field="start_date">
@@ -502,6 +503,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.2.0 | 2026-08-25 | [80767](https://github.com/airbytehq/airbyte/pull/80767) | Make `account_ids` optional: when omitted, auto-discover all ad accounts accessible to the authenticated user |
 | 6.1.0 | 2026-08-04 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
 | 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
 | 6.0.1 | 2026-06-24 | [80779](https://github.com/airbytehq/airbyte/pull/80779) | Fix TypeError in `CursorPatch.load_next_page()` when Facebook API returns malformed (non-dict) responses or data items |
