@@ -106,7 +106,7 @@ Starting with connector version `0.2.16`, new connections pre-select `issues`, `
 The `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams read Linear's Customer Requests data. An admin has to enable Customer Requests in [Workspace Settings > Customer requests](https://linear.app/settings/customers), and OAuth connections need the `customer:read` scope, before your workspace has any of this data to sync. Customer tiers are also defined in those settings, so the `customer_tiers` stream stays empty until someone configures tiers.
 
 :::caution Behavior change in `0.2.23`
-Before `0.2.23`, if Linear rejected a Customer Requests query the connector reported those streams as successful with zero records. Starting with `0.2.23` the connector surfaces Linear's error instead, and the sync fails with a configuration error naming the denied data. If your workspace does not have Customer Requests enabled, deselect `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` in the connection's schema tab.
+Before `0.2.23`, if Linear refused a Customer Requests query, the connector reported those streams as successful with zero records. Starting with `0.2.23`, the sync fails and repeats Linear's explanation of the refusal. If your workspace doesn't have Customer Requests enabled, deselect `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` in the connection's schema tab. See [Syncs fail on errors Linear returns in the response body](#syncs-fail-on-errors-linear-returns-in-the-response-body).
 :::
 
 See Linear's [Customer Requests documentation](https://linear.app/docs/customer-requests) for details.
@@ -140,16 +140,19 @@ If an OAuth source starts failing with an authorization error, re-authenticate t
 
 The connector retrieves only the data its credentials can see. With API key authentication, that's everything the key's owner can see in Linear. With OAuth, it's what the installed app can see in the workspace. If teams, projects, or issues are missing from your synced data, check those permissions in Linear first.
 
-### Syncs fail with "Linear returned an error"
+### Syncs fail on errors Linear returns in the response body
 
-Starting with version 0.2.23, the connector fails a sync whenever Linear's response carries a
-populated GraphQL `errors` array. Before 0.2.23 those responses were treated as successful and
-the errors were discarded, so a connection that had been reporting COMPLETE may begin failing on
-this version without anything having changed in Linear.
+Linear's GraphQL API often reports a problem in the response body instead of in the HTTP status code. Starting with version `0.2.23`, a sync fails when Linear returns errors this way and the response contains no usable data, unless the response is one the connector retries. Before `0.2.23` the connector discarded those errors and treated the response as an empty but successful stream, so a connection that had been completing can start failing on this version even though nothing changed in Linear.
 
-The error text repeats Linear's own `userPresentableMessage`. If it names a permission or a
-feature your workspace does not have, deselect the affected stream and re-run the sync. If it
-reports an invalid query, that is a connector defect — report it to Airbyte support.
+Every one of these failures repeats Linear's own explanation of the problem. Use that text to decide what to do:
+
+- **Rejected credentials**: confirm your API key still exists under **Settings** > **Security & access** > **Personal API keys** in Linear, or re-authenticate an OAuth source to issue a fresh refresh token.
+- **Denied access to data or to a feature your workspace doesn't have**: grant your credentials access to that data in Linear, or deselect the stream. Customer Requests streams are the most common cause. See [Customer Requests streams](#customer-requests-streams).
+- **An invalid query**: this is a connector defect rather than a configuration problem. Report it to Airbyte support.
+
+Responses that contain both errors and usable records still sync. If Linear returns partial results, the connector keeps the records it received.
+
+Request timeouts and Linear's 5xx responses are retried, so they only fail a sync if they persist. A rejected credential, denied access, or an invalid query fails immediately no matter which status code accompanies it.
 
 ## IP allow list
 
