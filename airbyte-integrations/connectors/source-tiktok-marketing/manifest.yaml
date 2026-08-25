@@ -707,7 +707,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
@@ -791,7 +790,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "country_code"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_day
       - country_code
@@ -854,7 +852,6 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day"]
     primary_key:
-      - advertiser_id
       - adgroup_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
@@ -913,7 +910,6 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "country_code"]
     primary_key:
-      - advertiser_id
       - adgroup_id
       - stat_time_day
       - country_code
@@ -972,7 +968,6 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day"]
     primary_key:
-      - advertiser_id
       - campaign_id
       - stat_time_day
     $ref: "#/definitions/base_report_daily"
@@ -1046,7 +1041,6 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day", "gender", "age"]
     primary_key:
-      - advertiser_id
       - campaign_id
       - stat_time_day
       - gender
@@ -1100,7 +1094,6 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "gender", "age"]
     primary_key:
-      - advertiser_id
       - adgroup_id
       - stat_time_day
       - gender
@@ -1157,7 +1150,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "gender", "age"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_day
       - gender
@@ -1215,7 +1207,6 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day", "country_code"]
     primary_key:
-      - advertiser_id
       - campaign_id
       - stat_time_day
       - country_code
@@ -1267,7 +1258,6 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "country_code"]
     primary_key:
-      - advertiser_id
       - adgroup_id
       - stat_time_day
       - country_code
@@ -1322,7 +1312,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "country_code"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_day
       - country_code
@@ -1376,7 +1365,6 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_day", "platform"]
     primary_key:
-      - advertiser_id
       - campaign_id
       - stat_time_day
       - platform
@@ -1428,7 +1416,6 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_day", "platform"]
     primary_key:
-      - advertiser_id
       - adgroup_id
       - stat_time_day
       - platform
@@ -1483,7 +1470,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "platform"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_day
       - platform
@@ -1563,7 +1549,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_day", "province_id"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_day
       - province_id
@@ -1661,7 +1646,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_hour"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_hour
     $ref: "#/definitions/base_report_hourly"
@@ -1745,7 +1729,6 @@ definitions:
         ]
       dimensions: ["ad_id", "stat_time_hour", "country_code"]
     primary_key:
-      - advertiser_id
       - ad_id
       - stat_time_hour
       - country_code
@@ -1803,7 +1786,6 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id", "stat_time_hour"]
     primary_key:
-      - advertiser_id
       - campaign_id
       - stat_time_hour
     $ref: "#/definitions/base_report_hourly"
@@ -1862,7 +1844,6 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_hour"]
     primary_key:
-      - advertiser_id
       - adgroup_id
       - stat_time_hour
     $ref: "#/definitions/base_report_hourly"
@@ -1921,7 +1902,6 @@ definitions:
         ]
       dimensions: ["adgroup_id", "stat_time_hour", "country_code"]
     primary_key:
-      - advertiser_id
       - adgroup_id
       - stat_time_hour
       - country_code
@@ -2012,7 +1992,6 @@ definitions:
         ]
       dimensions: ["ad_id"]
     primary_key:
-      - advertiser_id
       - ad_id
     $ref: "#/definitions/base_report_lifetime"
     transformations:
@@ -2052,7 +2031,6 @@ definitions:
       report_metrics: ["campaign_name"]
       dimensions: ["campaign_id"]
     primary_key:
-      - advertiser_id
       - campaign_id
     $ref: "#/definitions/base_report_lifetime"
     transformations:
@@ -2100,7 +2078,6 @@ definitions:
         ]
       dimensions: ["adgroup_id"]
     primary_key:
-      - advertiser_id
       - adgroup_id
     $ref: "#/definitions/base_report_lifetime"
     transformations:

@@ -2,65 +2,6 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # TikTok Marketing Migration Guide
 
-## Upgrading to 6.0.0
-
-The source-defined primary keys for the non-advertiser report streams now include `advertiser_id`, in addition to the entity identifier and the requested report dimensions. TikTok returns report records per advertiser partition, and `advertiser_id` is supplied as the request parameter rather than in the record body. The connector now injects `advertiser_id` into each affected record and includes it in the primary key so Incremental | Deduped destinations can tell those partitions apart.
-
-The primary key only affects Incremental | Deduped. It is unused in Incremental | Append, Full Refresh | Append, and Full Refresh | Overwrite.
-
-If you take no action by the upgrade deadline (2026-09-14), the connection will stop syncing until you upgrade and finish the steps for your sync mode.
-
-Everyone should refresh the source schema so the new `advertiser_id` column appears. Only Incremental | Deduped users should then clear the impacted streams. Refreshing a Deduped stream without clearing leaves old rows keyed without `advertiser_id` next to new rows keyed with it, which produces duplicates.
-
-Do not clear Append or Overwrite streams as part of this upgrade. Append has no duplicate risk from the key change, and a clear would delete accumulated report history. Full Refresh | Overwrite already replaces the table on the next sync. The connector default `start_date` is `2016-09-01`, but TikTok reporting APIs do not keep that much history. Some report streams in this connector already clamp lookback to 364 days. Anything older than what the API still returns is gone after a clear.
-
-Snapshot the destination tables for the streams below before you clear anything, so you can restore or compare if the backfill is shorter than you expected.
-
-The following streams are affected:
-
-- `ad_group_audience_reports_by_country_daily`
-- `ad_group_audience_reports_by_platform_daily`
-- `ad_group_audience_reports_daily`
-- `ad_groups_reports_by_country_daily`
-- `ad_groups_reports_by_country_hourly`
-- `ad_groups_reports_daily`
-- `ad_groups_reports_hourly`
-- `ad_groups_reports_lifetime`
-- `ads_audience_reports_by_country_daily`
-- `ads_audience_reports_by_platform_daily`
-- `ads_audience_reports_by_province_daily`
-- `ads_audience_reports_daily`
-- `ads_reports_by_country_daily`
-- `ads_reports_by_country_hourly`
-- `ads_reports_daily`
-- `ads_reports_hourly`
-- `ads_reports_lifetime`
-- `campaigns_audience_reports_by_country_daily`
-- `campaigns_audience_reports_by_platform_daily`
-- `campaigns_audience_reports_daily`
-- `campaigns_reports_daily`
-- `campaigns_reports_hourly`
-- `campaigns_reports_lifetime`
-
-### Migration steps
-
-1. In your destination, snapshot or copy the tables for the affected streams listed above. A later clear cannot bring back history TikTok no longer serves.
-2. Select **Connections** in the main nav bar.
-   1. Select the connection(s) affected by the update.
-3. Select the **Schema** tab.
-   1. Select **Refresh source schema**.
-   2. Select **OK** and **Save changes**.
-
-If the connection uses Incremental | Deduped on any of the streams above:
-
-4. Select the **Status** tab.
-   1. In the **Enabled streams** list, click the three dots on the right side of each affected Deduped stream and select **Clear Data**.
-5. After the clear succeeds, click **Sync Now**.
-
-If the connection uses Incremental | Append, Full Refresh | Append, or Full Refresh | Overwrite, stop after the schema refresh. Do not clear those streams unless you intentionally want a new backfill and accept that older report rows may be unrecoverable.
-
-For more information on clearing your data in Airbyte, see [this page](https://docs.airbyte.com/operator-guides/reset).
-
 ## Upgrading to 5.0.0
 
 The `currency` field in the `pixels` stream's `events` array has been corrected from `boolean` to `string` type. The TikTok API returns currency as a string value (e.g. `"USD"`), so the previous `boolean` type was incorrect and caused transform errors during syncs.

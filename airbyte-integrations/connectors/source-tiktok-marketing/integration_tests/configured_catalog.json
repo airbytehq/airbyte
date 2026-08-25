@@ -61,7 +61,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["ad_id"],
           ["stat_time_day"]
         ]
@@ -69,7 +68,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["advertiser_id"], ["ad_id"], ["stat_time_day"]]
+      "primary_key": [["ad_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -79,7 +78,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["adgroup_id"],
           ["stat_time_day"]
         ]
@@ -87,7 +85,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["advertiser_id"], ["adgroup_id"], ["stat_time_day"]]
+      "primary_key": [["adgroup_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -97,7 +95,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["campaign_id"],
           ["stat_time_day"]
         ]
@@ -105,7 +102,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [["advertiser_id"], ["campaign_id"], ["stat_time_day"]]
+      "primary_key": [["campaign_id"], ["stat_time_day"]]
     },
     {
       "stream": {
@@ -129,7 +126,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["ad_id"],
           ["stat_time_day"],
           ["gender"],
@@ -140,7 +136,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["ad_id"],
         ["stat_time_day"],
         ["gender"],
@@ -155,7 +150,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["adgroup_id"],
           ["stat_time_day"],
           ["gender"],
@@ -166,7 +160,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["adgroup_id"],
         ["stat_time_day"],
         ["gender"],
@@ -179,7 +172,6 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["ad_id"],
           ["stat_time_day"],
           ["province_id"]
@@ -189,7 +181,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["ad_id"],
         ["stat_time_day"],
         ["province_id"]
@@ -203,7 +194,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["campaign_id"],
           ["stat_time_day"],
           ["country_code"]
@@ -213,7 +203,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["campaign_id"],
         ["stat_time_day"],
         ["country_code"]
@@ -296,7 +285,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["campaign_id"],
           ["stat_time_day"],
           ["gender"],
@@ -307,7 +295,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["campaign_id"],
         ["stat_time_day"],
         ["gender"],
@@ -340,7 +327,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["ad_id"],
           ["stat_time_day"],
           ["country_code"]
@@ -350,7 +336,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["ad_id"],
         ["stat_time_day"],
         ["country_code"]
@@ -364,7 +349,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["campaign_id"],
           ["stat_time_day"],
           ["platform"]
@@ -374,7 +358,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["campaign_id"],
         ["stat_time_day"],
         ["platform"]
@@ -388,7 +371,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["adgroup_id"],
           ["stat_time_day"],
           ["platform"]
@@ -398,7 +380,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["adgroup_id"],
         ["stat_time_day"],
         ["platform"]
@@ -412,7 +393,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["adgroup_id"],
           ["stat_time_day"],
           ["country_code"]
@@ -422,7 +402,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["adgroup_id"],
         ["stat_time_day"],
         ["country_code"]
@@ -454,7 +433,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["ad_id"],
           ["stat_time_day"],
           ["platform"]
@@ -464,7 +442,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["ad_id"],
         ["stat_time_day"],
         ["platform"]
@@ -522,7 +499,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["ad_id"],
           ["stat_time_day"],
           ["country_code"]
@@ -532,7 +508,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["ad_id"],
         ["stat_time_day"],
         ["country_code"]
@@ -546,7 +521,6 @@
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
         "source_defined_primary_key": [
-          ["advertiser_id"],
           ["adgroup_id"],
           ["stat_time_day"],
           ["country_code"]
@@ -556,7 +530,6 @@
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
       "primary_key": [
-        ["advertiser_id"],
         ["adgroup_id"],
         ["stat_time_day"],
         ["country_code"]
