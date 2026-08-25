@@ -242,6 +242,16 @@
     {
       "name": "GET_VENDOR_TRAFFIC_REPORT",
       "relations": {}
+    },
+    {
+      "name": "FbaInboundShipments",
+      "relations": {}
+    },
+    {
+      "name": "FbaInboundShipmentItems",
+      "relations": {
+        "ShipmentId": "FbaInboundShipments.ShipmentId"
+      }
     }
   ]
 }

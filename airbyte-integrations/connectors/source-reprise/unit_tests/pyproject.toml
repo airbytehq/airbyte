@@ -1,0 +1,24 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "source-reprise-tests"
+version = "0.0.0"
+description = "Unit tests for source-reprise"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.13"
+# Matches the `source-declarative-manifest:7.26.0` base image pinned in metadata.yaml.
+airbyte-cdk = "~7.26.0"
+pytest = "^8"
+freezegun = "^1.4.0"
+# `airbyte_cdk.test.mock_http.mocker` imports requests_mock without declaring it.
+requests-mock = "^1.12.1"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "ignore:This class is experimental*"
+]
