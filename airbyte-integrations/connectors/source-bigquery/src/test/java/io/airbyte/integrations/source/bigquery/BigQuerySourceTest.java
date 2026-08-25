@@ -77,7 +77,7 @@ class BigQuerySourceTest {
 
     final ConfigErrorException configError = assertInstanceOf(ConfigErrorException.class, mapped);
     assertEquals(
-        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
+        "Query result for table dataset.table exceeds BigQuery maximum query response size.",
         configError.getMessage());
   }
 
@@ -91,7 +91,7 @@ class BigQuerySourceTest {
 
     final ConfigErrorException configError = assertInstanceOf(ConfigErrorException.class, mapped);
     assertEquals(
-        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
+        "Query result for table dataset.table exceeds BigQuery maximum query response size.",
         configError.getMessage());
   }
 
@@ -126,7 +126,7 @@ class BigQuerySourceTest {
     final ConfigErrorException configError = assertThrows(ConfigErrorException.class, wrapped::hasNext);
 
     assertEquals(
-        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
+        "Query result for table dataset.table exceeds BigQuery maximum query response size.",
         configError.getMessage());
   }
 
@@ -149,7 +149,7 @@ class BigQuerySourceTest {
     final ConfigErrorException configError = assertThrows(ConfigErrorException.class, iterator::hasNext);
 
     assertEquals(
-        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
+        "Query result for table dataset.table exceeds BigQuery maximum query response size.",
         configError.getMessage());
   }
 

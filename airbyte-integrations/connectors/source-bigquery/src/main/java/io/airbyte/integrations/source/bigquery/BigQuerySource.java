@@ -253,7 +253,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
           || (causeMessage != null
               && (causeMessage.contains("Response too large to return") || causeMessage.contains("responseTooLarge")))) {
         final String message = String.format(
-            "BigQuery refused to return results for table %s because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
+            "Query result for table %s exceeds BigQuery maximum query response size.",
             RelationalDbQueryUtils.getFullyQualifiedTableName(schemaName, tableName));
         return new ConfigErrorException(message, exception);
       }

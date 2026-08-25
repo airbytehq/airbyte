@@ -172,6 +172,10 @@ Once you've configured BigQuery as a source, delete the Service Account Key from
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+### Limitations
+
+BigQuery rejects a query whose result set exceeds its maximum query response size, and the sync fails with `Query result for table <dataset>.<table> exceeds BigQuery maximum query response size.` Selecting fewer or narrower columns for the affected stream may bring the result under the limit. Note that the first sync of an incremental stream reads the full table, so incremental sync alone does not avoid this. Progress on removing the limitation is tracked in [airbytehq/airbyte#84978](https://github.com/airbytehq/airbyte/issues/84978).
+
 ## Changelog
 
 <details>
