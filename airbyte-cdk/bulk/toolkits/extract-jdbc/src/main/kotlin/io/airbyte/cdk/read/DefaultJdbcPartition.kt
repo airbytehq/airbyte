@@ -9,6 +9,7 @@ import io.airbyte.cdk.command.OpaqueStateValue
 import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.util.Jsons
+import io.github.oshai.kotlinlogging.KotlinLogging
 
 /** Builds a WHERE clause from lower/upper bounds on checkpoint columns. */
 fun buildWhereClause(
@@ -142,6 +143,7 @@ sealed class DefaultJdbcSplittablePartition(
 ) :
     DefaultJdbcPartition(selectQueryGenerator, streamState),
     JdbcSplittablePartition<DefaultJdbcStreamState> {
+    private val log = KotlinLogging.logger {}
     abstract val lowerBound: List<JsonNode>?
     abstract val upperBound: List<JsonNode>?
 
@@ -165,12 +167,16 @@ sealed class DefaultJdbcSplittablePartition(
 
     override fun samplingQuery(sampleRateInvPow2: Int): SelectQuery {
         val sampleSize: Int = streamState.sharedState.maxSampleSize
+        log.info {
+            "Generating sampling query for stream '${stream.label}' without ORDER BY (CDK optimized)"
+        }
         val querySpec =
             SelectQuerySpec(
                 SelectColumns(stream.fields + checkpointColumns),
                 FromSample(stream.name, stream.namespace, sampleRateInvPow2, sampleSize, where),
                 NoWhere, // WHERE is already in FromSample, don't duplicate in outer query
-                OrderBy(checkpointColumns),
+                //                OrderBy(checkpointColumns),
+                NoOrderBy,
             )
         return selectQueryGenerator.generate(querySpec.optimize())
     }
