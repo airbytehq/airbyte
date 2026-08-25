@@ -75,7 +75,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompaniesAnyCondition"></a>
@@ -168,7 +168,7 @@ Classes
 <a id="CompaniesContainsCondition"></a>
 
 `CompaniesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -226,6 +226,20 @@ Classes
     ### Class variables
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="CompaniesEndswithCondition"></a>
+
+`CompaniesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.intercom.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
 <a id="CompaniesEqCondition"></a>
@@ -399,20 +413,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.intercom.types.CompaniesStringFilter`
     :   The type of the None singleton.
 
-<a id="CompaniesLikeCondition"></a>
-
-`CompaniesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.intercom.types.CompaniesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CompaniesListParams"></a>
 
 `CompaniesListParams(*args, **kwargs)`
@@ -491,7 +491,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CompaniesOrCondition"></a>
@@ -513,7 +513,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompaniesSearchFilter"></a>
@@ -592,7 +592,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLikeCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.intercom.types.CompaniesEqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNeqCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesGteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLtCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesLteCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesInCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesContainsCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesNotCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAndCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesOrCondition | airbyte_agent_sdk.connectors.intercom.types.CompaniesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.CompaniesSortFilter]`
@@ -663,10 +663,24 @@ Classes
     `website: Literal['asc', 'desc']`
     :   The website of the company
 
+<a id="CompaniesStartswithCondition"></a>
+
+`CompaniesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.intercom.types.CompaniesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CompaniesStringFilter"></a>
 
 `CompaniesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -782,7 +796,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsAnyCondition"></a>
@@ -983,7 +997,7 @@ Classes
 <a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1050,6 +1064,20 @@ Classes
     ### Class variables
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="ContactsEndswithCondition"></a>
+
+`ContactsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.intercom.types.ContactsStringFilter`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -1331,20 +1359,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.intercom.types.ContactsStringFilter`
     :   The type of the None singleton.
 
-<a id="ContactsLikeCondition"></a>
-
-`ContactsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.intercom.types.ContactsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ContactsListParams"></a>
 
 `ContactsListParams(*args, **kwargs)`
@@ -1423,7 +1437,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ContactsOrCondition"></a>
@@ -1445,7 +1459,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsSearchFilter"></a>
@@ -1632,7 +1646,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.intercom.types.ContactsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsInCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.ContactsSortFilter]`
@@ -1811,10 +1825,24 @@ Classes
     `workspace_id: Literal['asc', 'desc']`
     :   The unique identifier of the workspace associated with the contact.
 
+<a id="ContactsStartswithCondition"></a>
+
+`ContactsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.intercom.types.ContactsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ContactsStringFilter"></a>
 
 `ContactsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2050,7 +2078,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConversationsAnyCondition"></a>
@@ -2188,7 +2216,7 @@ Classes
 <a id="ConversationsContainsCondition"></a>
 
 `ConversationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2254,6 +2282,20 @@ Classes
     ### Class variables
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="ConversationsEndswithCondition"></a>
+
+`ConversationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.intercom.types.ConversationsStringFilter`
     :   The type of the None singleton.
 
 <a id="ConversationsEqCondition"></a>
@@ -2472,20 +2514,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.intercom.types.ConversationsStringFilter`
     :   The type of the None singleton.
 
-<a id="ConversationsLikeCondition"></a>
-
-`ConversationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.intercom.types.ConversationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ConversationsListParams"></a>
 
 `ConversationsListParams(*args, **kwargs)`
@@ -2564,7 +2592,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ConversationsOrCondition"></a>
@@ -2586,7 +2614,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConversationsSearchFilter"></a>
@@ -2710,7 +2738,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.intercom.types.ConversationsEqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsGteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLtCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsLteCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsInCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsNotCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAndCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsOrCondition | airbyte_agent_sdk.connectors.intercom.types.ConversationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.ConversationsSortFilter]`
@@ -2826,10 +2854,24 @@ Classes
     `waiting_since: Literal['asc', 'desc']`
     :   Timestamp since waiting for a response
 
+<a id="ConversationsStartswithCondition"></a>
+
+`ConversationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.intercom.types.ConversationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ConversationsStringFilter"></a>
 
 `ConversationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3137,7 +3179,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsAnyCondition"></a>
@@ -3188,7 +3230,7 @@ Classes
 <a id="TeamsContainsCondition"></a>
 
 `TeamsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3197,6 +3239,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.intercom.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TeamsEndswithCondition"></a>
+
+`TeamsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.intercom.types.TeamsStringFilter`
     :   The type of the None singleton.
 
 <a id="TeamsEqCondition"></a>
@@ -3328,20 +3384,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.intercom.types.TeamsStringFilter`
     :   The type of the None singleton.
 
-<a id="TeamsLikeCondition"></a>
-
-`TeamsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.intercom.types.TeamsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TeamsListParams"></a>
 
 `TeamsListParams(*args, **kwargs)`
@@ -3412,7 +3454,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TeamsOrCondition"></a>
@@ -3434,7 +3476,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsSearchFilter"></a>
@@ -3471,7 +3513,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.intercom.types.TeamsEqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsGteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLtCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsLteCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsInCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsNotCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAndCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsOrCondition | airbyte_agent_sdk.connectors.intercom.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.intercom.types.TeamsSortFilter]`
@@ -3500,10 +3542,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of team (e.g., 'internal', 'external').
 
+<a id="TeamsStartswithCondition"></a>
+
+`TeamsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.intercom.types.TeamsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsStringFilter"></a>
 
 `TeamsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
