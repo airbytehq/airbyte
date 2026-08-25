@@ -60,10 +60,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [
-          ["ad_id"],
-          ["stat_time_day"]
-        ]
+        "source_defined_primary_key": [["ad_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
@@ -77,10 +74,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [
-          ["adgroup_id"],
-          ["stat_time_day"]
-        ]
+        "source_defined_primary_key": [["adgroup_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
@@ -94,10 +88,7 @@
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["stat_time_day"],
-        "source_defined_primary_key": [
-          ["campaign_id"],
-          ["stat_time_day"]
-        ]
+        "source_defined_primary_key": [["campaign_id"], ["stat_time_day"]]
       },
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
@@ -135,12 +126,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["ad_id"],
-        ["stat_time_day"],
-        ["gender"],
-        ["age"]
-      ]
+      "primary_key": [["ad_id"], ["stat_time_day"], ["gender"], ["age"]]
     },
     {
       "stream": {
@@ -159,12 +145,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["adgroup_id"],
-        ["stat_time_day"],
-        ["gender"],
-        ["age"]
-      ]
+      "primary_key": [["adgroup_id"], ["stat_time_day"], ["gender"], ["age"]]
     },
     {
       "stream": {
@@ -180,11 +161,7 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["ad_id"],
-        ["stat_time_day"],
-        ["province_id"]
-      ]
+      "primary_key": [["ad_id"], ["stat_time_day"], ["province_id"]]
     },
     {
       "stream": {
@@ -202,11 +179,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["campaign_id"],
-        ["stat_time_day"],
-        ["country_code"]
-      ]
+      "primary_key": [["campaign_id"], ["stat_time_day"], ["country_code"]]
     },
     {
       "stream": {
@@ -294,12 +267,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["campaign_id"],
-        ["stat_time_day"],
-        ["gender"],
-        ["age"]
-      ]
+      "primary_key": [["campaign_id"], ["stat_time_day"], ["gender"], ["age"]]
     },
     {
       "stream": {
@@ -335,11 +303,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["ad_id"],
-        ["stat_time_day"],
-        ["country_code"]
-      ]
+      "primary_key": [["ad_id"], ["stat_time_day"], ["country_code"]]
     },
     {
       "stream": {
@@ -357,11 +321,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["campaign_id"],
-        ["stat_time_day"],
-        ["platform"]
-      ]
+      "primary_key": [["campaign_id"], ["stat_time_day"], ["platform"]]
     },
     {
       "stream": {
@@ -379,11 +339,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["adgroup_id"],
-        ["stat_time_day"],
-        ["platform"]
-      ]
+      "primary_key": [["adgroup_id"], ["stat_time_day"], ["platform"]]
     },
     {
       "stream": {
@@ -401,11 +357,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["adgroup_id"],
-        ["stat_time_day"],
-        ["country_code"]
-      ]
+      "primary_key": [["adgroup_id"], ["stat_time_day"], ["country_code"]]
     },
     {
       "stream": {
@@ -441,11 +393,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["ad_id"],
-        ["stat_time_day"],
-        ["platform"]
-      ]
+      "primary_key": [["ad_id"], ["stat_time_day"], ["platform"]]
     },
     {
       "stream": {
@@ -507,11 +455,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["ad_id"],
-        ["stat_time_day"],
-        ["country_code"]
-      ]
+      "primary_key": [["ad_id"], ["stat_time_day"], ["country_code"]]
     },
     {
       "stream": {
@@ -529,11 +473,7 @@
       "sync_mode": "incremental",
       "destination_sync_mode": "overwrite",
       "cursor_field": ["stat_time_day"],
-      "primary_key": [
-        ["adgroup_id"],
-        ["stat_time_day"],
-        ["country_code"]
-      ]
+      "primary_key": [["adgroup_id"], ["stat_time_day"], ["country_code"]]
     }
   ]
 }
