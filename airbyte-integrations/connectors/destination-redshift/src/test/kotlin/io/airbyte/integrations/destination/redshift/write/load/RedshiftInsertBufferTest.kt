@@ -37,13 +37,13 @@ internal class RedshiftInsertBufferTest {
     @MockK lateinit var redshiftClient: RedshiftAirbyteClient
 
     private val tableName = TableName(namespace = "test_schema", name = "test_table")
-    private val columns =
-        listOf(
-            "_airbyte_raw_id",
-            "_airbyte_extracted_at",
-            "_airbyte_meta",
-            "_airbyte_generation_id",
-            "name"
+    private val columnsWithTypes =
+        linkedMapOf(
+            "_airbyte_raw_id" to "varchar(36)",
+            "_airbyte_extracted_at" to "timestamptz",
+            "_airbyte_meta" to "super",
+            "_airbyte_generation_id" to "bigint",
+            "name" to "varchar(65535)",
         )
 
     private val s3Config =
@@ -78,7 +78,7 @@ internal class RedshiftInsertBufferTest {
         coEvery { redshiftClient.copyFromS3(any(), any(), any(), any(), any()) } just Runs
         coEvery { redshiftClient.deleteFromS3(any(), any()) } just Runs
 
-        buffer = RedshiftInsertBuffer(tableName, columns, redshiftClient, configuration)
+        buffer = RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, configuration)
     }
 
     @Test
@@ -162,15 +162,16 @@ internal class RedshiftInsertBufferTest {
 
     @Test
     fun `uploaded data preserves empty strings separately from nulls`() = runTest {
-        val testColumns = listOf("_airbyte_raw_id", "str_col", "int_col")
-        val sentinelColumns = setOf("_airbyte_raw_id", "str_col") // varchar columns
         val testBuffer =
             RedshiftInsertBuffer(
                 tableName,
-                testColumns,
+                linkedMapOf(
+                    "_airbyte_raw_id" to "varchar(36)",
+                    "str_col" to "varchar(65535)",
+                    "int_col" to "bigint",
+                ),
                 redshiftClient,
                 configuration,
-                sentinelColumns,
             )
 
         val record =
@@ -199,16 +200,17 @@ internal class RedshiftInsertBufferTest {
     }
 
     @Test
-    fun `uploaded data writes sentinel for null in sentinel columns`() = runTest {
-        val testColumns = listOf("_airbyte_raw_id", "str_col", "int_col")
-        val sentinelColumns = setOf("_airbyte_raw_id", "str_col")
+    fun `uploaded data writes sentinel for null in varchar columns`() = runTest {
         val testBuffer =
             RedshiftInsertBuffer(
                 tableName,
-                testColumns,
+                linkedMapOf(
+                    "_airbyte_raw_id" to "varchar(36)",
+                    "str_col" to "varchar(65535)",
+                    "int_col" to "bigint",
+                ),
                 redshiftClient,
                 configuration,
-                sentinelColumns,
             )
 
         val record =
@@ -256,7 +258,7 @@ internal class RedshiftInsertBufferTest {
         val noPrefixConfig = s3Config.copy(s3BucketPath = null)
         val noPrefixConfiguration = configuration.copy(uploadingMethod = noPrefixConfig)
         val bufferNoPrefix =
-            RedshiftInsertBuffer(tableName, columns, redshiftClient, noPrefixConfiguration)
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, noPrefixConfiguration)
 
         bufferNoPrefix.accumulate(
             mapOf("_airbyte_raw_id" to StringValue("x"), "name" to StringValue("y"))
@@ -275,7 +277,7 @@ internal class RedshiftInsertBufferTest {
         val noPurgeConfig = s3Config.copy(purgeStagingData = false)
         val noPurgeConfiguration = configuration.copy(uploadingMethod = noPurgeConfig)
         val noPurgeBuffer =
-            RedshiftInsertBuffer(tableName, columns, redshiftClient, noPurgeConfiguration)
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, noPurgeConfiguration)
 
         noPurgeBuffer.accumulate(
             mapOf("_airbyte_raw_id" to StringValue("x"), "name" to StringValue("y"))
@@ -341,7 +343,7 @@ internal class RedshiftInsertBufferTest {
     @Test
     fun `null fileNamePattern uses default timestamp_uuid format`() {
         // s3Config already has fileNamePattern = null (default)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, configuration)
+        val buf = RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, configuration)
         val key = buf.buildStagingS3Key()
 
         assertTrue(key.startsWith("staging/data/test_schema/test_table/"), "Directory prefix")
@@ -358,7 +360,8 @@ internal class RedshiftInsertBufferTest {
     fun `blank fileNamePattern uses default format`() {
         val blankPatternConfig = s3Config.copy(fileNamePattern = "   ")
         val blankConfiguration = configuration.copy(uploadingMethod = blankPatternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, blankConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, blankConfiguration)
         val key = buf.buildStagingS3Key()
 
         val fileName = key.substringAfterLast("/")
@@ -372,7 +375,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern with date token resolves to yyyy_MM_dd`() {
         val patternConfig = s3Config.copy(fileNamePattern = "{date}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
         val key = buf.buildStagingS3Key()
 
         val fileName = key.substringAfterLast("/")
@@ -387,7 +391,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern with timestamp token resolves to epoch millis`() {
         val patternConfig = s3Config.copy(fileNamePattern = "{timestamp}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
 
         val before = System.currentTimeMillis()
         val key = buf.buildStagingS3Key()
@@ -404,7 +409,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern with format_extension does not double-append`() {
         val patternConfig = s3Config.copy(fileNamePattern = "data_{date}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
         val key = buf.buildStagingS3Key()
 
         val fileName = key.substringAfterLast("/")
@@ -418,7 +424,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern without format_extension auto-appends csv gz`() {
         val patternConfig = s3Config.copy(fileNamePattern = "myfile_{date}_{timestamp}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
         val key = buf.buildStagingS3Key()
 
         val fileName = key.substringAfterLast("/")
@@ -430,7 +437,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern with part_number increments across flushes`() {
         val patternConfig = s3Config.copy(fileNamePattern = "part_{part_number}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
 
         val key1 = buf.buildStagingS3Key()
         val key2 = buf.buildStagingS3Key()
@@ -450,7 +458,8 @@ internal class RedshiftInsertBufferTest {
         val patternConfig =
             s3Config.copy(fileNamePattern = "{date:yyyy_MM}_{part_number}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
         val key = buf.buildStagingS3Key()
 
         val fileName = key.substringAfterLast("/")
@@ -465,7 +474,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern with timestamp millis extended placeholder`() {
         val patternConfig = s3Config.copy(fileNamePattern = "{timestamp:millis}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
 
         val before = System.currentTimeMillis()
         val key = buf.buildStagingS3Key()
@@ -481,7 +491,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern with timestamp micro extended placeholder`() {
         val patternConfig = s3Config.copy(fileNamePattern = "{timestamp:micro}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
 
         val beforeMicro = System.currentTimeMillis() * 1000
         val key = buf.buildStagingS3Key()
@@ -497,7 +508,8 @@ internal class RedshiftInsertBufferTest {
     fun `fileNamePattern with spaces are replaced by underscores`() {
         val patternConfig = s3Config.copy(fileNamePattern = "my file {date}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
         val key = buf.buildStagingS3Key()
 
         val fileName = key.substringAfterLast("/")
@@ -510,7 +522,8 @@ internal class RedshiftInsertBufferTest {
         val patternConfig =
             s3Config.copy(fileNamePattern = "{date}_{part_number}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
         val key = buf.buildStagingS3Key()
 
         // Directory path should still be {bucketPath}/{namespace}/{tableName}/
@@ -525,7 +538,8 @@ internal class RedshiftInsertBufferTest {
         val patternConfig =
             s3Config.copy(fileNamePattern = "{date}_{timestamp}_{part_number}{format_extension}")
         val patternConfiguration = configuration.copy(uploadingMethod = patternConfig)
-        val buf = RedshiftInsertBuffer(tableName, columns, redshiftClient, patternConfiguration)
+        val buf =
+            RedshiftInsertBuffer(tableName, columnsWithTypes, redshiftClient, patternConfiguration)
 
         val before = System.currentTimeMillis()
         val key = buf.buildStagingS3Key()

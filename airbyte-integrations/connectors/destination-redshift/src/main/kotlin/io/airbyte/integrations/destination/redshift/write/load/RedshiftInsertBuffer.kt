@@ -40,13 +40,13 @@ private val EXTENDED_PLACEHOLDER_PATTERN = Regex("""\{(date:.+?|timestamp:.+?)\}
  */
 class RedshiftInsertBuffer(
     private val tableName: TableName,
-    val columns: List<String>,
+    columnsWithTypes: LinkedHashMap<String, String>,
     private val redshiftClient: RedshiftAirbyteClient,
     private val configuration: RedshiftConfiguration,
-    sentinelColumns: Set<String> = emptySet(),
 ) {
 
-    private val formatter = RedshiftSchemaRecordFormatter(columns, sentinelColumns)
+    val columns = columnsWithTypes.keys.toList()
+    private val formatter = RedshiftSchemaRecordFormatter(columnsWithTypes)
     private val s3Config = configuration.uploadingMethod!!
     private val purgeStagingData: Boolean = s3Config.purgeStagingData ?: true
 

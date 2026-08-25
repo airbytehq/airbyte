@@ -21,9 +21,15 @@ internal class RedshiftRecordFormatterTest {
 
     @Test
     fun `format produces values in column order`() {
-        val columns = listOf("_airbyte_raw_id", "_airbyte_extracted_at", "name", "age")
-        val sentinelColumns = setOf("_airbyte_raw_id", "name") // varchar columns
-        val formatter = RedshiftSchemaRecordFormatter(columns, sentinelColumns)
+        val formatter =
+            RedshiftSchemaRecordFormatter(
+                linkedMapOf(
+                    "_airbyte_raw_id" to "varchar(36)",
+                    "_airbyte_extracted_at" to "timestamptz",
+                    "name" to "varchar(65535)",
+                    "age" to "bigint",
+                )
+            )
 
         val record =
             mapOf(
@@ -43,10 +49,15 @@ internal class RedshiftRecordFormatterTest {
     }
 
     @Test
-    fun `format returns sentinel for missing sentinel columns and empty for others`() {
-        val columns = listOf("id", "name", "missing_int")
-        val sentinelColumns = setOf("name") // only name is varchar
-        val formatter = RedshiftSchemaRecordFormatter(columns, sentinelColumns)
+    fun `format returns sentinel for missing varchar columns and empty for others`() {
+        val formatter =
+            RedshiftSchemaRecordFormatter(
+                linkedMapOf(
+                    "id" to "bigint",
+                    "name" to "varchar(65535)",
+                    "missing_int" to "bigint",
+                )
+            )
 
         val record =
             mapOf(
@@ -63,10 +74,11 @@ internal class RedshiftRecordFormatterTest {
     }
 
     @Test
-    fun `format uses sentinel for NullValue in sentinel columns`() {
-        val columns = listOf("str_col", "int_col")
-        val sentinelColumns = setOf("str_col") // varchar
-        val formatter = RedshiftSchemaRecordFormatter(columns, sentinelColumns)
+    fun `format uses sentinel for NullValue in varchar columns`() {
+        val formatter =
+            RedshiftSchemaRecordFormatter(
+                linkedMapOf("str_col" to "varchar(65535)", "int_col" to "bigint")
+            )
 
         val record =
             mapOf(
@@ -83,9 +95,10 @@ internal class RedshiftRecordFormatterTest {
 
     @Test
     fun `format preserves empty strings separately from nulls for varchar columns`() {
-        val columns = listOf("str_col", "nullable_str")
-        val sentinelColumns = setOf("str_col", "nullable_str")
-        val formatter = RedshiftSchemaRecordFormatter(columns, sentinelColumns)
+        val formatter =
+            RedshiftSchemaRecordFormatter(
+                linkedMapOf("str_col" to "varchar(65535)", "nullable_str" to "varchar(65535)")
+            )
 
         val record =
             mapOf(
@@ -102,9 +115,8 @@ internal class RedshiftRecordFormatterTest {
 
     @Test
     fun `format serializes objects and arrays as JSON strings`() {
-        val columns = listOf("json_obj", "json_arr")
-        val sentinelColumns = setOf("json_obj", "json_arr") // SUPER columns
-        val formatter = RedshiftSchemaRecordFormatter(columns, sentinelColumns)
+        val formatter =
+            RedshiftSchemaRecordFormatter(linkedMapOf("json_obj" to "super", "json_arr" to "super"))
 
         val record =
             mapOf(
@@ -122,8 +134,10 @@ internal class RedshiftRecordFormatterTest {
 
     @Test
     fun `format handles boolean and number types`() {
-        val columns = listOf("is_active", "price")
-        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
+        val formatter =
+            RedshiftSchemaRecordFormatter(
+                linkedMapOf("is_active" to "boolean", "price" to "decimal(38,9)")
+            )
 
         val record =
             mapOf(
@@ -139,23 +153,27 @@ internal class RedshiftRecordFormatterTest {
     }
 
     @Test
-    fun `format with empty record uses sentinel for sentinel columns only`() {
-        val columns = listOf("varchar_col", "int_col", "super_col")
-        val sentinelColumns = setOf("varchar_col", "super_col")
-        val formatter = RedshiftSchemaRecordFormatter(columns, sentinelColumns)
+    fun `format with empty record uses sentinel for varchar columns only`() {
+        val formatter =
+            RedshiftSchemaRecordFormatter(
+                linkedMapOf(
+                    "varchar_col" to "varchar(65535)",
+                    "int_col" to "bigint",
+                    "super_col" to "super",
+                )
+            )
 
         val result = formatter.format(emptyMap())
 
         assertEquals(3, result.size)
         assertEquals(RedshiftSqlGenerator.NULL_SENTINEL, result[0]) // varchar → sentinel
-        assertEquals("", result[1]) // int → empty
-        assertEquals(RedshiftSqlGenerator.NULL_SENTINEL, result[2]) // super → sentinel
+        assertEquals("", result[1]) // int → empty (Redshift auto-nulls)
+        assertEquals("", result[2]) // super → empty (Redshift auto-nulls)
     }
 
     @Test
     fun `format ignores extra fields not in column list`() {
-        val columns = listOf("id")
-        val formatter = RedshiftSchemaRecordFormatter(columns, emptySet())
+        val formatter = RedshiftSchemaRecordFormatter(linkedMapOf("id" to "bigint"))
 
         val record =
             mapOf(

@@ -27,10 +27,12 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
 
     companion object {
         /**
-         * Static sentinel token written into CSV fields to represent SQL NULL for VARCHAR and SUPER
-         * columns. The Redshift COPY command's `NULL AS` option maps this token back to SQL NULL on
-         * load. Using a distinctive literal avoids the ambiguity between genuine empty strings and
-         * nulls that `EMPTYASNULL` could not resolve (it nullifies quoted empty fields too).
+         * Static sentinel token written into CSV fields to represent SQL NULL for VARCHAR columns.
+         * The Redshift COPY command's `NULL AS` option maps this token back to SQL NULL on load.
+         * Using a distinctive literal avoids the ambiguity between genuine empty strings and nulls
+         * that `EMPTYASNULL` could not resolve (it nullifies quoted empty fields too). SUPER
+         * columns must not use this sentinel because Redshift validates JSON before applying `NULL
+         * AS`.
          */
         const val NULL_SENTINEL = "_AB_NULL_"
 
