@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.bigquery;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -104,13 +104,27 @@ class BigQuerySourceTest {
   }
 
   @Test
+  public void testResponseTooLargeJobFailureIsMappedToConfigError() {
+    final RuntimeException mapped = BigQuerySource.mapQueryException(
+        new IllegalStateException(
+            "BigQuery query job failed: BigQueryError{reason=responseTooLarge, location=null, message=Response too large to return.}"),
+        "dataset",
+        "table");
+
+    final ConfigErrorException configError = assertInstanceOf(ConfigErrorException.class, mapped);
+    assertEquals(
+        "Query results for table dataset.table exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
+        configError.getMessage());
+  }
+
+  @Test
   public void testUnrelatedQueryErrorIsNotMapped() {
     final RuntimeException exception = new IllegalArgumentException("unrelated");
 
     final RuntimeException mapped = BigQuerySource.mapQueryException(exception, "dataset", "table");
 
-    assertNotSame(ConfigErrorException.class, mapped.getClass());
-    assertEquals(exception, mapped);
+    assertFalse(mapped instanceof ConfigErrorException);
+    assertSame(exception, mapped);
   }
 
   @Test

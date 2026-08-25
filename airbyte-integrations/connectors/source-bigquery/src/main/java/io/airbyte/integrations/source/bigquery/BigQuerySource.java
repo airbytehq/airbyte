@@ -11,11 +11,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.FieldList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
 import com.google.cloud.bigquery.TableResult;
@@ -210,17 +211,18 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final QueryParameterValue... params) {
     final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
-    LOGGER.info("Queueing query: {}", sqlQuery);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
+        LOGGER.info("Queueing query: {}", sqlQuery);
         final QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration.newBuilder(sqlQuery)
             .setUseLegacySql(false)
             .setPositionalParameters(Arrays.asList(params))
             .build();
         final TableResult result = executeQuery(database.getBigQuery(), queryJobConfiguration, QUERY_RESULT_PAGE_SIZE);
+        final FieldList fields = result.getSchema().getFields();
         final Stream<JsonNode> stream = Streams.stream(result.iterateAll())
             .map(fieldValueList -> sourceOperations.rowToJson(
-                new BigQueryResultSet(fieldValueList, result.getSchema().getFields())));
+                new BigQueryResultSet(fieldValueList, fields)));
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
         throw mapQueryException(e, schemaName, tableName);
@@ -256,10 +258,12 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                             final String tableName) {
     Throwable cause = exception;
     for (int depth = 0; cause != null && depth < 20; depth++) {
-      if (cause instanceof BigQueryException bigQueryException
-          && (("responseTooLarge".equalsIgnoreCase(bigQueryException.getReason()))
-              || (bigQueryException.getMessage() != null
-                  && bigQueryException.getMessage().contains("Response too large to return")))) {
+      final boolean isResponseTooLarge = cause instanceof BigQueryException bigQueryException
+          && "responseTooLarge".equalsIgnoreCase(bigQueryException.getReason());
+      final String causeMessage = cause.getMessage();
+      if (isResponseTooLarge
+          || (causeMessage != null
+              && (causeMessage.contains("Response too large to return") || causeMessage.contains("responseTooLarge")))) {
         final String message = String.format(
             "Query results for table %s exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
             RelationalDbQueryUtils.getFullyQualifiedTableName(schemaName, tableName));
