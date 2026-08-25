@@ -1,6 +1,6 @@
 # Gorgias
 
-[Gorgias](https://gorgias.com/) is a customer support helpdesk for ecommerce. This source syncs your helpdesk data — tickets, messages, customers, users, teams, tags, macros, rules, views, and satisfaction surveys — from the [Gorgias REST API](https://developers.gorgias.com/reference/introduction).
+[Gorgias](https://gorgias.com/) is a customer support helpdesk for ecommerce. This source syncs your helpdesk data — tickets and their messages, customers, and the supporting configuration and activity objects behind them — from the [Gorgias REST API](https://developers.gorgias.com/reference/introduction). See [Streams](#streams) for the full list.
 
 ## Prerequisites
 
@@ -21,7 +21,7 @@ The connector authenticates with HTTP basic authentication, using your email add
 | `username` | `string` | The email address of the Gorgias user that owns the API key. |  |
 | `password` | `string` | The API key generated in **Settings** > **REST API**. |  |
 | `domain_name` | `string` | Your Gorgias subdomain, taken from the URL prefix you use to reach Gorgias. For `https://acme.gorgias.com`, enter `acme`. |  |
-| `start_date` | `string` | The earliest date to sync records from, in `YYYY-MM-DDTHH:MM:SSZ` format. Airbyte rejects any other format. |  |
+| `start_date` | `string` | The starting cursor value for incremental syncs, in `YYYY-MM-DDTHH:MM:SSZ` format. Airbyte rejects any other format. The streams that read in full on every sync ignore this value. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
