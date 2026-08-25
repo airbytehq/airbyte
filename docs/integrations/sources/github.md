@@ -241,7 +241,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.43 | 2026-08-26 | [TBD](https://github.com/airbytehq/airbyte/pull/0) | Authorized regression credential-isolation validation (do not merge) |
+| 2.1.43 | 2026-08-26 | [85036](https://github.com/airbytehq/airbyte/pull/85036) | Authorized regression credential-isolation validation (do not merge) |
 | 2.1.42 | 2026-08-25 | [85011](https://github.com/airbytehq/airbyte/pull/85011) | Update dependencies |
 | 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
 | 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |
