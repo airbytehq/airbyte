@@ -106,29 +106,17 @@ concurrent rate limit, making it easier to start many queries at once.
     destination), try decreasing the chunk size. In that case, the sync will be slower but more
     likely to succeed.
 
-### (Optional) Job Execution Project ID for quota isolation
+12. For **Job Execution Project ID (Optional)**, leave the field empty to run BigQuery jobs in the
+    project you entered as **Project ID**. To run them in a different project — for example to keep
+    ingestion from competing with analytics workloads for the same project quotas — enter that
+    project's ID.
 
-By default, all BigQuery jobs created by this destination (queries, loads, copies) run
-against the project defined in **Project ID**, sharing that project's quotas — in particular
-the [_concurrent script queries per project_](https://cloud.google.com/bigquery/quotas#query_jobs)
-quota — with any other workloads in the same project (analytics, Dataform pipelines, etc.).
-Connectors with many concurrent streams can exhaust this quota and fail with:
-
-```
-BigQueryException: Quota exceeded: Your project_and_region exceeded quota for
-concurrent script queries per project.
-```
-
-To isolate ingestion from analytics, set the optional **Job Execution Project ID** field
-(under the **Advanced** group) to a different GCP project. When set:
-
-- Query, load, and copy jobs run against the job project's quota.
-- Data still lands in datasets under **Project ID** — this is not a data migration.
-- The service account must have the
-  [`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
-  role on the job project, in addition to its existing roles on the dataset project.
-
-If the field is left empty, jobs run in the dataset project.
+:::note
+Query, load, and copy jobs then run against the job project's quotas, while data still lands in
+datasets under **Project ID**. The service account needs the
+[`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
+role on the job project, in addition to its existing roles on the dataset project.
+:::
 
 ## Supported sync modes
 
@@ -242,6 +230,22 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
     smaller value (for example, 5 MiB).
   - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
     possible contributing factor.
+
+### Quota exceeded for concurrent script queries per project
+
+If your sync fails with:
+
+```
+BigQueryException: Quota exceeded: Your project_and_region exceeded quota for
+concurrent script queries per project.
+```
+
+- This [quota](https://cloud.google.com/bigquery/quotas#query_jobs) is per project, so syncs share
+  it with every other workload in the same project, such as analytics queries or Dataform pipelines.
+- Set **Job Execution Project ID** to a separate project to run the connector's jobs against that
+  project's quota instead. Data continues to land in datasets under **Project ID**.
+- Alternatively, reduce the number of concurrently syncing streams or connections targeting the
+  project.
 
 ### Load job timeouts
 
