@@ -212,7 +212,7 @@ Because you name the functions, this is also the pattern for multi-connector age
 
 #### Choose a failure signal with `framework=`
 
-`framework=` controls what a tool failure looks like to the agent. It behaves the same way on `build_connector_tools`, `agent_tool`, and `translate_exceptions`.
+`framework=` controls what a tool failure looks like to the agent. It behaves the same way on `build_connector_tools`, `agent_tool`, and [`translate_exceptions`](../../reference/sdk/airbyte_agent_sdk/translation/index.md).
 
 | `framework=` | A tool failure surfaces as |
 | ------------ | -------------------------- |
@@ -233,11 +233,15 @@ from airbyte_agent_sdk import AirbyteToolError
 
 tools = {fn.__name__: fn for fn in (github_inspect, github_read_docs, github_execute)}
 
-# tool_name and tool_args come from the model's tool call.
-try:
-    tool_result = await tools[tool_name](**tool_args)
-except AirbyteToolError as err:
-    tool_result = str(err)
+# tool_name and tool_args come from the model's tool call, so don't assume the name exists.
+handler = tools.get(tool_name)
+if handler is None:
+    tool_result = f"Unknown tool: {tool_name}"
+else:
+    try:
+        tool_result = await handler(**tool_args)
+    except AirbyteToolError as err:
+        tool_result = str(err)
 ```
 
 `AirbyteToolError` inherits from `AirbyteError` and keeps the original exception on `__cause__`.
