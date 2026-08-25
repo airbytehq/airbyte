@@ -106,6 +106,25 @@ def test_api_url_slash_normalization_keeps_python_and_manifest_urls_consistent(a
     assert interpolated == "https://github.example.com/api/v3"
 
 
+@pytest.mark.parametrize(
+    "api_url_value",
+    (
+        pytest.param({}, id="key_absent"),
+        pytest.param({"api_url": None}, id="present_but_null"),
+        pytest.param({"api_url": ""}, id="empty_string"),
+        pytest.param({"api_url": "https://api.github.com"}, id="no_trailing_slash"),
+        pytest.param({"api_url": "https://api.github.com/"}, id="already_normalized"),
+    ),
+)
+def test_api_url_default_covers_absent_null_and_empty(api_url_value):
+    """A null or empty `api_url` must land on the default rather than reaching `urlparse` as a
+    non-string. Null arrives via the API and Terraform, and the spec description tells users to
+    "leave it empty to use GitHub", so both are configurations the connector invites."""
+    config = SourceGithub()._validate_and_transform_config({"access_token": "test_token", "repository": "org/repo", **api_url_value})
+
+    assert config["api_url"] == "https://api.github.com/"
+
+
 def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
     requests_mock.get(
         "https://api.github.com/repos/airbytehq/airbyte",

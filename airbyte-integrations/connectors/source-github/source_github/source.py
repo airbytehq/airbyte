@@ -248,7 +248,13 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         return config
 
     def _ensure_default_values(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
-        config.setdefault("api_url", "https://api.github.com")
+        # `not config.get(...)` rather than `setdefault`: the key can be present and null or
+        # empty — null via the API or Terraform, empty because the spec tells users to "leave it
+        # empty to use GitHub" — and both used to reach `urlparse` as a non-string, crashing with
+        # an unhandled TypeError/AttributeError where every other bad `api_url` gets an
+        # actionable config error.
+        if not config.get("api_url"):
+            config["api_url"] = "https://api.github.com"
         if not config["api_url"].endswith("/"):
             config["api_url"] = config["api_url"] + "/"
         api_url_parsed = urlparse(config["api_url"])
