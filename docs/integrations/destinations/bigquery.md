@@ -106,6 +106,30 @@ concurrent rate limit, making it easier to start many queries at once.
     destination), try decreasing the chunk size. In that case, the sync will be slower but more
     likely to succeed.
 
+### (Optional) Job Execution Project ID for quota isolation
+
+By default, all BigQuery jobs created by this destination (queries, loads, copies) run
+against the project defined in **Project ID**, sharing that project's quotas — in particular
+the [_concurrent script queries per project_](https://cloud.google.com/bigquery/quotas#query_jobs)
+quota — with any other workloads in the same project (analytics, Dataform pipelines, etc.).
+Connectors with many concurrent streams can exhaust this quota and fail with:
+
+```
+BigQueryException: Quota exceeded: Your project_and_region exceeded quota for
+concurrent script queries per project.
+```
+
+To isolate ingestion from analytics, set the optional **Job Execution Project ID** field
+(under the **Advanced** group) to a different GCP project. When set:
+
+- Query, load, and copy jobs run against the job project's quota.
+- Data still lands in datasets under **Project ID** — this is not a data migration.
+- The service account must have the
+  [`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
+  role on the job project, in addition to its existing roles on the dataset project.
+
+If the field is left empty, behavior is unchanged: jobs run in the dataset project.
+
 ## Supported sync modes
 
 The BigQuery destination connector supports the following
@@ -252,6 +276,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0 | 2026-08-25 | [PRLINK](https://github.com/airbytehq/airbyte/pull/PRNUM) | Add optional `job_project_id` field for BigQuery job quota isolation |
 | 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
 | 3.0.23 | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |

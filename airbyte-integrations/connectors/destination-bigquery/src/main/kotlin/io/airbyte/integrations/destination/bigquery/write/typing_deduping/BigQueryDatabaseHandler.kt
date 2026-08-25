@@ -28,8 +28,11 @@ import kotlinx.coroutines.launch
 private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin is hard")
-class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocation: String) :
-    DatabaseHandler {
+class BigQueryDatabaseHandler(
+    private val bq: BigQuery,
+    private val datasetLocation: String,
+    private val jobProjectId: String,
+) : DatabaseHandler {
     /**
      * Some statements (e.g. ALTER TABLE) have strict rate limits. Bigquery recommends retrying
      * these statements with exponential backoff, and the SDK doesn't do it automatically. So this
@@ -92,7 +95,10 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         var job =
             bq.create(
                 JobInfo.of(
-                    JobId.newBuilder().setLocation(datasetLocation).build(),
+                    JobId.newBuilder()
+                        .setProject(jobProjectId)
+                        .setLocation(datasetLocation)
+                        .build(),
                     QueryJobConfiguration.of(statement)
                 )
             )

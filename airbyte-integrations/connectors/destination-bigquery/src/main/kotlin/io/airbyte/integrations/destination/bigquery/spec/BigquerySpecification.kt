@@ -75,6 +75,14 @@ class BigquerySpecification : ConfigurationSpecification() {
     )
     val credentialsJson: String? = null
 
+    @get:JsonSchemaTitle("Job Execution Project ID")
+    @get:JsonPropertyDescription(
+        """Optional. The GCP project ID where BigQuery jobs will be executed. When set, query jobs run against this project's quota instead of the dataset project's quota. This is useful for isolating BigQuery concurrent query quota between different workloads (e.g. data ingestion vs. analytics). The service account must have BigQuery Job User role on this project. If not set, jobs run in the dataset project (Project ID above).""",
+    )
+    @get:JsonProperty("job_project_id")
+    @get:JsonSchemaInject(json = """{"group": "advanced", "order": 4}""")
+    val jobProjectId: String? = null
+
     @get:JsonSchemaTitle("CDC deletion mode")
     @get:JsonPropertyDescription(
         """Whether to execute CDC deletions as hard deletes (i.e. propagate source deletions to the destination), or soft deletes (i.e. leave a tombstone record in the destination). Defaults to hard deletes.""",
