@@ -91,6 +91,8 @@ Skill docs are hosted by Airbyte and served by the platform. If you point the SD
 
 To expose only `execute` with a single generated description instead of the progressive flow, pass `use_progressive_docs=False`. `tools.as_list()` then returns just the `execute` tool.
 
+The builder names its tools `inspect_connector`, `read_skill_docs`, and `execute`, and the SDK can't rename them. Registering two connectors' tool sets with one agent means renaming them yourself at registration, or using [`agent_tool`](#custom-tool-bodies-with-agent_tool) with connector-specific function names.
+
 #### Register the tools with your framework
 
 `tools.as_list()` returns plain async callables, so you can register them with any framework. Set `framework=` to match the one you use.
@@ -172,9 +174,77 @@ for tool in build_connector_tools(github, framework="mcp").as_list():
 </TabItem>
 </Tabs>
 
-### Alternatives
+### Custom tool bodies with `agent_tool`
 
-The decorator patterns below predate `build_connector_tools`. They bind a single `execute` tool with the connector's full catalog baked into the description up front, rather than letting the agent read skill docs on demand. Prefer `build_connector_tools` for new agents. Reach for these when you want to expose a narrow set of operations, need full control over the tool description, or run a local connector without hosted skill docs.
+`build_connector_tools` writes the tool bodies for you. When you need your own, to log calls, post-process results, restrict which operations the agent can reach, or run a framework the SDK doesn't natively support, use the generated connector's `agent_tool` decorator instead. It keeps the same progressive flow: you write the three functions, and the decorator attaches the guidance that steers the agent from inspect to docs to execute.
+
+Decorate one function per role. The role is inferred from the signature: `(entity, action, ...)` is execute, `(section, ...)` is docs, and `()` is inspect. Pass it explicitly (`agent_tool("execute")`) if a wrapper's signature is ambiguous. The optional `inspect_tool=` and `docs_tool=` names are woven into the execute guidance so the agent refers to your registered tool names rather than generic ones.
+
+```python title="agent.py"
+from pydantic_ai import Agent
+from airbyte_agent_sdk import connect
+from airbyte_agent_sdk.connectors.github import GithubConnector
+
+agent = Agent("openai:gpt-4o")
+github = connect("github")
+
+@agent.tool_plain
+@GithubConnector.agent_tool(
+    framework="pydantic_ai",
+    inspect_tool="github_inspect",
+    docs_tool="github_read_docs",
+)
+async def github_execute(entity: str, action: str, params: dict | None = None):
+    return await github.execute(entity, action, params or {})
+
+@agent.tool_plain
+@GithubConnector.agent_tool(framework="pydantic_ai")
+async def github_inspect():
+    return await github.inspect_connector()
+
+@agent.tool_plain
+@GithubConnector.agent_tool(framework="pydantic_ai")
+async def github_read_docs(section: str | None = None):
+    return await github.read_skill_docs(section)
+```
+
+Because you name the functions, this is also the pattern for multi-connector agents: give each connector its own `<connector>_execute`, `<connector>_inspect`, and `<connector>_read_docs` trio.
+
+#### Choose a failure signal with `framework=`
+
+`framework=` controls what a tool failure looks like to the agent. It behaves the same way on `build_connector_tools`, `agent_tool`, and `translate_exceptions`.
+
+| `framework=` | A tool failure surfaces as |
+| ------------ | -------------------------- |
+| `"pydantic_ai"` | Raises `pydantic_ai.ModelRetry`, so the agent retries. |
+| `"langchain"` | Raises `langchain_core.tools.ToolException`. LangChain aborts the run unless you feed the message back to the model. See [Surface tool errors back to the model](../../get-started/developer-quickstart/tutorial-langchain#surface-tool-errors-back-to-the-model). |
+| `"openai_agents"` | Returns the failure message as the tool result instead of raising, which is what the OpenAI Agents SDK expects. |
+| `"mcp"` | Raises `fastmcp.exceptions.ToolError`, which FastMCP serializes as a failed tool result. |
+| `"none"` | Raises `AirbyteToolError`. |
+
+`build_connector_tools` auto-detects an installed framework when you omit `framework=`, and falls back to `"none"` with a warning if it finds none. `agent_tool` never auto-detects: it defaults to `"none"`.
+
+#### Unsupported frameworks and raw LLM loops
+
+On a framework the SDK doesn't cover, or in a hand-rolled dispatch loop against a model API, omit `framework=` and handle `AirbyteToolError` yourself. Advertise each function to the model using its docstring as the tool description, and return the error message as the tool result so the model can correct itself.
+
+```python title="agent.py"
+from airbyte_agent_sdk import AirbyteToolError
+
+tools = {fn.__name__: fn for fn in (github_inspect, github_read_docs, github_execute)}
+
+# tool_name and tool_args come from the model's tool call.
+try:
+    tool_result = await tools[tool_name](**tool_args)
+except AirbyteToolError as err:
+    tool_result = str(err)
+```
+
+`AirbyteToolError` inherits from `AirbyteError` and keeps the original exception on `__cause__`.
+
+### Other patterns
+
+The patterns below predate `build_connector_tools`. They bind a single `execute` tool with the connector's full catalog baked into the description up front, rather than letting the agent read skill docs on demand. Prefer `build_connector_tools`, or `agent_tool` when you need your own tool bodies.
 
 #### Manual docstrings
 
@@ -196,9 +266,11 @@ async def list_issues(owner: str, repo: str, limit: int = 10) -> str:
 
 The docstring becomes the tool description the LLM sees. Function parameters become the tool's input schema.
 
-#### Auto-generated tool descriptions
+#### Auto-generated tool descriptions with `tool_utils`
 
-For broad coverage, use the `tool_utils` decorator on a typed connector. The decorator replaces the wrapped function's docstring with a generated description that includes every entity, action, required and optional parameter, and response shape. The LLM then sees every operation the connector supports with no extra wiring.
+`tool_utils` is deprecated. It remains available so existing integrations keep working, and it doesn't warn at runtime, but new agents should use `build_connector_tools` or `agent_tool`.
+
+The decorator replaces the wrapped function's docstring with a generated description that includes every entity, action, required and optional parameter, and response shape. The LLM then sees every operation the connector supports with no extra wiring, and pays for the whole catalog in context on every call, which is what the progressive flow avoids.
 
 ```python title="agent.py"
 from pydantic_ai import Agent
