@@ -247,7 +247,7 @@ def test_single_stream_per_report_reads_each_property_partition():
             "metrics": [{"name": "sessions"}],
             "returnPropertyQuota": True,
             "keepEmptyRows": False,
-            "limit": 100000,
+            "limit": 25000,
             "dateRanges": [{"startDate": "2025-01-01", "endDate": "2025-01-01"}],
         }
     ] * 2
