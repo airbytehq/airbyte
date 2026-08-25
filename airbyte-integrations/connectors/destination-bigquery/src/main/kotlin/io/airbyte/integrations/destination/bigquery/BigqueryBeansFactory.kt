@@ -40,6 +40,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -172,6 +173,7 @@ class BigqueryBeansFactory {
     }
 
     @Singleton
+    @Primary
     fun getBigqueryClient(config: BigqueryConfiguration): BigQuery {
         // Follows this order of resolution:
         // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
