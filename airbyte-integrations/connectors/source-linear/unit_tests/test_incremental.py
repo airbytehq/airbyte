@@ -232,8 +232,8 @@ def test_flat_api_key_config_after_migration_can_build_auth_header() -> None:
             400,
             {"errors": [{"message": "Invalid input.", "extensions": {"code": "BAD_USER_INPUT"}}]},
             ResponseAction.FAIL,
-            "HTTP Status Code: 400. Error: Bad request. Please check your request parameters.",
-            id="graphql_non_rate_limit_bad_request",
+            "Linear returned an error: Invalid input.",
+            id="graphql_generic_error",
         ),
     ],
 )

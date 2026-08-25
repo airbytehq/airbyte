@@ -71,8 +71,9 @@ Classes
         - website: The website of the company
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -221,8 +222,9 @@ Classes
         - workspace_id: The unique identifier of the workspace associated with the contact.
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -357,8 +359,9 @@ Classes
         - waiting_since: Timestamp since waiting for a response
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -882,8 +885,9 @@ Classes
         - type_: Type of team (e.g., 'internal', 'external').
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
