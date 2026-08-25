@@ -128,7 +128,7 @@ To isolate ingestion from analytics, set the optional **Job Execution Project ID
   [`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
   role on the job project, in addition to its existing roles on the dataset project.
 
-If the field is left empty, behavior is unchanged: jobs run in the dataset project.
+If the field is left empty, jobs run in the dataset project.
 
 ## Supported sync modes
 
