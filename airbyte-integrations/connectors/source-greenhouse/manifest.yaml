@@ -71,7 +71,7 @@ definitions:
         lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -120,7 +120,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -169,7 +169,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -215,7 +215,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -402,7 +402,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -684,7 +684,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -778,7 +778,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -824,7 +824,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -870,7 +870,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -919,7 +919,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -965,7 +965,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1050,7 +1050,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     sources:
       type: DeclarativeStream
@@ -1128,7 +1128,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1350,7 +1350,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1396,7 +1396,7 @@ definitions:
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ config['start_date'] or (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       schema_loader:
         type: InlineSchemaLoader
@@ -1750,7 +1750,7 @@ spec:
         description: >-
           UTC date and time in the format YYYY-MM-DDTHH:MM:SSZ. Records updated
           before this date will not be replicated. If omitted, the connector
-          replicates records updated in the last two years.
+          replicates all history.
         format: date-time
         pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
         examples:

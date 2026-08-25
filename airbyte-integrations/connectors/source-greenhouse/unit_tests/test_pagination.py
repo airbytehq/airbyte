@@ -2,16 +2,13 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 import base64
-from datetime import datetime, timezone
 from urllib.parse import parse_qs
 
 import pytest
 import yaml
-from isodate import parse_duration
 from jsonschema import validate
 
 from airbyte_cdk.models import FailureType, SyncMode, Type
-from airbyte_cdk.sources.declarative.interpolation import jinja
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -220,14 +217,10 @@ def _read_application_start_date_request(requests_mock, get_source, config):
     return application_requests[0]
 
 
-def test_start_date_defaults_to_two_years_ago(requests_mock, get_source, monkeypatch):
-    fixed_now = datetime(2026, 8, 21, 12, 34, 56, tzinfo=timezone.utc)
-    monkeypatch.setitem(jinja._ENVIRONMENT.globals, "now_utc", lambda: fixed_now)
-
+def test_start_date_defaults_to_epoch(requests_mock, get_source):
     request = _read_application_start_date_request(requests_mock, get_source, CONFIG)
 
-    expected_start_date = (fixed_now - parse_duration("P2Y")).strftime("%Y-%m-%dT%H:%M:%S.000Z").lower()
-    assert request.qs["updated_at"] == [f"gte|{expected_start_date}"]
+    assert request.qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
 
 
 def test_start_date_uses_configured_value(requests_mock, get_source):

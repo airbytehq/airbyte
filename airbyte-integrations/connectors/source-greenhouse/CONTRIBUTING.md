@@ -5,7 +5,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 ## Harvest v3 stream behavior
 
 This connector uses Greenhouse Harvest v3 with OAuth Authorization Code authentication and rotating refresh tokens. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The `refresh_token_updater` persists each rotated refresh token. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor. Child streams preserve their minimum recoverable `updated_at` cursor while flattening partition state and resume without a backfill.
-Incremental streams use the optional `start_date` configuration value and default to records updated in the last two years when it is omitted.
+Incremental streams use the optional `start_date` configuration value and default to all history when it is omitted.
 
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
