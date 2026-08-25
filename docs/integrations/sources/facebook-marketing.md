@@ -258,6 +258,10 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
    12. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
 </FieldAnchor>
 
+<FieldAnchor field="custom_insights.include_engaged_view">
+   13. (Optional) Toggle **Include Engaged View** to add the `1d_ev` attribution window to this custom insight stream. This setting applies only to this specific custom insight. For more details, see the global **Include Engaged View** setting described below.
+</FieldAnchor>
+
 <FieldAnchor field="page_size">
 10. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
 </FieldAnchor>
@@ -274,7 +278,11 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 13. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics such as `actions`, `action_values`, and `cost_per_action_type` then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/guides/lift-studies/) studies configured in Facebook. For accounts without lift studies, the field is `null`. Disabled by default. For more details on the `incrementality` attribution window, refer to the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference.
 </FieldAnchor>
 
-14. Click **Set up source** and wait for the tests to complete.
+<FieldAnchor field="include_engaged_view">
+14. (Optional) Toggle **Include Engaged View** to add the `1d_ev` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"1d_ev"` to the `action_attribution_windows` parameter sent to the Facebook API, and action metrics such as `actions`, `action_values`, and `cost_per_action_type` gain a `1d_ev` field holding conversions that occurred within one day of an engaged view of the ad. Since March 2026, Meta also counts conversions that follow a share, save, or other non-link click in this window, and refers to it as engage-through attribution. Only the one-day window is available; Meta's API does not accept `7d_ev` or `28d_ev`. Disabled by default. For details, see the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference and Meta's [attribution announcement](https://www.facebook.com/business/news/click-attribution).
+</FieldAnchor>
+
+15. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -391,6 +399,10 @@ If you sync multiple ad accounts in different timezones within a single connecti
 ## Facebook Marketing Attribution Reporting
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
+
+### Action attribution windows
+
+Separately from the lookback window, the connector asks Facebook to break down action metrics by attribution window. Every Insights stream requests `1d_click`, `7d_click`, `28d_click`, and `1d_view` by default. Two more windows are opt-in: enable **Include Incrementality** for `incrementality`, and **Include Engaged View** for `1d_ev`. Enabling either one adds fields to the action metrics (`actions`, `action_values`, `cost_per_action_type`, and similar) rather than changing existing ones, so you must refresh the connection's schema to sync the new fields. The global settings apply to all built-in Insights streams; each custom insight has its own copy of both toggles.
 
 </HideInUI>
 
@@ -515,7 +527,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.1 | 2026-08-24 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | feat(source-facebook-marketing): add opt-in engaged view (ev) attribution window (AI-Triage PR) |
+| 6.1.1 | 2026-08-25 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | Add opt-in `Include Engaged View` setting that requests the `1d_ev` action attribution window |
 | 6.1.0 | 2026-08-12 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
 | 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
 | 6.0.1 | 2026-06-24 | [80779](https://github.com/airbytehq/airbyte/pull/80779) | Fix TypeError in `CursorPatch.load_next_page()` when Facebook API returns malformed (non-dict) responses or data items |
