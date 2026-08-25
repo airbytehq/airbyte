@@ -4601,7 +4601,7 @@ api_budget:
           interval: PT1S
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
-        - limit: 1 # sustainable pace: ~200 calls/day, under Klaviyo's documented 225/d quota
+        - limit: 1
           interval: PT7M12S
       matchers:
         - method: POST
@@ -4613,7 +4613,7 @@ api_budget:
           interval: PT1S
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
-        - limit: 1 # sustainable pace: ~200 calls/day, under Klaviyo's documented 225/d quota
+        - limit: 1
           interval: PT7M12S
       matchers:
         - method: POST
