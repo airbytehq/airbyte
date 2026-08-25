@@ -632,8 +632,8 @@ class MySqlSourceDebeziumOperations(
             savedGtidSet.isNullOrBlank()
 
         /**
-         * Null or unusable saved GTIDs only skip GTID checks. The binlog fallback still aborts
-         * when the saved file is no longer on the server.
+         * Null or unusable saved GTIDs only skip GTID checks. The binlog fallback still aborts when
+         * the saved file is no longer on the server.
          */
         internal fun savedBinlogIsPresent(
             savedFileName: String,

@@ -130,7 +130,9 @@ class MySqlSourceDebeziumOperationsTest {
                 listOf("binlog.000001", "binlog.000002"),
             )
         )
-        assertFalse(MySqlSourceDebeziumOperations.savedBinlogIsPresent("binlog.000001", emptyList()))
+        assertFalse(
+            MySqlSourceDebeziumOperations.savedBinlogIsPresent("binlog.000001", emptyList())
+        )
     }
 
     @Test
