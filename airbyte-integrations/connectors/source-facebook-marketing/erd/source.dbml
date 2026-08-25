@@ -75,6 +75,7 @@ Table "ad_sets" {
     "bid_amount" number
     "bid_constraints" object
     "adlabels" array
+    "attribution_spec" array
 }
 
 Table "ads" {
