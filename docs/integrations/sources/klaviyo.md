@@ -144,6 +144,8 @@ The connector is restricted by Klaviyo [rate limits](https://developers.klaviyo.
 
 The connector waits at most 10 minutes for any single retry. When `Retry-After` asks for longer than that, the sync fails with a rate limit error instead of idling. In practice this happens on the reporting endpoints behind the **Campaign Values Reports** and **Flow Series Reports** streams, which enforce a daily quota of 225 requests on top of the burst and steady limits: once a sync exhausts that quota, `Retry-After` holds the seconds remaining until the next daily reset, which can be many hours. To stay inside the quota, narrow the conversion metrics you request with **Report Stream Conversion Metric IDs**, sync these two streams less frequently, or move them to their own connection so a quota failure doesn't interrupt your other streams. Connector versions before 3.0.1 waited for the full `Retry-After` value on every stream, which stalled the sync until Airbyte stopped the attempt and restarted it.
 
+The Campaign Values Reports and Flow Series Reports endpoints have a documented quota of 225 requests per day. The connector now paces these calls conservatively at about 200 requests per day, so large reporting backfills take longer but are less likely to exhaust the quota in one sync. This quota is account-wide and shared across private-key integrations, so the connector cannot guarantee absolute protection; OAuth applications receive a separate quota.
+
 [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter rate limit issues that aren't retried successfully.
 
 The `Campaigns Detailed` stream contains fields `estimated_recipient_count` and `campaign_message` in addition to info from the `Campaigns` stream. Additional time is needed to fetch extra data.
@@ -179,6 +181,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.2 | 2026-08-25 | TBD | Pace `flow_series_reports` and `campaign_values_reports` requests to stay within Klaviyo's 225/day reporting quota. |
 | 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
 | 3.0.0 | 2026-08-14 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Emit one record per calendar day with scalar statistics in `flow_series_reports`, add a reporting lookback window for that stream, and align both report streams to whole-day windows to stop boundary double-counting (refresh the schema and clear both report streams) |
 | 2.21.1 | 2026-08-11 | [83991](https://github.com/airbytehq/airbyte/pull/83991) | Update dependencies |
