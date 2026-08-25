@@ -12,6 +12,7 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
 import com.google.cloud.bigquery.FieldList;
+import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
@@ -46,6 +47,7 @@ import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -213,14 +215,16 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
     final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        LOGGER.info("Queueing query: {}", sqlQuery);
+        LOGGER.info("Queueing query for table: {}", tableName);
+        LOGGER.debug("Queueing query: {}", sqlQuery);
         final QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration.newBuilder(sqlQuery)
             .setUseLegacySql(false)
             .setPositionalParameters(Arrays.asList(params))
             .build();
         final TableResult result = executeQuery(database.getBigQuery(), queryJobConfiguration, QUERY_RESULT_PAGE_SIZE);
         final FieldList fields = result.getSchema().getFields();
-        final Stream<JsonNode> stream = Streams.stream(result.iterateAll())
+        final Iterator<FieldValueList> resultIterator = wrapQueryResultIterator(result.iterateAll().iterator(), schemaName, tableName);
+        final Stream<JsonNode> stream = Streams.stream(resultIterator)
             .map(fieldValueList -> sourceOperations.rowToJson(
                 new BigQueryResultSet(fieldValueList, fields)));
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
@@ -228,6 +232,33 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
         throw mapQueryException(e, schemaName, tableName);
       }
     }, airbyteStream);
+  }
+
+  @VisibleForTesting
+  static Iterator<FieldValueList> wrapQueryResultIterator(final Iterator<FieldValueList> iterator,
+                                                           final String schemaName,
+                                                           final String tableName) {
+    return new Iterator<>() {
+
+      @Override
+      public boolean hasNext() {
+        try {
+          return iterator.hasNext();
+        } catch (final RuntimeException e) {
+          throw mapQueryException(e, schemaName, tableName);
+        }
+      }
+
+      @Override
+      public FieldValueList next() {
+        try {
+          return iterator.next();
+        } catch (final RuntimeException e) {
+          throw mapQueryException(e, schemaName, tableName);
+        }
+      }
+
+    };
   }
 
   @VisibleForTesting

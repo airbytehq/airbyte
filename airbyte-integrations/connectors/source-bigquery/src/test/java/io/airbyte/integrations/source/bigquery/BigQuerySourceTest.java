@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.BigQueryException;
+import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.JobStatus;
@@ -28,6 +29,7 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import java.io.IOException;
+import java.util.Iterator;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -112,6 +114,39 @@ class BigQuerySourceTest {
         "table");
 
     final ConfigErrorException configError = assertInstanceOf(ConfigErrorException.class, mapped);
+    assertEquals(
+        "Query results for table dataset.table exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
+        configError.getMessage());
+  }
+
+  @Test
+  public void testResponseTooLargeDuringResultIterationIsMappedToConfigError() {
+    final BigQueryException responseTooLarge = new BigQueryException(
+        403,
+        "Response too large to return.",
+        new BigQueryError("responseTooLarge", null, "Response too large to return."));
+    final Iterator<FieldValueList> iterator = new Iterator<>() {
+      private int hasNextCalls;
+
+      @Override
+      public boolean hasNext() {
+        if (hasNextCalls++ == 1) {
+          throw responseTooLarge;
+        }
+        return true;
+      }
+
+      @Override
+      public FieldValueList next() {
+        return mock(FieldValueList.class);
+      }
+    };
+    final Iterator<FieldValueList> wrapped = BigQuerySource.wrapQueryResultIterator(iterator, "dataset", "table");
+
+    assertTrue(wrapped.hasNext());
+    wrapped.next();
+    final ConfigErrorException configError = assertThrows(ConfigErrorException.class, wrapped::hasNext);
+
     assertEquals(
         "Query results for table dataset.table exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
         configError.getMessage());
