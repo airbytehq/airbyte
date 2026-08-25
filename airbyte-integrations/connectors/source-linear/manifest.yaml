@@ -1471,8 +1471,6 @@ streams:
 # max_concurrency ceiling, while users on the 2,500 req/hr API-key tier
 # should generally stay at or below the default of 4 to avoid sustained
 # rate-limit pressure.
-#
-# See CONTRIBUTING.md ("Rate-Limit Budget") for why the hourly ceiling is expressed as sub-hour rates and why ratelimit_reset_header is unset.
 api_budget:
   type: HTTPAPIBudget
   ratelimit_remaining_header: "X-RateLimit-Requests-Remaining"
