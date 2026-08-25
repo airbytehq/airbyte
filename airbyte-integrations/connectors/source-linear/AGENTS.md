@@ -4,6 +4,14 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
+## Rotating Refresh Tokens
+
+Linear's OAuth implementation rotates refresh tokens on every exchange. Each successful access-token refresh invalidates the old refresh token and returns a replacement. The connector uses `refresh_token_updater` to persist the replacement token back to the connection configuration. The OAuth consent flow also persists the access token and expiry returned by the initial code exchange, so the first sync can use that token without immediately refreshing it.
+
+**Why this matters:** Linear refresh tokens are single-use. An unnecessary first refresh can consume the newly issued refresh token, and the 30-minute replay grace period does not make relying on the old token safe indefinitely. If a refresh succeeds but the replacement token is not persisted, subsequent refreshes will fail and the connection will require re-authentication.
+
+The consent URL pins `actor=app`, which provides a rate-limit uplift but requires a workspace administrator to install the application. With this actor, the connector can see only teams granted by the administrator, rather than everything visible to the installing user's normal permissions. This differs from the API-key path. Do not change `actor=app` in the manifest without maintainer approval.
+
 ## Incremental Stream Considerations
 
 The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: { gte: ... } }` on most entity types, which the connector uses extensively — 12 streams are already incremental (added in PR airbytehq/airbyte#76429). The remaining 4 FR parent streams are config-style lookups (`customer_statuses`, `customer_tiers`, `project_statuses`) and `issue_relations` which lacks a documented `updatedAt` filter in the GraphQL schema.
@@ -34,3 +42,9 @@ The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: 
 ## Deletions
 
 Linear soft-deletes records by archiving them. The API provides no hard-delete signal or deleted-records endpoint, so the connector uses `archivedAt` on the primary stream as its single canonical deletion flag. Every query must pass `includeArchived: true`; without it, Linear omits archived records entirely and `archivedAt` is always null. Linear can also permanently hard-delete records, which leaves no signal for the connector to detect.
+
+## Error handling
+
+Linear's GraphQL API returns errors in an `errors` array carrying a machine-readable `extensions.code` and a human-readable `extensions.userPresentableMessage`. HTTP status is an unreliable signal on its own — a malformed query returns 500, not 400 — so the ordered `response_filters` under `definitions.base_requester.error_handler` match on `extensions.code` rather than status. See `CONTRIBUTING.md` § Error handling for the code → action → failure-type table.
+
+**Why this matters:** the filter list is ordered and the CDK returns the first match, so the `RATELIMITED` filter must stay first, `GRAPHQL_VALIDATION_FAILED` must stay before the 4b transport-status filters, and the catch-all must stay last. All 16 streams and the `check` operation share this single handler through `$ref: "#/definitions/base_requester"` and no stream overrides it, so any remediation text written into a filter is emitted for every stream. `FORBIDDEN` and `FEATURE_NOT_ACCESSIBLE` are unverified code strings; if Linear's real values differ, the `extensions.type` branch or catch-all handles those errors instead of misclassifying them.
