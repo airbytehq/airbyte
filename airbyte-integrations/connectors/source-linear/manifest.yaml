@@ -1471,6 +1471,20 @@ streams:
 # max_concurrency ceiling, while users on the 2,500 req/hr API-key tier
 # should generally stay at or below the default of 4 to avoid sustained
 # rate-limit pressure.
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: "X-RateLimit-Requests-Remaining"
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ 20 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 10 }}"
+          interval: PT10S
+        - limit: "{{ 80 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 40 }}"
+          interval: PT1M
+        - limit: "{{ 5000 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 2500 }}"
+          interval: PT1H
+      matchers: []
+
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ config.get('num_workers', 4) }}"
