@@ -115,7 +115,7 @@ See Linear's [Customer Requests documentation](https://linear.app/docs/customer-
 
 ### Rate limiting
 
-The Linear API uses a leaky bucket algorithm for rate limiting. The connector detects rate-limit errors returned by the API and automatically backs off until the rate-limit window resets. Syncs may slow down during backoff periods but will resume without manual intervention.
+The Linear API uses a leaky bucket algorithm for rate limiting. Starting with connector version `0.2.22`, the connector paces its own requests to stay below Linear's hourly request ceiling for your authentication method, spreading requests across the hour instead of sending them in bursts. The connector also detects rate-limit errors returned by the API and automatically backs off until the rate-limit window resets. This reactive backoff still matters because the connector can't see quota consumed by other applications using the same credentials, and it doesn't track query complexity. Syncs may slow down during pacing or backoff periods but resume without manual intervention.
 
 Linear enforces three types of rate limits:
 
