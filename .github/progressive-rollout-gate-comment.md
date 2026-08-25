@@ -38,11 +38,11 @@ No new connector version should be released, and the active rollout should conti
 
 </details>
 
-<details><summary>If the connector version increments to a higher `-rc` version...</summary>
+<details><summary>If the connector version increments to a higher version...</summary>
 
-After this PR is merged, the new RC will be published and registered, replacing the active RC marker. When the new RC is registered, the platform cancels — not finalizes — any existing non-terminal rollout for this connector, without unpinning actors. Actors pinned to `{{ .rollout_docker_image_tag }}` therefore keep syncing on that old RC image: they are not rolled back to the previous GA version, and the merge itself does not move them to the new RC.
+After this PR is merged, the new version will be published and advertised as this connector's rollout candidate, replacing the current one. An `-rc` suffix is not required for this: with `enableProgressiveRollout`, an ordinary version bump becomes the rollout candidate. When it is registered, the platform cancels — not finalizes — any existing non-terminal rollout for this connector, without unpinning actors. Actors pinned to `{{ .rollout_docker_image_tag }}` therefore keep syncing on that old image: they are not rolled back to the previous default version, and the merge itself does not move them to the new candidate.
 
-After merging, you still need to start the new rollout; nothing rolls out on its own. Starting it migrates the previous rollout's pins onto the new RC by default (`migratePins`), which is what moves those actors forward. Until the new rollout is started, they stay on the old RC.
+The new rollout still has to be started before those actors move. With `defaultRolloutMode: autopilot`, the autopilot cron starts it on its next eligible pass; otherwise a human starts it from [Connector Rollout Manager]({{ .retool_url }}). Starting it migrates the previous rollout's pins onto the new candidate version by default (`migratePins`), which is what moves those actors forward. Until then, they stay on the old version.
 
 </details>
 
