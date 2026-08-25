@@ -10,3 +10,4 @@ es_source_catalog.json
 kafka_source_catalog.json
 kafka_source_config_1.json
 kafka_source_config_2.json
+es_source_config.json

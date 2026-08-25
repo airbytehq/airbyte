@@ -25,8 +25,8 @@ services:
       test:
         ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 5s
-      timeout: 5s
-      retries: 10
+      timeout: 10s
+      retries: 30
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
@@ -44,7 +44,8 @@ services:
         ]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 60
+      start_period: 90s
 
   redpanda:
     image: redpandadata/redpanda:latest

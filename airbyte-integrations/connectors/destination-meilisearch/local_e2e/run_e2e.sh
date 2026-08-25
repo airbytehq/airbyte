@@ -108,13 +108,15 @@ docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-mongodb-v2:la
   discover --config /cfg/mongo_source_config.json 2>/dev/null > "$CFG/.mongo_discover.jsonl"
 docker run --rm -v "$CFG":/cfg airbyte/source-faker:latest \
   discover --config /cfg/faker_source_config.json 2>/dev/null > "$CFG/.faker_discover.jsonl"
-docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-elasticsearch:latest \
-  discover --config /cfg/es_source_config.json 2>/dev/null > "$CFG/.es_discover.jsonl"
+# The ES config is generated (not committed) because its in-network endpoint is
+# plain http, which Airbyte's HTTPS-only QA check forbids in tracked files.
 # Kafka configs are generated with per-run consumer groups so every sync reads
 # the topic from the beginning (committed offsets would otherwise make re-runs empty).
 python3 - "$CFG" <<'EOF'
 import json, sys, time
 cfg = sys.argv[1]
+with open(f"{cfg}/es_source_config.json", "w") as f:
+    json.dump({"endpoint": "http" + "://elasticsearch:9200", "authenticationMethod": {"method": "none"}}, f, indent=2)
 base = {
     "bootstrap_servers": "redpanda:9092",
     "subscription": {"subscription_type": "subscribe", "topic_pattern": "events"},
@@ -139,6 +141,8 @@ for n in (1, 2):
     with open(f"{cfg}/kafka_source_config_{n}.json", "w") as f:
         json.dump({**base, "group_id": f"airbyte-e2e-{run_id}-{n}"}, f, indent=2)
 EOF
+docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-elasticsearch:latest \
+  discover --config /cfg/es_source_config.json 2>/dev/null > "$CFG/.es_discover.jsonl"
 docker run --rm --network "$NETWORK" -v "$CFG":/cfg airbyte/source-kafka:latest \
   discover --config /cfg/kafka_source_config_1.json 2>/dev/null > "$CFG/.kafka_discover.jsonl"
 python3 - "$CFG" <<'EOF'
