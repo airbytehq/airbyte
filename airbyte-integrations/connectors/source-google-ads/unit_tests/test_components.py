@@ -281,12 +281,21 @@ class TestGoogleAdsStreamingDecoder:
         assert records == msg[0]["results"]
         assert "\ufffd" not in records[0]["text"]
 
-    def test_preserves_multibyte_character_at_end_of_final_content_chunk(self, decoder):
-        msg = [{"results": [{"text": "fin ä"}]}]
+    def test_preserves_multibyte_character_split_byte_by_byte_across_chunks(self, decoder):
+        msg = [{"results": [{"text": "smile 😀"}]}]
         raw = json.dumps(msg, ensure_ascii=False).encode("utf-8")
-        char_end = raw.index("ä".encode("utf-8")) + len("ä".encode("utf-8"))
+        emoji = "😀".encode("utf-8")
+        emoji_start = raw.index(emoji)
+        chunks = [
+            raw[:emoji_start],
+            bytes([emoji[0]]),
+            bytes([emoji[1]]),
+            bytes([emoji[2]]),
+            bytes([emoji[3]]),
+            raw[emoji_start + len(emoji) :],
+        ]
 
-        records = list(decoder._parse_records_from_stream([raw[:char_end], raw[char_end:]]))
+        records = list(decoder._parse_records_from_stream(chunks))
 
         assert records == msg[0]["results"]
         assert "\ufffd" not in records[0]["text"]
