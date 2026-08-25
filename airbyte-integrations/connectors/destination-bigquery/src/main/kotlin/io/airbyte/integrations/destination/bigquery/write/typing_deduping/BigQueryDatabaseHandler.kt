@@ -131,7 +131,8 @@ class BigQueryDatabaseHandler(
         if (statistics.numChildJobs != null) {
             // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for
             // them
-            jobProjectBq.listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
+            jobProjectBq
+                .listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
                 .iterateAll()
                 .sortedBy { it.getStatistics<JobStatistics>().endTime }
                 .forEach { childJob: Job ->

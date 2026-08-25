@@ -9,8 +9,8 @@ import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryError
 import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.Job
-import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobId
+import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobStatistics
 import com.google.cloud.bigquery.JobStatus
 import io.airbyte.cdk.ConfigErrorException
@@ -88,15 +88,10 @@ class BigQueryDatabaseHandlerTest {
             every { toBuilder() } returns
                 mockk<BigQueryOptions.Builder> {
                     every { setProjectId("job-project") } returns this
-                    every { build() } returns
-                        mockk {
-                            every { service } returns jobProjectBq
-                        }
+                    every { build() } returns mockk { every { service } returns jobProjectBq }
                 }
         }
-        val childJobs: Page<Job> = mockk {
-            every { iterateAll() } returns emptyList()
-        }
+        val childJobs: Page<Job> = mockk { every { iterateAll() } returns emptyList() }
         every { datasetProjectBq.options } returns datasetProjectOptions
         every { datasetProjectBq.create(any<JobInfo>(), *anyVararg()) } returns rootJob
         every { jobProjectBq.listJobs(*anyVararg()) } returns childJobs
