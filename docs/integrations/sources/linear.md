@@ -142,7 +142,7 @@ The connector retrieves only the data its credentials can see. With API key auth
 
 ### Syncs fail on errors Linear returns in the response body
 
-Linear's GraphQL API often reports a problem in the response body instead of in the HTTP status code. Starting with version `0.2.23`, a sync fails whenever Linear returns errors this way and the response contains no usable data. Before `0.2.23` the connector discarded those errors and treated the response as an empty but successful stream, so a connection that had been completing can start failing on this version even though nothing changed in Linear.
+Linear's GraphQL API often reports a problem in the response body instead of in the HTTP status code. Starting with version `0.2.23`, a sync fails when Linear returns errors this way and the response contains no usable data, unless the response is one the connector retries. Before `0.2.23` the connector discarded those errors and treated the response as an empty but successful stream, so a connection that had been completing can start failing on this version even though nothing changed in Linear.
 
 Every one of these failures repeats Linear's own explanation of the problem. Use that text to decide what to do:
 
@@ -152,7 +152,7 @@ Every one of these failures repeats Linear's own explanation of the problem. Use
 
 Responses that contain both errors and usable records still sync. If Linear returns partial results, the connector keeps the records it received.
 
-Request timeouts and Linear's 5xx responses are retried automatically, so they only fail a sync if they persist.
+Request timeouts and Linear's 5xx responses are retried, so they only fail a sync if they persist. A rejected credential, denied access, or an invalid query fails immediately no matter which status code accompanies it.
 
 ## IP allow list
 
