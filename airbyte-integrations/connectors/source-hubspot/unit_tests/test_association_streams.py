@@ -4,11 +4,15 @@
 
 from unittest.mock import Mock
 
+import freezegun
 import pytest
 import yaml
 from requests import Response
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+
+from .conftest import read_from_stream
 
 
 @pytest.fixture
@@ -437,9 +441,9 @@ class TestCustomObjectAssociationCursorField:
         custom_mappings = self._cursor_mappings(custom_dynamic)
         standard_mappings = self._cursor_mappings(standard_dynamic)
         for key in self._CURSOR_MAPPING_KEYS:
-            assert (
-                custom_mappings[key]["value"] == standard_mappings[key]["value"]
-            ), f"Custom and standard resolvers disagree on the '{key}' cursor mapping"
+            assert custom_mappings[key]["value"] == standard_mappings[key]["value"], (
+                f"Custom and standard resolvers disagree on the '{key}' cursor mapping"
+            )
 
     def test_standard_stream_has_contacts_conditional(self, resolved_manifest):
         """The standard association stream should have a conditional for contacts vs other objects."""
@@ -451,6 +455,51 @@ class TestCustomObjectAssociationCursorField:
         # Standard streams use Jinja conditional for contacts
         assert "contacts" in cursor_field_mapping["value"]
         assert "lastmodifieddate" in cursor_field_mapping["value"]
+
+    @freezegun.freeze_time("2024-03-02T00:00:00Z")
+    def test_contacts_custom_association_read_uses_contacts_cursor(self, requests_mock, mock_config):
+        """A resolved contacts custom association stream should query and read with lastmodifieddate."""
+        config = mock_config | {
+            "start_date": "2024-03-01T00:00:00Z",
+            "custom_object_association_streams": [{"from_object": "contacts", "to_object": "p_custom"}],
+        }
+        requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={})
+        contacts_search = requests_mock.post(
+            "https://api.hubapi.com/crm/v3/objects/contacts/search",
+            json={"results": [{"id": "123", "properties": {"lastmodifieddate": "2024-03-01T12:00:00.000Z"}}]},
+        )
+        requests_mock.post(
+            "https://api.hubapi.com/crm/v4/associations/contacts/p_custom/batch/read",
+            json={
+                "results": [
+                    {
+                        "from": {"id": "123"},
+                        "to": [
+                            {
+                                "toObjectId": "456",
+                                "associationTypes": [{"typeId": 1, "category": "USER_DEFINED", "label": "test"}],
+                            }
+                        ],
+                    }
+                ]
+            },
+        )
+
+        output = read_from_stream(config, "associations_contacts_p_custom", SyncMode.full_refresh)
+
+        assert not output.errors
+        assert [record.record.data for record in output.records] == [
+            {
+                "from_id": "123",
+                "to_id": "456",
+                "association_type_id": 1,
+                "category": "USER_DEFINED",
+                "label": "test",
+            }
+        ]
+        request_body = contacts_search.last_request.json()
+        assert [filter_["propertyName"] for filter_ in request_body["filters"][:2]] == ["lastmodifieddate"] * 2
+        assert request_body["properties"] == ["hs_object_id", "lastmodifieddate"]
 
 
 class TestCustomObjectAssociationExtractor:
