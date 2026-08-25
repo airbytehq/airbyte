@@ -206,6 +206,6 @@ class API:
 
         Returns a list of account IDs (without the 'act_' prefix).
         """
-        user = User(fbid="me")
+        user = User(fbid="me", api=self.api)
         accounts = user.get_ad_accounts(fields=["account_id"])
         return [acc["account_id"] for acc in accounts]
