@@ -38,18 +38,12 @@ data class ClickhouseConfiguration(
     object Defaults {
         const val DATABASE_NAME = "default"
         const val RECORDS_PER_AGGREGATE = 100_000L
-        // The cluster name is empty by default, i.e. no cluster support at all
-        // as it was before this patch
         const val DEFAULT_CLUSTER_NAME = ""
-        // Do not force Replicated* prefix, btw it can't rely on DEFAULT_CLUSTER_NAME.
         const val USE_REPLICATED_ENGINES = false
     }
 
     object Validations {
-        // clusterName must be validated to prevent injections, the cluster name in click is
-        // too wide by definition, but the plus or minus valid cluster names are only
-        // alphanumeric plus "_-." symbols, feel free to change this if you need
-        // something broader in your setup
+        // Validated to prevent SQL injection.
         val CLUSTER_NAME_PATTERN = Regex("^[A-Za-z0-9_.-]*$")
     }
 }
