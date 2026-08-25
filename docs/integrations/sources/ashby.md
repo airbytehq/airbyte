@@ -78,6 +78,10 @@ Ashby doesn't publish a rate limit for the `.list` endpoints this connector read
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
+## Upgrading to 1.0.0
+
+Version 1.0.0 declares element schemas for array columns that the connector previously left untyped. On data-lake destinations such as S3 Data Lake and Iceberg, those columns change type, so syncs can fail with a schema evolution error. Refresh the affected streams first, and drop and recreate the affected destination tables only if a sync still fails. For the full list of affected columns and the upgrade steps, see the [Ashby migration guide](/integrations/sources/ashby-migrations).
+
 ## Changelog
 
 <details>
@@ -85,7 +89,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
-| 0.4.0 | 2026-08-14 | [84392](https://github.com/airbytehq/airbyte/pull/84392) | Add application history stream |
+| 1.1.0 | 2026-08-25 | [84392](https://github.com/airbytehq/airbyte/pull/84392) | Add application history stream |
+| 1.0.1 | 2026-08-25 | [84405](https://github.com/airbytehq/airbyte/pull/84405) | Send the pagination page size using Ashby's documented `limit` field instead of the undocumented `per_page` field |
+| 1.0.0 | 2026-08-18 | [84274](https://github.com/airbytehq/airbyte/pull/84274) | Breaking: declare documented API fields across stream schemas, including element schemas for previously untyped array columns. Data-lake users must refresh the affected streams, then recreate the affected tables if a sync still fails. See the [migration guide](/integrations/sources/ashby-migrations). |
+| 0.3.9 | 2026-08-18 | [78554](https://github.com/airbytehq/airbyte/pull/78554) | Update dependencies |
 | 0.3.8 | 2026-08-11 | [84215](https://github.com/airbytehq/airbyte/pull/84215) | Promoted release candidate to GA |
 | 0.3.8-rc.5 | 2026-08-11 | [84214](https://github.com/airbytehq/airbyte/pull/84214) | Revert the concurrency work from 0.3.8-rc.1 through 0.3.8-rc.3: remove the API budget, concurrency level, and `num_workers` option. |
 | 0.3.8-rc.4 | 2026-08-11 | [83816](https://github.com/airbytehq/airbyte/pull/83816) | Add missing application, candidate, and source fields to the declared schemas, and remove duplicated unreferenced manifest blocks. |
