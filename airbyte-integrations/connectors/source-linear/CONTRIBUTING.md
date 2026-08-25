@@ -48,12 +48,23 @@ response filters in `definitions.base_requester.error_handler` match on `extensi
 
 | `extensions.code` | HTTP | Action | Failure type |
 |---|---|---|---|
-| `RATELIMITED` | 429 | RATE_LIMITED | transient_error |
+| `RATELIMITED` | 400 (Linear's documented GraphQL status; 429 can appear at the edge) | RATE_LIMITED | resolved from the HTTP status, not from the manifest — see note |
 | `AUTHENTICATION_ERROR` | 401 | FAIL | config_error |
-| `FORBIDDEN`, `FEATURE_NOT_ACCESSIBLE` | 400/403 | FAIL | config_error |
+| `FORBIDDEN`, `FEATURE_NOT_ACCESSIBLE` (or `extensions.type` `forbidden`, `feature not accessible`) | 400/403 | FAIL | config_error |
 | `GRAPHQL_VALIDATION_FAILED` | 400 or 500 | FAIL | system_error |
 | anything else with an `errors` array | any | FAIL | system_error |
 
-Order matters — the CDK applies the first matching filter. The catch-all must stay last;
-it exists because GraphQL can return HTTP 200 with a populated `errors` array, which would
-otherwise be extracted as zero records and reported as a successful empty stream.
+The explicit HTTP 429 and 408/500/502/503/504 status filters preserve rate limiting and
+transport retries before the catch-all is considered.
+
+A filter's declared `failure_type` is honored only when its action is `FAIL`
+(`HttpResponseFilter.matches`); for `RATE_LIMITED` the CDK takes the failure type from
+`DEFAULT_ERROR_MAPPING[status]`. So filter 1's `failure_type: transient_error` is inert:
+the rate-limit filter resolves to `system_error` at Linear's HTTP 400 and to
+`transient_error` only at 429. Do not add `http_codes` guards from this table without
+re-probing Linear — the status column records observed statuses, not a contract.
+
+Order matters — the CDK applies the first matching filter. The catch-all must stay last.
+Its predicate tests that `errors` is populated and no top-level `data` value is usable, so
+partial-success pages flow to the extractor. The explicit status filters above it classify
+408, 429 and 5xx responses before the catch-all, preserving retry and rate-limit behavior.

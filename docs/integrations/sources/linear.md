@@ -103,7 +103,13 @@ Starting with connector version `0.2.16`, new connections pre-select `issues`, `
 
 ### Customer Requests streams
 
-The `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams read Linear's Customer Requests data. An admin has to enable Customer Requests in [Workspace Settings > Customer requests](https://linear.app/settings/customers) before your workspace has any of this data to sync, so these streams return no records in workspaces where the feature is off. Customer tiers are also defined in those settings, so the `customer_tiers` stream stays empty until someone configures tiers. See Linear's [Customer Requests documentation](https://linear.app/docs/customer-requests) for details.
+The `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams read Linear's Customer Requests data. An admin has to enable Customer Requests in [Workspace Settings > Customer requests](https://linear.app/settings/customers), and OAuth connections need the `customer:read` scope, before your workspace has any of this data to sync. Customer tiers are also defined in those settings, so the `customer_tiers` stream stays empty until someone configures tiers.
+
+:::caution Behavior change in `0.2.23`
+Before `0.2.23`, if Linear rejected a Customer Requests query the connector reported those streams as successful with zero records. Starting with `0.2.23` the connector surfaces Linear's error instead, and the sync fails with a configuration error naming the denied data. If your workspace does not have Customer Requests enabled, deselect `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` in the connection's schema tab.
+:::
+
+See Linear's [Customer Requests documentation](https://linear.app/docs/customer-requests) for details.
 
 ## Limitations and troubleshooting
 
@@ -134,6 +140,17 @@ If an OAuth source starts failing with an authorization error, re-authenticate t
 
 The connector retrieves only the data its credentials can see. With API key authentication, that's everything the key's owner can see in Linear. With OAuth, it's what the installed app can see in the workspace. If teams, projects, or issues are missing from your synced data, check those permissions in Linear first.
 
+### Syncs fail with "Linear returned an error"
+
+Starting with version 0.2.23, the connector fails a sync whenever Linear's response carries a
+populated GraphQL `errors` array. Before 0.2.23 those responses were treated as successful and
+the errors were discarded, so a connection that had been reporting COMPLETE may begin failing on
+this version without anything having changed in Linear.
+
+The error text repeats Linear's own `userPresentableMessage`. If it names a permission or a
+feature your workspace does not have, deselect the affected stream and re-run the sync. If it
+reports an invalid query, that is a connector defect — report it to Airbyte support.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -161,7 +178,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials and fail fast on invalid queries |
+| 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |
 | 0.2.22 | 2026-08-25 | [84954](https://github.com/airbytehq/airbyte/pull/84954) | Add proactive rate-limit pacing for Linear API requests |
 | 0.2.21 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Fix OAuth consent scope encoding and persist the access token issued during authorization. |
 | 0.2.20 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Persist rotated OAuth refresh tokens so OAuth connections keep working after the first token refresh. |

@@ -1412,30 +1412,52 @@ definitions:
           action: FAIL
           failure_type: config_error
           error_message: >-
-            Linear rejected the credentials: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'authentication failed') }}
+            Linear rejected the credentials.
             If you authenticated with an API key, confirm it has not been revoked in Linear under Settings → Security & access → Personal API keys.
             If you authenticated with OAuth, re-authenticate to obtain a new refresh token.
+            Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'authentication failed') }}
         # 3 · Permission and plan gating — user-correctable, but not a credential problem.
-        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') in ['FORBIDDEN', 'FEATURE_NOT_ACCESSIBLE'] }}"
+        #     This handler is shared by all 16 streams and by `check`, so the text must stay stream-agnostic.
+        - predicate: "{{ 'errors' in response and response['errors'] and (response['errors'][0].get('extensions', {}).get('code') in ['FORBIDDEN', 'FEATURE_NOT_ACCESSIBLE'] or response['errors'][0].get('extensions', {}).get('type') in ['forbidden', 'feature not accessible']) and not (response.get('data') or {}).values() | select | list }}"
           action: FAIL
           failure_type: config_error
           error_message: >-
-            Linear denied access to this data: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'access denied') }}
-            The customers, customer_needs, customer_statuses and customer_tiers streams require Linear's Customer Requests
-            feature and the customer:read scope. Deselect them if your workspace does not have Customer Requests enabled.
+            Linear denied access to this data.
+            Confirm the credentials you configured can read the teams and data this stream covers. If the failing stream is
+            customers, customer_needs, customer_statuses or customer_tiers, your workspace also needs Linear's Customer
+            Requests feature enabled (Workspace Settings > Customer requests) and, for OAuth sources, the customer:read
+            scope. Deselect the stream if you cannot grant it access.
+            Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'access denied') }}
         # 4 · Query defects — permanent. Fail immediately; do NOT let the HTTP 500 case retry.
         - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'GRAPHQL_VALIDATION_FAILED' }}"
           action: FAIL
           failure_type: system_error
           error_message: >-
-            Linear rejected the connector's query as invalid: {{ response['errors'][0].get('message', 'validation failed') }}
+            Linear rejected the connector's query as invalid.
             This is a connector defect, not a configuration problem. Please report it to Airbyte support.
-        # 5 · Catch-all for any HTTP 200 carrying a GraphQL errors array.
-        - predicate: "{{ 'errors' in response and response['errors'] }}"
+            Linear's message: {{ response['errors'][0].get('message', 'validation failed') }}
+        # 4b · Retryable transport statuses. Must sit after the GRAPHQL_VALIDATION_FAILED filter
+        #      (so malformed queries still fail fast) and before the catch-all below, which has
+        #      no status guard and would otherwise shadow the CDK's DEFAULT_ERROR_MAPPING.
+        - http_codes: [429]
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Rate limit exceeded for Linear API."
+        - http_codes: [408, 500, 502, 503, 504]
+          action: RETRY
+          failure_type: transient_error
+          error_message: "Linear returned a transient error; retrying."
+        # 5 · Catch-all for data-less GraphQL errors not classified above. Partial-success pages
+        #     flow to the extractor; 408/429/5xx are handled by the status filters above.
+        - predicate: "{{ 'errors' in response and response['errors'] and not (response.get('data') or {}).values() | select | list }}"
           action: FAIL
           failure_type: system_error
           error_message: >-
-            Linear returned an error: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', response['errors'][0].get('message', 'unknown error')) }}
+            {%- set errs = response['errors'] -%}
+            {%- set err = errs[0] if errs is iterable and errs is not string and errs is not mapping else errs -%}
+            {%- set ext = err.get('extensions') if err is mapping else none -%}
+            Linear returned an error: {{ (ext.get('userPresentableMessage') if ext is mapping else none)
+            or (err.get('message') if err is mapping else err | string) or 'unknown error' }}
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_type"]
