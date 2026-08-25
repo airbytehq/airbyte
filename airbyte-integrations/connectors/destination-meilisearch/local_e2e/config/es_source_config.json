@@ -1,4 +1,0 @@
-{
-  "endpoint": "http://elasticsearch:9200",
-  "authenticationMethod": { "method": "none" }
-}
