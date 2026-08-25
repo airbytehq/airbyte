@@ -30,6 +30,8 @@ The Iterable source connector supports the following [sync modes](https://docs.a
 - Incremental - Append
 - Incremental - Append + Deduped
 
+None of the incremental streams declares a primary key, so if you want to use Incremental - Append + Deduped with them, select a primary key yourself when you configure the connection.
+
 ## Supported streams
 
 - [Campaigns](https://api.iterable.com/api/docs#campaigns_campaigns)
@@ -91,9 +93,25 @@ Iterable's Export API limits requests to 4 per minute per project. The connector
 
 Streams that support incremental sync use the following approaches:
 
-- **Users**: Splits data retrieval into 90-day intervals. Uses `profileUpdatedAt` as the cursor. Standard Iterable profile fields are emitted as top-level record properties, while account-specific custom `dataFields` are delivered inside a `data` object.
+- **Users**: Splits data retrieval into 90-day intervals. Uses `profileUpdatedAt` as the cursor.
 - **Export-based event streams** (Email, Push, SMS, In-App, Web Push, Inbox, Purchase, CustomEvent, HostedUnsubscribeClick): Use adaptive date range slicing. The connector starts with a 30-day slice, then adjusts subsequent slice sizes based on how long each request takes to process. If a request fails with a connection timeout (`ChunkedEncodingError`), the connector halves the slice size and retries up to 6 times.
 - **Templates**: Uses 90-day fixed intervals. Uses `updatedAt` as the cursor.
+
+### Custom fields and the `data` object
+
+Iterable projects define their own user profile and event fields, so three streams keep a fixed set of documented columns and collect everything else in a generic `data` object.
+
+**Users** (connector version 1.0.0 and later) keeps the [fields Iterable manages](https://support.iterable.com/hc/en-us/articles/217744303-User-Profile-Fields-Used-by-Iterable) at the top level: `email`, `userId`, `itblUserId`, `emailListIds`, `userListIds`, `profileUpdatedAt`, `signupDate`, `signupSource`, `subscribedMessageTypeIds`, `unsubscribedChannelIds`, `unsubscribedMessageTypeIds`, `knownLitigatorFilter`, `receivedSMSDisclaimer`, `city`, `region`, `country`, `devices`, `ip`, `locale`, `phoneNumber`, `whatsAppPhoneNumber`, `profile`, and `timeZone`. Every other field on the profile, including the custom fields your project defines, arrives inside `data`.
+
+The Export API returns Iterable's internal metadata as flat, dotted keys rather than as a nested object, and the connector preserves them that way: `itblInternal.emailDomain`, `itblInternal.phoneCountry`, `itblInternal.phoneType`, `itblInternal.documentCreatedAt`, `itblInternal.documentUpdatedAt`, `itblInternal.isUnknownUser`, `itblDS.brandAffinityLabel`, and `itblDS.predictiveGoals`. Most destinations replace characters they can't use in column names, so expect these to land as something like `itblinternal_emaildomain` rather than as a nested structure you can traverse.
+
+Iterable returns some profile timestamps in a space-separated format, such as `2024-01-15 10:30:00 +00:00`. The connector rewrites `signupDate`, `profileUpdatedAt`, `itblInternal.documentCreatedAt`, and `itblInternal.documentUpdatedAt` to RFC 3339 (`2024-01-15T10:30:00+00:00`) so destinations can store them as timestamps. Values in any other format pass through unchanged.
+
+**Events** keeps `_type`, `createdAt`, `email`, and `itblInternal` at the top level. Every other field, including `userId`, goes into `data`.
+
+**Campaign Metrics** returns one `data` object per campaign. Iterable serves these metrics as CSV, and the connector parses each row into `data`, so individual metrics are keys inside that object rather than top-level columns.
+
+If you're upgrading from a 0.x version of the connector, see the [Iterable migration guide](/integrations/sources/iterable-migrations) for the details of the users stream restructuring.
 
 ### Lookback window
 
@@ -116,7 +134,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0 | 2026-08-24 | [79635](https://github.com/airbytehq/airbyte/pull/79635) | 🚨 Breaking: Restructure `users` stream schema - standard Iterable fields stay top-level, custom fields move to a `data` object, `itblInternal` flattened to dotted keys, timestamp values (`signupDate`, `profileUpdatedAt`, `itblInternal` document timestamps) normalized to RFC3339 to match their `timestamp_with_timezone` typing, added `itblUserId`, `whatsAppPhoneNumber`, `city`, `region` |
+| 1.0.0 | 2026-08-25 | [79635](https://github.com/airbytehq/airbyte/pull/79635) | 🚨 Breaking: Restructure `users` stream schema - standard Iterable fields stay top-level, custom fields move to a `data` object, `itblInternal` flattened to dotted keys, timestamp values (`signupDate`, `profileUpdatedAt`, `itblInternal` document timestamps) normalized to RFC3339 to match their `timestamp_with_timezone` typing, added `itblUserId`, `whatsAppPhoneNumber`, `city`, `region`. See the [migration guide](/integrations/sources/iterable-migrations). |
 | 0.7.2 | 2026-05-07 | [74702](https://github.com/airbytehq/airbyte/pull/74702) | Add optional `Region` parameter to support Iterable's EU data center |
 | 0.7.1 | 2026-04-07 | [76036](https://github.com/airbytehq/airbyte/pull/76036) | Fix `reduce_range()` to actually halve slice size on ChunkedEncodingError retry |
 | 0.7.0 | 2026-03-24 | [74379](https://github.com/airbytehq/airbyte/pull/74379) | Add configurable lookback window to prevent silent data loss from Iterable Export API eventual consistency |
