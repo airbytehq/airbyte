@@ -181,7 +181,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.2 | 2026-08-25 | TBD | Pace `flow_series_reports` and `campaign_values_reports` requests to stay within Klaviyo's 225/day reporting quota. |
+| 3.0.2 | 2026-08-25 | [85043](https://github.com/airbytehq/airbyte/pull/85043) | Pace `flow_series_reports` and `campaign_values_reports` requests to stay within Klaviyo's 225/day reporting quota. |
 | 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
 | 3.0.0 | 2026-08-14 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Emit one record per calendar day with scalar statistics in `flow_series_reports`, add a reporting lookback window for that stream, and align both report streams to whole-day windows to stop boundary double-counting (refresh the schema and clear both report streams) |
 | 2.21.1 | 2026-08-11 | [83991](https://github.com/airbytehq/airbyte/pull/83991) | Update dependencies |
