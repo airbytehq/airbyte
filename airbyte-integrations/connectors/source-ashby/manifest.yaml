@@ -37,7 +37,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -261,7 +261,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -319,7 +319,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -373,7 +373,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -677,7 +677,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -757,7 +757,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -833,7 +833,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -912,7 +912,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1055,7 +1055,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1158,7 +1158,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1228,7 +1228,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1356,7 +1356,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1529,7 +1529,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1616,7 +1616,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1736,7 +1736,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1807,7 +1807,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1922,7 +1922,7 @@ streams:
                   page_size_option:
                     type: RequestOption
                     inject_into: body_json
-                    field_name: per_page
+                    field_name: limit
                   pagination_strategy:
                     type: CursorPagination
                     page_size: 100
