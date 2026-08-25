@@ -30,17 +30,10 @@ private val logger = KotlinLogging.logger {}
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin is hard")
 class BigQueryDatabaseHandler(
     private val bq: BigQuery,
+    private val jobProjectBq: BigQuery,
     private val datasetLocation: String,
     private val jobProjectId: String,
 ) : DatabaseHandler {
-    private val jobProjectBq: BigQuery by lazy {
-        if (jobProjectId == bq.options.projectId) {
-            bq
-        } else {
-            bq.options.toBuilder().setProjectId(jobProjectId).build().service
-        }
-    }
-
     /**
      * Some statements (e.g. ALTER TABLE) have strict rate limits. Bigquery recommends retrying
      * these statements with exponential backoff, and the SDK doesn't do it automatically. So this

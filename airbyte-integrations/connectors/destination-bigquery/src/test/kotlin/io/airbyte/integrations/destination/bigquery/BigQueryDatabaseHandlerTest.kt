@@ -7,7 +7,6 @@ package io.airbyte.integrations.destination.bigquery
 import com.google.api.gax.paging.Page
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryError
-import com.google.cloud.bigquery.BigQueryOptions
 import com.google.cloud.bigquery.Job
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
@@ -52,7 +51,7 @@ class BigQueryDatabaseHandlerTest {
                     every { getStatistics<JobStatistics.QueryStatistics>() } returns queryStats
                 }
         }
-        val handler = BigQueryDatabaseHandler(bq, "us-east1", "my-job-project")
+        val handler = BigQueryDatabaseHandler(bq, bq, "us-east1", "my-job-project")
 
         handler.execute(Sql.of("SELECT 1"))
 
@@ -83,20 +82,17 @@ class BigQueryDatabaseHandlerTest {
         }
         val datasetProjectBq: BigQuery = mockk()
         val jobProjectBq: BigQuery = mockk()
-        val datasetProjectOptions: BigQueryOptions = mockk {
-            every { projectId } returns "dataset-project"
-            every { toBuilder() } returns
-                mockk<BigQueryOptions.Builder> {
-                    every { setProjectId("job-project") } returns this
-                    every { build() } returns mockk { every { service } returns jobProjectBq }
-                }
-        }
         val childJobs: Page<Job> = mockk { every { iterateAll() } returns emptyList() }
-        every { datasetProjectBq.options } returns datasetProjectOptions
         every { datasetProjectBq.create(any<JobInfo>(), *anyVararg()) } returns rootJob
         every { jobProjectBq.listJobs(*anyVararg()) } returns childJobs
 
-        val handler = BigQueryDatabaseHandler(datasetProjectBq, "location", "job-project")
+        val handler =
+            BigQueryDatabaseHandler(
+                datasetProjectBq,
+                jobProjectBq,
+                "location",
+                "job-project",
+            )
 
         handler.execute(Sql.of("SELECT 1"))
 
@@ -115,7 +111,7 @@ class BigQueryDatabaseHandlerTest {
                     every { executionErrors } returns listOf(bqError)
                 }
         }
-        val handler = BigQueryDatabaseHandler(bq, "location", "test-project")
+        val handler = BigQueryDatabaseHandler(bq, bq, "location", "test-project")
 
         assertThrows<ConfigErrorException> { handler.execute(Sql.of("select * from nowhere")) }
     }

@@ -95,6 +95,7 @@ class BigqueryBeansFactory {
     @Singleton
     fun getWriter(
         bigquery: BigQuery,
+        @Named("jobProjectBigquery") jobProjectBigquery: BigQuery,
         config: BigqueryConfiguration,
         names: TableCatalog,
         // micronaut will only instantiate a single instance of StreamStateStore,
@@ -104,7 +105,12 @@ class BigqueryBeansFactory {
         streamStateStore: StreamStateStore<*>,
     ): DestinationWriter {
         val destinationHandler =
-            BigQueryDatabaseHandler(bigquery, config.datasetLocation.region, config.jobProjectId)
+            BigQueryDatabaseHandler(
+                bigquery,
+                jobProjectBigquery,
+                config.datasetLocation.region,
+                config.jobProjectId,
+            )
         if (config.legacyRawTablesOnly) {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
@@ -205,4 +211,16 @@ class BigqueryBeansFactory {
             .build()
             .service
     }
+
+    @Singleton
+    @Named("jobProjectBigquery")
+    fun getJobProjectBigqueryClient(
+        config: BigqueryConfiguration,
+        bigquery: BigQuery,
+    ): BigQuery =
+        if (config.jobProjectId == config.projectId) {
+            bigquery
+        } else {
+            bigquery.options.toBuilder().setProjectId(config.jobProjectId).build().service
+        }
 }
