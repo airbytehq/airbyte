@@ -126,6 +126,7 @@ class BigQuerySourceTest {
         "Response too large to return.",
         new BigQueryError("responseTooLarge", null, "Response too large to return."));
     final Iterator<FieldValueList> iterator = new Iterator<>() {
+
       private int hasNextCalls;
 
       @Override
@@ -140,6 +141,7 @@ class BigQuerySourceTest {
       public FieldValueList next() {
         return mock(FieldValueList.class);
       }
+
     };
     final Iterator<FieldValueList> wrapped = BigQuerySource.wrapQueryResultIterator(iterator, "dataset", "table");
 

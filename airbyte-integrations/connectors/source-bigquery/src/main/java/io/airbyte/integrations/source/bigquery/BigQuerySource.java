@@ -236,8 +236,8 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   @VisibleForTesting
   static Iterator<FieldValueList> wrapQueryResultIterator(final Iterator<FieldValueList> iterator,
-                                                           final String schemaName,
-                                                           final String tableName) {
+                                                          final String schemaName,
+                                                          final String tableName) {
     return new Iterator<>() {
 
       @Override
