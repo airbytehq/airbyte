@@ -4602,7 +4602,7 @@ api_budget:
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
         - limit: 1
-          interval: PT7M12S
+          interval: PT6M24S
       matchers:
         - method: POST
           url_path_pattern: "^/api/flow-series-reports($|\\?)"
@@ -4614,7 +4614,7 @@ api_budget:
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
         - limit: 1
-          interval: PT7M12S
+          interval: PT6M24S
       matchers:
         - method: POST
           url_path_pattern: "^/api/campaign-values-reports($|\\?)"

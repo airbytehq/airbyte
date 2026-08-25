@@ -49,7 +49,7 @@ The manifest caps every `Retry-After` wait at 600 seconds. Daily-quota 429 respo
 
 ### Reporting daily quota pacing
 
-Klaviyo's Flow Series Reports and Campaign Values Reports endpoints each allow 225 requests per day on top of the XS burst and steady limits. The manifest paces each endpoint independently at 1 request per `PT7M12S` (about 200 requests per day per endpoint), which is why large reporting backfills run slowly. A raw daily (`P1D`) bucket is deliberately not used because the limiter blocks with `time.sleep()`, which would allow a burst followed by hours of sleep.
+Klaviyo's Flow Series Reports and Campaign Values Reports endpoints each allow 225 requests per day on top of the XS burst and steady limits. The manifest paces each endpoint independently at 1 request per `PT6M24S` (about 225 requests per day per endpoint, matching the documented quota), which is why large reporting backfills run slowly. A raw daily (`P1D`) bucket is deliberately not used because the limiter blocks with `time.sleep()`, which would allow a burst followed by hours of sleep. Pacing targets the full documented quota rather than leaving headroom, so a request can land just before a quota refresh boundary; this was a deliberate trade-off for throughput.
 
 ## Incremental Stream Considerations
 
