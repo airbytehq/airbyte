@@ -26,10 +26,7 @@ def _report_policy(endpoint: str):
     assert api_budget is not None, f"Could not construct the API budget while looking up {endpoint}"
     request = Request("POST", f"{_BASE_URL}/{endpoint}").prepare()
     matching_policies = [policy for policy in api_budget._policies if policy.matches(request)]
-    assert len(matching_policies) == 1, (
-        f"Expected one API-budget policy matching POST /api/{endpoint}, "
-        f"found {len(matching_policies)}"
-    )
+    assert len(matching_policies) == 1, f"Expected one API-budget policy matching POST /api/{endpoint}, " f"found {len(matching_policies)}"
     return matching_policies[0], request
 
 
@@ -38,13 +35,10 @@ def test_report_endpoint_budget_stays_within_daily_quota(endpoint: str):
     policy, _ = _report_policy(endpoint)
     rates = policy._bucket.rates
 
-    max_daily_throughput = min(
-        rate.limit * 86400 / (rate.interval / 1000) for rate in rates
-    )
+    max_daily_throughput = min(rate.limit * 86400 / (rate.interval / 1000) for rate in rates)
 
     assert max_daily_throughput <= 225, (
-        f"{endpoint} budget allows {max_daily_throughput:.2f} calls/day, "
-        f"above Klaviyo's documented 225/day quota; rates: {rates}"
+        f"{endpoint} budget allows {max_daily_throughput:.2f} calls/day, " f"above Klaviyo's documented 225/day quota; rates: {rates}"
     )
     max_interval = max(rate.interval / 1000 for rate in rates)
     assert max_interval <= 600, (
