@@ -143,9 +143,9 @@ class TestProductAttributeTermsFullRefresh(TestCase):
         """Test reading fails when a 404 is not a taxonomy-invalid response."""
         attributes_response = [_get_attributes_response_template()[0]]
         unrelated_404_response = {
-            "code": "woocommerce_rest_cannot_view",
-            "message": "Sorry, you cannot list resources.",
-            "data": {"status": 401},
+            "code": "woocommerce_rest_no_route",
+            "message": "No route was found matching the URL and request method.",
+            "data": {"status": 404},
         }
 
         http_mocker.get(
