@@ -9,7 +9,7 @@
 
 ## Set up the Gorgias source connector
 
-1. In Gorgias, go to `https://YOUR_SUBDOMAIN.gorgias.com/app/settings/api` and create an API key. Gorgias shows the key once, so copy it before you close the page.
+1. In Gorgias, go to `https://YOUR_SUBDOMAIN.gorgias.com/app/settings/api` and create an API key.
 2. In Airbyte, create a new Gorgias source and fill in the fields described below.
 
 The connector authenticates with HTTP basic authentication, using your email address and API key as the username and password. Private apps such as this connector use API keys; OAuth2 is only for public Gorgias apps. See the [Gorgias authentication reference](https://developers.gorgias.com/reference/authentication) for details.
