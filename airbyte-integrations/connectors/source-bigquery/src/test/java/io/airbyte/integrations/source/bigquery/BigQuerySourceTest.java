@@ -11,27 +11,25 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryError;
 import com.google.cloud.bigquery.BigQueryException;
-import com.google.cloud.bigquery.FieldValueList;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.JobStatus;
-import com.google.cloud.bigquery.QueryJobConfiguration;
-import com.google.cloud.bigquery.TableResult;
+import com.google.cloud.bigquery.QueryParameterValue;
+import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.protocol.models.v0.SyncMode;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 class BigQuerySourceTest {
 
@@ -66,28 +64,6 @@ class BigQuerySourceTest {
   }
 
   @Test
-  public void testQueryResultsArePaginated() throws Exception {
-    final BigQuery bigQuery = mock(BigQuery.class);
-    final Job job = mock(Job.class);
-    final JobStatus jobStatus = mock(JobStatus.class);
-    final TableResult tableResult = mock(TableResult.class);
-    when(bigQuery.create(any(JobInfo.class))).thenReturn(job);
-    when(job.waitFor()).thenReturn(job);
-    when(job.getStatus()).thenReturn(jobStatus);
-    when(jobStatus.getError()).thenReturn(null);
-    when(job.getQueryResults(any())).thenReturn(tableResult);
-
-    BigQuerySource.executeQuery(
-        bigQuery,
-        QueryJobConfiguration.newBuilder("SELECT 1").setUseLegacySql(false).build(),
-        BigQuerySource.QUERY_RESULT_PAGE_SIZE);
-
-    final ArgumentCaptor<BigQuery.QueryResultsOption> optionCaptor = ArgumentCaptor.forClass(BigQuery.QueryResultsOption.class);
-    verify(job).getQueryResults(optionCaptor.capture());
-    assertEquals(BigQuery.QueryResultsOption.pageSize(BigQuerySource.QUERY_RESULT_PAGE_SIZE), optionCaptor.getValue());
-  }
-
-  @Test
   public void testResponseTooLargeIsMappedToConfigError() {
     final BigQueryException responseTooLarge = new BigQueryException(
         403,
@@ -101,7 +77,7 @@ class BigQuerySourceTest {
 
     final ConfigErrorException configError = assertInstanceOf(ConfigErrorException.class, mapped);
     assertEquals(
-        "Query results for table dataset.table exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
+        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
         configError.getMessage());
   }
 
@@ -115,7 +91,7 @@ class BigQuerySourceTest {
 
     final ConfigErrorException configError = assertInstanceOf(ConfigErrorException.class, mapped);
     assertEquals(
-        "Query results for table dataset.table exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
+        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
         configError.getMessage());
   }
 
@@ -125,7 +101,7 @@ class BigQuerySourceTest {
         403,
         "Response too large to return.",
         new BigQueryError("responseTooLarge", null, "Response too large to return."));
-    final Iterator<FieldValueList> iterator = new Iterator<>() {
+    final Iterator<String> iterator = new Iterator<>() {
 
       private int hasNextCalls;
 
@@ -138,19 +114,42 @@ class BigQuerySourceTest {
       }
 
       @Override
-      public FieldValueList next() {
-        return mock(FieldValueList.class);
+      public String next() {
+        return "result";
       }
 
     };
-    final Iterator<FieldValueList> wrapped = BigQuerySource.wrapQueryResultIterator(iterator, "dataset", "table");
+    final Iterator<String> wrapped = BigQuerySource.wrapQueryResultIterator(iterator, "dataset", "table");
 
     assertTrue(wrapped.hasNext());
     wrapped.next();
     final ConfigErrorException configError = assertThrows(ConfigErrorException.class, wrapped::hasNext);
 
     assertEquals(
-        "Query results for table dataset.table exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
+        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
+        configError.getMessage());
+  }
+
+  @Test
+  public void testResponseTooLargeFromQueryIsMappedToConfigError() throws Exception {
+    final BigQueryDatabase database = mock(BigQueryDatabase.class);
+    final BigQueryException responseTooLarge = new BigQueryException(
+        403,
+        "Response too large to return.",
+        new BigQueryError("responseTooLarge", null, "Response too large to return."));
+    when(database.query(anyString(), any(QueryParameterValue[].class))).thenThrow(responseTooLarge);
+
+    final AutoCloseableIterator<JsonNode> iterator = new BigQuerySource().queryTableFullRefresh(
+        database,
+        Collections.singletonList("column"),
+        "dataset",
+        "table",
+        SyncMode.FULL_REFRESH,
+        Optional.empty());
+    final ConfigErrorException configError = assertThrows(ConfigErrorException.class, iterator::hasNext);
+
+    assertEquals(
+        "BigQuery refused to return results for table dataset.table because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
         configError.getMessage());
   }
 
@@ -162,25 +161,6 @@ class BigQuerySourceTest {
 
     assertFalse(mapped instanceof ConfigErrorException);
     assertSame(exception, mapped);
-  }
-
-  @Test
-  public void testFailedQueryJobThrows() throws Exception {
-    final BigQuery bigQuery = mock(BigQuery.class);
-    final Job job = mock(Job.class);
-    final JobStatus jobStatus = mock(JobStatus.class);
-    final BigQueryError error = mock(BigQueryError.class);
-    when(bigQuery.create(any(JobInfo.class))).thenReturn(job);
-    when(job.waitFor()).thenReturn(job);
-    when(job.getStatus()).thenReturn(jobStatus);
-    when(jobStatus.getError()).thenReturn(error);
-
-    assertThrows(
-        IllegalStateException.class,
-        () -> BigQuerySource.executeQuery(
-            bigQuery,
-            QueryJobConfiguration.newBuilder("SELECT 1").setUseLegacySql(false).build(),
-            BigQuerySource.QUERY_RESULT_PAGE_SIZE));
   }
 
 }

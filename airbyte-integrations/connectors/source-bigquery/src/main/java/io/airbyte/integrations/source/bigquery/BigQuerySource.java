@@ -8,25 +8,15 @@ import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryU
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
-import com.google.cloud.bigquery.FieldList;
-import com.google.cloud.bigquery.FieldValueList;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.QueryParameterValue;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
-import com.google.cloud.bigquery.TableResult;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Streams;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
-import io.airbyte.cdk.db.bigquery.BigQueryResultSet;
 import io.airbyte.cdk.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -45,7 +35,6 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -53,7 +42,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -63,9 +51,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
   private static final String QUOTE = "`";
-
-  @VisibleForTesting
-  static final long QUERY_RESULT_PAGE_SIZE = 10_000L;
 
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
@@ -217,17 +202,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
       try {
         LOGGER.info("Queueing query for table: {}", tableName);
         LOGGER.debug("Queueing query: {}", sqlQuery);
-        final QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration.newBuilder(sqlQuery)
-            .setUseLegacySql(false)
-            .setPositionalParameters(Arrays.asList(params))
-            .build();
-        final TableResult result = executeQuery(database.getBigQuery(), queryJobConfiguration, QUERY_RESULT_PAGE_SIZE);
-        final FieldList fields = result.getSchema().getFields();
-        final Iterator<FieldValueList> resultIterator = wrapQueryResultIterator(result.iterateAll().iterator(), schemaName, tableName);
-        final Stream<JsonNode> stream = Streams.stream(resultIterator)
-            .map(fieldValueList -> sourceOperations.rowToJson(
-                new BigQueryResultSet(fieldValueList, fields)));
-        return AutoCloseableIterators.fromStream(stream, airbyteStream);
+        final Stream<JsonNode> stream = database.query(sqlQuery, params);
+        return AutoCloseableIterators.fromIterator(
+            wrapQueryResultIterator(stream.iterator(), schemaName, tableName),
+            stream::close,
+            airbyteStream);
       } catch (final Exception e) {
         throw mapQueryException(e, schemaName, tableName);
       }
@@ -235,9 +214,9 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
   }
 
   @VisibleForTesting
-  static Iterator<FieldValueList> wrapQueryResultIterator(final Iterator<FieldValueList> iterator,
-                                                          final String schemaName,
-                                                          final String tableName) {
+  static <T> Iterator<T> wrapQueryResultIterator(final Iterator<T> iterator,
+                                                 final String schemaName,
+                                                 final String tableName) {
     return new Iterator<>() {
 
       @Override
@@ -250,7 +229,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
       }
 
       @Override
-      public FieldValueList next() {
+      public T next() {
         try {
           return iterator.next();
         } catch (final RuntimeException e) {
@@ -259,28 +238,6 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
       }
 
     };
-  }
-
-  @VisibleForTesting
-  static TableResult executeQuery(final BigQuery bigQuery,
-                                  final QueryJobConfiguration queryJobConfiguration,
-                                  final long pageSize) {
-    final Job job = bigQuery.create(JobInfo.newBuilder(queryJobConfiguration)
-        .setJobId(JobId.of(UUID.randomUUID().toString()))
-        .build());
-    try {
-      final Job completedJob = job.waitFor();
-      if (completedJob == null) {
-        throw new IllegalStateException("BigQuery query job no longer exists");
-      }
-      if (completedJob.getStatus().getError() != null) {
-        throw new IllegalStateException("BigQuery query job failed: " + completedJob.getStatus().getError());
-      }
-      return completedJob.getQueryResults(BigQuery.QueryResultsOption.pageSize(pageSize));
-    } catch (final InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new RuntimeException(e);
-    }
   }
 
   @VisibleForTesting
@@ -296,7 +253,7 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
           || (causeMessage != null
               && (causeMessage.contains("Response too large to return") || causeMessage.contains("responseTooLarge")))) {
         final String message = String.format(
-            "Query results for table %s exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
+            "BigQuery refused to return results for table %s because the result set exceeds BigQuery's maximum query response size (reason: responseTooLarge). Despite the 403 status this is not a permissions problem. Selecting fewer columns for this stream may bring the result under the limit; otherwise this table cannot currently be read by source-bigquery, tracked in https://github.com/airbytehq/airbyte/issues/84978.",
             RelationalDbQueryUtils.getFullyQualifiedTableName(schemaName, tableName));
         return new ConfigErrorException(message, exception);
       }
