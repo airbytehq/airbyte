@@ -162,9 +162,27 @@ The Uptick connector syncs data from the following streams, organized by functio
 | `promptanswers` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 | `majorservices` | `id` | `DefaultPaginator` | ✅ | ❌ (no soft delete) |
 
+### API version and fields
+
+Every stream except `task_profitability` reads a pinned Uptick endpoint under `/api/v2.15/`. The `task_profitability` stream reads the intelligence report at `/api/v2/intelligencereports/profitability_by_task/`, which resolves to whichever minor version Uptick currently treats as the latest.
+
+Each stream requests a fixed list of fields using Uptick's sparse fieldsets, so a stream carries a curated subset of what the endpoint can return rather than every field. Fields that Uptick adds later show up only after the connector is updated. Uptick keeps roughly three minor API versions live at a time and retires the oldest, so connector releases that move to a newer minor version can add, rename, or remove fields. The [Uptick API patch notes](https://support.uptickhq.com/en/articles/6728314-uptick-api-overview-and-patch-notes) list what changed in each version.
+
+### Relationship fields
+
+Uptick returns related records in a JSON:API `relationships` object. The connector flattens each relationship into a scalar `<relationship>_id` column, such as `client_id` on `clientcontacts` or `property_id` on `propertycontacts`. Use these columns to join streams in your destination.
+
+Prompt data spans three streams, and Uptick reworked its prompt model in API v2.15, so those joins are worth spelling out:
+
+- `promptanswers.answergroup_id` joins `promptanswergroups.id`, and `promptanswers.question_id` joins `promptquestions.id`.
+- `promptanswergroups.servicetask_id` and `promptanswergroups.task_id` tie a group of answers back to the service task or task the answers were recorded against.
+- `promptquestions.section_id` and `promptanswergroups.section_id` reference Uptick prompt sections. The connector doesn't sync prompt sections, so you can't resolve these IDs to section names from synced data alone.
+
 ### Incremental sync
 
 For streams that support incremental sync, the connector uses each record's `updated` timestamp as the cursor and fetches only records changed since the last sync through the Uptick API's `updatedsince` filter. Streams that support only full refresh are re-read in full on every sync.
+
+Airbyte still offers incremental sync in the UI for the streams marked `❌ (no soft delete)`, because the connector defines the `updated` cursor for every stream. Avoid it for those streams: their Uptick endpoints don't report deletions, so an incremental sync keeps records in your destination after they're deleted in Uptick. Sync them in full refresh mode instead.
 
 ## Rate limits
 
@@ -181,7 +199,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
-| 1.1.0 | 2026-08-11 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams (clientcontacts, propertycontacts, promptquestions, promptanswergroups, promptanswers, majorservices), add fields to the clients, properties, invoices, defectquotes, servicequotes, users, and purchaseorders streams, and make relationship field extraction null-safe |
+| 1.1.1 | 2026-08-18 | [84790](https://github.com/airbytehq/airbyte/pull/84790) | Update dependencies |
+| 1.1.0 | 2026-08-12 | [83710](https://github.com/airbytehq/airbyte/pull/83710) | Add 6 new streams (clientcontacts, propertycontacts, promptquestions, promptanswergroups, promptanswers, majorservices), add fields to the clients, properties, invoices, defectquotes, servicequotes, users, and purchaseorders streams, and make relationship field extraction null-safe |
 | 1.0.3 | 2026-08-11 | [84162](https://github.com/airbytehq/airbyte/pull/84162) | Update dependencies |
 | 1.0.2 | 2026-08-04 | [83652](https://github.com/airbytehq/airbyte/pull/83652) | Update dependencies |
 | 1.0.1 | 2026-07-28 | [83098](https://github.com/airbytehq/airbyte/pull/83098) | Update dependencies |
