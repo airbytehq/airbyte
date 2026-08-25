@@ -1,20 +1,27 @@
 # Gorgias
-This directory contains the manifest-only connector for [`source-gorgias`](https://gorgias.com/).
 
-## Documentation reference:
-Visit `https://developers.gorgias.com/reference/introduction` for API documentation
+[Gorgias](https://gorgias.com/) is a customer support helpdesk for ecommerce. This source syncs your helpdesk data — tickets, messages, customers, users, teams, tags, macros, rules, views, and satisfaction surveys — from the [Gorgias REST API](https://developers.gorgias.com/reference/introduction).
 
-## Authentication setup
-`Gorgias` uses Http basic authentication, Visit `https://YOUR_DOMAIN.gorgias.com/app/settings/api` for getting your username and password. Visit `https://developers.gorgias.com/reference/authentication` for more information.
+## Prerequisites
+
+- A Gorgias account with access to **Settings** > **REST API**, where API keys are created.
+- Your Gorgias subdomain. If you sign in at `https://acme.gorgias.com`, your subdomain is `acme`.
+
+## Set up the Gorgias source connector
+
+1. In Gorgias, go to `https://YOUR_SUBDOMAIN.gorgias.com/app/settings/api` and create an API key. Gorgias shows the key once, so copy it before you close the page.
+2. In Airbyte, create a new Gorgias source and fill in the fields described below.
+
+The connector authenticates with HTTP basic authentication, using your email address and API key as the username and password. Private apps such as this connector use API keys; OAuth2 is only for public Gorgias apps. See the [Gorgias authentication reference](https://developers.gorgias.com/reference/authentication) for details.
 
 ## Configuration
 
 | Input | Type | Description | Default Value |
 |-------|------|-------------|---------------|
-| `username` | `string` | Username.  |  |
-| `password` | `string` | Password.  |  |
-| `domain_name` | `string` | Domain name. Domain name given for gorgias, found as your url prefix for accessing your website |  |
-| `start_date` | `string` | Start date.  |  |
+| `username` | `string` | The email address of the Gorgias user that owns the API key. |  |
+| `password` | `string` | The API key generated in **Settings** > **REST API**. |  |
+| `domain_name` | `string` | Your Gorgias subdomain, taken from the URL prefix you use to reach Gorgias. For `https://acme.gorgias.com`, enter `acme`. |  |
+| `start_date` | `string` | The earliest date to sync records from, in `YYYY-MM-DDTHH:MM:SSZ` format. Airbyte rejects any other format. |  |
 
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
@@ -36,11 +43,42 @@ Visit `https://developers.gorgias.com/reference/introduction` for API documentat
 | users | id | DefaultPaginator | ✅ |  ✅  |
 | views_items | id | DefaultPaginator | ✅ |  ✅  |
 
+## Rate limits
+
+Gorgias limits API key integrations to 40 requests in a 20-second window, and returns `429 Too Many Requests` when you exceed it. The connector paces its requests to stay inside that budget, requests the maximum 100 records per page, and waits for the number of seconds in the `Retry-after` response header before retrying a throttled request. See the [Gorgias rate limit reference](https://developers.gorgias.com/reference/limitations) for details.
+
+The budget is shared with anything else calling the Gorgias API with the same credentials. If other integrations use the same API key, syncs can still hit 429 responses and, after three retries of a request, fail.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
-## Incremental sync limitations
+## Incremental syncs
+
+Each stream has its own cursor field and its own way of applying sync state:
+
+| Stream | Cursor field | How state limits the sync |
+|--------|--------------|---------------------------|
+| account | `created_datetime` | Reads in full on every sync |
+| customers | `updated_datetime` | Stops paginating at the cursor |
+| custom-fields | `updated_datetime` | Filters records after reading in full |
+| events | `created_datetime` | Filters server-side, with a 5-minute lookback |
+| integrations | `updated_datetime` | Filters records after reading in full |
+| jobs | `created_datetime` | Stops paginating at the cursor |
+| macros | `created_datetime` | Reads in full on every sync |
+| views | `created_datetime` | Reads in full on every sync |
+| rules | `created_datetime` | Stops paginating at the cursor |
+| satisfaction-surveys | `created_datetime` | Reads in full on every sync |
+| tags | `created_datetime` | Stops paginating at the cursor |
+| teams | `created_datetime` | Stops paginating at the cursor |
+| tickets | `updated_datetime` | Stops paginating at the cursor |
+| messages | `created_datetime` | Stops paginating at the cursor |
+| users | `created_datetime` | Stops paginating at the cursor |
+| views_items | `created_datetime` | Reads in full on every sync |
+
+Streams that stop paginating at the cursor request only the pages that can hold new records, so incremental syncs of those streams are much cheaper than a full read. Streams that filter after reading in full still request every page from the Gorgias API, so they reduce the records Airbyte emits but not the API calls the sync makes.
+
+### Limitations
 
 The following streams use `created_datetime` as their incremental cursor. Their incremental syncs do not pick up changes made after a record was created:
 
@@ -53,7 +91,9 @@ The following streams use `created_datetime` as their incremental cursor. Their 
 
 Run a full refresh of the affected stream to capture these changes.
 
-The `account`, `macros`, `satisfaction-surveys`, `views`, and `views_items` streams read their full history on every sync, so post-creation changes such as a macro's name or a survey's `score` and `scored_datetime` are captured.
+The `custom-fields` stream only returns custom fields whose object type is `Ticket`. Custom fields defined on other Gorgias objects, such as customers, aren't synced.
+
+The streams that read in full on every sync do pick up post-creation changes, such as a macro's name or a survey's `score` and `scored_datetime`.
 
 The connector does not capture deletions as deletion events. Tickets expose `trashed` and tags expose `deleted_datetime`, but there is no deletion stream, so deleted records are not captured as deletion events.
 
@@ -66,7 +106,7 @@ The incremental sync `end_datetime` is evaluated when the sync starts. Records c
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
-| 0.1.51 | 2026-08-20 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental syncs now avoid re-reading previously-synced data across the applicable Gorgias streams using cursor-aware pagination, server-side date filtering, or client-side filtering. See [Incremental sync limitations](#incremental-sync-limitations) for what an incremental sync no longer picks up. |
+| 0.1.51 | 2026-08-25 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental syncs now avoid re-reading previously-synced data across the applicable Gorgias streams using cursor-aware pagination, server-side date filtering, or client-side filtering. See [Incremental syncs](#incremental-syncs) for what an incremental sync no longer picks up. |
 | 0.1.50 | 2026-08-18 | [84643](https://github.com/airbytehq/airbyte/pull/84643) | Update dependencies |
 | 0.1.49 | 2026-08-11 | [83969](https://github.com/airbytehq/airbyte/pull/83969) | Update dependencies |
 | 0.1.48 | 2026-08-04 | [83514](https://github.com/airbytehq/airbyte/pull/83514) | Update dependencies |
