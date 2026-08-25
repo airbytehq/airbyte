@@ -441,9 +441,9 @@ class TestCustomObjectAssociationCursorField:
         custom_mappings = self._cursor_mappings(custom_dynamic)
         standard_mappings = self._cursor_mappings(standard_dynamic)
         for key in self._CURSOR_MAPPING_KEYS:
-            assert custom_mappings[key]["value"] == standard_mappings[key]["value"], (
-                f"Custom and standard resolvers disagree on the '{key}' cursor mapping"
-            )
+            assert (
+                custom_mappings[key]["value"] == standard_mappings[key]["value"]
+            ), f"Custom and standard resolvers disagree on the '{key}' cursor mapping"
 
     def test_standard_stream_has_contacts_conditional(self, resolved_manifest):
         """The standard association stream should have a conditional for contacts vs other objects."""
