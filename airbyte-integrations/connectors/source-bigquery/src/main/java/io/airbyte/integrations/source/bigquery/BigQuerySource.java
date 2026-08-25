@@ -6,16 +6,25 @@ package io.airbyte.integrations.source.bigquery;
 
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
 import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
-import static io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.cloud.bigquery.BigQuery;
+import com.google.cloud.bigquery.BigQueryException;
 import com.google.cloud.bigquery.Field;
+import com.google.cloud.bigquery.Job;
+import com.google.cloud.bigquery.JobId;
+import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryParameterValue;
+import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.StandardSQLTypeName;
 import com.google.cloud.bigquery.Table;
+import com.google.cloud.bigquery.TableResult;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Streams;
 import io.airbyte.cdk.db.SqlDatabase;
 import io.airbyte.cdk.db.bigquery.BigQueryDatabase;
+import io.airbyte.cdk.db.bigquery.BigQueryResultSet;
 import io.airbyte.cdk.db.bigquery.BigQuerySourceOperations;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.cdk.integrations.base.Source;
@@ -23,6 +32,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.cdk.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.cdk.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.cdk.integrations.source.relationaldb.TableInfo;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.stream.AirbyteStreamUtils;
@@ -33,12 +43,14 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.v0.SyncMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.slf4j.Logger;
@@ -48,6 +60,9 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQuerySource.class);
   private static final String QUOTE = "`";
+
+  @VisibleForTesting
+  static final long QUERY_RESULT_PAGE_SIZE = 10_000L;
 
   public static final String CONFIG_DATASET_ID = "dataset_id";
   public static final String CONFIG_PROJECT_ID = "project_id";
@@ -177,11 +192,11 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                   final String tableName,
                                                                   final SyncMode syncMode,
                                                                   final Optional<String> cursorField) {
-    LOGGER.info("Queueing query for table: {}", tableName);
-    return queryTable(database, String.format("SELECT %s FROM %s",
+    return queryTableWithParams(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
         getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())),
-        tableName, schemaName);
+        schemaName,
+        tableName);
   }
 
   @Override
@@ -195,14 +210,64 @@ public class BigQuerySource extends AbstractDbSource<StandardSQLTypeName, BigQue
                                                                final String tableName,
                                                                final QueryParameterValue... params) {
     final AirbyteStreamNameNamespacePair airbyteStream = AirbyteStreamUtils.convertFromNameAndNamespace(tableName, schemaName);
+    LOGGER.info("Queueing query: {}", sqlQuery);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
-        final Stream<JsonNode> stream = database.query(sqlQuery, params);
+        final QueryJobConfiguration queryJobConfiguration = QueryJobConfiguration.newBuilder(sqlQuery)
+            .setUseLegacySql(false)
+            .setPositionalParameters(Arrays.asList(params))
+            .build();
+        final TableResult result = executeQuery(database.getBigQuery(), queryJobConfiguration, QUERY_RESULT_PAGE_SIZE);
+        final Stream<JsonNode> stream = Streams.stream(result.iterateAll())
+            .map(fieldValueList -> sourceOperations.rowToJson(
+                new BigQueryResultSet(fieldValueList, result.getSchema().getFields())));
         return AutoCloseableIterators.fromStream(stream, airbyteStream);
       } catch (final Exception e) {
-        throw new RuntimeException(e);
+        throw mapQueryException(e, schemaName, tableName);
       }
     }, airbyteStream);
+  }
+
+  @VisibleForTesting
+  static TableResult executeQuery(final BigQuery bigQuery,
+                                  final QueryJobConfiguration queryJobConfiguration,
+                                  final long pageSize) {
+    final Job job = bigQuery.create(JobInfo.newBuilder(queryJobConfiguration)
+        .setJobId(JobId.of(UUID.randomUUID().toString()))
+        .build());
+    try {
+      final Job completedJob = job.waitFor();
+      if (completedJob == null) {
+        throw new IllegalStateException("BigQuery query job no longer exists");
+      }
+      if (completedJob.getStatus().getError() != null) {
+        throw new IllegalStateException("BigQuery query job failed: " + completedJob.getStatus().getError());
+      }
+      return completedJob.getQueryResults(BigQuery.QueryResultsOption.pageSize(pageSize));
+    } catch (final InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new RuntimeException(e);
+    }
+  }
+
+  @VisibleForTesting
+  static RuntimeException mapQueryException(final Exception exception,
+                                            final String schemaName,
+                                            final String tableName) {
+    Throwable cause = exception;
+    for (int depth = 0; cause != null && depth < 20; depth++) {
+      if (cause instanceof BigQueryException bigQueryException
+          && (("responseTooLarge".equalsIgnoreCase(bigQueryException.getReason()))
+              || (bigQueryException.getMessage() != null
+                  && bigQueryException.getMessage().contains("Response too large to return")))) {
+        final String message = String.format(
+            "Query results for table %s exceed BigQuery's maximum API response size. Select fewer columns for this stream, or use incremental sync so the table is read in smaller batches.",
+            RelationalDbQueryUtils.getFullyQualifiedTableName(schemaName, tableName));
+        return new ConfigErrorException(message, exception);
+      }
+      cause = cause.getCause();
+    }
+    return exception instanceof RuntimeException runtimeException ? runtimeException : new RuntimeException(exception);
   }
 
   private boolean isDatasetConfigured(final SqlDatabase database) {
