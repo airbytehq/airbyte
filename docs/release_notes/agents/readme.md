@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## August 25, 2026
+
+Connectors
+
+- You can now search by meaning, not just exact keywords, across Slack, HubSpot, Intercom, Monday.com, Asana, Greenhouse, and TikTok Marketing. Your agents can find relevant Slack messages and threads, HubSpot tickets, notes, calls, emails, and meetings, Intercom conversations, Monday.com boards, items, and updates, Asana tasks and projects, Greenhouse job posts, and TikTok ad text without matching the wording exactly.
+
+Other
+
+- Search now handles content that was written as rich text, such as job descriptions and email bodies, more accurately. Formatting is stripped into clean, readable text before it's indexed, so results better reflect what the content actually says.
+- Search results no longer drop identifying details, such as a record's title, from the record data they return. It's easier to tell results apart and act on the right one.
+
 ## August 12, 2026
 
 Web app
