@@ -2,6 +2,17 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 25, 2026
+
+Connections
+
+- When schema changes are applied to your connection, the affected incremental streams are now backfilled correctly so your destination data stays complete and accurate.
+- When you create a new private link for S3 storage, the DNS name Airbyte gives you is now correct. Previously, the provided hostname could cause connection checks to fail with a certificate error. Existing private links are not changed.
+
+Platform
+
+- The Data Worker usage chart on the workspace usage page now shows hourly usage as bars, matching the look of the organization usage chart, so it's easier to compare usage across the two views.
+
 ## August 12, 2026
 
 Connections
