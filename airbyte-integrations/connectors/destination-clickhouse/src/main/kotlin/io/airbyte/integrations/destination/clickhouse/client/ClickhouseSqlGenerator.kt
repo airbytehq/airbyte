@@ -31,9 +31,7 @@ class ClickhouseSqlGenerator(
         if (config.resolvedClusterName.isNotBlank()) " ON CLUSTER `${config.resolvedClusterName}`"
         else ""
 
-    /** Prefixes MergeTree-family engine with `Replicated` when configured. */
-    private fun String.withReplicationPrefix(): String =
-        if (config.resolvedUseReplicatedEngines) "Replicated$this" else this
+    private val enginePrefix: String = if (config.resolvedUseReplicatedEngines) "Replicated" else ""
 
     fun createNamespace(namespace: String): String {
         return "CREATE DATABASE IF NOT EXISTS `$namespace`$onCluster;".andLog()
@@ -80,9 +78,9 @@ class ClickhouseSqlGenerator(
                             // is invalid
                             COLUMN_NAME_AB_EXTRACTED_AT
                         }
-                    "ReplacingMergeTree($versionColumn)".withReplicationPrefix()
+                    "${enginePrefix}ReplacingMergeTree($versionColumn)"
                 }
-                else -> "MergeTree()".withReplicationPrefix()
+                else -> "${enginePrefix}MergeTree()"
             }
 
         return """

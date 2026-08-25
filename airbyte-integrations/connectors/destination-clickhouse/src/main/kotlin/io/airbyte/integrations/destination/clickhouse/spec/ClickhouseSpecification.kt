@@ -216,8 +216,6 @@ open class ClickhouseSpecificationCloud : ClickhouseSpecification() {
     @get:JsonSchemaInject(json = """{"order": 8}""")
     override val recordWindowSize: Long? = RECORDS_PER_AGGREGATE
 
-    // ClickHouse Cloud substitutes SharedMergeTree engines and needs neither
-    // replicated engine variants nor ON CLUSTER DDL — hidden from the Cloud spec.
     @get:JsonIgnore override val useReplicatedEngines: Boolean? = false
 
     @get:JsonIgnore override val clusterName: String? = ""
