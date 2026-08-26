@@ -74,7 +74,7 @@ The Linear source connector supports the following sync modes:
 
 Streams that support incremental sync use the `updatedAt` field as the cursor. The Start Date you set when configuring the connector is the lower bound for the first incremental sync. Subsequent syncs use the most recent `updatedAt` value from the previous sync as the new lower bound.
 
-That lower bound is inclusive, so a record whose `updatedAt` matches the stored cursor exactly is read again on the next sync. Overlap is also wider when a sync fails: the connector only advances a stream's cursor after the stream finishes, so re-running a sync that failed partway through re-reads everything updated since the last successful sync. In **Incremental - Append + Deduped** mode the destination collapses these repeats. In **Incremental - Append** mode they land as extra rows, so deduplicate on the primary key downstream if that matters to you.
+That lower bound is inclusive, so a record whose `updatedAt` matches the stored cursor exactly is read again on the next sync. Overlap is also wider after a failed sync. Each stream gets its own cursor, and the connector advances a stream's cursor only once that stream finishes, so a stream interrupted by a failure re-reads everything updated since its own last successful run. Streams that finished before the failure keep their new cursor and aren't affected. In **Incremental - Append + Deduped** mode the destination collapses these repeats. In **Incremental - Append** mode they land as extra rows, so deduplicate on the primary key downstream if that matters to you.
 
 The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, and `customer_tiers`.
 
@@ -142,7 +142,7 @@ If an OAuth source starts failing with an authorization error, re-authenticate t
 
 ### The connection test only reads the issues stream
 
-The connection test queries the `issues` stream. It confirms that Linear accepts your credentials, but it doesn't check the other 15 streams. Credentials that can't reach Customer Requests data still pass the test, and the problem only surfaces when a sync reads those streams.
+The connection test queries the `issues` stream. It confirms that Linear accepts your credentials, but it doesn't check any other stream. Credentials that can't reach Customer Requests data still pass the test, and the problem only surfaces when a sync reads those streams.
 
 ### Data availability
 
