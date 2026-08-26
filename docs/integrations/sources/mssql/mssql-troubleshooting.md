@@ -40,7 +40,7 @@ This limitation applies only to Azure SQL **Managed Instance**. Azure SQL Databa
 
 #### Error
 
-Connections to an Azure SQL Managed Instance through an SSH tunnel may fail the source's connection check with one of the 
+Connections to an Azure SQL Managed Instance through an SSH tunnel may fail the source's connection check with one of the
 following errors:
 
 - `Error code: 40532; Cannot open server "localhost" requested by the login. The login failed.`
@@ -48,7 +48,7 @@ following errors:
 
 #### Cause
 
-Azure SQL Managed Instance requires the instance hostname to route connections correctly. When Airbyte connects through 
+Azure SQL Managed Instance requires the instance hostname to route connections correctly. When Airbyte connects through
 an SSH tunnel, the connection uses `localhost` instead of the Managed Instance hostname, causing the login to fail.
 
 The `<user>@<instance-name>` workaround supported by Azure SQL Database **does not apply to Azure SQL Managed Instance**.
@@ -63,4 +63,3 @@ Connect without a tunnel, using the Managed Instance [public endpoint](https://l
    - **Port:** 3342 (the public endpoint does not use 1433)
    - **SSH Tunnel Method:** No Tunnel
    - **Username:** A plain SQL username without an @instance suffix
-
