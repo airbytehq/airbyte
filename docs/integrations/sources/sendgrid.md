@@ -75,8 +75,8 @@ Bounces and Spam Reports have no primary key, so deduplication isn't available f
 A few streams need extra explanation:
 
 - **Campaigns** reads the Marketing Campaigns endpoint `/v3/marketing/campaigns`, not the Legacy Marketing Campaigns endpoint `/v3/campaigns`. Legacy Marketing Campaigns data isn't available through this connector.
-- **Contacts** uses SendGrid's asynchronous [contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts): the connector requests an export, polls until SendGrid finishes it, then downloads the resulting file. A sync of this stream takes as long as SendGrid needs to build the export, which can be several minutes on large contact databases. Field names are lowercased, so a custom field named `Company_Name` in SendGrid arrives as `company_name`.
-- **Segments** reads Segments 2.0 (`/v3/marketing/segments/2.0`). Segments that exist only in the older 1.0 API don't appear.
+- **Contacts** uses SendGrid's asynchronous [contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts): the connector requests an export, polls until SendGrid finishes it, then downloads the resulting file. A sync of this stream takes as long as SendGrid needs to build the export, so it can run considerably longer than the other streams. The connector runs at most 2 of these export jobs at a time. Field names are lowercased, so a custom field named `Company_Name` in SendGrid arrives as `company_name`.
+- **Segments** reads the [Segments 2.0](https://www.twilio.com/docs/sendgrid/api-reference/segmenting-contacts-v2/get-list-of-segments) endpoint `/v3/marketing/segments/2.0`, not the older Segments 1.0 endpoint.
 
 The connector checks the connection by reading the Bounces stream, so the API key needs a suppression read scope even if you only plan to sync marketing streams.
 
