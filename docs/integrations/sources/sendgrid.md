@@ -9,13 +9,15 @@ This page contains the setup guide and reference information for the [Sendgrid](
 ## Prerequisites
 
 - A SendGrid account
-- A [SendGrid API Key](https://docs.sendgrid.com/ui/account-and-settings/api-keys#creating-an-api-key) with the required permissions
+- A [SendGrid API key](https://www.twilio.com/docs/sendgrid/ui/account-and-settings/api-keys#creating-an-api-key) with the required permissions
 
 ## Setup guide
 
 ### Step 1: Set up SendGrid
 
-Create a SendGrid API Key with the permissions required for the streams you want to sync. The connector uses the [SendGrid v3 API](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/authentication).
+Create a SendGrid API key with the permissions required for the streams you want to sync. The connector authenticates against the [SendGrid v3 API](https://www.twilio.com/docs/sendgrid/api-reference/how-to-use-the-sendgrid-v3-api/authentication) with this key as a bearer token. Copy the key when SendGrid displays it: you can't retrieve it again later.
+
+Give the key read-only access. The connector only reads data, so a key restricted to the scopes below limits what Airbyte can reach if the key is ever exposed.
 
 The following API key scopes are required depending on which streams you enable:
 
@@ -33,8 +35,8 @@ For simplicity, you can create an API key with **Full Access** to ensure all str
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the Set up the source page, enter the name for the Sendgrid connector and select **Sendgrid** from the Source type dropdown.
-4. Enter your `api_key`.
-5. Enter your `start_date`.
+4. For **API Key**, enter the SendGrid API key you created.
+5. For **Start date**, enter a UTC timestamp in the format `2017-01-25T00:00:00Z`. The connector doesn't replicate data created before this date in incremental streams. Other formats, including UTC offsets such as `+00:00` and fractional seconds, are rejected.
 6. Click **Set up source**.
 
 <HideInUI>
@@ -46,30 +48,37 @@ The Sendgrid source connector supports the following [sync modes](https://docs.a
 - [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-overwrite/)
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped), except for Bounces and Spam Reports
+
+Bounces and Spam Reports have no primary key, so deduplication isn't available for them. Sync them in **Incremental - Append** mode and deduplicate downstream if you need one row per address.
 
 ## Supported Streams
 
-- [Blocks](https://docs.sendgrid.com/api-reference/blocks-api/retrieve-all-blocks) \(Incremental\)
-- [Bounces](https://docs.sendgrid.com/api-reference/bounces-api/retrieve-all-bounces) \(Incremental\)
-- [Campaigns](https://docs.sendgrid.com/api-reference/campaigns-api/retrieve-all-campaigns)
-- [Contacts](https://docs.sendgrid.com/api-reference/contacts/export-contacts)
-- [Global Suppressions](https://docs.sendgrid.com/api-reference/suppressions-global-suppressions/retrieve-all-global-suppressions) \(Incremental\)
-- [Invalid Emails](https://docs.sendgrid.com/api-reference/invalid-e-mails-api/retrieve-all-invalid-emails) \(Incremental\)
-- [Lists](https://docs.sendgrid.com/api-reference/lists/get-all-lists)
-- [Segments](https://docs.sendgrid.com/api-reference/segmenting-contacts/get-list-of-segments)
-- [Single Sends](https://docs.sendgrid.com/api-reference/single-sends/get-all-single-sends)
-- [Single Send Stats](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-single-sends-stats)
-- [Spam Reports](https://docs.sendgrid.com/api-reference/spam-reports-api/retrieve-all-spam-reports) \(Incremental\)
-- [Stats Automations](https://docs.sendgrid.com/api-reference/marketing-campaign-stats/get-all-automation-stats)
-- [Suppression Groups](https://docs.sendgrid.com/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user)
-- [Suppression Group Members](https://docs.sendgrid.com/api-reference/suppressions-suppressions/retrieve-all-suppressions) \(Incremental\)
-- [Templates](https://docs.sendgrid.com/api-reference/transactional-templates/retrieve-paged-transactional-templates)
+| Stream | Primary key | Incremental cursor |
+|--------|-------------|--------------------|
+| [Blocks](https://www.twilio.com/docs/sendgrid/api-reference/blocks-api/retrieve-all-blocks) | `email` | `created` |
+| [Bounces](https://www.twilio.com/docs/sendgrid/api-reference/bounces-api/retrieve-all-bounces) | None | `created` |
+| Campaigns | `id` | Full refresh only |
+| [Contacts](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts) | `contact_id` | Full refresh only |
+| [Global Suppressions](https://www.twilio.com/docs/sendgrid/api-reference/suppressions-global-suppressions/retrieve-all-global-suppressions) | `email` | `created` |
+| [Invalid Emails](https://www.twilio.com/docs/sendgrid/api-reference/invalid-emails-api/retrieve-all-invalid-emails) | `email` | `created` |
+| [Lists](https://www.twilio.com/docs/sendgrid/api-reference/lists/get-all-lists) | `id` | Full refresh only |
+| [Segments](https://www.twilio.com/docs/sendgrid/api-reference/segmenting-contacts-v2/get-list-of-segments) | `id` | Full refresh only |
+| [Single Sends](https://www.twilio.com/docs/sendgrid/api-reference/single-sends/get-all-single-sends) | `id` | Full refresh only |
+| [Single Send Stats](https://www.twilio.com/docs/sendgrid/api-reference/marketing-campaign-stats/get-all-single-sends-stats) | `id` | Full refresh only |
+| [Spam Reports](https://www.twilio.com/docs/sendgrid/api-reference/spam-reports-api/retrieve-all-spam-reports) | None | `created` |
+| [Stats Automations](https://www.twilio.com/docs/sendgrid/api-reference/marketing-campaign-stats/get-all-automation-stats) | `id` | Full refresh only |
+| [Suppression Groups](https://www.twilio.com/docs/sendgrid/api-reference/suppressions-unsubscribe-groups/retrieve-all-suppression-groups-associated-with-the-user) | `id` | Full refresh only |
+| [Suppression Group Members](https://www.twilio.com/docs/sendgrid/api-reference/suppressions-suppressions/retrieve-all-suppressions) | `group_id`, `email` | `created_at` |
+| [Templates](https://www.twilio.com/docs/sendgrid/api-reference/transactional-templates/retrieve-paged-transactional-templates) | `id` | Full refresh only |
 
-## Create a read-only API key (Optional)
+A few streams need extra explanation:
 
-While you can set up the SendGrid connector using any API key with read permission, we recommend creating a dedicated read-only API key for Airbyte. This allows you to granularly control which resources Airbyte can read.
+- **Campaigns** reads the Marketing Campaigns endpoint `/v3/marketing/campaigns`, not the Legacy Marketing Campaigns endpoint `/v3/campaigns`. Legacy Marketing Campaigns data isn't available through this connector.
+- **Contacts** uses SendGrid's asynchronous [contacts export](https://www.twilio.com/docs/sendgrid/api-reference/contacts/export-contacts): the connector requests an export, polls until SendGrid finishes it, then downloads the resulting file. A sync of this stream takes as long as SendGrid needs to build the export, which can be several minutes on large contact databases. Field names are lowercased, so a custom field named `Company_Name` in SendGrid arrives as `company_name`.
+- **Segments** reads Segments 2.0 (`/v3/marketing/segments/2.0`). Segments that exist only in the older 1.0 API don't appear.
 
-The API key should have read-only access to the resources you want to sync. For marketing streams (Contacts, Lists, Segments, Single Sends, Campaigns), the API key needs the `marketing.read` scope.
+The connector checks the connection by reading the Bounces stream, so the API key needs a suppression read scope even if you only plan to sync marketing streams.
 
 ## Limitations & Troubleshooting
 
@@ -82,7 +91,13 @@ Expand to see details about Sendgrid connector limitations and troubleshooting.
 
 #### Rate limiting
 
-The connector is restricted by normal Sendgrid [requests limitation](https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits).
+SendGrid enforces [per-endpoint rate limits](https://www.twilio.com/docs/sendgrid/api-reference/how-to-use-the-sendgrid-v3-api/rate-limits). To stay inside them, the connector caps itself at 70 requests per second across all streams, reads up to 6 streams in parallel, and runs at most 2 Contacts export jobs at a time. It reads the `X-RateLimit-Remaining` and `X-RateLimit-Reset` response headers and waits for the reset window when SendGrid returns a 429, so a rate-limited sync slows down instead of failing.
+
+If other tools share the same API key, the combined traffic can still exceed SendGrid's limits. Use a dedicated key for Airbyte to keep them separate.
+
+#### The start date only applies to incremental streams
+
+The **Start date** setting filters only the streams that have a cursor in the table above. Full refresh streams always return everything the API exposes, regardless of the date you set.
 
 ### Troubleshooting
 
@@ -92,7 +107,7 @@ If you encounter 403 errors, check the following:
 
 1. **Verify API key permissions**: Ensure your API key has the required scopes for the streams you're trying to sync. See the [Setup guide](#step-1-set-up-sendgrid) for the specific scopes needed for each stream.
 
-2. **Legacy vs. New Marketing Campaigns**: This connector uses the New Marketing Campaigns API (`/v3/marketing/*`), which requires the `marketing.read` scope. If your SendGrid account uses Legacy Marketing Campaigns, you will receive 403 errors when syncing marketing streams. Legacy Marketing Campaigns use different API endpoints and permission scopes (`marketing_campaigns.read`) that are not compatible with this connector.
+2. **Legacy vs. new Marketing Campaigns**: This connector uses the new Marketing Campaigns API (`/v3/marketing/*`), which requires the `marketing.read` scope. If your SendGrid account uses Legacy Marketing Campaigns, you get 403 errors when syncing marketing streams. Legacy Marketing Campaigns use different endpoints and scopes (`marketing_campaigns.read`) that this connector doesn't support.
 
 3. **Account type limitations**: Some SendGrid account types may not have access to all API endpoints. Verify that your SendGrid plan includes access to the features you're trying to sync.
 
