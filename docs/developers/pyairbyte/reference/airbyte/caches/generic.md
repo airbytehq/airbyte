@@ -3,28 +3,30 @@ id: airbyte-caches-generic
 title: airbyte.caches.generic
 ---
 
+Module airbyte.caches.generic
+=============================
 A Generic SQL Cache implementation.
 
-### `GenericSQLCacheConfig` {#airbyte.caches.generic.GenericSQLCacheConfig}
+Classes
+-------
 
-<ApiMember kind="class">
+`GenericSQLCacheConfig(**data: Any)`
+:   Allows configuring 'sql_alchemy_url' directly.
+    
+    Initialize the cache and backends.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class GenericSQLCacheConfig(**data: Any)
-```
+    * airbyte.caches.base.CacheBase
+    * airbyte.shared.sql_processor.SqlConfig
+    * pydantic.main.BaseModel
+    * airbyte._writers.base.AirbyteWriterInterface
+    * abc.ABC
 
-</ApiSignature>
+    ### Class variables
 
-Allows configuring 'sql_alchemy_url' directly.
+    `model_config`
+    :
 
-Initialize the cache and backends.
-
-**Bases:** `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
-
-#### Attributes {#airbyte.caches.generic.GenericSQLCacheConfig--attributes}
-
-- **`sql_alchemy_url`**&nbsp;(`SecretString | str`)
-
-</ApiMember>
+    `sql_alchemy_url: SecretString | str`
+    :

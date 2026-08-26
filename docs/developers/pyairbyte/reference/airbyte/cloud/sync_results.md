@@ -3,6 +3,8 @@ id: airbyte-cloud-sync_results
 title: airbyte.cloud.sync_results
 ---
 
+Module airbyte.cloud.sync_results
+=================================
 Sync results for Airbyte Cloud workspaces.
 
 ## Examples
@@ -100,325 +102,148 @@ for record in dataset:
 
 ------
 
-### `SyncAttempt` {#airbyte.cloud.sync_results.SyncAttempt}
+Classes
+-------
 
-<ApiMember kind="class">
+`SyncAttempt(workspace: CloudWorkspace, connection: CloudConnection, job_id: int, attempt_number: int)`
+:   Represents a single attempt of a sync job.
+    
+    **This class is not meant to be instantiated directly.** Instead, obtain a `SyncAttempt` by
+    calling `.SyncResult.get_attempts()`.
 
-<ApiSignature>
+    ### Instance variables
 
-```python
-class SyncAttempt(
-    workspace: CloudWorkspace,
-    connection: CloudConnection,
-    job_id: int,
-    attempt_number: int,
-)
-```
+    `attempt_id: int`
+    :   Return the attempt ID.
 
-</ApiSignature>
+    `attempt_number: int`
+    :
 
-Represents a single attempt of a sync job.
+    `bytes_synced: int`
+    :   Return the number of bytes synced in this attempt.
 
-**This class is not meant to be instantiated directly.** Instead, obtain a `SyncAttempt` by
-calling `.SyncResult.get_attempts()`.
+    `connection: CloudConnection`
+    :
 
-#### Attributes {#airbyte.cloud.sync_results.SyncAttempt--attributes}
+    `created_at: datetime`
+    :   Return the creation time of the attempt.
 
-- **`attempt_id`**&nbsp;(`int`) — Return the attempt ID.
+    `job_id: int`
+    :
 
-- **`attempt_number`**&nbsp;(`int`)
+    `records_synced: int`
+    :   Return the number of records synced in this attempt.
 
-- **`bytes_synced`**&nbsp;(`int`) — Return the number of bytes synced in this attempt.
+    `status: str`
+    :   Return the attempt status.
 
-- **`connection`**&nbsp;(`CloudConnection`)
+    `workspace: CloudWorkspace`
+    :
 
-- **`created_at`**&nbsp;(`datetime`) — Return the creation time of the attempt.
+    ### Methods
 
-- **`job_id`**&nbsp;(`int`)
+    `get_full_log_text(self) ‑> str`
+    :   Return the complete log text for this attempt.
+        
+        Returns:
+            String containing all log text for this attempt, with lines separated by newlines.
 
-- **`records_synced`**&nbsp;(`int`) — Return the number of records synced in this attempt.
+`SyncResult(workspace: CloudWorkspace, connection: CloudConnection, job_id: int, table_name_prefix: str = '', table_name_suffix: str = '')`
+:   The result of a sync operation.
+    
+    **This class is not meant to be instantiated directly.** Instead, obtain a `SyncResult` by
+    interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 
-- **`status`**&nbsp;(`str`) — Return the attempt status.
+    ### Instance variables
 
-- **`workspace`**&nbsp;(`CloudWorkspace`)
+    `bytes_synced: int`
+    :   Return the number of records processed.
 
-#### `get_full_log_text` {#airbyte.cloud.sync_results.SyncAttempt.get_full_log_text}
+    `connection: CloudConnection`
+    :
 
-<ApiMember kind="method">
+    `job_id: int`
+    :
 
-<ApiSignature>
+    `job_url: str`
+    :   Return the URL of the sync job.
+        
+        Note: This currently returns the connection's job history URL, as there is no direct URL
+        to a specific job in the Airbyte Cloud web app.
+        
+        TODO: Implement a direct job logs URL on top of the event-id of the specific attempt number.
+              E.g. \{self.connection.job_history_url\}?eventId=\{event-guid\}&openLogs=true
 
-```python
-def get_full_log_text(self) -> str
-```
+    `records_synced: int`
+    :   Return the number of records processed.
 
-</ApiSignature>
+    `start_time: datetime`
+    :   Return the start time of the sync job in UTC.
 
-Return the complete log text for this attempt.
+    `stream_names: list[str]`
+    :   Return the set of stream names.
 
-**Returns:**
+    `streams: _SyncResultStreams`
+    :   Return a mapping of stream names to `airbyte.CachedDataset` objects.
+        
+        This is a convenience wrapper around the `stream_names`
+        property and `get_dataset()` method.
 
-String containing all log text for this attempt, with lines separated by newlines.
+    `table_name_prefix: str`
+    :
 
-</ApiMember>
+    `table_name_suffix: str`
+    :
 
-</ApiMember>
+    `workspace: CloudWorkspace`
+    :
 
-### `SyncResult` {#airbyte.cloud.sync_results.SyncResult}
+    ### Methods
 
-<ApiMember kind="class">
+    `get_attempts(self) ‑> list[airbyte.cloud.sync_results.SyncAttempt]`
+    :   Return a list of attempts for this sync job.
 
-<ApiSignature>
-
-```python
-class SyncResult(
-    workspace: CloudWorkspace,
-    connection: CloudConnection,
-    job_id: int,
-    table_name_prefix: str = '',
-    table_name_suffix: str = '',
-)
-```
-
-</ApiSignature>
-
-The result of a sync operation.
-
-**This class is not meant to be instantiated directly.** Instead, obtain a `SyncResult` by
-interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
-
-#### Attributes {#airbyte.cloud.sync_results.SyncResult--attributes}
-
-- **`bytes_synced`**&nbsp;(`int`) — Return the number of records processed.
-
-- **`connection`**&nbsp;(`CloudConnection`)
-
-- **`job_id`**&nbsp;(`int`)
-
-- **`job_url`**&nbsp;(`str`) — Return the URL of the sync job.  Note: This currently returns the connection's job history URL, as there is no direct URL to a specific job in the Airbyte Cloud web app.  TODO: Implement a direct job logs URL on top of the event-id of the specific attempt number.       E.g. \{self.connection.job_history_url\}?eventId=\{event-guid\}&openLogs=true
-
-- **`records_synced`**&nbsp;(`int`) — Return the number of records processed.
-
-- **`start_time`**&nbsp;(`datetime`) — Return the start time of the sync job in UTC.
-
-- **`stream_names`**&nbsp;(`list[str]`) — Return the set of stream names.
-
-- **`streams`**&nbsp;(`_SyncResultStreams`) — Return a mapping of stream names to `airbyte.CachedDataset` objects.  This is a convenience wrapper around the `stream_names` property and `get_dataset()` method.
-
-- **`table_name_prefix`**&nbsp;(`str`)
-
-- **`table_name_suffix`**&nbsp;(`str`)
-
-- **`workspace`**&nbsp;(`CloudWorkspace`)
-
-#### `get_attempts` {#airbyte.cloud.sync_results.SyncResult.get_attempts}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_attempts(self) -> list[airbyte.cloud.sync_results.SyncAttempt]
-```
-
-</ApiSignature>
-
-Return a list of attempts for this sync job.
-
-</ApiMember>
-
-#### `get_dataset` {#airbyte.cloud.sync_results.SyncResult.get_dataset}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_dataset(self, stream_name: str) -> airbyte.datasets._sql.CachedDataset
-```
-
-</ApiSignature>
-
-Retrieve an `airbyte.datasets.CachedDataset` object for a given stream name.
-
-This can be used to read and analyze the data in a SQL-based destination.
-
-TODO: In a future iteration, we can consider providing stream configuration information
-      (catalog information) to the `CachedDataset` object via the "Get stream properties"
-      API: https://reference.airbyte.com/reference/getstreamproperties
-
-</ApiMember>
-
-#### `get_job_status` {#airbyte.cloud.sync_results.SyncResult.get_job_status}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_job_status(self) -> airbyte.cloud.models.JobStatusEnum
-```
-
-</ApiSignature>
-
-Check if the sync job is still running.
-
-</ApiMember>
-
-#### `get_sql_cache` {#airbyte.cloud.sync_results.SyncResult.get_sql_cache}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_cache(self) -> CacheBase
-```
-
-</ApiSignature>
-
-Return a SQL Cache object for working with the data in a SQL-based destination's.
-
-</ApiMember>
-
-#### `get_sql_database_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_database_name}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_database_name(self) -> str
-```
-
-</ApiSignature>
-
-Return the SQL database name.
-
-</ApiMember>
-
-#### `get_sql_engine` {#airbyte.cloud.sync_results.SyncResult.get_sql_engine}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_engine(self) -> sqlalchemy.engine.Engine
-```
-
-</ApiSignature>
-
-Return a SQL Engine for querying a SQL-based destination.
-
-</ApiMember>
-
-#### `get_sql_schema_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_schema_name}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_schema_name(self) -> str
-```
-
-</ApiSignature>
-
-Return the SQL schema name.
-
-</ApiMember>
-
-#### `get_sql_table` {#airbyte.cloud.sync_results.SyncResult.get_sql_table}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_table(self, stream_name: str) -> sqlalchemy.Table
-```
-
-</ApiSignature>
-
-Return a SQLAlchemy table object for the named stream.
-
-</ApiMember>
-
-#### `get_sql_table_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_table_name}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_table_name(self, stream_name: str) -> str
-```
-
-</ApiSignature>
-
-Return the SQL table name of the named stream.
-
-</ApiMember>
-
-#### `is_job_complete` {#airbyte.cloud.sync_results.SyncResult.is_job_complete}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def is_job_complete(self) -> bool
-```
-
-</ApiSignature>
-
-Check if the sync job is complete.
-
-</ApiMember>
-
-#### `raise_failure_status` {#airbyte.cloud.sync_results.SyncResult.raise_failure_status}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def raise_failure_status(self, *, refresh_status: bool = False) -> None
-```
-
-</ApiSignature>
-
-Raise an exception if the sync job failed.
-
-By default, this method will use the latest status available. If you want to refresh the
-status before checking for failure, set `refresh_status=True`. If the job has failed, this
-method will raise a `AirbyteConnectionSyncError`.
-
-Otherwise, do nothing.
-
-</ApiMember>
-
-#### `wait_for_completion` {#airbyte.cloud.sync_results.SyncResult.wait_for_completion}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def wait_for_completion(
-    self,
-    *,
-    wait_timeout: int = 1800,
-    raise_timeout: bool = True,
-    raise_failure: bool = False,
-) -> airbyte.cloud.models.JobStatusEnum
-```
-
-</ApiSignature>
-
-Wait for a job to finish running.
-
-</ApiMember>
-
-</ApiMember>
+    `get_dataset(self, stream_name: str) ‑> airbyte.datasets._sql.CachedDataset`
+    :   Retrieve an `airbyte.datasets.CachedDataset` object for a given stream name.
+        
+        This can be used to read and analyze the data in a SQL-based destination.
+        
+        TODO: In a future iteration, we can consider providing stream configuration information
+              (catalog information) to the `CachedDataset` object via the "Get stream properties"
+              API: https://reference.airbyte.com/reference/getstreamproperties
+
+    `get_job_status(self) ‑> JobStatusEnum`
+    :   Check if the sync job is still running.
+
+    `get_sql_cache(self) ‑> CacheBase`
+    :   Return a SQL Cache object for working with the data in a SQL-based destination's.
+
+    `get_sql_database_name(self) ‑> str`
+    :   Return the SQL database name.
+
+    `get_sql_engine(self) ‑> sqlalchemy.engine.Engine`
+    :   Return a SQL Engine for querying a SQL-based destination.
+
+    `get_sql_schema_name(self) ‑> str`
+    :   Return the SQL schema name.
+
+    `get_sql_table(self, stream_name: str) ‑> sqlalchemy.Table`
+    :   Return a SQLAlchemy table object for the named stream.
+
+    `get_sql_table_name(self, stream_name: str) ‑> str`
+    :   Return the SQL table name of the named stream.
+
+    `is_job_complete(self) ‑> bool`
+    :   Check if the sync job is complete.
+
+    `raise_failure_status(self, *, refresh_status: bool = False) ‑> None`
+    :   Raise an exception if the sync job failed.
+        
+        By default, this method will use the latest status available. If you want to refresh the
+        status before checking for failure, set `refresh_status=True`. If the job has failed, this
+        method will raise a `AirbyteConnectionSyncError`.
+        
+        Otherwise, do nothing.
+
+    `wait_for_completion(self, *, wait_timeout: int = 1800, raise_timeout: bool = True, raise_failure: bool = False) ‑> JobStatusEnum`
+    :   Wait for a job to finish running.

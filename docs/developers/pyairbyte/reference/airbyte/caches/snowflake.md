@@ -3,11 +3,13 @@ id: airbyte-caches-snowflake
 title: airbyte.caches.snowflake
 ---
 
+Module airbyte.caches.snowflake
+===============================
 A Snowflake implementation of the PyAirbyte cache.
 
 ## Usage Example
 
-### Password connection:
+# Password connection:
 
 ```python
 from airbyte as ab
@@ -24,7 +26,7 @@ cache = SnowflakeCache(
 )
 ```
 
-### Private key connection:
+# Private key connection:
 
 ```python
 from airbyte as ab
@@ -42,7 +44,7 @@ cache = SnowflakeCache(
 )
 ```
 
-### Private key path connection:
+# Private key path connection:
 
 ```python
 from airbyte as ab
@@ -60,109 +62,96 @@ cache = SnowflakeCache(
 )
 ```
 
-### `SnowflakeCache` {#airbyte.caches.snowflake.SnowflakeCache}
+Classes
+-------
 
-<ApiMember kind="class">
+`SnowflakeCache(**data: Any)`
+:   Configuration for the Snowflake cache.
+    
+    Initialize the cache and backends.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class SnowflakeCache(**data: Any)
-```
+    * airbyte._processors.sql.snowflake.SnowflakeConfig
+    * airbyte.caches.base.CacheBase
+    * airbyte.shared.sql_processor.SqlConfig
+    * pydantic.main.BaseModel
+    * airbyte._writers.base.AirbyteWriterInterface
+    * abc.ABC
 
-</ApiSignature>
+    ### Class variables
 
-Configuration for the Snowflake cache.
+    `dedupe_mode: RecordDedupeMode`
+    :
 
-Initialize the cache and backends.
+    `model_config`
+    :
 
-**Bases:** `airbyte._processors.sql.snowflake.SnowflakeConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+    `paired_destination_config_class: ClassVar[type | None]`
+    :   DestinationSnowflake(database: 'str', host: 'str', role: 'str', schema: 'str', username: 'str', warehouse: 'str', credentials: 'Optional[AuthorizationMethod]' = None, DESTINATION_TYPE: 'Final[Snowflake]' = &lt;Snowflake.SNOWFLAKE: 'snowflake'&gt;, disable_type_dedupe: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, raw_data_schema: 'Optional[str]' = None, retention_period_days: 'Optional[int]' = 1, use_merge_for_upsert: 'Optional[bool]' = False)
 
-#### Attributes {#airbyte.caches.snowflake.SnowflakeCache--attributes}
+    `paired_destination_name: ClassVar[str | None]`
+    :
 
-- **`dedupe_mode`**&nbsp;(`RecordDedupeMode`)
+`SnowflakeConfig(**data: Any)`
+:   Configuration for the Snowflake cache.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationSnowflake(database: 'str', host: 'str', role: 'str', schema: 'str', username: 'str', warehouse: 'str', credentials: 'Optional[AuthorizationMethod]' = None, DESTINATION_TYPE: 'Final[Snowflake]' = &lt;Snowflake.SNOWFLAKE: 'snowflake'&gt;, disable_type_dedupe: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, raw_data_schema: 'Optional[str]' = None, retention_period_days: 'Optional[int]' = 1, use_merge_for_upsert: 'Optional[bool]' = False)
+    ### Ancestors (in MRO)
 
-- **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+    * airbyte.shared.sql_processor.SqlConfig
+    * pydantic.main.BaseModel
+    * abc.ABC
 
-</ApiMember>
+    ### Descendants
 
-### `SnowflakeConfig` {#airbyte.caches.snowflake.SnowflakeConfig}
+    * airbyte.caches.snowflake.SnowflakeCache
 
-<ApiMember kind="class">
+    ### Class variables
 
-<ApiSignature>
+    `account: str`
+    :
 
-```python
-class SnowflakeConfig(**data: Any)
-```
+    `data_retention_time_in_days: int | None`
+    :
 
-</ApiSignature>
+    `database: str`
+    :
 
-Configuration for the Snowflake cache.
+    `model_config`
+    :
 
-Raises ``ValidationError`` if the input data cannot be
-validated to form a valid model.
+    `password: SecretString | None`
+    :
 
-`self` is explicitly positional-only to allow `self` as a field name.
+    `private_key: SecretString | None`
+    :
 
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
+    `private_key_passphrase: SecretString | None`
+    :
 
-**Subclasses:** `airbyte.caches.snowflake.SnowflakeCache`
+    `private_key_path: str | None`
+    :
 
-#### Attributes {#airbyte.caches.snowflake.SnowflakeConfig--attributes}
+    `role: str`
+    :
 
-- **`account`**&nbsp;(`str`)
+    `username: str`
+    :
 
-- **`data_retention_time_in_days`**&nbsp;(`int | None`)
+    `warehouse: str`
+    :
 
-- **`database`**&nbsp;(`str`)
+    ### Methods
 
-- **`password`**&nbsp;(`SecretString | None`)
+    `get_sql_alchemy_url(self) ‑> airbyte.secrets.base.SecretString`
+    :   Return the SQLAlchemy URL to use.
 
-- **`private_key`**&nbsp;(`SecretString | None`)
-
-- **`private_key_passphrase`**&nbsp;(`SecretString | None`)
-
-- **`private_key_path`**&nbsp;(`str | None`)
-
-- **`role`**&nbsp;(`str`)
-
-- **`username`**&nbsp;(`str`)
-
-- **`warehouse`**&nbsp;(`str`)
-
-#### `get_sql_alchemy_url` {#airbyte.caches.snowflake.SnowflakeConfig.get_sql_alchemy_url}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_alchemy_url(self) -> airbyte.secrets.base.SecretString
-```
-
-</ApiSignature>
-
-Return the SQLAlchemy URL to use.
-
-</ApiMember>
-
-#### `get_vendor_client` {#airbyte.caches.snowflake.SnowflakeConfig.get_vendor_client}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_vendor_client(self) -> object
-```
-
-</ApiSignature>
-
-Return the Snowflake connection object.
-
-</ApiMember>
-
-</ApiMember>
+    `get_vendor_client(self) ‑> object`
+    :   Return the Snowflake connection object.

@@ -3,7 +3,9 @@ id: airbyte-mcp-index
 title: airbyte.mcp.index
 ---
 
-***Airbyte Replication MCP Server - Model Context Protocol Integration***
+# Module airbyte.mcp
+
+**_Airbyte Replication MCP Server - Model Context Protocol Integration_**
 
 > **NOTE:**
 > This MCP server implementation is experimental and may change without notice between minor
@@ -54,13 +56,13 @@ AIRBYTE_CLOUD_WORKSPACE_ID=your_workspace_id
 # STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
 ```
 
-**Note:**
+Note:
 
 1. You can add more environment variables to this file as needed for different connectors. To start,
    you only need to create the file and pass it to the MCP server.
 2. Ensure that this file is kept secure, as it contains sensitive information. Your LLM
-   *should never* be given direct access to this file or its contents.
-3. The MCP tools will give your LLM the ability to view *which* variables are available, but it
+   _should never_ be given direct access to this file or its contents.
+3. The MCP tools will give your LLM the ability to view _which_ variables are available, but it
    does not give access to their values.
 4. The `AIRBYTE_PROJECT_DIR` variable specifies a directory where the MCP server can
    store temporary project files. Ensure this directory is writable by the user running
@@ -83,11 +85,7 @@ requirements.
   "mcpServers": {
     "airbyte": {
       "command": "uvx",
-      "args": [
-        "--python=3.11",
-        "--from=airbyte@latest",
-        "airbyte-mcp"
-      ],
+      "args": ["--python=3.11", "--from=airbyte@latest", "airbyte-mcp"],
       "env": {
         "AIRBYTE_MCP_ENV_FILE": "/path/to/my/.mcp/airbyte_mcp.env",
         "AIRBYTE_CLOUD_MCP_SAFE_MODE": "1",
@@ -98,7 +96,7 @@ requirements.
 }
 ```
 
-**Note:**
+Note:
 
 - Replace `/path/to/my/.mcp/airbyte_mcp.env` with the absolute path to your dotenv file created in
   Step 1.
@@ -149,108 +147,6 @@ are not considered to be modifications of the Airbyte Cloud workspace.
 
 Set the environment variable `AIRBYTE_CLOUD_MCP_READONLY_MODE=1` to enable read-only mode.
 
-## Authentication for Remote (HTTP) Servers
-
-The steps above run the MCP server over **stdio** — the client launches the
-server process locally, so there is no transport-layer auth and the only
-credentials that matter are your Airbyte Cloud creds in the dotenv file.
-
-When the server is instead exposed over **HTTP** (`airbyte-mcp-http` /
-`poe mcp-serve-http`), transport auth verifies an `Authorization: Bearer
-&lt;token&gt;` on every request once it is configured. Auth is driven entirely by the
-`AIRBYTE_MCP_*` env values a deployment sets — the hosted Airbyte Cloud MCP
-deployment supplies its realm's values, and a self-hosted deployment supplies
-its own. Two client shapes are supported on the same deployment (combined
-automatically when both are configured):
-
-### Humans → interactive OIDC
-
-Set `AIRBYTE_MCP_OIDC_CLIENT_ID`, `AIRBYTE_MCP_OIDC_CLIENT_SECRET`, and
-`AIRBYTE_MCP_OIDC_CONFIG_URL` (the OIDC discovery URL). Interactive clients open
-a browser (Keycloak Authorization Code + PKCE) and the resulting token is
-verified by the server. No bearer token to manage by hand.
-
-### Machines / agents → headless bearer token
-
-There is **no** transport mode that accepts a raw `client_id` + `client_secret`
-in a header. A headless agent **mints its own short-lived bearer token** and
-sends it as `Authorization: Bearer <token>`; the server verifies the signature
-(no browser, no stored/rotating refresh token).
-
-The server verifies tokens against whatever realm the deployment configures via
-the `AIRBYTE_MCP_AUTH_*` env values below. Against the hosted Airbyte Cloud MCP
-(configured for Airbyte Cloud's application-client realm), the agent mints an
-Airbyte Cloud access token from its
-`AIRBYTE_CLOUD_CLIENT_ID` / `AIRBYTE_CLOUD_CLIENT_SECRET` (the
-`https://api.airbyte.com/v1/applications/token` endpoint) and sends it as the
-bearer. That single token both authenticates transport (verified by the server)
-and authorizes downstream Cloud API calls, because an Airbyte-Cloud-issued token
-is itself a valid Cloud API bearer. Tokens are short-lived (~15 min), so
-re-mint on expiry / on a `401` rather than pinning a static token.
-
-Clients that support HTTP transports can pass the token via a `headers` block in
-their MCP config:
-
-```json
-{
-  "mcpServers": {
-    "airbyte": {
-      "url": "https://<host>/mcp",
-      "headers": {
-        "Authorization": "Bearer ${AIRBYTE_MCP_TOKEN}"
-      }
-    }
-  }
-}
-```
-
-### Server environment variables (HTTP mode)
-
-The auth vars use this server's branded `AIRBYTE_MCP_*` namespace. This server
-declares only the env var *names* and reads them; the concrete *values* (a
-realm's JWKS URI, issuer, audience, discovery URL, etc.) are supplied at deploy
-time by the deployment's own repo — none are baked in here. The headless
-verifier activates once a signing-key source (JWKS URI or static public key) is
-set; the interactive path activates once the OIDC client credentials are set.
-`MCP_SERVER_URL` is a deployment URL (not an auth var) and stays unbranded.
-
-- `MCP_SERVER_URL` — public base URL of the server (also used for OIDC redirect
-  callbacks); defaults to `http://localhost:8080`.
-- `AIRBYTE_MCP_OIDC_CLIENT_ID`, `AIRBYTE_MCP_OIDC_CLIENT_SECRET` — enable
-  interactive OIDC (both required).
-- `AIRBYTE_MCP_OIDC_CONFIG_URL` — OIDC discovery URL (required when the client
-  credentials are set).
-- `AIRBYTE_MCP_OIDC_CLIENT_STORAGE_FACTORY` — optional `"package.module:callable"`
-  naming a durable OAuth-state store factory for the interactive proxy (defaults
-  to in-memory).
-- `AIRBYTE_MCP_AUTH_JWKS_URI` / `AIRBYTE_MCP_AUTH_JWT_PUBLIC_KEY` — JWKS URL or
-  static public key for verifying headless tokens (one activates the verifier).
-- `AIRBYTE_MCP_AUTH_ISSUER` / `AIRBYTE_MCP_AUTH_AUDIENCE` /
-  `AIRBYTE_MCP_AUTH_ALGORITHM` — expected `iss` / `aud` claims and signing
-  algorithm.
-
-For stateless HTTP clients that need MCP Apps `interactive-ui` tools, clients
-that declare extensions at initialize receive a self-describing `Mcp-Session-Id`
-which spec-compliant clients echo on subsequent requests. Clients that do not
-echo session IDs can use the explicit fallback
-`X-MCP-Extensions: io.modelcontextprotocol/ui` header on each request instead.
-Multiple extension IDs may be comma-separated (recommended) or
-whitespace-separated.
-The stateless capability-token middleware and extension resolver are provided
-by the installed `fastmcp-extensions` package.
-
-The eventual spec-aligned replacement is per-request `_meta` under
-`io.modelcontextprotocol/clientCapabilities`. That path exists in the modern
-`mcp` 2.x server architecture, while this project currently resolves the
-legacy `fastmcp` 3.x and `mcp` 1.x stack. Using it requires a stack migration
-rather than a version-only change.
-
-With no auth variables set, the HTTP server falls back to unauthenticated local
-behavior. This server maps the `AIRBYTE_MCP_*` variables into the typed config
-objects consumed by
-[`fastmcp-extensions`](https://github.com/airbytehq/fastmcp-extensions), which
-assembles the verifier(s) and reads no environment variables itself.
-
 ## Troubleshooting
 
 ### Troubleshooting Local Connector Installation Issues
@@ -279,7 +175,7 @@ stores connector artifacts, cache files, and temporary data. Ensure this directo
 - Exists on the filesystem. (Use `mkdir -p /path/to/dir` to create it if needed.)
 - Is writable by the user account running the MCP server.
 
-**Note:**
+Note:
 
 - In rare cases, your agent may not be able to find `uv` or `uvx` if they are not in the system
   `PATH` or if the agent has a stale `PATH` value. In these cases, you can use `which uvx` from
@@ -300,7 +196,7 @@ This design allows AI assistants to help configure connectors without compromisi
 
 Note: While the MCP server takes steps to secure your credentials, you are responsible for
 ensuring the agent is not given access to your secrets by other means. For example, Claude Code
-may have *full* local disk access when run in certain modes. Consult your agent's documentation
+may have _full_ local disk access when run in certain modes. Consult your agent's documentation
 for details on securing local files.
 
 ## Contributing to the Airbyte MCP Server
@@ -313,13 +209,14 @@ for details on securing local files.
 - [MCP Documentation Home](https://modelcontextprotocol.io/)
 
 For issues and questions:
+
 - [PyAirbyte GitHub Issues](https://github.com/airbytehq/pyairbyte/issues)
 - [PyAirbyte Discussions](https://github.com/airbytehq/pyairbyte/discussions)
 
-- `airbyte.mcp.cloud`
-- `airbyte.mcp.http_main`
-- `airbyte.mcp.interactive`
-- `airbyte.mcp.local`
-- `airbyte.mcp.prompts`
-- `airbyte.mcp.registry`
-- `airbyte.mcp.server`
+## Sub-modules
+
+- airbyte.mcp.cloud
+- airbyte.mcp.local
+- airbyte.mcp.prompts
+- airbyte.mcp.registry
+- airbyte.mcp.server

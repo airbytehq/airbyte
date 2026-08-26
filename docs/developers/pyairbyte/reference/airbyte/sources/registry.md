@@ -3,182 +3,120 @@ id: airbyte-sources-registry
 title: airbyte.sources.registry
 ---
 
+Module airbyte.sources.registry
+===============================
 Backwards compatibility shim for airbyte.sources.registry.
 
 This module re-exports symbols from airbyte.registry for backwards compatibility.
 New code should import from airbyte.registry directly.
 
-### `get_available_connectors` {#airbyte.sources.registry.get_available_connectors}
+Functions
+---------
 
-<ApiMember kind="function">
+`get_available_connectors(install_type: InstallType | str | None = InstallType.INSTALLABLE) ‑> list[str]`
+:   Return a list of all available connectors.
+    
+    Connectors will be returned in alphabetical order, with the standard prefix "source-".
+    
+    Args:
+        install_type: The type of installation for the connector.
+            Defaults to `InstallType.INSTALLABLE`.
 
-<ApiSignature>
+`get_connector_metadata(name: str) ‑> airbyte.registry.ConnectorMetadata | None`
+:   Check the cache for the connector.
+    
+    If the cache is empty, populate by calling update_cache.
 
-```python
-def get_available_connectors(
-    install_type: InstallType | str | None = InstallType.INSTALLABLE,
-) -> list[str]
-```
+Classes
+-------
 
-</ApiSignature>
+`ConnectorMetadata(**data: Any)`
+:   Metadata for a connector.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
 
-Return a list of all available connectors.
+    ### Ancestors (in MRO)
 
-Connectors will be returned in alphabetical order, with the standard prefix "source-".
+    * pydantic.main.BaseModel
 
-**Args:**
+    ### Class variables
 
-- **`install_type`**: The type of installation for the connector. Defaults to `InstallType.INSTALLABLE`.
+    `install_types: set[airbyte.registry.InstallType]`
+    :   The supported install types for the connector.
 
-</ApiMember>
+    `language: airbyte.registry.Language | None`
+    :   The language of the connector.
 
-### `get_connector_metadata` {#airbyte.sources.registry.get_connector_metadata}
+    `latest_available_version: str | None`
+    :   The latest available version of the connector.
 
-<ApiMember kind="function">
+    `model_config`
+    :
 
-<ApiSignature>
+    `name: str`
+    :   Connector name. For example, "source-google-sheets".
 
-```python
-def get_connector_metadata(
-    name: str,
-) -> airbyte.registry.ConnectorMetadata | None
-```
+    `pypi_package_name: str | None`
+    :   The name of the PyPI package for the connector, if it exists.
 
-</ApiSignature>
+    `suggested_streams: list[str] | None`
+    :   A list of suggested streams for the connector, if available.
 
-Check the cache for the connector.
+    ### Instance variables
 
-If the cache is empty, populate by calling update_cache.
+    `default_install_type: InstallType`
+    :   Return the default install type for the connector.
 
-</ApiMember>
+`InstallType(*args, **kwds)`
+:   The type of installation for a connector.
 
-### `ConnectorMetadata` {#airbyte.sources.registry.ConnectorMetadata}
+    ### Ancestors (in MRO)
 
-<ApiMember kind="class">
+    * builtins.str
+    * enum.Enum
 
-<ApiSignature>
+    ### Class variables
 
-```python
-class ConnectorMetadata(**data: Any)
-```
+    `ANY`
+    :   All connectors in the registry (environment-independent).
 
-</ApiSignature>
+    `DOCKER`
+    :   Docker-based connectors (returns all connectors for backward compatibility).
 
-Metadata for a connector.
+    `INSTALLABLE`
+    :   Connectors installable in the current environment (environment-sensitive).
+        
+        Returns all connectors if Docker is installed, otherwise only Python and YAML.
 
-Raises ``ValidationError`` if the input data cannot be
-validated to form a valid model.
+    `JAVA`
+    :   Java-based connectors.
 
-`self` is explicitly positional-only to allow `self` as a field name.
+    `PYTHON`
+    :   Python-based connectors available via PyPI.
 
-#### Attributes {#airbyte.sources.registry.ConnectorMetadata--attributes}
+    `YAML`
+    :   Manifest-only connectors that can be run without Docker.
 
-- **`connector_type`**&nbsp;(`str | None`) — Connector type: `source` or `destination`.
+`Language(*args, **kwds)`
+:   The language of a connector.
 
-- **`definition_id`**&nbsp;(`str | None`) — Source or destination definition ID.
+    ### Ancestors (in MRO)
 
-- **`display_name`**&nbsp;(`str | None`) — Human-readable connector name.
+    * builtins.str
+    * enum.Enum
 
-- **`docker_repository`**&nbsp;(`str | None`) — Docker repository for the connector image.
+    ### Class variables
 
-- **`documentation_url`**&nbsp;(`str | None`) — Connector documentation URL.
+    `JAVA`
+    :
 
-- **`github_issue_label`**&nbsp;(`str | None`) — GitHub issue label for the connector.
+    `MANIFEST_ONLY`
+    :
 
-- **`install_types`**&nbsp;(`set[airbyte.registry.InstallType]`) — The supported install types for the connector.
-
-- **`language`**&nbsp;(`airbyte.registry.Language | None`) — The language of the connector.
-
-- **`latest_available_version`**&nbsp;(`str | None`) — The latest available version of the connector.
-
-- **`name`**&nbsp;(`str`) — Connector name. For example, "source-google-sheets".
-
-- **`pypi_package_name`**&nbsp;(`str | None`) — The name of the PyPI package for the connector, if it exists.
-
-- **`release_date`**&nbsp;(`str | None`) — Connector release date.
-
-- **`release_stage`**&nbsp;(`str | None`) — Connector release stage.
-
-- **`source_type`**&nbsp;(`str | None`) — Connector subtype.
-
-- **`suggested_streams`**&nbsp;(`list[str] | None`) — A list of suggested streams for the connector, if available.
-
-- **`support_level`**&nbsp;(`str | None`) — Connector support level.
-
-- **`default_install_type`**&nbsp;(`InstallType`) — Return the default install type for the connector.
-
-</ApiMember>
-
-### `InstallType` {#airbyte.sources.registry.InstallType}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class InstallType(
-    value,
-    names=None,
-    *,
-    module=None,
-    qualname=None,
-    type=None,
-    start=1,
-)
-```
-
-</ApiSignature>
-
-The type of installation for a connector.
-
-**Bases:** `builtins.str`, `enum.Enum`
-
-#### Attributes {#airbyte.sources.registry.InstallType--attributes}
-
-- **`ANY`** — All connectors in the registry (environment-independent).
-
-- **`DOCKER`** — Docker-based connectors (returns all connectors for backward compatibility).
-
-- **`INSTALLABLE`** — Connectors installable in the current environment (environment-sensitive).  Returns all connectors if Docker is installed, otherwise only Python and YAML.
-
-- **`JAVA`** — Java-based connectors.
-
-- **`PYTHON`** — Python-based connectors available via PyPI.
-
-- **`YAML`** — Manifest-only connectors that can be run without Docker.
-
-</ApiMember>
-
-### `Language` {#airbyte.sources.registry.Language}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class Language(
-    value,
-    names=None,
-    *,
-    module=None,
-    qualname=None,
-    type=None,
-    start=1,
-)
-```
-
-</ApiSignature>
-
-The language of a connector.
-
-**Bases:** `builtins.str`, `enum.Enum`
-
-#### Attributes {#airbyte.sources.registry.Language--attributes}
-
-- **`JAVA`**
-
-- **`MANIFEST_ONLY`**
-
-- **`PYTHON`**
-
-</ApiMember>
+    `PYTHON`
+    :

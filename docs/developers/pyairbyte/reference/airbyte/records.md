@@ -3,6 +3,8 @@ id: airbyte-records
 title: airbyte.records
 ---
 
+Module airbyte.records
+======================
 PyAirbyte Records module.
 
 ## Understanding record handling in PyAirbyte
@@ -68,148 +70,76 @@ PyAirbyte supports a very basic form of schema evolution:
 
 ---
 
-### `StreamRecord` {#airbyte.records.StreamRecord}
+Classes
+-------
 
-<ApiMember kind="class">
+`StreamRecord(from_dict: dict, *, stream_record_handler: StreamRecordHandler, with_internal_columns: bool = True, extracted_at: datetime | None = None)`
+:   The StreamRecord class is a case-aware, case-insensitive dictionary implementation.
+    
+    It has these behaviors:
+    - When a key is retrieved, deleted, or checked for existence, it is always checked in a
+      case-insensitive manner.
+    - The original case is stored in a separate dictionary, so that the original case can be
+      retrieved when needed.
+    - Because it is subclassed from `dict`, the `StreamRecord` class can be passed as a normal
+      Python dictionary.
+    - In addition to the properties of the stream's records, the dictionary also stores the Airbyte
+      metadata columns: `_airbyte_raw_id`, `_airbyte_extracted_at`, and `_airbyte_meta`.
+    
+    This behavior mirrors how a case-aware, case-insensitive SQL database would handle column
+    references.
+    
+    There are two ways this class can store keys internally:
+    - If normalize_keys is True, the keys are normalized using the given normalizer.
+    - If normalize_keys is False, the original case of the keys is stored.
+    
+    In regards to missing values, the dictionary accepts an 'expected_keys' input. When set, the
+    dictionary will be initialized with the given keys. If a key is not found in the input data, it
+    will be initialized with a value of None. When provided, the 'expected_keys' input will also
+    determine the original case of the keys.
+    
+    Initialize the dictionary with the given data.
+    
+    Args:
+        from_dict: The dictionary to initialize the StreamRecord with.
+        stream_record_handler: The StreamRecordHandler to use for processing the record.
+        with_internal_columns: If `True`, the internal columns will be added to the record.
+        extracted_at: The time the record was extracted. If not provided, the current time will
+            be used.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class StreamRecord(
-    from_dict: dict,
-    *,
-    stream_record_handler: StreamRecordHandler,
-    with_internal_columns: bool = True,
-    extracted_at: datetime | None = None,
-)
-```
+    * builtins.dict
 
-</ApiSignature>
+    ### Static methods
 
-The StreamRecord class is a case-aware, case-insensitive dictionary implementation.
+    `from_record_message(record_message: AirbyteRecordMessage, *, stream_record_handler: StreamRecordHandler)`
+    :   Return a StreamRecord from a RecordMessage.
 
-It has these behaviors:
-- When a key is retrieved, deleted, or checked for existence, it is always checked in a
-  case-insensitive manner.
-- The original case is stored in a separate dictionary, so that the original case can be
-  retrieved when needed.
-- Because it is subclassed from `dict`, the `StreamRecord` class can be passed as a normal
-  Python dictionary.
-- In addition to the properties of the stream's records, the dictionary also stores the Airbyte
-  metadata columns: `_airbyte_raw_id`, `_airbyte_extracted_at`, and `_airbyte_meta`.
+`StreamRecordHandler(*, json_schema: dict, normalizer: type[NameNormalizerBase] = airbyte._util.name_normalizers.LowerCaseNormalizer, normalize_keys: bool = False, prune_extra_fields: bool)`
+:   A class to handle processing of StreamRecords.
+    
+    This is a long-lived object that can be used to process multiple StreamRecords, which
+    saves on memory and processing time by reusing the same object for all records of the same type.
+    
+    Initialize the dictionary with the given data.
+    
+    Args:
+        json_schema: The JSON Schema definition for this stream.
+        normalizer: The normalizer to use when normalizing keys. If not provided, the
+            LowerCaseNormalizer will be used.
+        normalize_keys: If `True`, the keys will be normalized using the given normalizer.
+        prune_extra_fields: If `True`, unexpected fields will be removed.
 
-This behavior mirrors how a case-aware, case-insensitive SQL database would handle column
-references.
+    ### Methods
 
-There are two ways this class can store keys internally:
-- If normalize_keys is True, the keys are normalized using the given normalizer.
-- If normalize_keys is False, the original case of the keys is stored.
+    `to_display_case(self, key: str) ‑> str`
+    :   Return the original case of the key.
+        
+        If the key is not found in the pretty case lookup, return the key provided.
 
-In regards to missing values, the dictionary accepts an 'expected_keys' input. When set, the
-dictionary will be initialized with the given keys. If a key is not found in the input data, it
-will be initialized with a value of None. When provided, the 'expected_keys' input will also
-determine the original case of the keys.
-
-Initialize the dictionary with the given data.
-
-**Args:**
-
-- **`from_dict`**: The dictionary to initialize the StreamRecord with.
-- **`stream_record_handler`**: The StreamRecordHandler to use for processing the record.
-- **`with_internal_columns`**: If `True`, the internal columns will be added to the record.
-- **`extracted_at`**: The time the record was extracted. If not provided, the current time will be used.
-
-**Bases:** `builtins.dict`
-
-#### `from_record_message` {#airbyte.records.StreamRecord.from_record_message}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def from_record_message(
-    record_message: AirbyteRecordMessage,
-    *,
-    stream_record_handler: StreamRecordHandler,
-)
-```
-
-</ApiSignature>
-
-Return a StreamRecord from a RecordMessage.
-
-</ApiMember>
-
-</ApiMember>
-
-### `StreamRecordHandler` {#airbyte.records.StreamRecordHandler}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class StreamRecordHandler(
-    *,
-    json_schema: dict,
-    normalizer: type[NameNormalizerBase] = airbyte._util.name_normalizers.LowerCaseNormalizer,
-    normalize_keys: bool = False,
-    prune_extra_fields: bool,
-)
-```
-
-</ApiSignature>
-
-A class to handle processing of StreamRecords.
-
-This is a long-lived object that can be used to process multiple StreamRecords, which
-saves on memory and processing time by reusing the same object for all records of the same type.
-
-Initialize the dictionary with the given data.
-
-**Args:**
-
-- **`json_schema`**: The JSON Schema definition for this stream.
-- **`normalizer`**: The normalizer to use when normalizing keys. If not provided, the LowerCaseNormalizer will be used.
-- **`normalize_keys`**: If `True`, the keys will be normalized using the given normalizer.
-- **`prune_extra_fields`**: If `True`, unexpected fields will be removed.
-
-#### `to_display_case` {#airbyte.records.StreamRecordHandler.to_display_case}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def to_display_case(self, key: str) -> str
-```
-
-</ApiSignature>
-
-Return the original case of the key.
-
-If the key is not found in the pretty case lookup, return the key provided.
-
-</ApiMember>
-
-#### `to_index_case` {#airbyte.records.StreamRecordHandler.to_index_case}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def to_index_case(self, key: str) -> str
-```
-
-</ApiSignature>
-
-Return the internal case of the key.
-
-If `normalize_keys` is True, returns the normalized key.
-Otherwise, return the original case ("pretty case") of the key.
-
-</ApiMember>
-
-</ApiMember>
+    `to_index_case(self, key: str) ‑> str`
+    :   Return the internal case of the key.
+        
+        If `normalize_keys` is True, returns the normalized key.
+        Otherwise, return the original case ("pretty case") of the key.

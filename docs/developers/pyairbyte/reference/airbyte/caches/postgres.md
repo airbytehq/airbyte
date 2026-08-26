@@ -3,6 +3,8 @@ id: airbyte-caches-postgres
 title: airbyte.caches.postgres
 ---
 
+Module airbyte.caches.postgres
+==============================
 A Postgres implementation of the PyAirbyte cache.
 
 ## Usage Example
@@ -20,103 +22,84 @@ cache = PostgresCache(
 )
 ```
 
-### `PostgresCache` {#airbyte.caches.postgres.PostgresCache}
+Classes
+-------
 
-<ApiMember kind="class">
+`PostgresCache(**data: Any)`
+:   Configuration for the Postgres cache.
+    
+    Also inherits config from the JsonlWriter, which is responsible for writing files to disk.
+    
+    Initialize the cache and backends.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class PostgresCache(**data: Any)
-```
+    * airbyte._processors.sql.postgres.PostgresConfig
+    * airbyte.caches.base.CacheBase
+    * airbyte.shared.sql_processor.SqlConfig
+    * pydantic.main.BaseModel
+    * airbyte._writers.base.AirbyteWriterInterface
+    * abc.ABC
 
-</ApiSignature>
+    ### Class variables
 
-Configuration for the Postgres cache.
+    `model_config`
+    :
 
-Also inherits config from the JsonlWriter, which is responsible for writing files to disk.
+    `paired_destination_config_class: ClassVar[type | None]`
+    :   DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
 
-Initialize the cache and backends.
+    `paired_destination_name: ClassVar[str | None]`
+    :
 
-**Bases:** `airbyte._processors.sql.postgres.PostgresConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+    ### Methods
 
-#### Attributes {#airbyte.caches.postgres.PostgresCache--attributes}
+    `clone_as_cloud_destination_config(self) ‑> airbyte_api.models.destination_postgres.DestinationPostgres`
+    :   Return a DestinationPostgres instance with the same configuration.
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
+`PostgresConfig(**data: Any)`
+:   Configuration for the Postgres cache.
+    
+    Also inherits config from the JsonlWriter, which is responsible for writing files to disk.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
 
-- **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+    ### Ancestors (in MRO)
 
-#### `clone_as_cloud_destination_config` {#airbyte.caches.postgres.PostgresCache.clone_as_cloud_destination_config}
+    * airbyte.shared.sql_processor.SqlConfig
+    * pydantic.main.BaseModel
+    * abc.ABC
 
-<ApiMember kind="method">
+    ### Descendants
 
-<ApiSignature>
+    * airbyte.caches.postgres.PostgresCache
 
-```python
-def clone_as_cloud_destination_config(
-    self,
-) -> airbyte_api.models.destination_postgres.DestinationPostgres
-```
+    ### Class variables
 
-</ApiSignature>
+    `database: str`
+    :
 
-Return a DestinationPostgres instance with the same configuration.
+    `host: str`
+    :
 
-</ApiMember>
+    `model_config`
+    :
 
-</ApiMember>
+    `password: SecretString | str`
+    :
 
-### `PostgresConfig` {#airbyte.caches.postgres.PostgresConfig}
+    `port: int`
+    :
 
-<ApiMember kind="class">
+    `username: str`
+    :
 
-<ApiSignature>
+    ### Methods
 
-```python
-class PostgresConfig(**data: Any)
-```
-
-</ApiSignature>
-
-Configuration for the Postgres cache.
-
-Also inherits config from the JsonlWriter, which is responsible for writing files to disk.
-
-Raises ``ValidationError`` if the input data cannot be
-validated to form a valid model.
-
-`self` is explicitly positional-only to allow `self` as a field name.
-
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
-
-**Subclasses:** `airbyte.caches.postgres.PostgresCache`
-
-#### Attributes {#airbyte.caches.postgres.PostgresConfig--attributes}
-
-- **`database`**&nbsp;(`str`)
-
-- **`host`**&nbsp;(`str`)
-
-- **`password`**&nbsp;(`SecretString | str`)
-
-- **`port`**&nbsp;(`int`)
-
-- **`username`**&nbsp;(`str`)
-
-#### `get_sql_alchemy_url` {#airbyte.caches.postgres.PostgresConfig.get_sql_alchemy_url}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_alchemy_url(self) -> airbyte.secrets.base.SecretString
-```
-
-</ApiSignature>
-
-Return the SQLAlchemy URL to use.
-
-</ApiMember>
-
-</ApiMember>
+    `get_sql_alchemy_url(self) ‑> airbyte.secrets.base.SecretString`
+    :   Return the SQLAlchemy URL to use.

@@ -3,6 +3,8 @@ id: airbyte-exceptions
 title: airbyte.exceptions
 ---
 
+Module airbyte.exceptions
+=========================
 All exceptions used in the PyAirbyte.
 
 This design is modeled after structlog's exceptions, in that we bias towards auto-generated
@@ -37,1568 +39,736 @@ In addition, the following principles are applied for exception class design:
   E.g. `raise AirbyteConnectorNotFoundError(...) from FileNotFoundError(connector_path)`
 - Any exception that adds a new property should also be decorated as `@dataclass`.
 
-### `AirbyteConnectionError` {#airbyte.exceptions.AirbyteConnectionError}
+Classes
+-------
 
-<ApiMember kind="class">
+`AirbyteConnectionError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None, connection_id: str | None = None, job_id: int | None = None, job_status: str | None = None)`
+:   An connection error occurred while communicating with the hosted Airbyte instance.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class AirbyteConnectionError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    connection_id: str | None = None,
-    job_id: int | None = None,
-    job_status: str | None = None,
-)
-```
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiSignature>
+    ### Descendants
 
-An connection error occurred while communicating with the hosted Airbyte instance.
+    * airbyte.exceptions.AirbyteConnectionSyncError
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    ### Instance variables
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectionSyncActiveError`, `airbyte.exceptions.AirbyteConnectionSyncError`
+    `connection_id: str | None`
+    :   The connection ID where the error occurred.
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectionError--attributes}
+    `connection_url: str | None`
+    :   The web URL to the connection where the error occurred.
 
-- **`connection_id`**&nbsp;(`str | None`) — The connection ID where the error occurred.
+    `job_history_url: str | None`
+    :   The URL to the job history where the error occurred.
 
-- **`connection_url`**&nbsp;(`str | None`) — The web URL to the connection where the error occurred.
+    `job_id: int | None`
+    :   The job ID where the error occurred (if applicable).
 
-- **`job_history_url`**&nbsp;(`str | None`) — The URL to the job history where the error occurred.
+    `job_status: str | None`
+    :   The latest status of the job where the error occurred (if applicable).
 
-- **`job_id`**&nbsp;(`int | None`) — The job ID where the error occurred (if applicable).
+    `job_url: str | None`
+    :   The URL to the job where the error occurred.
 
-- **`job_status`**&nbsp;(`str | None`) — The latest status of the job where the error occurred (if applicable).
+`AirbyteConnectionSyncError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None, connection_id: str | None = None, job_id: int | None = None, job_status: str | None = None)`
+:   An error occurred while executing the remote Airbyte job.
 
-- **`job_url`**&nbsp;(`str | None`) — The URL to the job where the error occurred.
+    ### Ancestors (in MRO)
 
-</ApiMember>
+    * airbyte.exceptions.AirbyteConnectionError
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-### `AirbyteConnectionSyncActiveError` {#airbyte.exceptions.AirbyteConnectionSyncActiveError}
+    ### Descendants
 
-<ApiMember kind="class">
+    * airbyte.exceptions.AirbyteConnectionSyncTimeoutError
 
-<ApiSignature>
+`AirbyteConnectionSyncTimeoutError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None, connection_id: str | None = None, job_id: int | None = None, job_status: str | None = None, timeout: int | None = None)`
+:   An timeout occurred while waiting for the remote Airbyte job to complete.
 
-```python
-class AirbyteConnectionSyncActiveError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    connection_id: str | None = None,
-    job_id: int | None = None,
-    job_status: str | None = None,
-)
-```
+    ### Ancestors (in MRO)
 
-</ApiSignature>
+    * airbyte.exceptions.AirbyteConnectionSyncError
+    * airbyte.exceptions.AirbyteConnectionError
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-State update rejected because a sync is currently running (HTTP 423).
+    ### Instance variables
 
-**Bases:** `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    `timeout: int | None`
+    :   The timeout in seconds that was reached.
 
-</ApiMember>
+`AirbyteConnectorCheckFailedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector check failed.
 
-### `AirbyteConnectionSyncError` {#airbyte.exceptions.AirbyteConnectionSyncError}
+    ### Ancestors (in MRO)
 
-<ApiMember kind="class">
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-<ApiSignature>
+    ### Class variables
 
-```python
-class AirbyteConnectionSyncError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    connection_id: str | None = None,
-    job_id: int | None = None,
-    job_status: str | None = None,
-)
-```
+    `guidance: str | None`
+    :
 
-</ApiSignature>
+`AirbyteConnectorConfigurationMissingError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector is missing configuration.
 
-An error occurred while executing the remote Airbyte job.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.PyAirbyteCacheError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectionSyncTimeoutError`
+    ### Instance variables
 
-</ApiMember>
+    `connector_name: str | None`
+    :
 
-### `AirbyteConnectionSyncTimeoutError` {#airbyte.exceptions.AirbyteConnectionSyncTimeoutError}
+`AirbyteConnectorDiscoverFailedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Error when running discovery on the connector.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteConnectionSyncTimeoutError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    connection_id: str | None = None,
-    job_id: int | None = None,
-    job_status: str | None = None,
-    timeout: int | None = None,
-)
-```
+`AirbyteConnectorError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Error when running the connector.
 
-</ApiSignature>
+    ### Ancestors (in MRO)
 
-An timeout occurred while waiting for the remote Airbyte job to complete.
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-**Bases:** `airbyte.exceptions.AirbyteConnectionSyncError`, `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    ### Descendants
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectionSyncTimeoutError--attributes}
+    * airbyte.exceptions.AirbyteConnectorCheckFailedError
+    * airbyte.exceptions.AirbyteConnectorDiscoverFailedError
+    * airbyte.exceptions.AirbyteConnectorExecutableNotFoundError
+    * airbyte.exceptions.AirbyteConnectorFailedError
+    * airbyte.exceptions.AirbyteConnectorInstallationError
+    * airbyte.exceptions.AirbyteConnectorMissingCatalogError
+    * airbyte.exceptions.AirbyteConnectorMissingSpecError
+    * airbyte.exceptions.AirbyteConnectorReadError
+    * airbyte.exceptions.AirbyteConnectorSpecFailedError
+    * airbyte.exceptions.AirbyteConnectorValidationFailedError
+    * airbyte.exceptions.AirbyteConnectorWriteError
+    * airbyte.exceptions.AirbyteNoDataFromConnectorError
+    * airbyte.exceptions.AirbyteStateNotFoundError
+    * airbyte.exceptions.AirbyteStreamNotFoundError
 
-- **`timeout`**&nbsp;(`int | None`) — The timeout in seconds that was reached.
+    ### Instance variables
 
-</ApiMember>
+    `connector_name: str | None`
+    :
 
-### `AirbyteConnectorCheckFailedError` {#airbyte.exceptions.AirbyteConnectorCheckFailedError}
+`AirbyteConnectorExecutableNotFoundError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector executable not found.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteConnectorCheckFailedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+`AirbyteConnectorFailedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None, exit_code: int | None = None)`
+:   Connector failed.
 
-</ApiSignature>
+    ### Ancestors (in MRO)
 
-Connector check failed.
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    ### Instance variables
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorCheckFailedError--attributes}
+    `exit_code: int | None`
+    :
 
-- **`guidance`**&nbsp;(`str | None`)
+`AirbyteConnectorInstallationError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Error when installing the connector.
 
-</ApiMember>
+    ### Ancestors (in MRO)
 
-### `AirbyteConnectorConfigurationMissingError` {#airbyte.exceptions.AirbyteConnectorConfigurationMissingError}
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-<ApiMember kind="class">
+`AirbyteConnectorMissingCatalogError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector did not return a catalog.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class AirbyteConnectorConfigurationMissingError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiSignature>
+`AirbyteConnectorMissingSpecError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector did not return a spec.
 
-Connector is missing configuration.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.PyAirbyteCacheError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorConfigurationMissingError--attributes}
+`AirbyteConnectorNotPyPiPublishedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector found, but not published to PyPI.
 
-- **`connector_name`**&nbsp;(`str | None`)
+    ### Ancestors (in MRO)
 
-</ApiMember>
+    * airbyte.exceptions.AirbyteConnectorRegistryError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-### `AirbyteConnectorDiscoverFailedError` {#airbyte.exceptions.AirbyteConnectorDiscoverFailedError}
+    ### Class variables
 
-<ApiMember kind="class">
+    `guidance: str | None`
+    :
 
-<ApiSignature>
+    ### Instance variables
 
-```python
-class AirbyteConnectorDiscoverFailedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    `connector_name: str | None`
+    :
 
-</ApiSignature>
+`AirbyteConnectorNotRegisteredError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector not found in registry.
 
-Error when running discovery on the connector.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.AirbyteConnectorRegistryError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiMember>
+    ### Class variables
 
-### `AirbyteConnectorError` {#airbyte.exceptions.AirbyteConnectorError}
+    `guidance: str | None`
+    :
 
-<ApiMember kind="class">
+    `help_url: str | None`
+    :
 
-<ApiSignature>
+    ### Instance variables
 
-```python
-class AirbyteConnectorError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    `connector_name: str | None`
+    :
 
-</ApiSignature>
+`AirbyteConnectorReadError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Error when reading from the connector.
 
-Error when running the connector.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorCheckFailedError`, `airbyte.exceptions.AirbyteConnectorDiscoverFailedError`, `airbyte.exceptions.AirbyteConnectorExecutableNotFoundError`, `airbyte.exceptions.AirbyteConnectorFailedError`, `airbyte.exceptions.AirbyteConnectorInstallationError`, `airbyte.exceptions.AirbyteConnectorMissingCatalogError`, `airbyte.exceptions.AirbyteConnectorMissingSpecError`, `airbyte.exceptions.AirbyteConnectorReadError`, `airbyte.exceptions.AirbyteConnectorSpecFailedError`, `airbyte.exceptions.AirbyteConnectorValidationFailedError`, `airbyte.exceptions.AirbyteConnectorWriteError`, `airbyte.exceptions.AirbyteNoDataFromConnectorError`, `airbyte.exceptions.AirbyteStateNotFoundError`, `airbyte.exceptions.AirbyteStreamNotFoundError`
+`AirbyteConnectorRegistryError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None)`
+:   Error when accessing the connector registry.
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorError--attributes}
+    ### Ancestors (in MRO)
 
-- **`connector_name`**&nbsp;(`str | None`)
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiMember>
+    ### Descendants
 
-### `AirbyteConnectorExecutableNotFoundError` {#airbyte.exceptions.AirbyteConnectorExecutableNotFoundError}
+    * airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError
+    * airbyte.exceptions.AirbyteConnectorNotRegisteredError
 
-<ApiMember kind="class">
+`AirbyteConnectorSpecFailedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Error when getting spec from the connector.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class AirbyteConnectorExecutableNotFoundError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiSignature>
+`AirbyteConnectorValidationFailedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Connector config validation failed.
 
-Connector executable not found.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiMember>
+    ### Class variables
 
-### `AirbyteConnectorFailedError` {#airbyte.exceptions.AirbyteConnectorFailedError}
+    `guidance: str | None`
+    :
 
-<ApiMember kind="class">
+`AirbyteConnectorWriteError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   Error when writing to the connector.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class AirbyteConnectorFailedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-    exit_code: int | None = None,
-)
-```
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiSignature>
+`AirbyteDuplicateResourcesError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None, resource_type: str | None = None, resource_name: str | None = None)`
+:   Process failed because resource name was not unique.
 
-Connector failed.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorFailedError--attributes}
+    ### Instance variables
 
-- **`exit_code`**&nbsp;(`int | None`)
+    `resource_name: str | None`
+    :
 
-</ApiMember>
+    `resource_type: str | None`
+    :
 
-### `AirbyteConnectorInstallationError` {#airbyte.exceptions.AirbyteConnectorInstallationError}
+`AirbyteError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None)`
+:   An error occurred while communicating with the hosted Airbyte instance.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteConnectorInstallationError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    ### Descendants
 
-</ApiSignature>
+    * airbyte.exceptions.AirbyteConnectionError
+    * airbyte.exceptions.AirbyteDuplicateResourcesError
+    * airbyte.exceptions.AirbyteMissingResourceError
+    * airbyte.exceptions.AirbyteMultipleResourcesError
+    * airbyte.exceptions.AirbyteWorkspaceMismatchError
 
-Error when installing the connector.
+    ### Instance variables
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    `response: AirbyteApiResponseDuckType | None`
+    :   The API response from the failed request.
 
-</ApiMember>
+    `workspace: CloudWorkspace | None`
+    :   The workspace where the error occurred.
 
-### `AirbyteConnectorMissingCatalogError` {#airbyte.exceptions.AirbyteConnectorMissingCatalogError}
+    `workspace_url: str | None`
+    :   The URL to the workspace where the error occurred.
 
-<ApiMember kind="class">
+`AirbyteExperimentalFeatureWarning(*args, **kwargs)`
+:   Warning whenever using experimental features in PyAirbyte.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class AirbyteConnectorMissingCatalogError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    * builtins.FutureWarning
+    * builtins.Warning
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiSignature>
+`AirbyteMissingResourceError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None, resource_type: str | None = None, resource_name_or_id: str | None = None)`
+:   Remote Airbyte resources does not exist.
 
-Connector did not return a catalog.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiMember>
+    ### Instance variables
 
-### `AirbyteConnectorMissingSpecError` {#airbyte.exceptions.AirbyteConnectorMissingSpecError}
+    `resource_name_or_id: str | None`
+    :
 
-<ApiMember kind="class">
+    `resource_type: str | None`
+    :
 
-<ApiSignature>
+`AirbyteMultipleResourcesError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None, resource_type: str | None = None, resource_name_or_id: str | None = None)`
+:   Could not locate the resource because multiple matching resources were found.
 
-```python
-class AirbyteConnectorMissingSpecError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    ### Ancestors (in MRO)
 
-</ApiSignature>
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-Connector did not return a spec.
+    ### Instance variables
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    `resource_name_or_id: str | None`
+    :
 
-</ApiMember>
+    `resource_type: str | None`
+    :
 
-### `AirbyteConnectorNotPyPiPublishedError` {#airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError}
+`AirbyteNoDataFromConnectorError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None)`
+:   No data was provided from the connector.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteConnectorNotPyPiPublishedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+`AirbyteStateNotFoundError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None, stream_name: str | None = None, available_streams: list[str] | None = None)`
+:   State entry not found.
 
-</ApiSignature>
+    ### Ancestors (in MRO)
 
-Connector found, but not published to PyPI.
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.KeyError
+    * builtins.LookupError
+    * builtins.Exception
+    * builtins.BaseException
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorRegistryError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    ### Instance variables
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError--attributes}
+    `available_streams: list[str] | None`
+    :
 
-- **`guidance`**&nbsp;(`str | None`)
+    `stream_name: str | None`
+    :
 
-- **`connector_name`**&nbsp;(`str | None`)
+`AirbyteStreamNotFoundError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, connector_name: str | None = None, stream_name: str | None = None, available_streams: list[str] | None = None)`
+:   Connector stream not found.
 
-</ApiMember>
+    ### Ancestors (in MRO)
 
-### `AirbyteConnectorNotRegisteredError` {#airbyte.exceptions.AirbyteConnectorNotRegisteredError}
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-<ApiMember kind="class">
+    ### Instance variables
 
-<ApiSignature>
+    `available_streams: list[str] | None`
+    :
 
-```python
-class AirbyteConnectorNotRegisteredError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    `stream_name: str | None`
+    :
 
-</ApiSignature>
+`AirbyteSubprocessError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, run_args: list[str] | None = None)`
+:   Error when running subprocess.
 
-Connector not found in registry.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorRegistryError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorNotRegisteredError--attributes}
+    ### Descendants
 
-- **`guidance`**&nbsp;(`str | None`)
+    * airbyte.exceptions.AirbyteSubprocessFailedError
 
-- **`help_url`**&nbsp;(`str | None`)
+    ### Instance variables
 
-- **`connector_name`**&nbsp;(`str | None`)
+    `run_args: list[str] | None`
+    :
 
-</ApiMember>
+`AirbyteSubprocessFailedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, run_args: list[str] | None = None, exit_code: int | None = None)`
+:   Subprocess failed.
 
-### `AirbyteConnectorReadError` {#airbyte.exceptions.AirbyteConnectorReadError}
+    ### Ancestors (in MRO)
 
-<ApiMember kind="class">
+    * airbyte.exceptions.AirbyteSubprocessError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-<ApiSignature>
+    ### Instance variables
 
-```python
-class AirbyteConnectorReadError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    `exit_code: int | None`
+    :
 
-</ApiSignature>
+`AirbyteWorkspaceMismatchError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, response: AirbyteApiResponseDuckType | None = None, workspace: CloudWorkspace | None = None, resource_type: str | None = None, resource_id: str | None = None, expected_workspace_id: str | None = None, actual_workspace_id: str | None = None)`
+:   Resource does not belong to the expected workspace.
+    
+    This error is raised when a resource (connection, source, or destination) is fetched
+    from the API and the workspace ID in the response does not match the expected workspace.
 
-Error when reading from the connector.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-</ApiMember>
+    ### Instance variables
 
-### `AirbyteConnectorRegistryError` {#airbyte.exceptions.AirbyteConnectorRegistryError}
+    `actual_workspace_id: str | None`
+    :   The workspace ID returned by the API.
 
-<ApiMember kind="class">
+    `expected_workspace_id: str | None`
+    :   The workspace ID that was expected.
 
-<ApiSignature>
+    `resource_id: str | None`
+    :   The ID of the resource that was fetched.
 
-```python
-class AirbyteConnectorRegistryError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-)
-```
+    `resource_type: str | None`
+    :   The type of resource (e.g., 'connection', 'source', 'destination').
 
-</ApiSignature>
+`PyAirbyteCacheError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None)`
+:   Error occurred while accessing the cache.
 
-Error when accessing the connector registry.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError`, `airbyte.exceptions.AirbyteConnectorNotRegisteredError`
+    ### Descendants
 
-</ApiMember>
+    * airbyte.exceptions.AirbyteConnectorConfigurationMissingError
+    * airbyte.exceptions.PyAirbyteCacheTableValidationError
 
-### `AirbyteConnectorSpecFailedError` {#airbyte.exceptions.AirbyteConnectorSpecFailedError}
+`PyAirbyteCacheTableValidationError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, violation: str | None = None)`
+:   Cache table validation failed.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * airbyte.exceptions.PyAirbyteCacheError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteConnectorSpecFailedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    ### Instance variables
 
-</ApiSignature>
+    `violation: str | None`
+    :
 
-Error when getting spec from the connector.
+`PyAirbyteDataLossWarning(*args, **kwargs)`
+:   Warning for potential data loss.
+    
+    Users can ignore this warning by running:
+    > warnings.filterwarnings("ignore", category="airbyte.exceptions.PyAirbyteDataLossWarning")
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    ### Ancestors (in MRO)
 
-</ApiMember>
+    * airbyte.exceptions.PyAirbyteWarning
+    * builtins.Warning
+    * builtins.Exception
+    * builtins.BaseException
 
-### `AirbyteConnectorValidationFailedError` {#airbyte.exceptions.AirbyteConnectorValidationFailedError}
+`PyAirbyteError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None)`
+:   Base class for exceptions in Airbyte.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteConnectorValidationFailedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    ### Descendants
 
-</ApiSignature>
+    * airbyte.exceptions.AirbyteConnectorError
+    * airbyte.exceptions.AirbyteConnectorRegistryError
+    * airbyte.exceptions.AirbyteError
+    * airbyte.exceptions.AirbyteSubprocessError
+    * airbyte.exceptions.PyAirbyteCacheError
+    * airbyte.exceptions.PyAirbyteInputError
+    * airbyte.exceptions.PyAirbyteInternalError
+    * airbyte.exceptions.PyAirbyteNameNormalizationError
+    * airbyte.exceptions.PyAirbyteSecretNotFoundError
 
-Connector config validation failed.
+    ### Instance variables
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    `context: dict[str, typing.Any] | None`
+    :
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorValidationFailedError--attributes}
+    `guidance: str | None`
+    :
 
-- **`guidance`**&nbsp;(`str | None`)
+    `help_url: str | None`
+    :
 
-</ApiMember>
+    `log_file: pathlib.Path | None`
+    :
 
-### `AirbyteConnectorWriteError` {#airbyte.exceptions.AirbyteConnectorWriteError}
+    `log_text: str | list[str] | None`
+    :
 
-<ApiMember kind="class">
+    `message: str | None`
+    :
 
-<ApiSignature>
+    `original_exception: Exception | None`
+    :
 
-```python
-class AirbyteConnectorWriteError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
+    `print_full_log: bool`
+    :
 
-</ApiSignature>
+    ### Methods
 
-Error when writing to the connector.
+    `get_message(self) ‑> str`
+    :   Return the best description for the exception.
+        
+        We resolve the following in order:
+        1. The message sent to the exception constructor (if provided).
+        2. The first line of the class's docstring.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    `safe_logging_dict(self) ‑> dict[str, typing.Any]`
+    :   Return a dictionary of the exception's properties which is safe for logging.
+        
+        We avoid any properties which could potentially contain PII.
 
-</ApiMember>
+`PyAirbyteInputError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, input_value: str | None = None)`
+:   The input provided to PyAirbyte did not match expected validation rules.
+    
+    This inherits from ValueError so that it can be used as a drop-in replacement for
+    ValueError in the PyAirbyte API.
 
-### `AirbyteDuplicateResourcesError` {#airbyte.exceptions.AirbyteDuplicateResourcesError}
+    ### Ancestors (in MRO)
 
-<ApiMember kind="class">
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.ValueError
+    * builtins.Exception
+    * builtins.BaseException
 
-<ApiSignature>
+    ### Descendants
 
-```python
-class AirbyteDuplicateResourcesError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    resource_type: str | None = None,
-    resource_name: str | None = None,
-)
-```
+    * airbyte.exceptions.PyAirbyteNoStreamsSelectedError
 
-</ApiSignature>
+    ### Class variables
 
-Process failed because resource name was not unique.
+    `guidance: str | None`
+    :
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    `help_url: str | None`
+    :
 
-#### Attributes {#airbyte.exceptions.AirbyteDuplicateResourcesError--attributes}
+    ### Instance variables
 
-- **`resource_name`**&nbsp;(`str | None`)
+    `input_value: str | None`
+    :
 
-- **`resource_type`**&nbsp;(`str | None`)
+`PyAirbyteInternalError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None)`
+:   An internal error occurred in PyAirbyte.
 
-</ApiMember>
+    ### Ancestors (in MRO)
 
-### `AirbyteError` {#airbyte.exceptions.AirbyteError}
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-<ApiMember kind="class">
+    ### Class variables
 
-<ApiSignature>
+    `guidance: str | None`
+    :
 
-```python
-class AirbyteError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-)
-```
+    `help_url: str | None`
+    :
 
-</ApiSignature>
+`PyAirbyteNameNormalizationError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, raw_name: str | None = None, normalization_result: str | None = None)`
+:   Error occurred while normalizing a table or column name.
 
-An error occurred while communicating with the hosted Airbyte instance.
+    ### Ancestors (in MRO)
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.ValueError
+    * builtins.Exception
+    * builtins.BaseException
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteDuplicateResourcesError`, `airbyte.exceptions.AirbyteMissingResourceError`, `airbyte.exceptions.AirbyteMultipleResourcesError`, `airbyte.exceptions.AirbyteWorkspaceMismatchError`, `airbyte.exceptions.AirbyteWorkspaceNotEmptyError`
+    ### Class variables
 
-#### Attributes {#airbyte.exceptions.AirbyteError--attributes}
+    `guidance: str | None`
+    :
 
-- **`response`**&nbsp;(`AirbyteApiResponseDuckType | None`) — The API response from the failed request.
+    `help_url: str | None`
+    :
 
-- **`workspace`**&nbsp;(`_WorkspaceWithUrl | None`) — The workspace where the error occurred.
+    ### Instance variables
 
-- **`workspace_url`**&nbsp;(`str | None`) — The URL to the workspace where the error occurred.
+    `normalization_result: str | None`
+    :
 
-</ApiMember>
+    `raw_name: str | None`
+    :
 
-### `AirbyteExperimentalFeatureWarning` {#airbyte.exceptions.AirbyteExperimentalFeatureWarning}
+`PyAirbyteNoStreamsSelectedError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, input_value: str | None = None, connector_name: str | None = None, available_streams: list[str] | None = None)`
+:   No streams were selected for the source.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * airbyte.exceptions.PyAirbyteInputError
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.ValueError
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteExperimentalFeatureWarning(*args, **kwargs)
-```
+    ### Class variables
 
-</ApiSignature>
+    `guidance: str | None`
+    :
 
-Warning whenever using experimental features in PyAirbyte.
+    ### Instance variables
 
-**Bases:** `builtins.FutureWarning`, `builtins.Warning`, `builtins.Exception`, `builtins.BaseException`
+    `available_streams: list[str] | None`
+    :
 
-</ApiMember>
+    `connector_name: str | None`
+    :
 
-### `AirbyteMCPError` {#airbyte.exceptions.AirbyteMCPError}
+`PyAirbyteSecretNotFoundError(guidance: str | None = None, help_url: str | None = None, log_text: str | list[str] | None = None, log_file: Path | None = None, print_full_log: bool = True, context: dict[str, Any] | None = None, message: str | None = None, original_exception: Exception | None = None, secret_name: str | None = None, sources: list[str] | None = None)`
+:   Secret not found.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * airbyte.exceptions.PyAirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteMCPError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-)
-```
+    ### Class variables
 
-</ApiSignature>
+    `guidance: str | None`
+    :
 
-An error occurred in the Airbyte MCP server.
+    `help_url: str | None`
+    :
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+    ### Instance variables
 
-**Subclasses:** `airbyte.exceptions.AirbyteTrustedExecutionRequiredError`
+    `secret_name: str | None`
+    :
 
-</ApiMember>
+    `sources: list[str] | None`
+    :
 
-### `AirbyteMissingResourceError` {#airbyte.exceptions.AirbyteMissingResourceError}
+`PyAirbyteWarning(*args, **kwargs)`
+:   General warnings from PyAirbyte.
 
-<ApiMember kind="class">
+    ### Ancestors (in MRO)
 
-<ApiSignature>
+    * builtins.Warning
+    * builtins.Exception
+    * builtins.BaseException
 
-```python
-class AirbyteMissingResourceError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    resource_type: str | None = None,
-    resource_name_or_id: str | None = None,
-)
-```
+    ### Descendants
 
-</ApiSignature>
-
-Remote Airbyte resources does not exist.
-
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteMissingResourceError--attributes}
-
-- **`resource_name_or_id`**&nbsp;(`str | None`)
-
-- **`resource_type`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `AirbyteMissingWorkspaceContextError` {#airbyte.exceptions.AirbyteMissingWorkspaceContextError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteMissingWorkspaceContextError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    input_value: str | None = None,
-)
-```
-
-</ApiSignature>
-
-Workspace ID is required but not provided.
-
-**Bases:** `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteMissingWorkspaceContextError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `AirbyteMultipleResourcesError` {#airbyte.exceptions.AirbyteMultipleResourcesError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteMultipleResourcesError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    resource_type: str | None = None,
-    resource_name_or_id: str | None = None,
-)
-```
-
-</ApiSignature>
-
-Could not locate the resource because multiple matching resources were found.
-
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteMultipleResourcesError--attributes}
-
-- **`resource_name_or_id`**&nbsp;(`str | None`)
-
-- **`resource_type`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `AirbyteNoCloudCredentialsError` {#airbyte.exceptions.AirbyteNoCloudCredentialsError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteNoCloudCredentialsError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    input_value: str | None = None,
-)
-```
-
-</ApiSignature>
-
-No Airbyte credentials found.
-
-**Bases:** `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteNoCloudCredentialsError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `AirbyteNoDataFromConnectorError` {#airbyte.exceptions.AirbyteNoDataFromConnectorError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteNoDataFromConnectorError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-)
-```
-
-</ApiSignature>
-
-No data was provided from the connector.
-
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-</ApiMember>
-
-### `AirbyteStateNotFoundError` {#airbyte.exceptions.AirbyteStateNotFoundError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteStateNotFoundError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-    stream_name: str | None = None,
-    available_streams: list[str] | None = None,
-)
-```
-
-</ApiSignature>
-
-State entry not found.
-
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.KeyError`, `builtins.LookupError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteStateNotFoundError--attributes}
-
-- **`available_streams`**&nbsp;(`list[str] | None`)
-
-- **`stream_name`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `AirbyteStreamNotFoundError` {#airbyte.exceptions.AirbyteStreamNotFoundError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteStreamNotFoundError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    connector_name: str | None = None,
-    stream_name: str | None = None,
-    available_streams: list[str] | None = None,
-)
-```
-
-</ApiSignature>
-
-Connector stream not found.
-
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteStreamNotFoundError--attributes}
-
-- **`available_streams`**&nbsp;(`list[str] | None`)
-
-- **`stream_name`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `AirbyteSubprocessError` {#airbyte.exceptions.AirbyteSubprocessError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteSubprocessError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    run_args: list[str] | None = None,
-)
-```
-
-</ApiSignature>
-
-Error when running subprocess.
-
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-**Subclasses:** `airbyte.exceptions.AirbyteSubprocessFailedError`
-
-#### Attributes {#airbyte.exceptions.AirbyteSubprocessError--attributes}
-
-- **`run_args`**&nbsp;(`list[str] | None`)
-
-</ApiMember>
-
-### `AirbyteSubprocessFailedError` {#airbyte.exceptions.AirbyteSubprocessFailedError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteSubprocessFailedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    run_args: list[str] | None = None,
-    exit_code: int | None = None,
-)
-```
-
-</ApiSignature>
-
-Subprocess failed.
-
-**Bases:** `airbyte.exceptions.AirbyteSubprocessError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteSubprocessFailedError--attributes}
-
-- **`exit_code`**&nbsp;(`int | None`)
-
-</ApiMember>
-
-### `AirbyteTrustedExecutionRequiredError` {#airbyte.exceptions.AirbyteTrustedExecutionRequiredError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteTrustedExecutionRequiredError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    feature: str | None = None,
-)
-```
-
-</ApiSignature>
-
-A trusted-execution-only capability was invoked while trusted execution is disabled.
-
-Trusted execution grants the MCP server its trusted-machine capabilities: local
-filesystem access, local connector installation/execution, and server-side secret
-resolution. It defaults to *off* on every transport and is permanently unavailable
-over the HTTP transport, so a backend helper that exposes one of those capabilities
-hard-fails when the gate is disabled -- independently of whether the corresponding
-tool was hidden from the tool listing.
-
-**Bases:** `airbyte.exceptions.AirbyteMCPError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteTrustedExecutionRequiredError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-- **`feature`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `AirbyteWorkspaceMismatchError` {#airbyte.exceptions.AirbyteWorkspaceMismatchError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteWorkspaceMismatchError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    resource_type: str | None = None,
-    resource_id: str | None = None,
-    expected_workspace_id: str | None = None,
-    actual_workspace_id: str | None = None,
-)
-```
-
-</ApiSignature>
-
-Resource does not belong to the expected workspace.
-
-This error is raised when a resource (connection, source, or destination) is fetched
-from the API and the workspace ID in the response does not match the expected workspace.
-
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteWorkspaceMismatchError--attributes}
-
-- **`actual_workspace_id`**&nbsp;(`str | None`) — The workspace ID returned by the API.
-
-- **`expected_workspace_id`**&nbsp;(`str | None`) — The workspace ID that was expected.
-
-- **`resource_id`**&nbsp;(`str | None`) — The ID of the resource that was fetched.
-
-- **`resource_type`**&nbsp;(`str | None`) — The type of resource (e.g., 'connection', 'source', 'destination').
-
-</ApiMember>
-
-### `AirbyteWorkspaceNotEmptyError` {#airbyte.exceptions.AirbyteWorkspaceNotEmptyError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class AirbyteWorkspaceNotEmptyError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    response: AirbyteApiResponseDuckType | None = None,
-    workspace: _WorkspaceWithUrl | None = None,
-    workspace_id: str | None = None,
-    connection_ids: list[str] | None = None,
-)
-```
-
-</ApiSignature>
-
-Workspace cannot be deleted because it contains connections.
-
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.AirbyteWorkspaceNotEmptyError--attributes}
-
-- **`connection_ids`**&nbsp;(`list[str] | None`) — The connection IDs found in the workspace.
-
-- **`workspace_id`**&nbsp;(`str | None`) — The workspace ID that was expected to be empty.
-
-</ApiMember>
-
-### `PyAirbyteCacheError` {#airbyte.exceptions.PyAirbyteCacheError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteCacheError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-)
-```
-
-</ApiSignature>
-
-Error occurred while accessing the cache.
-
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorConfigurationMissingError`, `airbyte.exceptions.PyAirbyteCacheTableValidationError`
-
-</ApiMember>
-
-### `PyAirbyteCacheTableValidationError` {#airbyte.exceptions.PyAirbyteCacheTableValidationError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteCacheTableValidationError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    violation: str | None = None,
-)
-```
-
-</ApiSignature>
-
-Cache table validation failed.
-
-**Bases:** `airbyte.exceptions.PyAirbyteCacheError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.PyAirbyteCacheTableValidationError--attributes}
-
-- **`violation`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `PyAirbyteDataLossWarning` {#airbyte.exceptions.PyAirbyteDataLossWarning}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteDataLossWarning(*args, **kwargs)
-```
-
-</ApiSignature>
-
-Warning for potential data loss.
-
-Users can ignore this warning by running:
-> warnings.filterwarnings("ignore", category="airbyte.exceptions.PyAirbyteDataLossWarning")
-
-**Bases:** `airbyte.exceptions.PyAirbyteWarning`, `builtins.Warning`, `builtins.Exception`, `builtins.BaseException`
-
-</ApiMember>
-
-### `PyAirbyteError` {#airbyte.exceptions.PyAirbyteError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-)
-```
-
-</ApiSignature>
-
-Base class for exceptions in Airbyte.
-
-**Bases:** `builtins.Exception`, `builtins.BaseException`
-
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.AirbyteConnectorRegistryError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.AirbyteMCPError`, `airbyte.exceptions.AirbyteSubprocessError`, `airbyte.exceptions.PyAirbyteCacheError`, `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteInternalError`, `airbyte.exceptions.PyAirbyteNameNormalizationError`, `airbyte.exceptions.PyAirbyteSecretNotFoundError`
-
-#### Attributes {#airbyte.exceptions.PyAirbyteError--attributes}
-
-- **`context`**&nbsp;(`dict[str, typing.Any] | None`)
-
-- **`guidance`**&nbsp;(`str | None`)
-
-- **`help_url`**&nbsp;(`str | None`)
-
-- **`log_file`**&nbsp;(`pathlib.Path | None`)
-
-- **`log_text`**&nbsp;(`str | list[str] | None`)
-
-- **`message`**&nbsp;(`str | None`)
-
-- **`original_exception`**&nbsp;(`Exception | None`)
-
-- **`print_full_log`**&nbsp;(`bool`)
-
-#### `get_message` {#airbyte.exceptions.PyAirbyteError.get_message}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_message(self) -> str
-```
-
-</ApiSignature>
-
-Return the best description for the exception.
-
-We resolve the following in order:
-1. The message sent to the exception constructor (if provided).
-2. The first line of the class's docstring.
-
-</ApiMember>
-
-#### `safe_logging_dict` {#airbyte.exceptions.PyAirbyteError.safe_logging_dict}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def safe_logging_dict(self) -> dict[str, typing.Any]
-```
-
-</ApiSignature>
-
-Return a dictionary of the exception's properties which is safe for logging.
-
-We avoid any properties which could potentially contain PII.
-
-</ApiMember>
-
-</ApiMember>
-
-### `PyAirbyteInputError` {#airbyte.exceptions.PyAirbyteInputError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteInputError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    input_value: str | None = None,
-)
-```
-
-</ApiSignature>
-
-The input provided to PyAirbyte did not match expected validation rules.
-
-This inherits from ValueError so that it can be used as a drop-in replacement for
-ValueError in the PyAirbyte API.
-
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
-
-**Subclasses:** `airbyte.exceptions.AirbyteMissingWorkspaceContextError`, `airbyte.exceptions.AirbyteNoCloudCredentialsError`, `airbyte.exceptions.PyAirbyteNoStreamsSelectedError`
-
-#### Attributes {#airbyte.exceptions.PyAirbyteInputError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-- **`help_url`**&nbsp;(`str | None`)
-
-- **`input_value`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `PyAirbyteInternalError` {#airbyte.exceptions.PyAirbyteInternalError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteInternalError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-)
-```
-
-</ApiSignature>
-
-An internal error occurred in PyAirbyte.
-
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.PyAirbyteInternalError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-- **`help_url`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `PyAirbyteNameNormalizationError` {#airbyte.exceptions.PyAirbyteNameNormalizationError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteNameNormalizationError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    raw_name: str | None = None,
-    normalization_result: str | None = None,
-)
-```
-
-</ApiSignature>
-
-Error occurred while normalizing a table or column name.
-
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.PyAirbyteNameNormalizationError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-- **`help_url`**&nbsp;(`str | None`)
-
-- **`normalization_result`**&nbsp;(`str | None`)
-
-- **`raw_name`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `PyAirbyteNoStreamsSelectedError` {#airbyte.exceptions.PyAirbyteNoStreamsSelectedError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteNoStreamsSelectedError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    input_value: str | None = None,
-    connector_name: str | None = None,
-    available_streams: list[str] | None = None,
-)
-```
-
-</ApiSignature>
-
-No streams were selected for the source.
-
-**Bases:** `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.PyAirbyteNoStreamsSelectedError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-- **`available_streams`**&nbsp;(`list[str] | None`)
-
-- **`connector_name`**&nbsp;(`str | None`)
-
-</ApiMember>
-
-### `PyAirbyteSecretNotFoundError` {#airbyte.exceptions.PyAirbyteSecretNotFoundError}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteSecretNotFoundError(
-    guidance: str | None = None,
-    help_url: str | None = None,
-    log_text: str | list[str] | None = None,
-    log_file: Path | None = None,
-    print_full_log: bool = False,
-    context: dict[str, Any] | None = None,
-    message: str | None = None,
-    original_exception: Exception | None = None,
-    secret_name: str | None = None,
-    sources: list[str] | None = None,
-)
-```
-
-</ApiSignature>
-
-Secret not found.
-
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
-
-#### Attributes {#airbyte.exceptions.PyAirbyteSecretNotFoundError--attributes}
-
-- **`guidance`**&nbsp;(`str | None`)
-
-- **`help_url`**&nbsp;(`str | None`)
-
-- **`secret_name`**&nbsp;(`str | None`)
-
-- **`sources`**&nbsp;(`list[str] | None`)
-
-</ApiMember>
-
-### `PyAirbyteWarning` {#airbyte.exceptions.PyAirbyteWarning}
-
-<ApiMember kind="class">
-
-<ApiSignature>
-
-```python
-class PyAirbyteWarning(*args, **kwargs)
-```
-
-</ApiSignature>
-
-General warnings from PyAirbyte.
-
-**Bases:** `builtins.Warning`, `builtins.Exception`, `builtins.BaseException`
-
-**Subclasses:** `airbyte.exceptions.PyAirbyteDataLossWarning`
-
-</ApiMember>
+    * airbyte.exceptions.PyAirbyteDataLossWarning

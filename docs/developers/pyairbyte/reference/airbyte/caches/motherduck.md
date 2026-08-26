@@ -3,6 +3,8 @@ id: airbyte-caches-motherduck
 title: airbyte.caches.motherduck
 ---
 
+Module airbyte.caches.motherduck
+================================
 A MotherDuck implementation of the PyAirbyte cache, built on DuckDB.
 
 ## Usage Example
@@ -16,77 +18,70 @@ cache = MotherDuckCache(
     schema_name="myschema",
     api_key=ab.get_secret("MOTHERDUCK_API_KEY"),
 )
-```
 
-### `MotherDuckCache` {#airbyte.caches.motherduck.MotherDuckCache}
+Classes
+-------
 
-<ApiMember kind="class">
+`MotherDuckCache(**data: Any)`
+:   Cache that uses MotherDuck for external persistent storage.
+    
+    Initialize the cache and backends.
 
-<ApiSignature>
+    ### Ancestors (in MRO)
 
-```python
-class MotherDuckCache(**data: Any)
-```
+    * airbyte.caches.motherduck.MotherDuckConfig
+    * airbyte.caches.duckdb.DuckDBCache
+    * airbyte._processors.sql.duckdb.DuckDBConfig
+    * airbyte.caches.base.CacheBase
+    * airbyte.shared.sql_processor.SqlConfig
+    * pydantic.main.BaseModel
+    * airbyte._writers.base.AirbyteWriterInterface
+    * abc.ABC
 
-</ApiSignature>
+    ### Class variables
 
-Cache that uses MotherDuck for external persistent storage.
+    `model_config`
+    :
 
-Initialize the cache and backends.
+    `paired_destination_name: ClassVar[str | None]`
+    :
 
-**Bases:** `airbyte.caches.motherduck.MotherDuckConfig`, `airbyte.caches.duckdb.DuckDBCache`, `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+`MotherDuckConfig(**data: Any)`
+:   Configuration for the MotherDuck cache.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.caches.motherduck.MotherDuckCache--attributes}
+    ### Ancestors (in MRO)
 
-- **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+    * airbyte._processors.sql.duckdb.DuckDBConfig
+    * airbyte.shared.sql_processor.SqlConfig
+    * pydantic.main.BaseModel
+    * abc.ABC
 
-</ApiMember>
+    ### Descendants
 
-### `MotherDuckConfig` {#airbyte.caches.motherduck.MotherDuckConfig}
+    * airbyte.caches.motherduck.MotherDuckCache
 
-<ApiMember kind="class">
+    ### Class variables
 
-<ApiSignature>
+    `api_key: SecretString`
+    :
 
-```python
-class MotherDuckConfig(**data: Any)
-```
+    `database: str`
+    :
 
-</ApiSignature>
+    `db_path: str`
+    :
 
-Configuration for the MotherDuck cache.
+    `model_config`
+    :
 
-Raises ``ValidationError`` if the input data cannot be
-validated to form a valid model.
+    ### Methods
 
-`self` is explicitly positional-only to allow `self` as a field name.
-
-**Bases:** `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
-
-**Subclasses:** `airbyte.caches.motherduck.MotherDuckCache`
-
-#### Attributes {#airbyte.caches.motherduck.MotherDuckConfig--attributes}
-
-- **`api_key`**&nbsp;(`SecretString`)
-
-- **`database`**&nbsp;(`str`)
-
-- **`db_path`**&nbsp;(`str`)
-
-#### `get_sql_alchemy_url` {#airbyte.caches.motherduck.MotherDuckConfig.get_sql_alchemy_url}
-
-<ApiMember kind="method">
-
-<ApiSignature>
-
-```python
-def get_sql_alchemy_url(self) -> airbyte.secrets.base.SecretString
-```
-
-</ApiSignature>
-
-Return the SQLAlchemy URL to use.
-
-</ApiMember>
-
-</ApiMember>
+    `get_sql_alchemy_url(self) ‑> airbyte.secrets.base.SecretString`
+    :   Return the SQLAlchemy URL to use.
