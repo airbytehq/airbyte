@@ -106,7 +106,7 @@ jobs:
             rel_path="${file#$base_dir/}"
             module_path="${rel_path%.md}"
             # Replace slashes with dots for the title (Python module notation)
-            module_title=$(echo "$module_path" | tr '/' '.')
+            module_title=$(echo "$module_path" | sed 's|/index$||' | tr '/' '.')
             # Replace slashes with dashes for the id (URL-safe)
             unique_id=$(echo "$module_path" | tr '/' '-')
             # Create a temp file with frontmatter and original content
