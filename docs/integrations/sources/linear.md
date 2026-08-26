@@ -89,11 +89,15 @@ The Linear source connector supports the following streams. Streams marked as in
 | `customer_statuses` | No | Status definitions for customer records. |
 | `customer_tiers` | No | Tier definitions for customer records. |
 | `cycles` | Yes | Cycles (sprints) for each team. |
+| `initiatives` | Yes | Strategic initiatives tracked across projects. |
+| `initiative_to_projects` | No | Relationships between initiatives and projects. |
+| `issue_history` | No | Changes made to issues over time. |
 | `issue_labels` | Yes | Labels that can be applied to issues. |
 | `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
 | `issues` | Yes | Issues in every team. |
 | `project_milestones` | Yes | Milestones defined inside projects. |
 | `project_statuses` | No | Status definitions for projects. |
+| `project_updates` | Yes | Updates posted for projects. |
 | `projects` | Yes | Projects across all teams. |
 | `teams` | Yes | Teams in your Linear workspace. |
 | `users` | Yes | Users in your Linear workspace. |
@@ -189,6 +193,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.4.0 | 2026-08-26 | [#PENDING] | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
 | 0.3.0 | 2026-08-26 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Sync archived records in every stream and declare `archivedAt` (plus `trashed` on `issues` and `projects`) in the stream schemas |
 | 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |

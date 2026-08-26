@@ -46,6 +46,8 @@ INCREMENTAL_STREAM_GRAPHQL_FIELDS: Mapping[str, str] = {
     "workflow_states": "workflowStates",
     "teams": "teams",
     "attachments": "attachments",
+    "initiatives": "initiatives",
+    "project_updates": "projectUpdates",
 }
 INCREMENTAL_STREAMS = list(INCREMENTAL_STREAM_GRAPHQL_FIELDS)
 
@@ -54,6 +56,8 @@ FULL_REFRESH_ONLY_STREAMS = [
     "issue_relations",
     "customer_statuses",
     "customer_tiers",
+    "initiative_to_projects",
+    "issue_history",
 ]
 
 STREAM_GRAPHQL_FIELDS: Mapping[str, str] = {
@@ -62,6 +66,8 @@ STREAM_GRAPHQL_FIELDS: Mapping[str, str] = {
     "issue_relations": "issueRelations",
     "customer_statuses": "customerStatuses",
     "customer_tiers": "customerTiers",
+    "initiative_to_projects": "initiativeToProjects",
+    "issue_history": "history",
 }
 
 
@@ -128,12 +134,16 @@ def _build_full_request_body(
     requester merges those with its static `request_body_json` (the GraphQL query +
     hard-coded variables) using `combine_mappings(allow_same_value_merge=True)`.
     """
-    partitions = list(stream.generate_partitions())
-    assert partitions, f"expected at least one partition for stream {stream.name}"
-    partition = partitions[0]
-    retriever = partition._retriever
-    slice_dict = partition.to_slice()
-    stream_slice = StreamSlice(partition={}, cursor_slice=dict(slice_dict))
+    if stream.name == "issue_history":
+        retriever = stream._stream_partition_generator._partition_factory._retriever
+        stream_slice = StreamSlice(partition={"issue_id": "test-issue"}, cursor_slice={})
+    else:
+        partitions = list(stream.generate_partitions())
+        assert partitions, f"expected at least one partition for stream {stream.name}"
+        partition = partitions[0]
+        retriever = partition._retriever
+        slice_dict = partition.to_slice()
+        stream_slice = StreamSlice(partition={}, cursor_slice=dict(slice_dict))
 
     extras = retriever._request_body_json(stream_slice=stream_slice, next_page_token=next_page_token)
     return retriever.requester._request_body_json(
