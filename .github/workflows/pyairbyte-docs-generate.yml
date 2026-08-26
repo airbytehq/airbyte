@@ -113,7 +113,8 @@ jobs:
             {
               echo "---"
               echo "id: ${unique_id}"
-              echo "title: ${module_title}"
+              echo "title: \"Module ${module_title}\""
+              echo "sidebar_label: \"${module_title}\""
               echo "---"
               echo ""
               cat "$file"
