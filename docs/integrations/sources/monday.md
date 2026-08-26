@@ -19,8 +19,9 @@ For more details, see Monday.com's [authentication documentation](https://develo
 2. Search for and select **Monday**.
 3. Enter a name for the connector.
 4. Choose your authentication method and enter the required credentials.
-5. Optionally, enter one or more **Board IDs** to limit syncing to specific boards. If left empty, the connector syncs data from all boards in your account.
-6. Click **Set up source**.
+5. Optionally, enter one or more IDs in **Boards to sync** to limit the Boards and Items streams to specific boards. If left empty, the connector syncs records from all boards in your account.
+6. Optionally, set **Number of concurrent threads** to control how many requests the connector makes in parallel. The default is 4 and the allowed range is 2 to 50. Increase this value only if your [Monday.com plan's rate limits](https://developer.monday.com/api-reference/docs/rate-limits) allow it; higher values can cause rate limit errors on lower tiers.
+7. Click **Set up source**.
 
 ### Connect using OAuth 2.0
 
@@ -73,11 +74,13 @@ The following streams are available:
 
 - Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
 
+- The Items stream uses [cursor-based pagination](https://developer.monday.com/api-reference/reference/items-page#cursor-based-pagination-using-next_items_page), and Monday.com pagination cursors expire after 60 minutes. If reading a board takes longer than that (for example, due to rate limiting or very large boards), the API returns a `CursorExpiredError` and the connector restarts pagination for that stream from the beginning. Syncs of very large boards can take longer than expected as a result.
+
 If there are additional endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Performance considerations
 
-The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Monday.com enforces [rate limits](https://developer.monday.com/api-reference/docs/rate-limits) based on your plan, including per-minute query limits and a query complexity budget. The connector automatically retries rate limit and complexity budget errors with backoff. If you see rate limit errors, reduce the **Number of concurrent threads** setting. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## IP allow list
 
