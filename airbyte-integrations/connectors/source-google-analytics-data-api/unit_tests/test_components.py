@@ -479,7 +479,6 @@ def test_dynamic_stream_orders_paged_run_report_requests_by_every_dimension():
     assert [body["orderBys"] for body in request_bodies] == [expected_order_bys, expected_order_bys]
 
 
-
 @pytest.mark.parametrize(
     "custom_report, expected_order_bys",
     [
