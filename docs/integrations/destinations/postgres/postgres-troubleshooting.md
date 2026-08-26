@@ -16,11 +16,11 @@ Postgres, while an excellent relational database, is not a data warehouse. Pleas
    monitor your database's memory and CPU usage during your syncs. It is possible for your
    destination to 'lock up', and incur high usage costs with large sync volumes.
 2. When attempting to scale a postgres database to handle larger data volumes, scaling IOPS (disk throughput) is as important as increasing memory and compute capacity.
-3. Postgres column [name length limitations](https://www.postgresql.org/docs/current/limits.html)
-   are likely to cause collisions when used as a destination receiving data from highly-nested and
-   flattened sources, e.g. `{63 byte name}_a` and `{63 byte name}_b` will both be truncated to
-   `{63 byte name}` which causes postgres to throw an error that a duplicate column name was
-   specified. This limit is applicable to table names too.
+3. Postgres limits identifiers to 63 bytes, so highly nested and flattened sources produce table and
+   column names that the connector has to shorten. It appends a hash of the original name when it
+   shortens one, so two long names that share a prefix don't collide, but the names in your
+   destination won't match the ones in your source. See
+   [Naming limitations](/integrations/destinations/postgres#naming-limitations) for the exact rules.
 
 ### Vendor-Specific Connector Limitations
 
@@ -32,4 +32,7 @@ Not all implementations or deployments of a database will be the same. This sect
 
 #### Disk Access
 
-The Airbyte Postgres destination relies on sending files to the database's temporary storage to then load in bulk. If your Postgres database does not have access to the `/tmp` file system, data loading will not succeed.
+The connector batches records into a temporary CSV file and loads it with `COPY ... FROM STDIN`. The
+file lives on the machine running the connector, not on the database server, so the destination
+database needs no filesystem access. If the connector's own temporary directory is full or
+read-only, syncs fail while writing the batch.

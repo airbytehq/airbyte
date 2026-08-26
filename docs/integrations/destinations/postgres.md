@@ -51,19 +51,35 @@ add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your a
 
 #### **Permissions**
 
-You need a Postgres user with the following permissions:
+The connector creates the schemas and tables it syncs into, adds and alters columns as your source
+schema changes, creates indexes, and renames and drops tables between syncs. The user you connect
+as needs to be able to do all of that:
 
-- Can create schemas.
-- Can create tables and write rows.
+- Create schemas in the target database.
+- Create tables and indexes, and write rows.
+- Own the tables it manages, because Postgres restricts `ALTER TABLE`, `DROP TABLE`, and `RENAME` to
+  a table's owner.
 
-You can create such a user by running:
+Creating a dedicated user and letting the connector create its own schemas satisfies all three,
+because the creating role owns what it creates:
 
 ```sql
 CREATE USER airbyte_user WITH PASSWORD '<password>';
-GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
+GRANT CREATE ON DATABASE <database> TO airbyte_user;
 ```
 
-You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
+If you want the connector to write into a schema that already exists, grant it access to that schema
+instead of relying on database-level `CREATE`:
+
+```sql
+GRANT USAGE, CREATE ON SCHEMA <schema> TO airbyte_user;
+```
+
+In that case, don't point the connector at tables another role owns. It can insert into them, but it
+can't alter or replace them, so the sync fails the first time the stream's schema changes or the
+connection runs in overwrite mode.
+
+You can also use a pre-existing user, but we highly recommend creating a dedicated user for Airbyte.
 
 ## Step 2: Set up the Postgres connector in Airbyte
 
@@ -115,8 +131,8 @@ When using the legacy "Raw tables only" mode, raw table and schema names are low
 3. On the Set up the destination page, enter the name for the Postgres connector and select
    **Postgres** from the Destination type dropdown.
 4. Enter a name for your destination.
-5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
-   Postgres database.
+5. For the **Host**, **Port**, and **Database Name**, enter the hostname, port number, and name for
+   your Postgres database.
 6. For **Default Schema**, enter the schema Airbyte writes to when a stream has no namespace.
 
    :::note
@@ -220,6 +236,11 @@ The Postgres destination uses Direct Load architecture. Each stream is written d
   and any schema changes. The column type in Postgres is `JSONB`.
 - `_airbyte_generation_id`: an identifier for the generation of the sync. The column type in
   Postgres is `BIGINT`.
+
+The connector also creates indexes on each final table. Every table gets an index on
+`_airbyte_extracted_at`. Deduplicated streams additionally get an index on the primary key columns
+and, when the stream has one, an index on the cursor column. The connector recreates these indexes
+when the columns they cover change, so don't modify or drop them yourself.
 
 ### Output Schema (Raw Tables) - Deprecated
 
