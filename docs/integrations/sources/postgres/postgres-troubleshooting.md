@@ -184,7 +184,7 @@ The Postgres connector may need some time to start processing the data in the CD
 
 On the first CDC sync, if no event arrives before the timeout, the sync fails with this error:
 
-> Watchdog timeout during initial snapshot. Please increase 'Initial Waiting Time' in the source configuration page.
+> Watchdog timeout during initial snapshot. Please increase 'Initial Waiting Time' in the source configuration page. Visit our Best Practices guide for more details: https://docs.airbyte.com/platform/understanding-airbyte/cdc-best-practices
 
 Increase the waiting time and sync again. On later syncs, hitting the timeout means the connector found nothing new to read, so it shuts down and reports zero records. If your database is quiet and you want faster zero-record syncs, lower the waiting time.
 
