@@ -40,7 +40,9 @@ The streams fall into two groups:
 - Performance metrics use First Touch attribution, which is the API 3.0 default. Each performance stream also carries the equivalent Last Touch fields, such as `LastTouchConversions` and `LastTouchROAS`, so you can compare both models.
 - Every field, including numeric metrics and dates, arrives as a string. Cast the values you need in your destination or transformation layer.
 - The incremental streams use `Day` as the cursor and read one day per request. A first sync that starts several years in the past therefore issues one request per day in that range, which takes a while. Set `start_time` no earlier than you need.
-- `CampaignDetails` has no date dimension, so it always reads from `start_time` through the current date and replaces its rows on each sync.
+- `CampaignDetails` has no date dimension, so it always reads from `start_time` through the current date in a single request and replaces its rows on each sync.
+- The connector calls MNTN's synchronous reporting endpoint. MNTN [recommends its asynchronous `/batch` endpoint](https://help.mountain.com/en/articles/8017927-generate-api-requests-from-reports) for requests that cover more than four months of data, return high-cardinality data, or time out, so a distant `start_time` can make the `CampaignDetails` request fail.
+- MNTN doesn't publish rate limits for the reporting API.
 
 ## Changelog
 
