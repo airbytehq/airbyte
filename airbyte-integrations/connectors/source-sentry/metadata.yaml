@@ -26,6 +26,9 @@ data:
     - title: Sentry API Deprecation Policy
       url: https://develop.sentry.dev/backend/api/deprecation-policy/
       type: api_deprecations
+    - title: Sentry server source code (deprecation decorators)
+      url: https://github.com/getsentry/sentry
+      type: code_repository
   githubIssueLabel: source-sentry
   icon: sentry.svg
   license: ELv2
