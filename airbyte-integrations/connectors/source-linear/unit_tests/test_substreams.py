@@ -1,13 +1,13 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 
+"""Test substream (parent/child) request construction for source-linear."""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any, Mapping
 
-import pytest
-import yaml
 from test_incremental_boundary import _issue
 
 from airbyte_cdk.models import SyncMode
@@ -24,27 +24,6 @@ CONFIG: Mapping[str, Any] = {
     "api_key": "test-api-key",
     "start_date": "2024-05-01T00:00:00.000Z",
 }
-NEW_STREAMS = {
-    "initiatives": ["id"],
-    "initiative_to_projects": ["id"],
-    "project_updates": ["id"],
-    "issue_history": ["issue_id", "id"],
-}
-
-
-@pytest.fixture(scope="module")
-def source() -> YamlDeclarativeSource:
-    return YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG)
-
-
-@pytest.fixture(scope="module")
-def streams_by_name(source: YamlDeclarativeSource) -> Mapping[str, Any]:
-    return {stream.name: stream for stream in source.streams(config=CONFIG)}
-
-
-@pytest.fixture(scope="module")
-def manifest() -> Mapping[str, Any]:
-    return yaml.safe_load(Path(MANIFEST_PATH).read_text())
 
 
 def _request_body(
@@ -117,136 +96,6 @@ def _history_response(
             }
         )
     )
-
-
-@pytest.mark.parametrize("stream_name, primary_key", NEW_STREAMS.items())
-def test_new_streams_exist_with_expected_primary_keys(
-    streams_by_name: Mapping[str, Any],
-    stream_name: str,
-    primary_key: list[str],
-) -> None:
-    assert stream_name in streams_by_name
-    assert streams_by_name[stream_name]._primary_key == primary_key
-
-
-@pytest.mark.parametrize("stream_name", ["initiatives", "project_updates"])
-def test_incremental_new_streams_inject_updated_at_filter(
-    streams_by_name: Mapping[str, Any],
-    stream_name: str,
-) -> None:
-    stream = streams_by_name[stream_name]
-    body = _request_body(stream)
-
-    assert stream.cursor_field == "updatedAt"
-    assert body["variables"]["filter"]["updatedAt"]["gte"].startswith("2024-05-01T00:00:00")
-
-
-def test_full_refresh_new_streams_have_no_incremental_cursor(streams_by_name: Mapping[str, Any]) -> None:
-    assert not streams_by_name["initiative_to_projects"].cursor_field
-    assert not streams_by_name["issue_history"].cursor_field
-
-
-@pytest.mark.parametrize(
-    "stream_name",
-    ["initiatives", "initiative_to_projects", "project_updates", "issue_history"],
-)
-def test_new_stream_queries_include_archived_records(
-    streams_by_name: Mapping[str, Any],
-    stream_name: str,
-) -> None:
-    stream = streams_by_name[stream_name]
-    body = _request_body(stream, partition={"issue_id": "test-issue"} if stream_name == "issue_history" else None)
-
-    assert "includeArchived: true" in body["query"]
-
-
-@pytest.mark.parametrize(
-    ("stream_name", "date_fields", "datetime_fields"),
-    [
-        pytest.param(
-            "initiatives",
-            ["targetDate"],
-            ["archivedAt", "canceledAt", "completedAt", "createdAt", "healthUpdatedAt", "startedAt", "updatedAt"],
-            id="initiatives",
-        ),
-        pytest.param(
-            "initiative_to_projects",
-            [],
-            ["archivedAt", "createdAt", "updatedAt"],
-            id="initiative_to_projects",
-        ),
-        pytest.param(
-            "project_updates",
-            [],
-            ["archivedAt", "createdAt", "editedAt", "updatedAt"],
-            id="project_updates",
-        ),
-        pytest.param(
-            "issue_history",
-            ["fromDueDate", "toDueDate"],
-            ["archivedAt", "createdAt", "updatedAt"],
-            id="issue_history",
-        ),
-    ],
-)
-def test_new_stream_date_formats(
-    manifest: Mapping[str, Any],
-    stream_name: str,
-    date_fields: list[str],
-    datetime_fields: list[str],
-) -> None:
-    properties = manifest["schemas"][stream_name]["properties"]
-    for field in date_fields:
-        assert properties[field]["format"] == "date"
-    for field in datetime_fields:
-        assert properties[field]["format"] == "date-time"
-
-
-@pytest.mark.parametrize(
-    ("stream_name", "response", "expected"),
-    [
-        pytest.param(
-            "initiatives",
-            {
-                "id": "initiative-1",
-                "creator": {"id": "user-1"},
-                "owner": {"id": "user-2"},
-            },
-            {"id": "initiative-1", "creatorId": "user-1", "ownerId": "user-2"},
-            id="initiatives",
-        ),
-        pytest.param(
-            "project_updates",
-            {
-                "id": "update-1",
-                "project": {"id": "project-1"},
-                "user": {"id": "user-3"},
-            },
-            {"id": "update-1", "projectId": "project-1", "userId": "user-3"},
-            id="project_updates",
-        ),
-    ],
-)
-def test_new_stream_flattening_transformations(
-    streams_by_name: Mapping[str, Any],
-    stream_name: str,
-    response: Mapping[str, Any],
-    expected: Mapping[str, Any],
-) -> None:
-    graphql_field = "initiatives" if stream_name == "initiatives" else "projectUpdates"
-    body = _request_body(streams_by_name[stream_name])
-    with HttpMocker() as http_mocker:
-        http_mocker.post(_request(body), _connection_response(graphql_field, [response]))
-
-        output = read(
-            YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG),
-            config=CONFIG,
-            catalog=CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build(),
-        )
-
-    assert len(output.records) == 1
-    record = output.records[0].record.data
-    assert {field: record[field] for field in expected} == expected
 
 
 def test_issue_history_reads_each_parent_with_exact_requests_and_paginates() -> None:

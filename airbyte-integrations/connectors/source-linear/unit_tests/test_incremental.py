@@ -32,6 +32,13 @@ CONFIG: Mapping[str, Any] = {
     "start_date": "2024-01-01T00:00:00.000Z",
 }
 
+TIMELESS_DATE_PROPERTIES = {"dueDate", "fromDueDate", "startDate", "targetDate", "toDueDate"}
+DATE_ONLY_PROPERTIES_BY_STREAM = {
+    "initiatives": {"targetDate"},
+    "issue_history": {"fromDueDate", "toDueDate"},
+}
+DATETIME_FORMAT_STREAMS = {"initiatives", "initiative_to_projects", "issue_history", "project_updates"}
+
 # Stream name -> top-level GraphQL field name that must receive `filter` and `orderBy`.
 INCREMENTAL_STREAM_GRAPHQL_FIELDS: Mapping[str, str] = {
     "issues": "issues",
@@ -114,6 +121,21 @@ def test_every_stream_schema_declares_archived_at(stream_name: str, manifest: Ma
     archived_at = manifest["schemas"][stream_name]["properties"]["archivedAt"]
     assert set(archived_at["type"]) == {"null", "string"}
     assert archived_at["format"] == "date-time"
+
+
+@pytest.mark.parametrize("stream_name", STREAM_GRAPHQL_FIELDS)
+def test_stream_schema_date_formats(stream_name: str, manifest: Mapping[str, Any]) -> None:
+    properties = manifest["schemas"][stream_name]["properties"]
+
+    for property_name in DATE_ONLY_PROPERTIES_BY_STREAM.get(stream_name, set()):
+        assert property_name in TIMELESS_DATE_PROPERTIES
+        assert properties[property_name]["format"] == "date"
+
+    assert properties["archivedAt"]["format"] == "date-time"
+    if stream_name in DATETIME_FORMAT_STREAMS:
+        for property_name, property_schema in properties.items():
+            if property_name.endswith("At"):
+                assert property_schema["format"] == "date-time"
 
 
 @pytest.mark.parametrize("stream_name", ["issues", "projects"])
