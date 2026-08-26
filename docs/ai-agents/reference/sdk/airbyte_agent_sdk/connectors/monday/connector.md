@@ -81,7 +81,7 @@ Classes
         - columns: Board columns
         - communication: Board communication value
         - creator: Board creator
-        - description: Board description
+        - description: Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
         - groups: Board groups
         - id: Unique board identifier
         - name: Board name
@@ -152,7 +152,7 @@ Classes
         - creator_id: ID of the user who created the item
         - group: Group the item belongs to
         - id: Unique item identifier
-        - name: Item name
+        - name: Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
         - parent_item: Parent item (for subitems)
         - state: Item state (active, archived, deleted)
         - subscribers: Item subscribers
@@ -597,13 +597,13 @@ Classes
         
         Available filter fields (UpdatesSearchFilter):
         - assets: Files attached to this update
-        - body: Update body (HTML)
+        - body: Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
         - created_at: When the update was created
         - creator_id: ID of the user who created the update
         - id: Unique update identifier
         - item_id: ID of the item this update belongs to
-        - replies: Replies to this update
-        - text_body: Update body (plain text)
+        - replies: Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
+        - text_body: Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
         - updated_at: When the update was last modified
         
         Args:
