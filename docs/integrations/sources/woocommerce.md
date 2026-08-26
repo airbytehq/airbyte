@@ -23,7 +23,7 @@ You also need a WooCommerce REST API key with read permissions. The setup proces
 4. Click **Generate API key**.
 5. Copy the **Consumer key** and **Consumer secret**. The consumer secret is only displayed once.
 
-Requests made with the key inherit the selected user's WordPress roles and capabilities, so choose a user who can read everything you want to sync. Administrator or shop manager accounts cover all streams. If the WordPress user is deleted later, the key stops working and you must generate a new one.
+Requests made with the key inherit the selected user's WordPress roles and capabilities, so choose a user who can read everything you want to sync. If the WordPress user is deleted later, the key stops working and you must generate a new one.
 
 Airbyte tests the connection by reading the `System status tools` endpoint (`/system_status/tools`). If the key's user can't access WooCommerce system status, the connection test fails even when the streams you want to sync are readable.
 
@@ -115,7 +115,7 @@ If your hosting environment supports higher throughput, you can increase the **N
 
 #### Missing product attribute terms
 
-WooCommerce can list a product attribute whose underlying WordPress taxonomy no longer exists, usually after a plugin is removed or an attribute is deleted directly in the database. Requesting terms for such an attribute returns the `woocommerce_rest_taxonomy_invalid` error. Starting with version 0.5.49, the connector skips these attributes and continues the sync, so the `Product attribute terms` stream contains no rows for them. The attribute itself still syncs in the `Product attributes` stream.
+WooCommerce can list a product attribute whose underlying WordPress taxonomy is no longer registered. Requesting terms for such an attribute returns the `woocommerce_rest_taxonomy_invalid` error. Starting with version 0.5.49, the connector skips these attributes and continues the sync, so the `Product attribute terms` stream contains no rows for them. The attribute itself still syncs in the `Product attributes` stream.
 
 If you expect terms for one of those attributes, check it in **Products > Attributes** in your WordPress admin panel. WooCommerce can only return terms for attributes whose taxonomy is still registered in WordPress.
 
