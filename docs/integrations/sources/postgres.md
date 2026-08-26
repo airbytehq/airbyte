@@ -380,7 +380,7 @@ According to Postgres [documentation](https://www.postgresql.org/docs/current/da
 
 ### PostGIS columns
 
-The connector reads `geometry` and `geography` columns as strings holding hex-encoded EWKB, which is what PostgreSQL returns for these types in text form (for example, `0101000020E6100000...`). Airbyte doesn't convert them to WKT or GeoJSON, so decode them in your destination with a function like `ST_GeomFromWKB`, `TRY_TO_GEOMETRY`, or `TO_GEOGRAPHY`.
+The connector reads `geometry` and `geography` columns as strings holding hex-encoded EWKB, which is what PostgreSQL returns for these types in text form (for example, `0101000020E6100000...`). Airbyte doesn't convert them to WKT or GeoJSON, so parse them in your destination with whichever function that destination provides for hex-encoded WKB. In Postgres with PostGIS, for example, `ST_GeomFromEWKB(decode(col, 'hex'))` reconstructs the geometry.
 
 Two version-specific caveats apply:
 
