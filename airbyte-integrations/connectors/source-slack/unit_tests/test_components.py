@@ -149,8 +149,31 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
             # lookback window applied
             {"float_ts": 1753177470.0},
         ),
+        (
+            {
+                "use_global_cursor": True,
+                "state": {"float_ts": 1753263870.0},
+                "lookback_window": 86400,
+            },
+            # lookback window applied
+            {"float_ts": 1753177470.0},
+        ),
+        # Regression: when threads_ignore_no_replies causes the parent cursor to advance
+        # past the child cursor, an existing parent_state must not be rewound to the
+        # child-derived boundary. The child state.float_ts (1753263870) minus lookback
+        # (86400) gives 1753177470, but the existing parent_state (1753263900) is newer
+        # and must be preserved.
+        (
+            {
+                "use_global_cursor": True,
+                "state": {"float_ts": 1753263870.0},
+                "lookback_window": 86400,
+                "parent_state": {"channel_messages": {"float_ts": 1753263900.0}},
+            },
+            {"float_ts": 1753263900.0},
+        ),
     ),
-    ids=["no_state", "old_format_state", "new_format_state"],
+    ids=["no_state", "old_format_state", "new_format_state", "global_cursor_state", "global_cursor_preserves_newer_parent_state"],
 )
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())

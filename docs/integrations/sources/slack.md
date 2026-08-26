@@ -202,6 +202,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.21 | 2026-08-25 | [85051](https://github.com/airbytehq/airbyte/pull/85051) | Fix `threads` stream re-syncing from `start_date` when the global cursor state format is active |
 | 3.2.20 | 2026-08-18 | [84839](https://github.com/airbytehq/airbyte/pull/84839) | Accept fractional epoch cursor values for the `threads` stream |
 | 3.2.19 | 2026-08-18 | [84762](https://github.com/airbytehq/airbyte/pull/84762) | Update dependencies |
 | 3.2.18 | 2026-08-11 | [84106](https://github.com/airbytehq/airbyte/pull/84106) | Update dependencies |

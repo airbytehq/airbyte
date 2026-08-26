@@ -195,9 +195,22 @@ class ThreadsStateMigration(StateMigration):
         # for old-stype state
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
+        # for global cursor state (the concurrent cursor switches to a single global cursor once
+        # the number of partitions exceeds the limit and serializes it under the "state" key)
+        if stream_state.get("state", {}).get("float_ts"):
+            start_date_state = max(start_date_state, float(stream_state["state"]["float_ts"]))
 
         lookback_window = timedelta(days=self._config.get("lookback_window", 0))  # lookback window in days
-        final_state = {"float_ts": (ab_datetime_parse(int(start_date_state)) - lookback_window).timestamp()}
+        candidate = (ab_datetime_parse(int(start_date_state)) - lookback_window).timestamp()
+        # Never move an existing parent_state boundary backward. When threads_ignore_no_replies is
+        # enabled, the child cursor (float_ts) can lag the parent cursor legitimately because channel
+        # messages without replies advance the parent but produce no thread partitions. Replacing the
+        # parent boundary unconditionally would rewind it to child-cursor-minus-lookback and rescan
+        # that history every sync. Reconcile by taking the max of the candidate and any existing value.
+        existing_parent_ts = stream_state.get("parent_state", {}).get("channel_messages", {}).get("float_ts")
+        if existing_parent_ts is not None:
+            candidate = max(candidate, float(existing_parent_ts))
+        final_state = {"float_ts": candidate}
         stream_state["parent_state"] = {"channel_messages": final_state}
 
         return stream_state
