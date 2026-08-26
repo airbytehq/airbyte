@@ -39,14 +39,12 @@ If you authenticate with a personal access token, generate one in **Settings > A
 3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
 4. Click **Authenticate your GitLab account** by selecting OAuth or Personal Access Token for authentication.
 5. Log in and authorize the GitLab account.
-6. **API URL** (Optional) - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+6. **API URL** (Optional) - The host of your self-hosted GitLab instance, or `gitlab.com` (default).
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4, with an allowed range of 2 to 25. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
-
-**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 
 <!-- /env:cloud -->
 
@@ -57,15 +55,27 @@ If you authenticate with a personal access token, generate one in **Settings > A
 1. Navigate to the Airbyte UI and click **Sources > + New source**.
 2. Select **GitLab** and enter a name for the connector.
 3. Authenticate with a **Personal Access Token**.
-4. **API URL** (Optional) - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+4. **API URL** (Optional) - The host of your self-hosted GitLab instance, or `gitlab.com` (default).
 5. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 6. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 7. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
+8. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4, with an allowed range of 2 to 25. Adjust based on your GitLab instance's rate limits.
 9. Click **Set up source**.
-
-**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 <!-- /env:oss -->
+
+### Choose which groups and projects to sync
+
+Almost every stream in this connector is scoped to a group or a project, so **Groups** and **Projects** determine how much data the sync covers.
+
+- If you leave both blank, the connector discovers every group your token can see and syncs the projects in those groups.
+- If you set **Groups**, the connector syncs those groups, their descendant groups, and the projects in them.
+- If you set both, **Projects** acts as a filter on the projects discovered from your groups. If that filter matches nothing, the connector falls back to syncing the project paths in **Projects** directly, which is how you sync a project that isn't in one of the listed groups.
+
+Use full paths, not display names or numeric IDs: `airbytehq` for a group and `airbytehq/airbyte` for a project.
+
+### API URL format
+
+The **API URL** takes a host, not a full API endpoint. The connector appends `/api/v4/` itself, so `gitlab.company.org` and `https://gitlab.company.org` both work, but a value containing a path, such as `gitlab.company.org/api/v4`, fails validation. Only `http` and `https` schemes are accepted, and Airbyte Cloud rejects `http`.
 
 ## Supported sync modes
 
@@ -92,7 +102,7 @@ This connector outputs the following streams:
 - [Groups](https://docs.gitlab.com/api/groups/)
 - [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
 - [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
-- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/)
+- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (child of Merge Requests — one request per merge request)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
 - [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
 - [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
@@ -110,6 +120,10 @@ This connector outputs the following streams:
 
 This connector uses GitLab API v4. It works with both GitLab.com and self-hosted GitLab instances.
 
+### Incremental sync window
+
+Incremental streams filter on `updated_at` and request data in 180-day windows, so a first sync of a long-lived project issues many requests. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+
 ### Rate limits
 
 The connector respects per-endpoint rate limits based on [GitLab.com's documented defaults](https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom) for the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
@@ -124,13 +138,22 @@ The connector respects per-endpoint rate limits based on [GitLab.com's documente
 | `GET /projects/:id/members/all` | 200 requests/min |
 | All other authenticated requests | 2,000 requests/min |
 
-Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector automatically retries requests that receive HTTP 429 responses. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
+Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers and backs off when GitLab returns HTTP 429. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 You can adjust the **Number of Concurrent Threads** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
 
-### Inaccessible resources
+### How the connector handles API errors
 
-The connector silently skips any group, project, or resource that returns an HTTP 403 (Forbidden) response. If you notice missing data, verify that your access token has the required permissions for the groups and projects you want to sync.
+| Response | Behavior |
+| :--- | :--- |
+| 401 Unauthorized | The sync fails with `Unable to refresh the access_token, please re-authenticate in Sources > Settings.` Re-authenticate the source, or replace an expired or revoked personal access token. |
+| 403 Forbidden | The connector skips the group, project, or resource and continues. Nothing fails, so partial data is the only symptom. |
+| 404 Not Found | The sync fails with `Groups and/or projects that you provide are invalid or you don't have permission to view it.` Check the paths in **Groups** and **Projects** for typos and confirm your token can see them. |
+| 500 Internal Server Error | Retried. |
+
+Because 403 responses are skipped silently, missing data usually means a permissions gap rather than a bug. Verify that your token has access to every group and project you expect to sync.
+
+Connection checks read the `groups` endpoint. A check can succeed while individual project streams still return no data, if the token can list groups but can't read the projects inside them.
 
 ## IP allow list
 
@@ -143,6 +166,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.37 | 2026-08-18 | [84568](https://github.com/airbytehq/airbyte/pull/84568) | Update dependencies |
+| 4.4.36 | 2026-08-11 | [83941](https://github.com/airbytehq/airbyte/pull/83941) | Update dependencies |
+| 4.4.35 | 2026-07-28 | [82903](https://github.com/airbytehq/airbyte/pull/82903) | Update dependencies |
 | 4.4.34 | 2026-07-21 | [82429](https://github.com/airbytehq/airbyte/pull/82429) | Update dependencies |
 | 4.4.33 | 2026-07-14 | [81830](https://github.com/airbytehq/airbyte/pull/81830) | Update dependencies |
 | 4.4.32 | 2026-06-30 | [81041](https://github.com/airbytehq/airbyte/pull/81041) | Update dependencies |
