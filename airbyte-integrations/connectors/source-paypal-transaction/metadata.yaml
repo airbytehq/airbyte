@@ -98,5 +98,5 @@ data:
       type: status_page
     - title: PayPal REST API specifications
       url: https://github.com/paypal/paypal-rest-api-specifications
-      type: spec_repository
+      type: openapi_spec
 metadataSpecVersion: "1.0"
