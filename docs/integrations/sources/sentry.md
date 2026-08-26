@@ -21,7 +21,8 @@ For Sentry SaaS, you can create an organization-wide token with a Sentry [intern
 5. For **Organization**, enter the organization slug.
 6. For **Project**, enter the project slug. This setting determines which project the `events`, `issues`, and `project_detail` streams sync. Organization-level streams aren't limited to this project.
 7. Optionally, for **Number of concurrent workers**, enter a value from 1 through 20. The default is 5.
-8. Select **Set up source**.
+8. Leave **Discover Event Fields** empty. None of the connector's streams read this setting.
+9. Select **Set up source**.
 
 ## Supported sync modes
 
@@ -34,16 +35,24 @@ The Sentry source connector supports these [sync modes](/platform/using-airbyte/
 
 ## Supported streams
 
-| Stream | Data synced | Supported sync modes |
-| :--- | :--- | :--- |
-| [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/) | Error events for the configured project | Full refresh, incremental |
-| [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/) | Issues for the configured project | Full refresh, incremental |
-| [Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/) | Projects in the configured organization | Full refresh, incremental |
-| [Project Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for the configured project | Full refresh |
-| [All Projects Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for every project in the configured organization | Full refresh |
-| [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/) | Releases in the configured organization | Full refresh, incremental |
+| Stream | Data synced | Supported sync modes | Cursor field |
+| :--- | :--- | :--- | :--- |
+| [Events](https://docs.sentry.io/api/events/list-a-projects-error-events/) | Error events for the configured project | Full refresh, incremental | `dateCreated` |
+| [Issues](https://docs.sentry.io/api/events/list-a-projects-issues/) | Issues for the configured project | Full refresh, incremental | `lastSeen` |
+| [Projects](https://docs.sentry.io/api/organizations/list-an-organizations-projects/) | Projects in the configured organization | Full refresh, incremental | `dateCreated` |
+| [Project Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for the configured project | Full refresh | — |
+| [All Projects Detail](https://docs.sentry.io/api/projects/retrieve-a-project/) | Full details for every project in the configured organization | Full refresh | — |
+| [Releases](https://docs.sentry.io/api/releases/list-an-organizations-releases/) | Releases in the configured organization | Full refresh, incremental | `dateCreated` |
 
 The `all_projects_detail` stream makes one project-detail request for every project returned by the organization-level list endpoint.
+
+### Incremental sync behavior
+
+The streams differ in how much filtering Sentry does for you, which changes what an incremental sync returns:
+
+- `events` passes the cursor value to Sentry in the `start` query parameter, so Sentry returns only events created after the previous sync. The stream also requests full event bodies, including stack traces, so records are large compared to the other streams.
+- `issues` filters server-side with a `lastSeen:>{cursor}` search query. An issue is synced again every time Sentry sees it again, so a long-lived issue produces a new record in many syncs.
+- `projects` and `releases` use `dateCreated`, and neither endpoint accepts a date filter. The connector reads the list and drops records created before the previous sync's cursor value. Because the cursor is a creation timestamp, later changes to a project or release, such as a status change or a new deploy, don't generate a new record. Sync these streams in full refresh mode if you need their current values.
 
 :::note Version 1.0.0
 
@@ -66,6 +75,8 @@ The authentication token must include the scopes required by the streams you syn
 
 If the token is missing a scope, the corresponding stream returns an HTTP 403 error. See the Sentry [permissions and scopes](https://docs.sentry.io/api/permissions/) reference for details.
 
+Airbyte tests the connection by reading the configured project's details, so setup fails without `project:read` on that project, even if you plan to sync only organization-level streams.
+
 ## Limitations and troubleshooting
 
 ### Event retention
@@ -79,6 +90,10 @@ Sentry SaaS retains error events for 30 or 90 days, depending on your plan. If y
 ### Rate limits
 
 Sentry applies request and concurrency limits per caller and endpoint. The limits are returned in the `X-Sentry-Rate-Limit-*` response headers and can vary by endpoint. If syncs receive HTTP 429 responses, reduce **Number of concurrent workers**. See Sentry's [rate limit documentation](https://docs.sentry.io/api/ratelimits/).
+
+### Deprecated endpoints
+
+Sentry marks the project-scoped issues endpoint that the `issues` stream uses as deprecated, and recommends the organization-level issues endpoint instead. The endpoint still returns data, and Sentry's [API deprecation policy](https://develop.sentry.dev/backend/api/deprecation-policy/) requires advance notice before removal. A future connector version is likely to move the stream to the newer endpoint, as version 1.0.0 did for `projects`.
 
 ## IP allow list
 
