@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 26, 2026
+
+Platform
+
+- If your organization has committed data worker capacity, you can now switch the data worker usage graphs between one-day, one-week, and one-month ranges instead of always seeing a fixed window.
+
+API
+
+- You can now choose the time zone for a cron sync schedule when you create or update a connection through the API, so your syncs run at the hour you expect in your own time zone rather than always in UTC. Error messages for invalid cron schedules also explain the requirements more clearly.
+
 ## August 12, 2026
 
 Connections
