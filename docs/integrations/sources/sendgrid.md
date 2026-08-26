@@ -55,7 +55,7 @@ Bounces and Spam Reports have no primary key, so deduplication isn't available f
 ## Supported Streams
 
 | Stream | Primary key | Incremental cursor |
-|--------|-------------|--------------------|
+| ------ | ----------- | ------------------ |
 | [Blocks](https://www.twilio.com/docs/sendgrid/api-reference/blocks-api/retrieve-all-blocks) | `email` | `created` |
 | [Bounces](https://www.twilio.com/docs/sendgrid/api-reference/bounces-api/retrieve-all-bounces) | None | `created` |
 | Campaigns | `id` | Full refresh only |
