@@ -15,19 +15,6 @@ check:
     - issues
 
 definitions:
-  # Parent cursor for the issue_history substream. Same shape as
-  # incremental_sync_updated_at but with no start_time_option, so the parent
-  # issues read is unfiltered and enumerates every issue on every sync.
-  parent_cursor_all_issues:
-    type: DatetimeBasedCursor
-    cursor_field: updatedAt
-    cursor_datetime_formats:
-      - "%Y-%m-%dT%H:%M:%S.%fZ"
-    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    start_datetime:
-      type: MinMaxDatetime
-      datetime: "1970-01-01T00:00:00.000Z"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
   incremental_sync_updated_at:
     type: DatetimeBasedCursor
     cursor_field: updatedAt
@@ -46,199 +33,203 @@ definitions:
         - filter
         - updatedAt
         - gte
+  # The issues stream is incremental, but issue_history must enumerate every issue on
+  # every sync; a start_date-bounded parent would silently shrink its full-refresh output.
+  # Since $ref can override keys but cannot remove inherited ones, this shared base has no cursor.
+  base_issues_stream:
+    type: DeclarativeStream
+    name: issues
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+        request_body_json:
+          query: >-
+            query Issues($after: String, $filter: IssueFilter, $orderBy: PaginationOrderBy) { issues(after: $after, first: 25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
+            nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
+            archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
+            canceledAt completedAt createdAt creator { id }
+            customerTicketCount cycle { id } description descriptionState
+            dueDate estimate identifier integrationSourceType labelIds number
+            parent { id } previousIdentifiers priority priorityLabel
+            prioritySortOrder project { id } projectMilestone { id }
+            reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
+            state { id } startedTriageAt subIssueSortOrder team { id } title
+            trashed triagedAt updatedAt url attachments { nodes { id } }
+            sourceComment { id } labels { nodes { id } } slaType slaStartedAt
+            slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
+            } } subscribers { nodes { id } } } pageInfo { hasNextPage
+            endCursor } } }
+          variables:
+            orderBy: updatedAt
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - issues
+            - nodes
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_path:
+            - variables
+            - after
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.issues.pageInfo.endCursor or \"\" }}"
+          stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - assigneeId
+            value: "{{ record.assignee.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - assignee
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - creatorId
+            value: "{{ record.creator.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - creator
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - cycleId
+            value: "{{ record.cycle.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - cycle
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - stateId
+            value: "{{ record.state.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - state
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - teamId
+            value: "{{ record.team.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - team
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - parentId
+            value: "{{ record.parent.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - parent
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - projectId
+            value: "{{ record.project.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - project
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - milestoneId
+            value: "{{ record.projectMilestone.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - projectMilestone
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - attachmentIds
+            value: "{{ record.attachments.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - attachments
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - labelIds
+            value: "{{ record.labels.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - labels
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - subscriberIds
+            value: "{{ record.subscribers.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - subscribers
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - relationIds
+            value: "{{ record.relations.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - relations
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - sourceCommentId
+            value: "{{ record.sourceComment.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - sourceComment
+            - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/issues"
   streams:
     issues:
-      type: DeclarativeStream
-      name: issues
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /
-          http_method: POST
-          request_headers:
-            Content-Type: application/json
-          request_body_json:
-            query: >-
-              query Issues($after: String, $filter: IssueFilter, $orderBy: PaginationOrderBy) { issues(after: $after, first: 25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
-              nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
-              archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
-              canceledAt completedAt createdAt creator { id }
-              customerTicketCount cycle { id } description descriptionState
-              dueDate estimate identifier integrationSourceType labelIds number
-              parent { id } previousIdentifiers priority priorityLabel
-              prioritySortOrder project { id } projectMilestone { id }
-              reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
-              state { id } startedTriageAt subIssueSortOrder team { id } title
-              trashed triagedAt updatedAt url attachments { nodes { id } }
-              sourceComment { id } labels { nodes { id } } slaType slaStartedAt
-              slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
-              } } subscribers { nodes { id } } } pageInfo { hasNextPage
-              endCursor } } }
-            variables:
-              orderBy: updatedAt
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-              - issues
-              - nodes
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_path:
-              - variables
-              - after
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.data.issues.pageInfo.endCursor or \"\" }}"
-            stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
-        decoder:
-          type: JsonDecoder
+      $ref: "#/definitions/base_issues_stream"
       incremental_sync:
         $ref: "#/definitions/incremental_sync_updated_at"
-
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - assigneeId
-              value: "{{ record.assignee.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - assignee
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - creatorId
-              value: "{{ record.creator.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - creator
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - cycleId
-              value: "{{ record.cycle.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - cycle
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - stateId
-              value: "{{ record.state.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - state
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - teamId
-              value: "{{ record.team.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - team
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - parentId
-              value: "{{ record.parent.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - parent
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - projectId
-              value: "{{ record.project.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - project
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - milestoneId
-              value: "{{ record.projectMilestone.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - projectMilestone
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - attachmentIds
-              value: "{{ record.attachments.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - attachments
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - labelIds
-              value: "{{ record.labels.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - labels
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - subscriberIds
-              value: "{{ record.subscribers.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - subscribers
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - relationIds
-              value: "{{ record.relations.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - relations
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - sourceCommentId
-              value: "{{ record.sourceComment.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - sourceComment
-              - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/issues"
     customers:
       type: DeclarativeStream
       name: customers
@@ -1650,9 +1641,7 @@ definitions:
               parent_key: id
               partition_field: issue_id
               stream:
-                $ref: "#/definitions/streams/issues"
-                incremental_sync:
-                  $ref: "#/definitions/parent_cursor_all_issues"
+                $ref: "#/definitions/base_issues_stream"
               request_option:
                 type: RequestOption
                 inject_into: body_json
@@ -2088,8 +2077,10 @@ metadata:
     issue_relations: true
     customer_statuses: true
     customer_tiers: true
-    # Schema auto-import is disabled for these streams so that the declared
-    # date / date-time formats are not overwritten by a Builder test read.
+    # Connector Builder's auto-import infers bare strings without formats from a test read,
+    # which would erase the date / date-time declarations these streams provide for #17016.
+    # It would also collapse issue_history.changes to an inferred shape and drop nullable
+    # relationship fields that happen to be absent from the records returned by that read.
     initiatives: false
     initiative_to_projects: false
     project_updates: false
