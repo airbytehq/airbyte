@@ -56,3 +56,8 @@ def test_initiatives_flatten_nullable_relationships(
     assert len(output.records) == 1
     record = output.records[0].record.data
     assert {field: record.get(field) for field in expected} == expected
+    if any(value is None for value in expected.values()):
+        selector = next(iter(stream.generate_partitions()))._retriever.record_selector
+        transformed = list(selector.filter_and_transform([response], {}, stream.get_json_schema()))
+        assert len(transformed) == 1
+        assert {field: transformed[0].data[field] for field in expected} == expected
