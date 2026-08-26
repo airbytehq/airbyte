@@ -42,6 +42,18 @@ If your Pinterest account has limited permissions, some streams may not return d
 validates your connection using the `user_account_analytics` stream, which requires only the
 `user_accounts:read` scope. This scope is available to all authenticated Pinterest users.
 
+Scopes alone aren't enough for advertising data. As documented in Pinterest's
+[ad account analytics reference](https://developers.pinterest.com/docs/api/v5/#operation/ad_account/analytics),
+the authenticating user must own each ad account you sync, or hold an Admin, Analyst, or Campaign
+Manager role on it through Pinterest Business Access. Without one of those roles, ad, campaign, ad
+group, and report streams return no rows even though the connection check passes.
+
+Pinterest also grants apps either
+[Trial or Standard access](https://developers.pinterest.com/docs/key-concepts/access-tiers/). Trial
+apps are limited to a fixed number of requests per day per rate limit category, which is usually too
+low for a full historical sync of the report streams. If your syncs stall on rate limits, upgrade the
+app to Standard access.
+
 ## Setup guide
 
 <!-- env:cloud -->
@@ -55,16 +67,19 @@ validates your connection using the `user_account_analytics` stream, which requi
 5. The **OAuth2.0** authorization method is selected by default. Click **Authenticate your Pinterest
    account**. Log in and authorize your Pinterest account.
 6. (Optional) For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates
-   data on and after this date. If you don't set a date, the connector defaults to the maximum
-   lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
-   streams can look back up to 913 days.
+   data on and after this date. Pinterest caps how far back each endpoint can go, and the connector
+   silently clamps earlier start dates to that cap: 89 days for the analytics streams, 913 days for
+   the report streams, and 91 days for `product_item_report`. If you leave the field empty, the
+   connector starts at each stream's cap.
 7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
    `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
    status filters out records that do not match. If no status is specified, the source defaults to
    `ACTIVE` and `PAUSED`.
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+9. (Optional) Enter an **Ad Account ID** of at most 18 characters. If specified, the source only
+   retrieves data for that Pinterest ad account, and also scopes the boards and catalogs streams to
+   that account.
 10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
     connector makes during a sync. The default is 2. Higher values speed up syncs but increase
     rate-limit pressure. If you encounter rate-limit errors, reduce this value.
@@ -85,16 +100,19 @@ validates your connection using the `user_account_analytics` stream, which requi
    **Refresh Token**, enter your Pinterest
    [Refresh Token](https://developers.pinterest.com/docs/getting-started/authentication/#Refreshing%20an%20access%20token).
 6. (Optional) For **Start Date**, enter the date in YYYY-MM-DD format. The connector replicates
-   data on and after this date. If you don't set a date, the connector defaults to the maximum
-   lookback period allowed by each stream. Analytics streams can look back up to 90 days. Report
-   streams can look back up to 913 days.
+   data on and after this date. Pinterest caps how far back each endpoint can go, and the connector
+   silently clamps earlier start dates to that cap: 89 days for the analytics streams, 913 days for
+   the report streams, and 91 days for `product_item_report`. If you leave the field empty, the
+   connector starts at each stream's cap.
 7. (Optional) Select one or multiple status values from the dropdown menu. Available values are
    `ACTIVE`, `PAUSED`, and `ARCHIVED`. For the ads, ad_groups, and campaigns streams, specifying a
    status filters out records that do not match. If no status is specified, the source defaults to
    `ACTIVE` and `PAUSED`.
 8. (Optional) Add custom reports if needed. For more information, refer to the corresponding
    section.
-9. (Optional) Enter an **Ad Account ID**. If specified, the source will only retrieve data for that specific Pinterest Ad Account.
+9. (Optional) Enter an **Ad Account ID** of at most 18 characters. If specified, the source only
+   retrieves data for that Pinterest ad account, and also scopes the boards and catalogs streams to
+   that account.
 10. (Optional) Set **Number of concurrent workers** to control how many parallel requests the
     connector makes during a sync. The default is 2. Higher values speed up syncs but increase
     rate-limit pressure. If you encounter rate-limit errors, reduce this value.
@@ -174,13 +192,21 @@ The Pinterest source connector supports the following
 - [Keyword Report](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report)
   \(Incremental\)
 
+Each custom report you configure appears as an additional incremental stream.
+
+The campaigns, ad groups, and ads streams are incremental on `updated_time`, but Pinterest's list
+endpoints can't filter by that field. The connector requests the full list of entities on every sync
+and discards records older than the cursor, so these streams don't get faster as the cursor advances.
+
 ## Custom reports
 
 Custom reports in the Pinterest connector allow you to create personalized analytics reports for
 your account. You can tailor these reports to your specific needs by choosing from various
 properties:
 
-1. **Name**: A unique identifier for the report.
+1. **Name**: A unique identifier for the report. The connector derives the stream name from it by
+   converting the name to snake case and prefixing `custom_`. For example, a report named
+   `Weekly Spend` produces a stream called `custom_weekly_spend`.
 2. **Level**: Specifies the data aggregation level, with options like ADVERTISER, CAMPAIGN,
    AD_GROUP, etc. The default level is ADVERTISER.
 3. **Granularity**: Determines the data granularity, such as TOTAL, DAY, HOUR, etc. The default is
@@ -203,18 +229,21 @@ properties:
    INDIVIDUAL or HOUSEHOLD.
 10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select
     values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
-    DELETED_DRAFT. Include ARCHIVED to report on archived campaigns. When more than six values are
-    selected, the connector automatically splits them across multiple Pinterest report requests.
+    DELETED_DRAFT. Include ARCHIVED to report on archived campaigns. Pinterest accepts at most six
+    values per request, so the connector splits larger selections across multiple report requests.
+    Selecting more than six values requires a report level of CAMPAIGN or below.
 11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select
     values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
-    DELETED_DRAFT. When more than six values are selected, the connector automatically splits them
-    across multiple Pinterest report requests.
+    DELETED_DRAFT. Selecting more than six values requires a report level of AD_GROUP or below.
 12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select values from:
     APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and DELETED_DRAFT.
-    When more than six values are selected, the connector automatically splits them across multiple
-    Pinterest report requests. This filter is not supported for Product Item level reports.
-13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
-    latest allowed date by the report API (913 days from today).
+    Selecting more than six values requires a PIN_PROMOTION or PIN_PROMOTION_TARGETING report level.
+    Pinterest rejects this filter entirely for PRODUCT_ITEM reports, along with any ad or pin
+    promotion columns.
+13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format. Pinterest limits
+    how far back a report can reach, and the connector clamps this date to that limit: 913 days for
+    most reports, 91 days when the level is PRODUCT_ITEM, and 2 days when the granularity is HOUR.
+    Leave it empty to start at the limit.
 
 For more detailed information and guidelines on creating custom reports, please refer to the
 [Pinterest API documentation](https://developers.pinterest.com/docs/api/v5/#operation/analytics/create_report).
@@ -228,22 +257,45 @@ requests per minute with standard access, while `ads_read` and `org_read` catego
 requests per minute. For details, see the
 [Pinterest rate limits documentation](https://developers.pinterest.com/docs/reference/rate-limits/).
 
-When the connector encounters a rate-limit response, it automatically waits using the
-`X-RateLimit-Reset` header and retries the request. You can reduce the **Number of concurrent
-workers** setting (default: 2, range: 1–40) to lower rate-limit pressure at the cost of slower
-syncs.
+Your app's [access tier](https://developers.pinterest.com/docs/key-concepts/access-tiers/) decides
+which limits apply: Trial apps get a daily allowance per category, while Standard apps get the
+per-minute limits above. Account analytics falls in the `org_analytics` category, which allows only
+60 requests per minute with Standard access.
+
+When a regular endpoint returns a rate-limit response, the connector waits for the interval in the
+`X-RateLimit-Reset` header and retries. The analytics and report endpoints signal throttling
+differently: they return `400` with a `Retry after N seconds` message, so the connector waits `N`
+seconds, or falls back to exponential backoff capped at 120 seconds when the message has no wait
+time. You can reduce the **Number of concurrent workers** setting (default: 2, range: 1–40) to lower
+rate-limit pressure at the cost of slower syncs.
 
 Custom report status filters are sent in chunks of at most six values per dimension. Selecting
 many campaign, ad group, and ad statuses multiplies async report-creation requests by
 `ceil(campaign_statuses / 6) × ceil(ad_group_statuses / 6) × ceil(ad_statuses / 6)` for each
 account and date window (at most 8x, since each field has eight possible values). Every entity
-has exactly one status, so chunked requests return disjoint row sets - no rows are duplicated
+has exactly one status, so chunked requests return disjoint row sets — no rows are duplicated
 or lost. Selecting more than six values for a filter requires the report level to be at or
-below the filtered dimension (for example, more than six ad statuses require a
-`PIN_PROMOTION`-level report); at coarser levels the same aggregated rows would be returned by
+below the filtered dimension (for example, more than six ad statuses require a `PIN_PROMOTION` or
+`PIN_PROMOTION_TARGETING` level report); at coarser levels the same aggregated rows would be returned by
 several chunks, so the connector rejects such configurations. The connector retries
 rate-limited report calls automatically. If you hit analytics rate limits, select fewer
 statuses or lower concurrent workers.
+
+## Limitations and troubleshooting
+
+- **Report windows are split into slices.** Pinterest limits the date range of a single request, so
+  the connector requests analytics in 30-day windows, standard reports in 185-day windows, and
+  PRODUCT_ITEM reports in 31-day windows. A long backfill therefore issues many requests per ad
+  account.
+- **Catalog product groups need a catalog.** If the account has no catalog, Pinterest answers the
+  `catalogs_product_groups` endpoint with `409`. The connector skips the stream instead of failing
+  the sync, so an empty stream here usually means no catalog exists.
+- **Report download links expire.** Pinterest's report download URLs are short-lived. If a download
+  URL expires before the connector fetches it, the sync fails with
+  `Pinterest report download URL is expired.` Retry the sync; lowering the number of concurrent
+  workers reduces how long reports wait between creation and download.
+- **Refresh tokens can be revoked.** A `401` response fails the sync with a message asking you to
+  re-authenticate. Reauthorize the source (Cloud) or generate a new refresh token (Open Source).
 
 ## IP allow list
 
@@ -368,7 +420,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.4.0 | 2023-05-16 | [26112](https://github.com/airbytehq/airbyte/pull/26112) | Add `is_standard` field to the `BoardPins` stream |
 | 0.3.0 | 2023-05-09 | [25915](https://github.com/airbytehq/airbyte/pull/25915) | Add `creative_type` field to the `BoardPins` stream |
 | 0.2.6 | 2023-04-26 | [25548](https://github.com/airbytehq/airbyte/pull/25548) | Fix `format` issue for `boards` stream schema for fields with `date-time` |
-| 0.2.5 | 2023-04-19 | [0](https://github.com/airbytehq/airbyte/pull/0) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days |
+| 0.2.5 | 2023-04-25 | [25313](https://github.com/airbytehq/airbyte/pull/25313) | Update `AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP` to 89 days |
 | 0.2.4 | 2023-02-25 | [23457](https://github.com/airbytehq/airbyte/pull/23457) | Add missing columns for analytics streams for pinterest source |
 | 0.2.3 | 2023-03-01 | [23649](https://github.com/airbytehq/airbyte/pull/23649) | Fix for `HTTP - 400 Bad Request` when requesting data >= 90 days |
 | 0.2.2 | 2023-01-27 | [22020](https://github.com/airbytehq/airbyte/pull/22020) | Set `AvailabilityStrategy` for streams explicitly to `None` |
