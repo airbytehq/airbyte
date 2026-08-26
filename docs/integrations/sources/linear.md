@@ -113,12 +113,12 @@ See Linear's [Customer Requests documentation](https://linear.app/docs/customer-
 
 ### Archived records
 
-Linear archives records instead of deleting them, and it archives some records for you: completed issues, cycles, and projects are auto-archived over time. Starting with connector version `0.3.0`, every stream asks Linear for archived records, so they sync alongside active ones. Each record's `archivedAt` field holds the time Linear archived it, and is `null` while the record is active.
+Linear hides archived records from API responses by default rather than deleting them, and it archives some records for you: completed issues, cycles, and projects are auto-archived over time. Deletion is a separate action, described below in [Limitations and troubleshooting](#limitations-and-troubleshooting). Starting with connector version `0.3.0`, every stream asks Linear for archived records, so they sync alongside active ones. Each record's `archivedAt` field holds the time Linear archived it, and is `null` while the record is active.
 
 Before `0.3.0` the connector didn't request archived records, so Linear left them out of every response and `archivedAt` was always `null`. Upgrading changes what your syncs return:
 
-- Full refresh streams pick up all archived records on the next sync. In an established workspace this can be a large one-time increase in volume.
-- Incremental streams only pick up an archived record when Linear reports it as updated after the stream's cursor, which covers records archived from now on but not records archived before the upgrade. To backfill those, [refresh the stream](https://docs.airbyte.com/platform/operator-guides/refreshes) or run a full resync.
+- Streams you sync in full refresh mode return all archived records on the next sync. In an established workspace this can be a large one-time increase in volume.
+- Streams you sync incrementally return an archived record only when its `updatedAt` value is later than the stream's cursor. Records Linear archives from now on qualify; records archived before the upgrade usually don't, because their `updatedAt` predates the cursor. To pick those up, [refresh the stream](https://docs.airbyte.com/platform/operator-guides/refreshes).
 
 ## Limitations and troubleshooting
 
