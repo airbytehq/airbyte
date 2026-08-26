@@ -133,9 +133,7 @@ class InvoiceLineItemsIncrementalTest(TestCase):
         embedded_lines = [_line_item(line_item_id) for line_item_id in all_line_ids[:10]]
         http_mocker.get(
             _events_request().with_any_query_params().build(),
-            _events_response()
-            .with_record(_invoice_created_event(_invoice(embedded_lines, has_more=True, total_count=15)))
-            .build(),
+            _events_response().with_record(_invoice_created_event(_invoice(embedded_lines, has_more=True, total_count=15))).build(),
         )
         first_page = _invoice_lines_response()
         for line_item_id in all_line_ids[:10]:
@@ -164,9 +162,7 @@ class InvoiceLineItemsIncrementalTest(TestCase):
         embedded_lines = [_line_item(line_item_id) for line_item_id in all_line_ids]
         http_mocker.get(
             _events_request().with_any_query_params().build(),
-            _events_response()
-            .with_record(_invoice_created_event(_invoice(embedded_lines, has_more=False, total_count=15)))
-            .build(),
+            _events_response().with_record(_invoice_created_event(_invoice(embedded_lines, has_more=False, total_count=15))).build(),
         )
 
         output = _read_incremental(http_mocker)
@@ -180,9 +176,7 @@ class InvoiceLineItemsIncrementalTest(TestCase):
         embedded_lines = [_line_item(line_item_id) for line_item_id in all_line_ids]
         http_mocker.get(
             _events_request().with_any_query_params().build(),
-            _events_response()
-            .with_record(_invoice_created_event(_invoice(embedded_lines, has_more=False, total_count=10)))
-            .build(),
+            _events_response().with_record(_invoice_created_event(_invoice(embedded_lines, has_more=False, total_count=10))).build(),
         )
 
         output = _read_incremental(http_mocker)
