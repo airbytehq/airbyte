@@ -60,9 +60,10 @@ To fill out the required information:
 2. Optionally list the names of the schemas you want to sync tables from. These are case-sensitive. When not provided, all available schemas are discovered.
 </FieldAnchor>
 3. Enter the username you created in [Step 1](#step-1-create-a-dedicated-read-only-postgres-user). If your Postgres user authenticates with a password, enter it in the **Password** field. The password is optional — some PostgreSQL authentication methods (such as `trust`, `peer`, or certificate-based auth) do not require one.
-4. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
-5. Select `Standard (xmin)` from available replication methods. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
+4. Select an SSL mode. The default is `require`. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires your server's CA certificate.
+5. For **Update Method**, select **Detect Changes with Xmin System Column**. This uses the [xmin system column](#xmin) to reliably replicate data from your database.
    1. If your database is particularly large (> 500 GB), you will benefit from [configuring your Postgres source using logical replication (CDC)](#cdc).
+6. Leave the performance settings (**Check Table and Column Access Privileges**, **Checkpoint Target Time Interval**, and **Max Concurrent Queries to Database**) at their defaults unless you have a reason to change them. See [Performance and access settings](#performance-and-access-settings).
 
 <!-- env:cloud -->
 
@@ -189,12 +190,12 @@ The Airbyte UI currently allows selecting any tables for CDC. If a table is sele
 In your Postgres source, change the update method to `Read Changes using Change Data Capture (CDC)`, and enter the replication slot and publication you just created.
 
 :::note
-If `max_slot_wal_keep_size` is exceeded, PostgreSQL can invalidate the replication slot. The slot then has `wal_status = lost` and a null `restart_lsn`, so the connector fails the sync and cannot recover automatically. Drop and recreate the replication slot, then reset the connection for a full re-sync.
+Keep the slot healthy after you create it. If PostgreSQL invalidates the slot, or if the slot advances past the position the connector last synced from, the sync fails and you have to repair it yourself. The connector never falls back to a silent full re-sync. See [Replication slot validation failures](/integrations/sources/postgres/postgres-troubleshooting#replication-slot-validation-failures).
 :::
 
 ## Postgres Replication Methods
 
-The Postgres source currently offers 3 methods of replicating updates to your destination: CDC, xmin and standard (with a user defined cursor). Both CDC and xmin are the **most reliable methods** of updating your data.
+The Postgres source offers three update methods: **Read Changes using Change Data Capture (CDC)**, **Detect Changes with Xmin System Column**, and **Scan Changes with User Defined Cursor**. CDC and xmin are the **most reliable methods** of updating your data.
 
 <FieldAnchor field="replication_method[CDC]">
 
@@ -220,15 +221,38 @@ This is a good solution if:
 - There is not a well-defined cursor candidate to use for Standard incremental mode.
 - You want to replace a previously configured full-refresh sync.
 - Your database doesn't incur heavy writes that would lead to transaction ID wraparound.
-- You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication.
+- You are not replicating non-materialized views. Non-materialized views are not supported by xmin replication, and those streams offer full refresh only.
 </FieldAnchor>
+
+### Standard (user-defined cursor)
+
+**Scan Changes with User Defined Cursor** reads new and updated rows using a cursor column you choose in the connection, such as `updated_at`. Airbyte offers incremental sync modes for a stream only if that stream has a column that can serve as a cursor. Use this method when you have a reliable, monotonically increasing column and you don't need to capture deletes.
+
+## Performance and access settings
+
+These settings apply to every update method.
+
+| Setting | Default | What it does |
+| ------- | ------- | ------------ |
+| **Check Table and Column Access Privileges** | Enabled | During schema discovery, the connector queries each table and view individually and omits objects and columns the user can't read. On large schemas this can make discovery slow. Disable it if discovery times out. |
+| **Checkpoint Target Time Interval** | 300 seconds | How often a stream checkpoints its progress, when possible. Must be greater than 0. |
+| **Max Concurrent Queries to Database** | Empty | Maximum number of queries the connector runs against your database at the same time. Leave it empty to let Airbyte choose. |
+
+CDC has additional advanced settings:
+
+| Setting | Default | What it does |
+| ------- | ------- | ------------ |
+| **Initial Load Timeout in Hours** | 8 | How long the initial snapshot is allowed to run. When the timeout elapses, the snapshot stops with a timeout error and the next sync attempt picks up from the last checkpoint. Accepts 4 to 24. |
+| **LSN commit behavior** | After loading Data in the destination | When Airbyte flushes the LSN of processed WAL records. If you select **While reading Data**, a failure while loading data into the destination causes the next sync to be a full sync. |
+| **Initial Waiting Time in Seconds** | 1200 | How long the connector waits for the first change event before it gives up. See [Setting up initial CDC waiting time](/integrations/sources/postgres/postgres-troubleshooting#advanced-setting-up-initial-cdc-waiting-time). |
+| **Debezium heartbeat query** | Empty | A query the connector runs on the source when it emits a heartbeat. See [Resolving sync failures due to WAL disk consumption](/integrations/sources/postgres/postgres-troubleshooting#advanced-wal-disk-consumption-and-heartbeat-action-query). |
 
 ## Connecting with SSL or SSH Tunneling
 
 ### SSL Modes
 
 <FieldAnchor field="ssl_mode">
-Airbyte Cloud uses SSL by default. You are not permitted to `disable` SSL while using Airbyte Cloud. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your Postgres database.
+The default SSL mode is `require`. Airbyte Cloud rejects the `disable`, `allow`, and `prefer` modes unless you also connect through an SSH tunnel. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` and `verify-full` also require you to provide your server's CA certificate, and optionally a client certificate, client key, and client key password.
 
 Here is a breakdown of available SSL connection modes:
 
@@ -299,56 +323,77 @@ To see connector limitations, or troubleshoot your Postgres connector, see more 
 
 ## Data type mapping
 
-According to Postgres [documentation](https://www.postgresql.org/docs/current/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. You can check the test values examples [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test-integration/kotlin/io/airbyte/integrations/source/postgres/legacy/PostgresSourceDatatypeTest.kt). If you can't find the data type you are looking for or have any problems feel free to add a new test!
+According to Postgres [documentation](https://www.postgresql.org/docs/current/datatype.html), Postgres data types are mapped to the following data types when synchronizing data. For the exact value the connector emits for each type, see the [field type mapper test](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-postgres/src/test/kotlin/io/airbyte/integrations/source/postgres/PostgresSourceFieldTypeMapperTest.kt). If you can't find the data type you are looking for or have any problems feel free to add a new test!
 
-| Postgres Type                         | Resulting Type | Notes                                                                                                                                                |
-| ------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bigint`                              | number         |                                                                                                                                                      |
-| `bigserial`, `serial8`                | number         |                                                                                                                                                      |
-| `bit`                                 | string         | Fixed-length bit string (e.g. "0100").                                                                                                               |
-| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100").                                                                                                            |
-| `boolean`, `bool`                     | boolean        |                                                                                                                                                      |
-| `box`                                 | string         |                                                                                                                                                      |
-| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a").                                                           |
-| `character`, `char`                   | string         |                                                                                                                                                      |
-| `character varying`, `varchar`        | string         |                                                                                                                                                      |
-| `cidr`                                | string         |                                                                                                                                                      |
-| `circle`                              | string         |                                                                                                                                                      |
-| `date`                                | string         | Parsed as ISO8601 date time at midnight. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590) |
-| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).      |
-| `hstore`                              | string         |                                                                                                                                                      |
-| `inet`                                | string         |                                                                                                                                                      |
-| `integer`, `int`, `int4`              | number         |                                                                                                                                                      |
-| `interval`                            | string         |                                                                                                                                                      |
-| `json`                                | string         |                                                                                                                                                      |
-| `jsonb`                               | string         |                                                                                                                                                      |
-| `line`                                | string         |                                                                                                                                                      |
-| `lseg`                                | string         |                                                                                                                                                      |
-| `macaddr`                             | string         |                                                                                                                                                      |
-| `macaddr8`                            | string         |                                                                                                                                                      |
-| `money`                               | number         |                                                                                                                                                      |
-| `numeric`, `decimal`                  | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).      |
-| `path`                                | string         |                                                                                                                                                      |
-| `pg_lsn`                              | string         |                                                                                                                                                      |
-| `point`                               | string         |                                                                                                                                                      |
-| `polygon`                             | string         |                                                                                                                                                      |
-| `real`, `float4`                      | number         |                                                                                                                                                      |
-| `smallint`, `int2`                    | number         |                                                                                                                                                      |
-| `smallserial`, `serial2`              | number         |                                                                                                                                                      |
-| `serial`, `serial4`                   | number         |                                                                                                                                                      |
-| `text`                                | string         |                                                                                                                                                      |
-| `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                         |
-| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                              |
-| `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system.                                                                    |
-| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system.                                                                         |
-| `tsquery`                             | string         |                                                                                                                                                      |
-| `tsvector`                            | string         |                                                                                                                                                      |
-| `uuid`                                | string         |                                                                                                                                                      |
-| `xml`                                 | string         |                                                                                                                                                      |
-| `enum`                                | string         |                                                                                                                                                      |
-| `tsrange`                             | string         |                                                                                                                                                      |
-| `array`                               | array          | E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]".                                                                                                    |
-| composite type                        | string         |                                                                                                                                                      |
+| Postgres Type                         | Resulting Type | Notes                                                                                                                                                                                                                       |
+| ------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bigint`, `int8`                      | integer        |                                                                                                                                                                                                                             |
+| `bigserial`, `serial8`                | integer        |                                                                                                                                                                                                                             |
+| `bit`                                 | string         | Fixed-length bit string (e.g. "0100"). Arrays of `bit` are emitted as arrays of booleans.                                                                                                                                   |
+| `bit varying`, `varbit`               | string         | Variable-length bit string (e.g. "0100"). Arrays of `varbit` are emitted as arrays of booleans.                                                                                                                             |
+| `boolean`, `bool`                     | boolean        |                                                                                                                                                                                                                             |
+| `box`                                 | string         |                                                                                                                                                                                                                             |
+| `bytea`                               | string         | Variable length binary string with hex output format prefixed with "\x" (e.g. "\x6b707a"). Arrays of `bytea` are base64-encoded instead.                                                                                    |
+| `character`, `char`                   | string         |                                                                                                                                                                                                                             |
+| `character varying`, `varchar`        | string         |                                                                                                                                                                                                                             |
+| `cidr`                                | string         |                                                                                                                                                                                                                             |
+| `circle`                              | string         |                                                                                                                                                                                                                             |
+| `date`                                | string         | ISO-8601 date, for example `2026-01-31`. `Infinity` and `-Infinity` are converted to `null`. CDC mode doesn't support era indicators. Issue: [#14590](https://github.com/airbytehq/airbyte/issues/14590)                    |
+| `double precision`, `float`, `float8` | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).                                                                             |
+| `geography` (PostGIS)                 | string         | Hex-encoded EWKB. See [PostGIS columns](#postgis-columns).                                                                                                                                                                  |
+| `geometry` (PostGIS)                  | string         | Hex-encoded EWKB. See [PostGIS columns](#postgis-columns).                                                                                                                                                                  |
+| `hstore`                              | string         | Stringified JSON object, for example `{"color":"red"}`. Keys mapped to `NULL` keep a `null` value.                                                                                                                          |
+| `inet`                                | string         |                                                                                                                                                                                                                             |
+| `integer`, `int`, `int4`              | integer        |                                                                                                                                                                                                                             |
+| `interval`                            | string         | Postgres output format, for example `1 year 2 mons 3 days 04:05:06`. See [Interval columns](#interval-columns).                                                                                                             |
+| `json`                                | string         |                                                                                                                                                                                                                             |
+| `jsonb`                               | string         |                                                                                                                                                                                                                             |
+| `line`                                | string         |                                                                                                                                                                                                                             |
+| `lseg`                                | string         |                                                                                                                                                                                                                             |
+| `macaddr`                             | string         |                                                                                                                                                                                                                             |
+| `macaddr8`                            | string         |                                                                                                                                                                                                                             |
+| `money`                               | number         |                                                                                                                                                                                                                             |
+| `numeric`, `decimal`                  | number         | Columns declared with a precision and a scale of 0 are emitted as integers. `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902). |
+| `oid`                                 | integer        | Read as a 64-bit value because `oid` is unsigned. Arrays of `oid` are emitted as arrays of numbers.                                                                                                                         |
+| `path`                                | string         |                                                                                                                                                                                                                             |
+| `pg_lsn`                              | string         |                                                                                                                                                                                                                             |
+| `point`                               | string         |                                                                                                                                                                                                                             |
+| `polygon`                             | string         |                                                                                                                                                                                                                             |
+| `real`, `float4`                      | number         | `Infinity`, `-Infinity`, and `NaN` are not supported and converted to `null`. Issue: [#8902](https://github.com/airbytehq/airbyte/issues/8902).                                                                             |
+| `smallint`, `int2`                    | integer        |                                                                                                                                                                                                                             |
+| `smallserial`, `serial2`              | integer        |                                                                                                                                                                                                                             |
+| `serial`, `serial4`                   | integer        |                                                                                                                                                                                                                             |
+| `text`                                | string         |                                                                                                                                                                                                                             |
+| `time`                                | string         | Parsed as a time string without a time-zone in the ISO-8601 calendar system.                                                                                                                                                |
+| `timetz`                              | string         | Parsed as a time string with time-zone in the ISO-8601 calendar system.                                                                                                                                                     |
+| `timestamp`                           | string         | Parsed as a date-time string without a time-zone in the ISO-8601 calendar system. `Infinity` and `-Infinity` are converted to `null`.                                                                                       |
+| `timestamptz`                         | string         | Parsed as a date-time string with time-zone in the ISO-8601 calendar system. `Infinity` and `-Infinity` are converted to `null`.                                                                                            |
+| `tsquery`                             | string         |                                                                                                                                                                                                                             |
+| `tsvector`                            | string         |                                                                                                                                                                                                                             |
+| `uuid`                                | string         |                                                                                                                                                                                                                             |
+| `xml`                                 | string         |                                                                                                                                                                                                                             |
+| `enum`                                | string         |                                                                                                                                                                                                                             |
+| `tsrange` and other range types       | string         |                                                                                                                                                                                                                             |
+| `array`                               | array          | Element types follow the mappings in this table, except where noted. E.g. "[\"10001\",\"10002\",\"10003\",\"10004\"]". If any element holds an unsupported value, such as `Infinity`, the whole field is `null`.            |
+| composite type                        | string         |                                                                                                                                                                                                                             |
+| user-defined type                     | string         |                                                                                                                                                                                                                             |
+
+### PostGIS columns
+
+The connector reads `geometry` and `geography` columns as strings holding hex-encoded EWKB, which is what PostgreSQL returns for these types in text form (for example, `0101000020E6100000...`). Airbyte doesn't convert them to WKT or GeoJSON, so decode them in your destination with a function like `ST_GeomFromWKB`, `TRY_TO_GEOMETRY`, or `TO_GEOGRAPHY`.
+
+Two version-specific caveats apply:
+
+- Versions 3.8.0 through 3.8.3 wrote null for every PostGIS column read through CDC. Initial snapshots were unaffected. Upgrade to 3.8.4, then refresh the affected streams to backfill the rows that synced as null.
+- Version 3.7.2 and earlier emitted `{"wkb": "<base64>", "srid": <n>}` on the CDC path, while the snapshot emitted hex-encoded EWKB. From 3.8.4 on, both paths emit hex-encoded EWKB, so downstream code that parsed that JSON shape (for example, `PARSE_JSON(col):srid`) needs to switch to a WKB parser.
+
+### Interval columns
+
+An `interval` value is emitted as a string in Postgres output format. Only the non-zero calendar units appear, and the time part is always `HH:MM:SS`, so `interval '3 days 4 hours 5 minutes 6 seconds'` becomes `3 days 04:05:06`. Fractional seconds are truncated, so `00:00:01.5` becomes `00:00:01`.
+
+On the CDC path, an `interval` column that is declared `NOT NULL` with a `DEFAULT` gets its default from Debezium's numeric interval representation, which counts microseconds and carries no calendar months or years. A default such as `interval '1 mon'` therefore appears as a number of days rather than as `1 mons`.
+
+Versions 3.8.0 through 3.8.4 failed CDC syncs of any table with an `interval` column that had a default, with `java.lang.ClassCastException: class java.lang.Long cannot be cast to class org.postgresql.util.PGInterval`. Upgrade to 3.8.5 or later.
 
 </HideInUI>
 
@@ -363,10 +408,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.8.5   | 2026-07-29 | [82773](https://github.com/airbytehq/airbyte/pull/82773) | Fix ClassCastException when an interval column has a default value during CDC.                                                                                             |
-| 3.8.4   | 2026-07-28 | [79110](https://github.com/airbytehq/airbyte/pull/79110) | Fix PostGIS geometry/geography columns returning NULL on CDC path. Values now always use hex-WEKB format, for both CDC and snapshots.                                      |
-| 3.8.3   | 2026-07-27 | [82782](https://github.com/airbytehq/airbyte/pull/82782) | Remove the non-functional `invalid_cdc_cursor_position_behavior` option; invalidated replication slots always fail the sync.                                               |
-| 3.8.2   | 2026-07-24 | [82728](https://github.com/airbytehq/airbyte/pull/82728) | Fix sync failures on `money` columns over the socket/protobuf output path.                                                                                                 |
+| 3.8.5   | 2026-08-12 | [82773](https://github.com/airbytehq/airbyte/pull/82773) | Fix ClassCastException when an interval column has a default value during CDC.                                                                                             |
+| 3.8.4   | 2026-07-29 | [79110](https://github.com/airbytehq/airbyte/pull/79110) | Fix PostGIS geometry/geography columns returning NULL on CDC path. Values now always use hex-EWKB format, for both CDC and snapshots.                                      |
+| 3.8.3   | 2026-07-28 | [82782](https://github.com/airbytehq/airbyte/pull/82782) | Remove the non-functional `invalid_cdc_cursor_position_behavior` option; invalidated replication slots always fail the sync.                                               |
+| 3.8.2   | 2026-07-27 | [82728](https://github.com/airbytehq/airbyte/pull/82728) | Fix sync failures on `money` columns over the socket/protobuf output path.                                                                                                 |
 | 3.8.1   | 2026-06-04 | [79120](https://github.com/airbytehq/airbyte/pull/79120) | Allow connecting without a password for passwordless auth methods.                                                                                                         |
 | 3.8.0   | 2026-06-02 | [75637](https://github.com/airbytehq/airbyte/pull/75637) | Initial release of rewritten connector on the bulk CDK                                                                                                                     |
 | 3.7.2   | 2026-03-04 | [74294](https://github.com/airbytehq/airbyte/pull/74294) | Fix CDC bug where a replication slot can be advanced too far, losing needed WAL segments. Remove CVEs.                                                                     |
