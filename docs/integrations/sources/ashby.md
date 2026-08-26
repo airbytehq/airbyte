@@ -68,11 +68,17 @@ This source syncs the following streams:
 
 The `application_criteria_evaluations` stream is a substream of `applications`. The connector requests evaluations only for applications whose current interview stage has the type `PreInterviewScreen` and whose status is neither `Archived` nor `Hired`, so it doesn't cover every application in your account. Each record carries an `application_id` field copied from the parent application, which is how you join evaluations back to `applications`. This stream has no primary key, and the connector doesn't paginate the evaluations endpoint, so only the first page of evaluations is synced for each application.
 
-The `application_history` stream is a full-refresh substream of `applications` that returns interview stage entry and exit events for every application selected by the start date. Join `application_history.application_id` to `applications.id` and `application_history.stageId` to `interview_stages.id` for funnel analysis. Each history sync makes one or more requests per application and does not support incremental sync, so run it on its own connection on a slow schedule. A deleted or inaccessible application is skipped and logged; any other API failure fails the sync. At approximately 1.31 requests per second with 108,100 applications, the application fan-out alone takes roughly 23 hours; pagination adds more requests.
+The `application_history` stream is a full-refresh substream of `applications`. Each record is one interview stage an application entered, with the `enteredStageAt` and `leftStageAt` timestamps that no other Ashby endpoint exposes. Join `application_history.application_id` to `applications.id` and `application_history.stageId` to `interview_stages.id`. Along with `application_id`, the connector copies the parent application's status and creation timestamp into each record as `application_status` and `application_created_at`, so you can analyze stage timing without joining back to `applications`. The stream has a primary key of `id`, so deduplicating destinations key history events instead of appending a copy on every sync.
+
+The parent application list uses the same `createdAfter` filter as the `applications` stream. A start date later than your oldest application returns partial history rather than an error.
+
+The connector requests history one application at a time, and `application.listHistory` accepts neither a date filter nor a `syncToken`, so every sync re-reads the full history of every selected application. The connector also caps this endpoint at 100 requests per minute, which puts a floor on how long a sync can take: 10,000 applications need at least 100 minutes, and applications with more than 100 history records need additional requests to paginate. Sync this stream on its own connection with an infrequent schedule rather than alongside the other streams.
+
+If Ashby returns an `application_not_found` error for an application, which happens when the application is deleted or your API key can't access it, the connector logs the application and continues. Any other error response fails the sync.
 
 ## Performance considerations
 
-Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time, so syncs are unlikely to be throttled. Ashby's rate limits apply per organization, so an API key shared with other integrations has less headroom.
+Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time, so syncs are unlikely to be throttled. Ashby's rate limits apply per organization, so an API key shared with other integrations has less headroom. To protect that shared headroom, the connector limits itself to 100 requests per minute against `application.listHistory`, the one endpoint it calls once per application. All other endpoints are unthrottled.
 
 ## IP allow list
 
