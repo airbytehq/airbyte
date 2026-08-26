@@ -2,8 +2,10 @@
 
 import datetime
 from datetime import timedelta, timezone
+from pathlib import Path
 
 import pytest
+import yaml
 
 from airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter import (
     CustomFormatConcurrentStreamStateConverter,
@@ -71,3 +73,43 @@ def test_cursor_granularity_interval_merging(granularity: timedelta, should_merg
         assert len(merged) == len(
             intervals
         ), f"Expected intervals to stay fragmented ({len(intervals)}), but got {len(merged)} after merging"
+
+
+def _load_manifest() -> dict:
+    manifest_path = Path(__file__).parent.parent / "manifest.yaml"
+    return yaml.safe_load(manifest_path.read_text())
+
+
+@pytest.mark.parametrize(
+    "locator",
+    [
+        pytest.param(
+            lambda m: m["definitions"]["streams"]["events"]["incremental_sync"],
+            id="definitions.streams.events",
+        ),
+        pytest.param(
+            lambda m: next(
+                s for s in m["streams"]
+                if s.get("type") == "DeclarativeStream" and s.get("name") == "events"
+            )["incremental_sync"],
+            id="top-level-streams[events]",
+        ),
+    ],
+)
+def test_manifest_events_cursor_granularity_matches_datetime_format_precision(locator):
+    """Regression guard for oncall #12931: `cursor_granularity` must not be finer
+    than the precision of `datetime_format`. With `datetime_format: "%s"` (epoch
+    seconds), any sub-second granularity (e.g. `PT0.000001S`) is truncated on
+    serialization, opens a ~1s gap between slice ends and the next slice start,
+    and breaks `merge_intervals` — pinning the cursor near the start date.
+
+    The events stream's incremental_sync block is inlined in two places in the
+    manifest; both must be kept aligned.
+    """
+    incremental = locator(_load_manifest())
+    assert incremental["datetime_format"] == "%s"
+    assert incremental["cursor_granularity"] == "PT1S", (
+        "cursor_granularity must be PT1S to match the epoch-second precision of "
+        'datetime_format "%s"; sub-second values are truncated on serialization '
+        "and break slice interval merging."
+    )
