@@ -172,7 +172,7 @@ These streams support incremental updates, including deletions, leveraging the [
 The initial sync operates as a full refresh. Subsequent syncs begin by reading updates from the Change Status stream, followed by syncing records based on their IDs.
 
 :::warning
-The Google Ads API caps each `ChangeStatus` query at 10,000 records. The connector works around this by splitting the requested time range into smaller slices when it hits the cap, but a range that can't be split further — more than 10,000 changes recorded within the same microsecond — can still drop updates. If you make bulk changes at that scale, run a full refresh sync to make sure every record is captured.
+The Google Ads API caps each `ChangeStatus` query at 10,000 records. When the connector hits that cap, it splits the requested time range into smaller slices and retries. The connector can't split a range any finer than one microsecond, so more than 10,000 changes recorded within the same microsecond can still drop updates. If you make bulk changes at that scale, run a full refresh sync to capture every record.
 :::
 
 ## Supported Streams
