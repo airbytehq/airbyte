@@ -41,6 +41,7 @@ Okta is the complete identity solution for all your apps and people that’s uni
 7. Choose the method of authentication
 8. If you select Token authentication - fill the field **Personal Api Token**
 9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
+9. If you select OAuth2.0 with private key authorization - fill the fields **Client ID**, **Key ID**, **Private Key**, **Scope**
 10. Click `Set up source`.
 
 ### For Airbyte Open Source:
@@ -90,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.22 | 2026-08-26 | [54167](https://github.com/airbytehq/airbyte/pull/85086) | Support multiline input for private key |
 | 0.3.21 | 2025-02-24 | [54167](https://github.com/airbytehq/airbyte/pull/54167) | Remove stream_state interpolation |
 | 0.3.20 | 2025-02-01 | [52728](https://github.com/airbytehq/airbyte/pull/52728) | Update dependencies |
 | 0.3.19 | 2025-01-25 | [52469](https://github.com/airbytehq/airbyte/pull/52469) | Update dependencies |
