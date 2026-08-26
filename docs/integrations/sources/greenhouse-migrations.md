@@ -41,12 +41,12 @@ The 36 existing streams now use their Harvest v3 collection endpoints, and this 
 - `offices.location` is a string in v3 rather than the v1 object.
 - `activity_feed` changes record grain. In v1 it returned one row per candidate whose only columns were the `activities`, `emails`, and `notes` arrays, and the stream had no primary key. It now reads `GET /v3/notes` and emits one flat row per note, with `id` as the primary key. Every existing column is replaced and the row count grows to the number of notes per candidate - drop and re-create the destination table for this stream rather than refreshing the schema in place.
 
-#### Removed and renamed top-level fields
+#### Dropped and renamed top-level fields
 
-| Stream | Removed in v3 | Renamed in v3 |
+| Stream | Dropped from this stream in v3 | Renamed in v3 |
 |---|---|---|
 | activity_feed | `activities`, `emails`, `notes` | |
-| applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_detail`, `prospective_department`, `prospective_office`, `rejection_details`, `rejection_reason`, `source` | `applied_at` -> `updated_at` |
+| applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_details`, `prospective_department`, `prospective_office`, `rejection_details`, `source` | `applied_at` -> `updated_at`; `rejection_reason` object -> `rejection_reason_id` (join to the `rejection_reasons` stream on `id`) |
 | applications_interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
 | approvals | `approver_groups`, `requested_by_user_id` | |
 | candidates | `application_ids`, `applications`, `attachments`, `coordinator`, `educations`, `employments`, `keyed_custom_fields`, `photo_url`, `recruiter` | `is_private` -> `private`, `last_activity` -> `last_activity_at` |
@@ -70,7 +70,29 @@ The 36 existing streams now use their Harvest v3 collection endpoints, and this 
 
 If you upgrade an existing connection in place, refresh the schema in every destination and reset streams whose records or fields are used downstream. Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
 
+Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and requires new OAuth scopes, so it will need a second authorization. Until then, Harvest v3 still serves this data at:
+
+| Dropped v1 field | Harvest v3 endpoint |
+|---|---|
+| `applications.attachments`, `candidates.attachments` | `GET /v3/attachments` |
+| `applications.current_stage` | `GET /v3/application_stages` (join on `applications.stage_id`) |
+| `applications.prospect_detail`, `prospective_department`, `prospective_office` | `GET /v3/prospect_details` |
+| `applications.rejection_details` | `GET /v3/rejection_details` |
+| `approvals.approver_groups` | `GET /v3/approver_groups`, `GET /v3/approvers` |
+| `candidates.educations` | `GET /v3/candidate_educations` |
+| `candidates.employments` | `GET /v3/candidate_employments` |
+| `custom_fields.departments`, `custom_fields.offices` | `GET /v3/custom_field_departments`, `GET /v3/custom_field_offices` |
+| `interviews.interviewers`, `applications_interviews.interviewers` | `GET /v3/interviewers` |
+| `job_posts.location` | `GET /v3/job_post_locations` (a job post can carry several locations in v3) |
+| `job_stages.interviews`, `jobs_stages.interviews` | `GET /v3/job_interviews`, `GET /v3/interview_kits` |
+| `jobs.hiring_team` | `GET /v3/job_hiring_managers`, `GET /v3/job_owners` |
+| `prospect_pools.prospect_stages` | `GET /v3/prospect_pool_stages` |
+| `scorecards.attributes` | `GET /v3/scorecard_candidate_attributes` |
+| `scorecards.questions` | `GET /v3/scorecard_question_answers` |
+
 `custom_fields.custom_field_options` is not removed in v3, only relocated: Harvest v3 serves it from `GET /v3/custom_field_options`. Enable the new `custom_field_options` stream and join it back to `custom_fields` on `custom_field_id` to rebuild the nested v1 array.
+
+`custom_field_options` reads that endpoint unfiltered, so it is a superset of `degrees`, `disciplines`, and `schools`, which read the same endpoint filtered by `custom_field_key` (`degree`, `discipline`, `school_name`) and share the same `id` primary key. If you enable `custom_field_options`, disable those three unless you specifically want the split tables - otherwise the same option rows land in four destination tables and every sync pages the same endpoint four times.
 
 ### Pagination and incremental state
 

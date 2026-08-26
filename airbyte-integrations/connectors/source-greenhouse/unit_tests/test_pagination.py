@@ -179,6 +179,40 @@ def test_custom_field_options_stream_is_unfiltered_and_paginated(requests_mock, 
     assert len(option_requests) == 2
 
 
+@pytest.mark.parametrize(
+    "stream_name, custom_field_key",
+    [
+        ("degrees", "degree"),
+        ("disciplines", "discipline"),
+        ("schools", "school_name"),
+    ],
+)
+def test_custom_field_option_streams_filter_on_first_page_only(requests_mock, get_source, stream_name, custom_field_key):
+    _register_token(requests_mock)
+    option_requests = []
+
+    def options_callback(request, context):
+        option_requests.append(request)
+        context.status_code = 200
+        if len(option_requests) == 1:
+            assert request.qs == {"per_page": ["500"], "custom_field_key": [custom_field_key]}
+            context.headers["Link"] = '<https://harvest.greenhouse.io/v3/custom_field_options?cursor=cursor-2>; rel="next"'
+            return [{"id": 1, "custom_field_id": 10, "name": "Bachelor's Degree"}]
+
+        assert parse_qs(request.query) == {"cursor": ["cursor-2"]}
+        return [{"id": 2, "custom_field_id": 10, "name": "Master's Degree"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/custom_field_options", json=options_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [1, 2]
+    assert len(option_requests) == 2
+
+
 def test_oauth_refresh_token_request_shape(requests_mock, get_source):
     token_requests = _register_token(requests_mock)
     requests_mock.get(
@@ -349,7 +383,7 @@ def test_manifest_flat_child_state_migration_reaches_request(requests_mock, get_
 
     assert interview_requests[0].qs == {
         "per_page": ["500"],
-        "updated_at": ["gte|2024-01-01t00:00:00.000z"],
+        "updated_at": ["gte|2023-12-31t23:00:00.000z"],
     }
 
 
@@ -416,6 +450,63 @@ def test_activity_feed_reads_notes_for_candidate_and_uses_note_id(requests_mock,
     assert note_requests[0].qs == {"per_page": ["500"], "candidate_ids": ["42"]}
     assert [record.record.data["id"] for record in output.records] == [101]
     assert output.records[0].record.data["candidate_id"] == 42
+
+
+def test_grouped_substreams_batch_parent_ids_at_the_50_id_api_cap(requests_mock, get_source):
+    """Greenhouse caps every *_ids filter at maxItems: 50, so GroupingPartitionRouter must comma-join parents in batches of at most 50 and issue one request per batch."""
+    _register_token(requests_mock)
+    note_requests = []
+
+    def candidates_callback(request, context):
+        context.status_code = 200
+        return [{"id": candidate_id, "updated_at": "2024-01-01T00:00:00.000Z"} for candidate_id in range(1, 52)]
+
+    def notes_callback(request, context):
+        note_requests.append(request)
+        context.status_code = 200
+        return [{"id": 100 + len(note_requests), "candidate_id": 1, "type": "NOTE"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/candidates", json=candidates_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/notes", json=notes_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("activity_feed", SyncMode.full_refresh).build()
+    output = read(source, config=CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert len(note_requests) == 2, "51 candidates must be split into two <=50-id batches"
+    assert note_requests[0].qs["candidate_ids"] == [",".join(str(i) for i in range(1, 51))]
+    assert note_requests[1].qs["candidate_ids"] == ["51"]
+    for request in note_requests:
+        assert len(request.qs["candidate_ids"][0].split(",")) <= 50
+
+
+def test_substream_parent_uses_full_history_while_standalone_parent_uses_start_date(requests_mock, get_source):
+    _register_token(requests_mock)
+    job_requests = []
+
+    def jobs_callback(request, context):
+        job_requests.append(request)
+        context.status_code = 200
+        return [{"id": 1, "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/jobs", json=jobs_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/openings", json=[])
+
+    source = get_source(CONFIG_WITH_START_DATE)
+    catalog = CatalogBuilder().with_stream("jobs_openings", SyncMode.full_refresh).build()
+    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+
+    assert not output.errors
+    assert job_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
+
+    configured_date = {**CONFIG, "start_date": "2025-01-01T00:00:00Z"}
+    source = get_source(configured_date)
+    catalog = CatalogBuilder().with_stream("jobs", SyncMode.incremental).build()
+    output = read(source, config=configured_date, catalog=catalog)
+
+    assert not output.errors
+    assert job_requests[1].qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z"]
 
 
 def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
@@ -500,7 +591,60 @@ def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
     }
 
     for stream_name, record in documented_examples.items():
-        validate(record, manifest["schemas"][stream_name])
+        schema = manifest["schemas"][stream_name]
+        validate(record, schema)
+        # Full documented-example coverage for every stream is a follow-up.
+        undeclared = sorted(set(record) - set(schema["properties"]))
+        assert not undeclared, (
+            f"{stream_name} schema omits documented v3 fields {undeclared}; "
+            "schemas are additionalProperties:true, so validate() alone cannot catch this"
+        )
+
+
+def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, get_source):
+    _register_token(requests_mock)
+    eeoc_requests = []
+
+    def eeoc_callback(request, context):
+        eeoc_requests.append(request)
+        context.status_code = 200
+        if len(eeoc_requests) == 1:
+            context.headers["Link"] = '<https://harvest.greenhouse.io/v3/eeoc?cursor=cursor-2>; rel="next"'
+            return [{"application_id": 1, "submitted_at": "2024-01-01T00:00:00.000Z"}]
+        return [{"application_id": 2, "submitted_at": "2024-01-02T00:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/eeoc", json=eeoc_callback)
+
+    source = get_source(CONFIG_WITH_START_DATE)
+    catalog = CatalogBuilder().with_stream("eeoc", SyncMode.incremental).build()
+    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+
+    assert not output.errors
+    assert eeoc_requests[0].qs == {
+        "per_page": ["500"],
+        "submitted_at": ["gte|1970-01-01t00:00:00.000z"],
+    }
+    assert parse_qs(eeoc_requests[1].query) == {"cursor": ["cursor-2"]}
+    assert [record.record.data["application_id"] for record in output.records] == [1, 2]
+
+
+def test_lookback_window_widens_resume_bound(requests_mock, get_source):
+    _register_token(requests_mock)
+    candidate_requests = []
+
+    def candidates_callback(request, context):
+        candidate_requests.append(request)
+        context.status_code = 200
+        return [{"id": 1, "updated_at": "2026-08-24T12:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/candidates", json=candidates_callback)
+
+    state = StateBuilder().with_stream_state("candidates", {"updated_at": "2026-08-24T12:00:00.000Z"}).build()
+    source = get_source(CONFIG_WITH_START_DATE, state=state)
+    catalog = CatalogBuilder().with_stream("candidates", SyncMode.incremental).build()
+    read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+
+    assert candidate_requests[0].qs["updated_at"] == ["gte|2026-08-24t11:00:00.000z"]
 
 
 @pytest.mark.parametrize(

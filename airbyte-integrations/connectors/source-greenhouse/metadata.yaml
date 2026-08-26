@@ -17,7 +17,11 @@ data:
   githubIssueLabel: source-greenhouse
   icon: greenhouse.svg
   license: ELv2
-  maxSecondsBetweenMessages: 10
+  # Must exceed this connector's own worst-case silent stall: the api_budget
+  # moving window can block a worker for up to 30s, and the Retry-After backoff
+  # is capped at max_waiting_time_in_seconds: 300. Only RECORD/STATE messages
+  # reset the platform heartbeat, so neither stall emits anything.
+  maxSecondsBetweenMessages: 3600
   name: Greenhouse
   remoteRegistries:
     pypi:

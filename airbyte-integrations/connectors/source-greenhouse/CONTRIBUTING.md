@@ -5,7 +5,17 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 ## Harvest v3 stream behavior
 
 This connector uses Greenhouse Harvest v3 with OAuth Authorization Code authentication and rotating refresh tokens. Cursor follow-up requests use the opaque URL from the `Link` header and must not repeat first-request-only parameters such as `per_page`, date filters, parent filters, or static filters. The `refresh_token_updater` persists each rotated refresh token. Connections idle longer than the approximately 24-hour refresh-token lifetime require manual reauthentication. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade so `applications` backfills once on the new `updated_at` cursor. Child streams preserve their minimum recoverable `updated_at` cursor while flattening partition state and resume without a backfill.
-Incremental streams use the optional `start_date` configuration value and default to all history when it is omitted.
+All streams use the v3 cursor paginator with a first-page `per_page` value of 500 (the v3 maximum; the server default is 100).
+
+v3 invariants a future edit must not break:
+
+- A request carrying `cursor` must carry **no other query parameter**. Anything else returns `422 {"errors":["When passing a cursor, do not include other query params."]}`. This is why every first-page parameter is wrapped in `{{ ... if not next_page_token }}`.
+- Only six streams have a partition router: `demographics_answers_answer_options`, `demographics_question_sets_questions`, `jobs_openings`, `activity_feed`, `approvals`, `user_permissions`. All six use `GroupingPartitionRouter` with `partition_field: parent_id`; the partition value is a list joined with `,`. `group_size: 50` is pinned by the documented `maxItems: 50` on every `*_ids` filter - do not raise it.
+- v3 paginates by primary key **descending**, not by cursor field. Do not add `step`-based slicing or mid-stream checkpointing without also sending an `lte|` upper bound.
+- `users` must send `show_service_accounts=true` on the first page; v3 hides integration service users by default.
+- `/v3/demographic_questions` and `/v3/demographic_answer_options` expose no `created_at`/`updated_at` filter, which is why those streams are full refresh.
+- List endpoints return an empty array rather than an error when the authorizing Greenhouse user is not a Site Admin.
+- `job_ids` on `/v3/approval_flows` excludes `offer_candidate` flows.
 
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
@@ -46,5 +56,3 @@ Incremental streams use the optional `start_date` configuration value and defaul
 | tags | top-level | none | none | full refresh |
 | user_roles | top-level | none | none | full refresh |
 | user_permissions | child | none | user_ids | full refresh |
-
-All streams use the v3 cursor paginator with a first-page `per_page` value of 500. Parent partition fields remain `application_id`, `job_id`, or `parent_id` as defined by the existing stream relationships.

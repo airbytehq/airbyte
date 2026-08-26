@@ -26,6 +26,30 @@ definitions:
           Site Admin privileges and requires the matching harvest:<resource>:list OAuth
           scope. Re-run the Authenticate step signed in to Greenhouse as a Site Admin
           and confirm the OAuth grant includes every scope this connector requests.
+      - type: HttpResponseFilter
+        http_codes:
+          - 422
+        action: FAIL
+        failure_type: system_error
+        error_message: >-
+          Greenhouse returned 422 for this Harvest v3 request. v3 rejects a request that
+          sends cursor alongside any other query parameter, a malformed or expired cursor,
+          and a per_page outside 1-500. Every first-page-only parameter in this manifest is
+          wrapped in "{{ ... if not next_page_token }}" for exactly this reason - check that
+          guard before changing any request_parameters block.
+  # Substream parents are always read over full history: their children are
+  # full-refresh streams whose coverage would otherwise be silently truncated by
+  # the user's start_date.
+  full_history_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: updated_at
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%_msZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1970-01-01T00:00:00Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
   streams:
     applications:
       type: DeclarativeStream
@@ -57,7 +81,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -107,7 +130,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -118,6 +140,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -156,7 +179,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -167,6 +189,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -202,7 +225,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -213,6 +235,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -247,7 +270,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -282,7 +304,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -317,7 +338,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -353,7 +373,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -389,7 +408,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -400,6 +418,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -434,7 +453,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -469,7 +487,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -505,7 +522,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         partition_router:
@@ -552,7 +568,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -588,7 +603,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         partition_router:
@@ -635,7 +649,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -671,7 +684,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -682,6 +694,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -717,7 +730,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         partition_router:
@@ -732,6 +744,8 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/jobs"
+                incremental_sync:
+                  $ref: "#/definitions/full_history_cursor"
         decoder:
           type: JsonDecoder
       schema_loader:
@@ -765,7 +779,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -776,6 +789,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -798,6 +812,7 @@ definitions:
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
             updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            active: "{{ stream_partition['active'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -811,9 +826,14 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: active
+          values:
+            - "true"
+            - "false"
         decoder:
           type: JsonDecoder
       incremental_sync:
@@ -822,6 +842,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -857,7 +878,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -868,6 +888,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -906,7 +927,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -917,6 +937,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -952,7 +973,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -963,6 +983,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -984,6 +1005,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
+            include_defaults: "{{ 'true' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -997,7 +1019,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1033,7 +1054,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1048,6 +1068,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -1078,7 +1099,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1115,7 +1135,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1126,6 +1145,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -1166,13 +1186,14 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/candidates"
+                incremental_sync:
+                  $ref: "#/definitions/full_history_cursor"
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1196,7 +1217,6 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            job_ids: "{{ stream_partition.parent_id | join(',') if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1204,25 +1224,12 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path: []
-        partition_router:
-          type: GroupingPartitionRouter
-          group_size: 50
-          deduplicate: true
-          underlying_partition_router:
-            type: SubstreamPartitionRouter
-            parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/jobs"
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1260,7 +1267,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1298,7 +1304,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1337,7 +1342,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1348,6 +1352,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -1383,7 +1388,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1394,6 +1398,7 @@ definitions:
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%_msZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%_msZ"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_date'] or '1970-01-01T00:00:00Z' }}"
@@ -1428,7 +1433,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1463,7 +1467,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1497,7 +1500,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1535,7 +1537,6 @@ definitions:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1576,13 +1577,14 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/users"
+                incremental_sync:
+                  $ref: "#/definitions/full_history_cursor"
         paginator:
           type: DefaultPaginator
           page_token_option:
             type: RequestPath
           pagination_strategy:
             type: CursorPagination
-            page_size: 500
             cursor_value: "{{ headers['link']['next']['url'] }}"
             stop_condition: "{{ 'next' not in headers['link'] }}"
         decoder:
@@ -1918,7 +1920,7 @@ metadata:
     interviews:
       streamHash: 5aedad64562f6c8f70b6c3c2ba66705fa758d78e
     job_posts:
-      streamHash: edffe9483bfcc307ead8a4a3bbf501ceb5b8f64c
+      streamHash: 4b7a7ea486a449d75d7c750e6c52f0f5f8a8c2dd
     job_stages:
       streamHash: e1befca76321a391c1702a7e8bdc5926c91fe8f2
     jobs_stages:
@@ -2006,9 +2008,30 @@ schemas:
         - string
         format: date-time
       custom_fields:
+        description: Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
         type:
         - 'null'
         - object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+              - number
+              - integer
+              - boolean
+              - object
+              - array
       id:
         type:
         - 'null'
@@ -2074,6 +2097,11 @@ schemas:
         - 'null'
         - string
         format: date-time
+      rejection_reason_id:
+        description: Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason, or has not been rejected.
+        type:
+        - 'null'
+        - integer
       source_id:
         description: Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
         type:
@@ -2278,9 +2306,30 @@ schemas:
         - string
         format: date-time
       custom_fields:
+        description: Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
         type:
         - 'null'
         - object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+              - number
+              - integer
+              - boolean
+              - object
+              - array
       email_addresses:
         description: Email addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `work`, or `other`.
         type:
@@ -2470,8 +2519,6 @@ schemas:
         - string
         - number
         - boolean
-        - object
-        - array
       description:
         description: Helper text shown beneath the field label in the UI. Plain text, no markup.
         type:
@@ -3009,9 +3056,30 @@ schemas:
         - string
         format: date-time
       custom_fields:
+        description: Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
         type:
         - 'null'
         - object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+              - number
+              - integer
+              - boolean
+              - object
+              - array
       department_id:
         description: Id of the department this job is assigned to. `null` when no department is set.
         type:
@@ -3095,9 +3163,30 @@ schemas:
         - string
         format: date-time
       custom_fields:
+        description: Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
         type:
         - 'null'
         - object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+              - number
+              - integer
+              - boolean
+              - object
+              - array
       id:
         type:
         - 'null'
@@ -3494,9 +3583,30 @@ schemas:
         - string
         format: date-time
       custom_fields:
+        description: Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
         type:
         - 'null'
         - object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+              - number
+              - integer
+              - boolean
+              - object
+              - array
       id:
         type:
         - 'null'
@@ -3744,9 +3854,30 @@ schemas:
         - string
         format: date-time
       custom_fields:
+        description: Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
         type:
         - 'null'
         - object
+        additionalProperties:
+          type: object
+          properties:
+            name:
+              type:
+              - 'null'
+              - string
+            type:
+              type:
+              - 'null'
+              - string
+            value:
+              type:
+              - 'null'
+              - string
+              - number
+              - integer
+              - boolean
+              - object
+              - array
       deactivated:
         description: Whether the user has been deactivated. Deactivated users cannot sign in or be assigned to new jobs, but their historical activity (notes, scorecards, emails) is preserved. Toggle via `POST /v3/users/{id}/deactivate` and `POST /v3/users/{id}/activate`.
         type:
