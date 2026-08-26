@@ -178,6 +178,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
 | 0.3.0 | 2026-08-25 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Include archived records in all streams (`includeArchived: true`) and declare `archivedAt` (and `trashed` on issues/projects) in stream schemas; the first sync after upgrade backfills previously invisible archived records and may transfer a large one-time volume |
 | 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |
 | 0.2.22 | 2026-08-25 | [84954](https://github.com/airbytehq/airbyte/pull/84954) | Add proactive rate-limit pacing for Linear API requests |
