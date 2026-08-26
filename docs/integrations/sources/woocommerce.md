@@ -8,7 +8,8 @@ To set up the WooCommerce source connector, you need:
 
 - WooCommerce 3.5 or later
 - WordPress 4.4 or later
-- Pretty permalinks enabled in **Settings > Permalinks** so that custom endpoints are supported. For example, `/%year%/%monthnum%/%day%/%postname%/`.
+- Pretty permalinks enabled in **Settings > Permalinks** so that custom endpoints are supported. For example, `/%year%/%monthnum%/%day%/%postname%/`. Default permalinks don't work.
+- A store reachable over HTTPS. The connector authenticates with HTTP Basic authentication over `https://<your-shop>/wp-json/wc/v3`, so a valid TLS certificate is required.
 
 You also need a WooCommerce REST API key with read permissions. The setup process generates a **Consumer key** and **Consumer secret** that you use to authenticate.
 
@@ -18,9 +19,13 @@ You also need a WooCommerce REST API key with read permissions. The setup proces
 
 1. In your WordPress admin panel, go to **WooCommerce > Settings > Advanced > REST API**.
 2. Click **Add key**.
-3. Enter a description, select a user with access to your store data, and set the permissions to **Read**.
+3. Enter a description, select the WordPress user the key belongs to, and set the permissions to **Read**.
 4. Click **Generate API key**.
 5. Copy the **Consumer key** and **Consumer secret**. The consumer secret is only displayed once.
+
+Requests made with the key inherit the selected user's WordPress roles and capabilities, so choose a user who can read everything you want to sync. Administrator or shop manager accounts cover all streams. If the WordPress user is deleted later, the key stops working and you must generate a new one.
+
+Airbyte tests the connection by reading the `System status tools` endpoint (`/system_status/tools`). If the key's user can't access WooCommerce system status, the connection test fails even when the streams you want to sync are readable.
 
 For more details, see the [WooCommerce REST API authentication documentation](https://woocommerce.github.io/woocommerce-rest-api-docs/#authentication).
 
@@ -63,27 +68,33 @@ The WooCommerce source connector supports the following [sync modes](https://doc
 
 ## Supported streams
 
-- [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) (Incremental)
-- [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) (Incremental)
-- [Orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) (Incremental)
-- [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes)
-- [Payment gateways](https://woocommerce.github.io/woocommerce-rest-api-docs/#payment-gateways)
-- [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms)
-- [Product attributes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attributes)
-- [Product categories](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-categories)
-- [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) (Incremental)
-- [Product shipping classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-shipping-classes)
-- [Product tags](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-tags)
-- [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations)
-- [Products](https://woocommerce.github.io/woocommerce-rest-api-docs/#products) (Incremental)
-- [Refunds](https://woocommerce.github.io/woocommerce-rest-api-docs/#refunds)
-- [Shipping methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-methods)
-- [Shipping zone locations](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-locations)
-- [Shipping zone methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-methods)
-- [Shipping zones](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zones)
-- [System status tools](https://woocommerce.github.io/woocommerce-rest-api-docs/#system-status-tools)
-- [Tax classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-classes)
-- [Tax rates](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-rates)
+| Stream | Cursor field | Notes |
+| ------ | ------------ | ----- |
+| [Coupons](https://woocommerce.github.io/woocommerce-rest-api-docs/#coupons) | `date_modified_gmt` | |
+| [Customers](https://woocommerce.github.io/woocommerce-rest-api-docs/#customers) | `date_modified_gmt` | The WooCommerce customers endpoint can't filter by modification date, so Airbyte reads all customers on every sync and discards records older than the cursor. |
+| [Orders](https://woocommerce.github.io/woocommerce-rest-api-docs/#orders) | `date_modified_gmt` | |
+| [Order notes](https://woocommerce.github.io/woocommerce-rest-api-docs/#order-notes) | | Child of **Orders**. Airbyte makes one request per order. |
+| [Payment gateways](https://woocommerce.github.io/woocommerce-rest-api-docs/#payment-gateways) | | |
+| [Product attributes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attributes) | | |
+| [Product attribute terms](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-attribute-terms) | | Child of **Product attributes**. Airbyte makes one request per attribute. |
+| [Product categories](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-categories) | | |
+| [Product reviews](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-reviews) | `date_created_gmt` | Incremental syncs track when a review was created, not when it was last edited, so later edits to an existing review aren't picked up. |
+| [Product shipping classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-shipping-classes) | | |
+| [Product tags](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-tags) | | |
+| [Product variations](https://woocommerce.github.io/woocommerce-rest-api-docs/#product-variations) | | Child of **Products**. Airbyte makes one request per product. |
+| [Products](https://woocommerce.github.io/woocommerce-rest-api-docs/#products) | `date_modified_gmt` | |
+| [Refunds](https://woocommerce.github.io/woocommerce-rest-api-docs/#refunds) | | Child of **Orders**. Airbyte makes one request per order. |
+| [Shipping methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-methods) | | |
+| [Shipping zone locations](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-locations) | | Child of **Shipping zones**. Airbyte makes one request per zone. |
+| [Shipping zone methods](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zone-methods) | | Child of **Shipping zones**. Airbyte makes one request per zone. |
+| [Shipping zones](https://woocommerce.github.io/woocommerce-rest-api-docs/#shipping-zones) | | |
+| [System status tools](https://woocommerce.github.io/woocommerce-rest-api-docs/#system-status-tools) | | Airbyte uses this stream for the connection test. |
+| [Tax classes](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-classes) | | |
+| [Tax rates](https://woocommerce.github.io/woocommerce-rest-api-docs/#tax-rates) | | |
+
+Streams with a cursor field support incremental syncs. All other streams are full refresh only. The **Start Date** you configure applies to incremental streams; full refresh streams always return everything the API exposes.
+
+Child streams read their parent records automatically, whether or not you selected the parent in your connection. Because they issue one request per parent record, they're much slower than top-level streams on large stores.
 
 ## Limitations & Troubleshooting
 
@@ -100,6 +111,14 @@ The WooCommerce REST API does not enforce built-in rate limits. Actual rate limi
 
 If your hosting environment supports higher throughput, you can increase the **Number of Concurrent Threads** setting (up to 12) in the connector configuration to speed up syncs. If you experience rate limiting errors, reduce this value.
 
+### Troubleshooting
+
+#### Missing product attribute terms
+
+WooCommerce can list a product attribute whose underlying WordPress taxonomy no longer exists, usually after a plugin is removed or an attribute is deleted directly in the database. Requesting terms for such an attribute returns the `woocommerce_rest_taxonomy_invalid` error. Starting with version 0.5.49, the connector skips these attributes and continues the sync, so the `Product attribute terms` stream contains no rows for them. The attribute itself still syncs in the `Product attributes` stream.
+
+If you expect terms for one of those attributes, check it in **Products > Attributes** in your WordPress admin panel. WooCommerce can only return terms for attributes whose taxonomy is still registered in WordPress.
+
 </details>
 
 ## IP allow list
@@ -113,7 +132,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
-| 0.5.49 | 2026-08-25 | [85030](https://github.com/airbytehq/airbyte/pull/85030) | Skip product attributes whose WooCommerce taxonomy no longer exists instead of failing the sync |
+| 0.5.49 | 2026-08-26 | [85030](https://github.com/airbytehq/airbyte/pull/85030) | Skip product attributes whose WooCommerce taxonomy no longer exists instead of failing the sync |
 | 0.5.48 | 2026-08-18 | [84829](https://github.com/airbytehq/airbyte/pull/84829) | Update dependencies |
 | 0.5.47 | 2026-08-11 | [84188](https://github.com/airbytehq/airbyte/pull/84188) | Update dependencies |
 | 0.5.46 | 2026-08-04 | [83676](https://github.com/airbytehq/airbyte/pull/83676) | Update dependencies |
