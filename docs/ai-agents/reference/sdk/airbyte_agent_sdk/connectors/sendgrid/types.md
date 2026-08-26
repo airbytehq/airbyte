@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlocksAnyCondition"></a>
@@ -103,7 +103,7 @@ Classes
 <a id="BlocksContainsCondition"></a>
 
 `BlocksContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -112,6 +112,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BlocksEndswithCondition"></a>
+
+`BlocksEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.BlocksStringFilter`
     :   The type of the None singleton.
 
 <a id="BlocksEqCondition"></a>
@@ -229,20 +243,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.BlocksStringFilter`
     :   The type of the None singleton.
 
-<a id="BlocksLikeCondition"></a>
-
-`BlocksLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.BlocksStringFilter`
-    :   The type of the None singleton.
-
 <a id="BlocksListParams"></a>
 
 `BlocksListParams(*args, **kwargs)`
@@ -321,7 +321,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition`
     :   The type of the None singleton.
 
 <a id="BlocksOrCondition"></a>
@@ -343,7 +343,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlocksSearchFilter"></a>
@@ -380,7 +380,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.BlocksEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BlocksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.BlocksSortFilter]`
@@ -409,10 +409,24 @@ Classes
     `status: Literal['asc', 'desc']`
     :   The status code for the block
 
+<a id="BlocksStartswithCondition"></a>
+
+`BlocksStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.BlocksStringFilter`
+    :   The type of the None singleton.
+
 <a id="BlocksStringFilter"></a>
 
 `BlocksStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -451,7 +465,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BouncesAnyCondition"></a>
@@ -502,7 +516,7 @@ Classes
 <a id="BouncesContainsCondition"></a>
 
 `BouncesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -511,6 +525,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BouncesEndswithCondition"></a>
+
+`BouncesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.BouncesStringFilter`
     :   The type of the None singleton.
 
 <a id="BouncesEqCondition"></a>
@@ -628,20 +656,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.BouncesStringFilter`
     :   The type of the None singleton.
 
-<a id="BouncesLikeCondition"></a>
-
-`BouncesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.BouncesStringFilter`
-    :   The type of the None singleton.
-
 <a id="BouncesListParams"></a>
 
 `BouncesListParams(*args, **kwargs)`
@@ -720,7 +734,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition`
     :   The type of the None singleton.
 
 <a id="BouncesOrCondition"></a>
@@ -742,7 +756,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BouncesSearchFilter"></a>
@@ -779,7 +793,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.BouncesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.BouncesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.BouncesSortFilter]`
@@ -808,10 +822,24 @@ Classes
     `status: Literal['asc', 'desc']`
     :   The enhanced status code for the bounce
 
+<a id="BouncesStartswithCondition"></a>
+
+`BouncesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.BouncesStringFilter`
+    :   The type of the None singleton.
+
 <a id="BouncesStringFilter"></a>
 
 `BouncesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -850,7 +878,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -910,7 +938,7 @@ Classes
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -919,6 +947,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CampaignsEndswithCondition"></a>
+
+`CampaignsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsEqCondition"></a>
@@ -1045,20 +1087,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsLikeCondition"></a>
-
-`CampaignsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
@@ -1134,7 +1162,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -1156,7 +1184,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -1202,7 +1230,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.CampaignsSortFilter]`
@@ -1240,10 +1268,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the campaign was last updated
 
+<a id="CampaignsStartswithCondition"></a>
+
+`CampaignsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.CampaignsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsStringFilter"></a>
 
 `CampaignsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1291,7 +1333,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsAnyCondition"></a>
@@ -1390,7 +1432,7 @@ Classes
 <a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1399,6 +1441,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ContactsEndswithCondition"></a>
+
+`ContactsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.ContactsStringFilter`
     :   The type of the None singleton.
 
 <a id="ContactsEqCondition"></a>
@@ -1578,20 +1634,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.ContactsStringFilter`
     :   The type of the None singleton.
 
-<a id="ContactsLikeCondition"></a>
-
-`ContactsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.ContactsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ContactsListParams"></a>
 
 `ContactsListParams(*args, **kwargs)`
@@ -1662,7 +1704,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ContactsOrCondition"></a>
@@ -1684,7 +1726,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsSearchFilter"></a>
@@ -1769,7 +1811,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.ContactsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.ContactsSortFilter]`
@@ -1846,10 +1888,24 @@ Classes
     `whatsapp: Literal['asc', 'desc']`
     :   WhatsApp number
 
+<a id="ContactsStartswithCondition"></a>
+
+`ContactsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.ContactsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ContactsStringFilter"></a>
 
 `ContactsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1936,7 +1992,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GlobalSuppressionsAnyCondition"></a>
@@ -1981,7 +2037,7 @@ Classes
 <a id="GlobalSuppressionsContainsCondition"></a>
 
 `GlobalSuppressionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1990,6 +2046,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="GlobalSuppressionsEndswithCondition"></a>
+
+`GlobalSuppressionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStringFilter`
     :   The type of the None singleton.
 
 <a id="GlobalSuppressionsEqCondition"></a>
@@ -2101,20 +2171,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStringFilter`
     :   The type of the None singleton.
 
-<a id="GlobalSuppressionsLikeCondition"></a>
-
-`GlobalSuppressionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="GlobalSuppressionsListParams"></a>
 
 `GlobalSuppressionsListParams(*args, **kwargs)`
@@ -2193,7 +2249,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="GlobalSuppressionsOrCondition"></a>
@@ -2215,7 +2271,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GlobalSuppressionsSearchFilter"></a>
@@ -2246,7 +2302,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsSortFilter]`
@@ -2269,10 +2325,24 @@ Classes
     `email: Literal['asc', 'desc']`
     :   The globally suppressed email address
 
+<a id="GlobalSuppressionsStartswithCondition"></a>
+
+`GlobalSuppressionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.GlobalSuppressionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="GlobalSuppressionsStringFilter"></a>
 
 `GlobalSuppressionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2305,7 +2375,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvalidEmailsAnyCondition"></a>
@@ -2353,7 +2423,7 @@ Classes
 <a id="InvalidEmailsContainsCondition"></a>
 
 `InvalidEmailsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2362,6 +2432,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InvalidEmailsEndswithCondition"></a>
+
+`InvalidEmailsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStringFilter`
     :   The type of the None singleton.
 
 <a id="InvalidEmailsEqCondition"></a>
@@ -2476,20 +2560,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStringFilter`
     :   The type of the None singleton.
 
-<a id="InvalidEmailsLikeCondition"></a>
-
-`InvalidEmailsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStringFilter`
-    :   The type of the None singleton.
-
 <a id="InvalidEmailsListParams"></a>
 
 `InvalidEmailsListParams(*args, **kwargs)`
@@ -2568,7 +2638,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition`
     :   The type of the None singleton.
 
 <a id="InvalidEmailsOrCondition"></a>
@@ -2590,7 +2660,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvalidEmailsSearchFilter"></a>
@@ -2624,7 +2694,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsSortFilter]`
@@ -2650,10 +2720,24 @@ Classes
     `reason: Literal['asc', 'desc']`
     :   The reason the email is invalid
 
+<a id="InvalidEmailsStartswithCondition"></a>
+
+`InvalidEmailsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.InvalidEmailsStringFilter`
+    :   The type of the None singleton.
+
 <a id="InvalidEmailsStringFilter"></a>
 
 `InvalidEmailsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2689,7 +2773,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsAnyCondition"></a>
@@ -2740,7 +2824,7 @@ Classes
 <a id="ListsContainsCondition"></a>
 
 `ListsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2749,6 +2833,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ListsEndswithCondition"></a>
+
+`ListsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.ListsStringFilter`
     :   The type of the None singleton.
 
 <a id="ListsEqCondition"></a>
@@ -2880,20 +2978,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.ListsStringFilter`
     :   The type of the None singleton.
 
-<a id="ListsLikeCondition"></a>
-
-`ListsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.ListsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ListsListParams"></a>
 
 `ListsListParams(*args, **kwargs)`
@@ -2969,7 +3053,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ListsOrCondition"></a>
@@ -2991,7 +3075,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsSearchFilter"></a>
@@ -3028,7 +3112,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.ListsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.ListsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.ListsSortFilter]`
@@ -3057,10 +3141,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Name of the list
 
+<a id="ListsStartswithCondition"></a>
+
+`ListsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.ListsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ListsStringFilter"></a>
 
 `ListsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3099,7 +3197,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SegmentsAnyCondition"></a>
@@ -3168,7 +3266,7 @@ Classes
 <a id="SegmentsContainsCondition"></a>
 
 `SegmentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3177,6 +3275,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SegmentsEndswithCondition"></a>
+
+`SegmentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStringFilter`
     :   The type of the None singleton.
 
 <a id="SegmentsEqCondition"></a>
@@ -3326,20 +3438,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStringFilter`
     :   The type of the None singleton.
 
-<a id="SegmentsLikeCondition"></a>
-
-`SegmentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SegmentsListParams"></a>
 
 `SegmentsListParams(*args, **kwargs)`
@@ -3410,7 +3508,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SegmentsOrCondition"></a>
@@ -3432,7 +3530,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SegmentsSearchFilter"></a>
@@ -3487,7 +3585,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SegmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.SegmentsSortFilter]`
@@ -3534,10 +3632,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the segment was last updated
 
+<a id="SegmentsStartswithCondition"></a>
+
+`SegmentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.SegmentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SegmentsStringFilter"></a>
 
 `SegmentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3594,7 +3706,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SinglesendStatsAnyCondition"></a>
@@ -3648,7 +3760,7 @@ Classes
 <a id="SinglesendStatsContainsCondition"></a>
 
 `SinglesendStatsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3657,6 +3769,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SinglesendStatsEndswithCondition"></a>
+
+`SinglesendStatsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStringFilter`
     :   The type of the None singleton.
 
 <a id="SinglesendStatsEqCondition"></a>
@@ -3777,20 +3903,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStringFilter`
     :   The type of the None singleton.
 
-<a id="SinglesendStatsLikeCondition"></a>
-
-`SinglesendStatsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SinglesendStatsListParams"></a>
 
 `SinglesendStatsListParams(*args, **kwargs)`
@@ -3866,7 +3978,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SinglesendStatsOrCondition"></a>
@@ -3888,7 +4000,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SinglesendStatsSearchFilter"></a>
@@ -3928,7 +4040,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsSortFilter]`
@@ -3960,10 +4072,24 @@ Classes
     `stats: Literal['asc', 'desc']`
     :   Email statistics for the single send
 
+<a id="SinglesendStatsStartswithCondition"></a>
+
+`SinglesendStatsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendStatsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SinglesendStatsStringFilter"></a>
 
 `SinglesendStatsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4005,7 +4131,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SinglesendsAnyCondition"></a>
@@ -4068,7 +4194,7 @@ Classes
 <a id="SinglesendsContainsCondition"></a>
 
 `SinglesendsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4077,6 +4203,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SinglesendsEndswithCondition"></a>
+
+`SinglesendsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStringFilter`
     :   The type of the None singleton.
 
 <a id="SinglesendsEqCondition"></a>
@@ -4220,20 +4360,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStringFilter`
     :   The type of the None singleton.
 
-<a id="SinglesendsLikeCondition"></a>
-
-`SinglesendsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SinglesendsListParams"></a>
 
 `SinglesendsListParams(*args, **kwargs)`
@@ -4309,7 +4435,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SinglesendsOrCondition"></a>
@@ -4331,7 +4457,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SinglesendsSearchFilter"></a>
@@ -4380,7 +4506,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsSortFilter]`
@@ -4421,10 +4547,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   When the single send was last updated
 
+<a id="SinglesendsStartswithCondition"></a>
+
+`SinglesendsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.SinglesendsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SinglesendsStringFilter"></a>
 
 `SinglesendsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4492,7 +4632,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupMembersAnyCondition"></a>
@@ -4543,7 +4683,7 @@ Classes
 <a id="SuppressionGroupMembersContainsCondition"></a>
 
 `SuppressionGroupMembersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4552,6 +4692,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SuppressionGroupMembersEndswithCondition"></a>
+
+`SuppressionGroupMembersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStringFilter`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupMembersEqCondition"></a>
@@ -4669,20 +4823,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStringFilter`
     :   The type of the None singleton.
 
-<a id="SuppressionGroupMembersLikeCondition"></a>
-
-`SuppressionGroupMembersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStringFilter`
-    :   The type of the None singleton.
-
 <a id="SuppressionGroupMembersListParams"></a>
 
 `SuppressionGroupMembersListParams(*args, **kwargs)`
@@ -4761,7 +4901,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupMembersOrCondition"></a>
@@ -4783,7 +4923,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupMembersSearchFilter"></a>
@@ -4820,7 +4960,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersSortFilter]`
@@ -4849,10 +4989,24 @@ Classes
     `group_name: Literal['asc', 'desc']`
     :   Name of the suppression group
 
+<a id="SuppressionGroupMembersStartswithCondition"></a>
+
+`SuppressionGroupMembersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupMembersStringFilter`
+    :   The type of the None singleton.
+
 <a id="SuppressionGroupMembersStringFilter"></a>
 
 `SuppressionGroupMembersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4891,7 +5045,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupsAnyCondition"></a>
@@ -4945,7 +5099,7 @@ Classes
 <a id="SuppressionGroupsContainsCondition"></a>
 
 `SuppressionGroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4954,6 +5108,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SuppressionGroupsEndswithCondition"></a>
+
+`SuppressionGroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupsEqCondition"></a>
@@ -5088,20 +5256,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="SuppressionGroupsLikeCondition"></a>
-
-`SuppressionGroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SuppressionGroupsListParams"></a>
 
 `SuppressionGroupsListParams(*args, **kwargs)`
@@ -5172,7 +5326,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupsOrCondition"></a>
@@ -5194,7 +5348,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SuppressionGroupsSearchFilter"></a>
@@ -5234,7 +5388,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsInCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsSortFilter]`
@@ -5266,10 +5420,24 @@ Classes
     `unsubscribes: Literal['asc', 'desc']`
     :   Number of unsubscribes in this group
 
+<a id="SuppressionGroupsStartswithCondition"></a>
+
+`SuppressionGroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.SuppressionGroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SuppressionGroupsStringFilter"></a>
 
 `SuppressionGroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5311,7 +5479,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TemplatesAnyCondition"></a>
@@ -5365,7 +5533,7 @@ Classes
 <a id="TemplatesContainsCondition"></a>
 
 `TemplatesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5374,6 +5542,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TemplatesEndswithCondition"></a>
+
+`TemplatesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStringFilter`
     :   The type of the None singleton.
 
 <a id="TemplatesEqCondition"></a>
@@ -5508,20 +5690,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStringFilter`
     :   The type of the None singleton.
 
-<a id="TemplatesLikeCondition"></a>
-
-`TemplatesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStringFilter`
-    :   The type of the None singleton.
-
 <a id="TemplatesListParams"></a>
 
 `TemplatesListParams(*args, **kwargs)`
@@ -5600,7 +5768,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="TemplatesOrCondition"></a>
@@ -5622,7 +5790,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TemplatesSearchFilter"></a>
@@ -5662,7 +5830,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLikeCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNeqCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesGteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLtCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesLteCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesInCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStartswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesEndswithCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesFuzzyCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesKeywordCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesContainsCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesNotCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAndCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesOrCondition | airbyte_agent_sdk.connectors.sendgrid.types.TemplatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sendgrid.types.TemplatesSortFilter]`
@@ -5694,10 +5862,24 @@ Classes
     `versions: Literal['asc', 'desc']`
     :   Template versions
 
+<a id="TemplatesStartswithCondition"></a>
+
+`TemplatesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.sendgrid.types.TemplatesStringFilter`
+    :   The type of the None singleton.
+
 <a id="TemplatesStringFilter"></a>
 
 `TemplatesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

@@ -1751,7 +1751,7 @@ Classes
     :   Flag indicating if the job post is internal or not.
 
     `internal_content: str | None`
-    :   Internal content or description of the job post.
+    :   The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`.
 
     `job_id: int | None`
     :   ID of the job associated with the job post.

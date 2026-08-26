@@ -65,4 +65,7 @@ data:
     - title: WooCommerce Developer Changelog
       url: https://developer.woocommerce.com/changelog/
       type: api_release_history
+    - title: WooCommerce plugin source code
+      url: https://github.com/woocommerce/woocommerce
+      type: code_repository
 metadataSpecVersion: "1.0"

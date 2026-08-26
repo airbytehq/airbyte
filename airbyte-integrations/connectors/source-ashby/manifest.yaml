@@ -1,5 +1,15 @@
 version: 4.3.0
 type: DeclarativeSource
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 100
+          interval: PT1M
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: /application\.listHistory
 check:
   type: CheckStream
   stream_names:
@@ -37,7 +47,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -261,7 +271,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -319,7 +329,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -373,7 +383,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -677,7 +687,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -757,7 +767,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -833,7 +843,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -912,7 +922,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1055,7 +1065,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1158,7 +1168,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1228,7 +1238,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1356,7 +1366,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1529,7 +1539,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1616,7 +1626,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1736,7 +1746,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1807,7 +1817,7 @@ streams:
         page_size_option:
           type: RequestOption
           inject_into: body_json
-          field_name: per_page
+          field_name: limit
         pagination_strategy:
           type: CursorPagination
           page_size: 100
@@ -1922,7 +1932,7 @@ streams:
                   page_size_option:
                     type: RequestOption
                     inject_into: body_json
-                    field_name: per_page
+                    field_name: limit
                   pagination_strategy:
                     type: CursorPagination
                     page_size: 100
@@ -1943,6 +1953,7 @@ streams:
         fields:
           - path:
               - application_id
+            type: AddedFieldDefinition
             value: "{{ stream_partition.application_id }}"
     schema_loader:
       type: InlineSchemaLoader
@@ -2025,6 +2036,204 @@ streams:
             type:
               - "null"
               - string
+  - type: DeclarativeStream
+    name: application_history
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /application.listHistory
+        http_method: POST
+        request_body_json:
+          applicationId: "{{ stream_partition.application_id }}"
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: RATE_LIMITED
+              http_codes:
+                - 429
+            - type: HttpResponseFilter
+              action: RETRY
+              http_codes:
+                - 500
+                - 502
+                - 503
+                - 504
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: >-
+                {{ response.get('success', true) == false and
+                response.get('errorInfo', {}).get('code') == 'application_not_found' }}
+              error_message: >-
+                application.listHistory skipped this application's history
+                (Ashby request ID:
+                {{ response.get('errorInfo', {}).get('requestId', 'unavailable') }}).
+            - type: HttpResponseFilter
+              action: FAIL
+              predicate: "{{ response.get('success', true) == false }}"
+              error_message: >-
+                application.listHistory failed with code
+                {{ response.get('errorInfo', {}).get('code', 'unknown') }}:
+                {{ response.get('errorInfo', {}).get('message') or
+                (response.get('errors') and response.get('errors')[0].get('message')) or
+                'Unknown error' }}.
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+          stop_condition: "{{ not response.moreDataAvailable }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              type: DeclarativeStream
+              name: applications_for_history
+              primary_key:
+                - id
+              retriever:
+                type: SimpleRetriever
+                requester:
+                  type: HttpRequester
+                  url_base: https://api.ashbyhq.com
+                  authenticator:
+                    type: BasicHttpAuthenticator
+                    username: "{{ config['api_key'] }}"
+                    password: "{{ config['api_key'] }}"
+                  path: /application.list
+                  http_method: POST
+                  request_body_json:
+                    createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+                record_selector:
+                  type: RecordSelector
+                  extractor:
+                    type: DpathExtractor
+                    field_path:
+                      - results
+                paginator:
+                  type: DefaultPaginator
+                  page_token_option:
+                    type: RequestOption
+                    inject_into: body_json
+                    field_name: cursor
+                  page_size_option:
+                    type: RequestOption
+                    inject_into: body_json
+                    field_name: limit
+                  pagination_strategy:
+                    type: CursorPagination
+                    page_size: 100
+                    cursor_value: "{{ response.nextCursor }}"
+                    stop_condition: "{{ not response.moreDataAvailable }}"
+              schema_loader:
+                type: InlineSchemaLoader
+                schema:
+                  type: object
+                  $schema: http://json-schema.org/draft-07/schema#
+                  additionalProperties: true
+                  properties:
+                    id:
+                      type: string
+            parent_key: id
+            partition_field: application_id
+            extra_fields:
+              - - status
+              - - createdAt
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - application_id
+            value: "{{ stream_partition.application_id }}"
+          - type: AddedFieldDefinition
+            path:
+              - application_status
+            value: "{{ stream_slice.extra_fields['status'] }}"
+          - type: AddedFieldDefinition
+            path:
+              - application_created_at
+            value: "{{ stream_slice.extra_fields['createdAt'] }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+            format: uuid
+          application_id:
+            type:
+              - "null"
+              - string
+          application_status:
+            type:
+              - "null"
+              - string
+          application_created_at:
+            type:
+              - "null"
+              - string
+            format: date-time
+          stageId:
+            type:
+              - "null"
+              - string
+            format: uuid
+          title:
+            type:
+              - "null"
+              - string
+          enteredStageAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          leftStageAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          stageNumber:
+            type:
+              - "null"
+              - integer
+          actorId:
+            type:
+              - "null"
+              - string
+          allowedActions:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
 spec:
   type: Spec
   connection_specification:
