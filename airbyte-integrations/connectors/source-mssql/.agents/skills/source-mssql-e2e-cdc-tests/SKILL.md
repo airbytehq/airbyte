@@ -72,8 +72,14 @@ CDC-specific.
   version, or `VERSION=dev` after a local
   `./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx`
   to test a fix.
-- Assertions are inline in driver scripts: `grep -c '<substring>'` on
-  `stderr.txt`, `jq -e` on `stdout.txt`, exit-non-zero on miss.
+- **Assertions**: prefer `run.sh`'s declarative expectation flags
+  (`--expect-test`, `--expect-match=<channel>:<regex>[:N]`,
+  `--forbid-match`, `--min-records`, `--min-states`) over inline
+  `grep -q` / `jq -e` — the runner enforces them and exits non-zero on
+  any failure. The three existing driver scripts (`repro-12094`,
+  `repro-12162`, `repro-11451`) predate the flags and still use inline
+  assertions; they will migrate opportunistically. New drivers should
+  reach for the flags first.
 - Multi-phase drivers (repro-11451, and any future read → mutate →
   read-with-state repros) capture Airbyte STATE messages between
   reads. The generic skill's `extract-state.py` helper is

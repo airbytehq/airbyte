@@ -133,6 +133,41 @@ extra args to `airbyte-ops`. Per-command timeouts match the workflow's
 (30/30/60/180 minutes) and are overridable with
 `TIMEOUT_MINUTES_{SPEC,CHECK,DISCOVER,READ}`.
 
+### Declarative expectations
+
+Instead of driver scripts hand-rolling `grep -q '<substring>' || exit 1`
+against each command's artifacts, `run.sh` accepts a small set of
+expectation flags that it enforces itself before returning:
+
+| Flag | Effect |
+|---|---|
+| `--expect-test=pass\|fail` | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed. |
+| `--expect-control=pass\|fail` | Same for the control sweep (comparison-mode runs only; requires `--control-version`). |
+| `--min-records=N` | Target read's `stdout.txt` must contain ≥N `RECORD` messages. |
+| `--min-states=N` | Target read's `stdout.txt` must contain ≥N `STATE` messages. |
+| `--expect-match=<channel>:<regex>[:N]` | Target read's `<channel>` (`stdout` \| `stderr` \| `any`) must match `<regex>` at least N times (default 1). Repeatable. |
+| `--forbid-match=<channel>:<regex>` | Same shape but must match zero times. Repeatable. |
+
+All match assertions run against the **target-side** read step's
+artifacts. Under `--control-version + --reset=none` those live at
+`$ARTIFACTS_DIR/read/target/` (created by airbyte-ops's comparison
+mode); under `--reset=fixture|backend` at `$ARTIFACTS_DIR/target/read/`;
+under single-version at `$ARTIFACTS_DIR/read/`. `run.sh` picks the right
+path automatically.
+
+The regex grammar for `--expect-match`/`--forbid-match` strips a
+trailing `:N` only when the last colon-separated field is a positive
+integer, so a regex containing `:` still parses (e.g.
+`--expect-match=stderr:io.debezium.DebeziumException` is channel
+`stderr`, regex `io.debezium.DebeziumException`, count 1).
+
+Any expectation failure exits non-zero regardless of the command-level
+verdicts and appends an `**Expectation failures:**` section to the
+summary. Migrating an existing driver script's `grep -q '<X>' || exit 1`
+block is straightforward — drop the block and add
+`--expect-match=stderr:X` to the `run.sh` (or `run-protocol-cmd.sh`)
+invocation.
+
 ### Multi-phase drivers
 
 `run.sh` runs one sweep. A driver script composes multi-phase flows
