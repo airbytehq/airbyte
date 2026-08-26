@@ -82,7 +82,10 @@ jobs:
           # Generate markdown documentation using pdoc3
           # Without --html or --pdf flags, pdoc3 outputs Markdown-Extra format
           # See: https://github.com/pdoc3/pdoc/issues/257
+          # The custom template emits Docusaurus-flavored markdown with
+          # semantic MDX component wrappers (ApiSignature, ApiMember).
           pdoc3 --output-dir docs/developers/pyairbyte/reference \
+            --template-dir docusaurus/pdoc-templates \
             --config show_source_code=False \
             --config sort_identifiers=True \
             --config show_type_annotations=True \
@@ -145,13 +148,23 @@ jobs:
               'track', 'u', 'ul', 'var', 'video', 'wbr',
           }
 
+          # MDX components emitted by the pdoc3 template
+          # (docusaurus/pdoc-templates/text.mako) and registered globally in
+          # docusaurus/src/theme/MDXComponents. These must survive sanitization.
+          ALLOWED_COMPONENT_TAGS = {'ApiSignature', 'ApiMember'}
+
+          # Docusaurus explicit heading IDs, e.g. "### `close` {#airbyte.Cache.close}".
+          # The braces must not be escaped or Docusaurus won't parse the ID.
+          HEADING_ID_RE = re.compile(r'^(#{1,6} .*?)(\{#[^}]+\})\s*$')
+
           def is_allowed_html_tag(match_text):
               """Check if a <...> pattern is a legitimate HTML tag."""
               # Extract the tag name from patterns like <tag>, </tag>, <tag attr="val">
               tag_match = re.match(r'</?([a-zA-Z][a-zA-Z0-9]*)', match_text)
               if tag_match:
-                  tag_name = tag_match.group(1).lower()
-                  return tag_name in ALLOWED_HTML_TAGS
+                  tag_name = tag_match.group(1)
+                  return (tag_name.lower() in ALLOWED_HTML_TAGS
+                          or tag_name in ALLOWED_COMPONENT_TAGS)
               return False
 
           def escape_angle_brackets(text):
@@ -206,6 +219,12 @@ jobs:
                       continue
                   
                   # Process line outside of code blocks
+                  # Preserve explicit heading IDs ({#...}) on heading lines
+                  heading_id = ''
+                  heading_match = HEADING_ID_RE.match(line)
+                  if heading_match:
+                      line = heading_match.group(1)
+                      heading_id = heading_match.group(2)
                   # Split by inline code (backticks) and only escape non-code parts
                   parts = re.split(r'(`[^`]+`)', line)
                   escaped_parts = []
@@ -220,7 +239,7 @@ jobs:
                           # Escape angle brackets that look like JSX (but not valid HTML)
                           part = escape_angle_brackets(part)
                           escaped_parts.append(part)
-                  result.append(''.join(escaped_parts))
+                  result.append(''.join(escaped_parts) + heading_id)
               
               return '\n'.join(result)
 

@@ -3,12 +3,20 @@ id: airbyte-version
 title: airbyte.version
 ---
 
-Module airbyte.version
-======================
 Support for PyAirbyte version checks.
 
-Functions
----------
+### `get_version` {#airbyte.version.get_version}
 
-`get_version() ‑> str`
-:   Return the version of PyAirbyte.
+<ApiMember kind="function">
+
+<ApiSignature>
+
+```python
+def get_version() -> str
+```
+
+</ApiSignature>
+
+Return the version of PyAirbyte.
+
+</ApiMember>

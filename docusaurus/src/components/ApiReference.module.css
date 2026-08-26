@@ -1,0 +1,41 @@
+.apiMember {
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-left: 3px solid var(--ifm-color-primary);
+  border-radius: var(--ifm-global-radius);
+  padding: 1rem 1.25rem 0.5rem;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.apiMember[data-kind="class"] {
+  border-left-color: var(--ifm-color-info);
+  padding-bottom: 1rem;
+}
+
+.apiMember .apiMember {
+  border: none;
+  border-left: 2px solid var(--ifm-color-emphasis-300);
+  border-radius: 0;
+  padding: 0 0 0 1rem;
+}
+
+.kindBadge {
+  float: right;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ifm-color-emphasis-600);
+  background: var(--ifm-color-emphasis-100);
+  border-radius: 999px;
+  padding: 0.1rem 0.6rem;
+  margin-left: 0.75rem;
+}
+
+.apiSignature {
+  margin-bottom: 1rem;
+}
+
+.apiSignature pre {
+  margin-bottom: 0;
+}

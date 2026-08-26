@@ -3,20 +3,25 @@ id: airbyte-mcp-prompts
 title: airbyte.mcp.prompts
 ---
 
-# Module airbyte.mcp.prompts
-
 MCP prompt definitions for the Airbyte Replication MCP server.
 
 This module defines prompts that can be invoked by MCP clients to perform
 common workflows.
 
-## Functions
+# prompts module
 
-`register_prompts(app: FastMCP) ‑> None`
-: Register prompts with the FastMCP app.
+MCP primitives registered by the `prompts` module of the `airbyte-mcp` server: **0** tool(s), **1** prompt(s), **0** resource(s).
 
-    Args:
-        app: FastMCP application instance
+## Prompts (1)
 
-`test_my_tools_prompt(scope: "Annotated[str | None, Field(description='Optional free-form text to focus or constrain testing. This can be a single word, a sentence, or a paragraph describing the desired scope or constraints.')]" = None) ‑> list[dict[str, str]]`
-: Generate a prompt that instructs the agent to test available tools.
+<a id="test-my-tools"></a>
+
+### test-my-tools
+
+Test all available MCP tools to confirm they are working properly
+
+#### Arguments
+
+| Name | Required | Description |
+| --- | --- | --- |
+| `scope` | no | Provide as a JSON string matching the following schema: \{"anyOf":[\{"type":"string"\},\{"type":"null"\}],"description":"Optional free-form text to focus or constrain testing. This can be a single word, a sentence, or a paragraph describing the desired scope or constraints."\} |

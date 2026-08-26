@@ -3,8 +3,6 @@ id: airbyte-destinations-index
 title: airbyte.destinations.index
 ---
 
-Module airbyte.destinations
-===========================
 Destinations module.
 
 This module contains classes and methods for interacting with Airbyte destinations. You can use this
@@ -78,108 +76,178 @@ runtime does not support docker, you may want to use the `airbyte.caches` module
 a SQL cache. Caches are mostly identical to destinations in behavior, and are implemented internally
 to PyAirbyte so they can run anywhere that PyAirbyte can run.
 
-Sub-modules
------------
-* airbyte.destinations.base
-* airbyte.destinations.util
+- `airbyte.destinations.base`
+- `airbyte.destinations.util`
 
-Functions
----------
+### `get_destination` {#airbyte.destinations.get_destination}
 
-`get_destination(name: str, config: dict[str, Any] | None = None, *, config_change_callback: ConfigChangeCallback | None = None, version: str | None = None, use_python: bool | Path | str | None = None, pip_url: str | None = None, local_executable: Path | str | None = None, docker_image: str | bool | None = None, use_host_network: bool = False, install_if_missing: bool = True, install_root: Path | None = None, no_executor: bool = False) ‑> Destination`
-:   Get a connector by name and version.
-    
-    Args:
-        name: connector name
-        config: connector config - if not provided, you need to set it later via the set_config
-            method.
-        config_change_callback: callback function to be called when the connector config changes.
-        streams: list of stream names to select for reading. If set to "*", all streams will be
-            selected. If not provided, you can set it later via the `select_streams()` or
-            `select_all_streams()` method.
-        version: connector version - if not provided, the currently installed version will be used.
-            If no version is installed, the latest available version will be used. The version can
-            also be set to "latest" to force the use of the latest available version.
-        use_python: (Optional.) Python interpreter specification:
-            - True: Use current Python interpreter. (Inferred if `pip_url` is set.)
-            - False: Use Docker instead.
-            - Path: Use interpreter at this path.
-            - str: Use specific Python version. E.g. "3.11" or "3.11.10". If the version is not yet
-                installed, it will be installed by uv. (This generally adds less than 3 seconds
-                to install times.)
-        pip_url: connector pip URL - if not provided, the pip url will be inferred from the
-            connector name.
-        local_executable: If set, the connector will be assumed to already be installed and will be
-            executed using this path or executable name. Otherwise, the connector will be installed
-            automatically in a virtual environment.
-        docker_image: If set, the connector will be executed using Docker. You can specify `True`
-            to use the default image for the connector, or you can specify a custom image name.
-            If `version` is specified and your image name does not already contain a tag
-            (e.g. `my-image:latest`), the version will be appended as a tag (e.g. `my-image:0.1.0`).
-        use_host_network: If set, along with docker_image, the connector will be executed using
-            the host network. This is useful for connectors that need to access resources on
-            the host machine, such as a local database. This parameter is ignored when
-            `docker_image` is not set.
-        install_if_missing: Whether to install the connector if it is not available locally. This
-            parameter is ignored when local_executable is set.
-        install_root: (Optional.) The root directory where the virtual environment will be
-            created. If not provided, the current working directory will be used.
-        no_executor: If True, use NoOpExecutor which fetches specs from the registry without
-            local installation. This is useful for scenarios where you need to validate
-            configurations but don't need to run the connector locally (e.g., deploying to Cloud).
+<ApiMember kind="function">
 
-`get_noop_destination(*, install_if_missing: bool = True) ‑> airbyte.destinations.base.Destination`
-:   Get a devnull (no-op) destination.
-    
-    This is useful for performance benchmarking of sources, without
-    adding the overhead of writing data to a real destination.
+<ApiSignature>
 
-Classes
--------
+```python
+def get_destination(
+    name: str,
+    config: dict[str, Any] | None = None,
+    *,
+    config_change_callback: ConfigChangeCallback | None = None,
+    version: str | None = None,
+    use_python: bool | Path | str | None = None,
+    pip_url: str | None = None,
+    local_executable: Path | str | None = None,
+    docker_image: str | bool | None = None,
+    use_host_network: bool = False,
+    install_if_missing: bool = True,
+    install_root: Path | None = None,
+    no_executor: bool = False,
+) -> Destination
+```
 
-`Destination(executor: Executor, name: str, config: dict[str, Any] | None = None, *, config_change_callback: ConfigChangeCallback | None = None, validate: bool = False)`
-:   A class representing a destination that can be called.
-    
-    Initialize the source.
-    
-    If config is provided, it will be validated against the spec if validate is True.
+</ApiSignature>
 
-    ### Ancestors (in MRO)
+Get a connector by name and version.
 
-    * airbyte._connector_base.ConnectorBase
-    * airbyte._writers.base.AirbyteWriterInterface
-    * abc.ABC
+**Args:**
 
-    ### Class variables
+- **`name`**: connector name
+- **`config`**: connector config - if not provided, you need to set it later via the set_config method.
+- **`config_change_callback`**: callback function to be called when the connector config changes.
+- **`streams`**: list of stream names to select for reading. If set to "*", all streams will be selected. If not provided, you can set it later via the `select_streams()` or `select_all_streams()` method.
+- **`version`**: connector version - if not provided, the currently installed version will be used. If no version is installed, the latest available version will be used. The version can also be set to "latest" to force the use of the latest available version.
+- **`use_python`**: (Optional.) Python interpreter specification: - True: Use current Python interpreter. (Inferred if `pip_url` is set.) - False: Use Docker instead. - Path: Use interpreter at this path. - str: Use specific Python version. E.g. "3.11" or "3.11.10". If the version is not yet installed, it will be installed by uv. (This generally adds less than 3 seconds to install times.)
+- **`pip_url`**: connector pip URL - if not provided, the pip url will be inferred from the connector name.
+- **`local_executable`**: If set, the connector will be assumed to already be installed and will be executed using this path or executable name. Otherwise, the connector will be installed automatically in a virtual environment.
+- **`docker_image`**: If set, the connector will be executed using Docker. You can specify `True` to use the default image for the connector, or you can specify a custom image name. If `version` is specified and your image name does not already contain a tag (e.g. `my-image:latest`), the version will be appended as a tag (e.g. `my-image:0.1.0`).
+- **`use_host_network`**: If set, along with docker_image, the connector will be executed using the host network. This is useful for connectors that need to access resources on the host machine, such as a local database. This parameter is ignored when `docker_image` is not set.
+- **`install_if_missing`**: Whether to install the connector if it is not available locally. This parameter is ignored when local_executable is set.
+- **`install_root`**: (Optional.) The root directory where the virtual environment will be created. If not provided, the current working directory will be used.
+- **`no_executor`**: If True, use NoOpExecutor which fetches specs from the registry without local installation. This is useful for scenarios where you need to validate configurations but don't need to run the connector locally (e.g., deploying to Cloud).
 
-    `connector_type: Literal['destination', 'source']`
-    :
+</ApiMember>
 
-    ### Methods
+### `get_noop_destination` {#airbyte.destinations.get_noop_destination}
 
-    `write(self, source_data: Source | ReadResult, *, streams: "list[str] | Literal['*'] | None" = None, cache: CacheBase | Literal[False] | None = None, state_cache: CacheBase | Literal[False] | None = None, write_strategy: WriteStrategy = WriteStrategy.AUTO, force_full_refresh: bool = False) ‑> WriteResult`
-    :   Write data from source connector or already cached source data.
-        
-        Caching is enabled by default, unless explicitly disabled.
-        
-        Args:
-            source_data: The source data to write. Can be a `Source` or a `ReadResult` object.
-            streams: The streams to write to the destination. If omitted or if "*" is provided,
-                all streams will be written. If `source_data` is a source, then streams must be
-                selected here or on the source. If both are specified, this setting will override
-                the stream selection on the source.
-            cache: The cache to use for reading source_data. If `None`, no cache will be used. If
-                False, the cache will be disabled. This must be `None` if `source_data` is already
-                a `Cache` object.
-            state_cache: A cache to use for storing incremental state. You do not need to set this
-                if `cache` is specified or if `source_data` is a `Cache` object. Set to `False` to
-                disable state management.
-            write_strategy: The strategy to use for writing source_data. If `AUTO`, the connector
-                will decide the best strategy to use.
-            force_full_refresh: Whether to force a full refresh of the source_data. If `True`, any
-                existing state will be ignored and all source data will be reloaded.
-        
-        For incremental syncs, `cache` or `state_cache` will be checked for matching state values.
-        If the cache has tracked state, this will be used for the sync. Otherwise, if there is
-        a known destination state, the destination-specific state will be used. If neither are
-        available, a full refresh will be performed.
+<ApiMember kind="function">
+
+<ApiSignature>
+
+```python
+def get_noop_destination(
+    *,
+    install_if_missing: bool = True,
+) -> airbyte.destinations.base.Destination
+```
+
+</ApiSignature>
+
+Get a devnull (no-op) destination.
+
+This is useful for performance benchmarking of sources, without
+adding the overhead of writing data to a real destination.
+
+</ApiMember>
+
+### `Destination` {#airbyte.destinations.Destination}
+
+<ApiMember kind="class">
+
+<ApiSignature>
+
+```python
+class Destination(
+    executor: Executor,
+    name: str,
+    config: dict[str, Any] | None = None,
+    *,
+    config_change_callback: ConfigChangeCallback | None = None,
+    validate: bool = False,
+)
+```
+
+</ApiSignature>
+
+A class representing a destination that can be called.
+
+Initialize the source.
+
+If config is provided, it will be validated against the spec if validate is True.
+
+**Bases:** `airbyte._connector_base.ConnectorBase`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+
+#### Attributes {#airbyte.destinations.Destination--attributes}
+
+- **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
+
+- **`is_cache_supported`**&nbsp;(`bool`) — Whether this destination has a compatible cache implementation.  Returns `True` when `get_sql_cache()` is expected to succeed for the destination's connector type.
+
+#### `get_sql_cache` {#airbyte.destinations.Destination.get_sql_cache}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def get_sql_cache(self, *, schema_name: str | None = None) -> CacheBase
+```
+
+</ApiSignature>
+
+Return a SQL Cache for querying data written by this destination.
+
+This follows the same pattern as
+`SyncResult.get_sql_cache()` in `airbyte.cloud.sync_results`:
+it builds a cache from the destination's configuration using
+`destination_to_cache()`.
+
+**Args:**
+
+- **`schema_name`**: Override the schema/namespace on the returned cache. When `None` the cache uses the default schema from the destination config.
+
+**Raises:**
+
+- **`ValueError`**: If the destination type is not supported.
+
+</ApiMember>
+
+#### `write` {#airbyte.destinations.Destination.write}
+
+<ApiMember kind="method">
+
+<ApiSignature>
+
+```python
+def write(
+    self,
+    source_data: Source | ReadResult,
+    *,
+    streams: "list[str] | Literal['*'] | None" = None,
+    cache: CacheBase | Literal[False] | None = None,
+    state_cache: CacheBase | Literal[False] | None = None,
+    write_strategy: WriteStrategy = WriteStrategy.AUTO,
+    force_full_refresh: bool = False,
+) -> WriteResult
+```
+
+</ApiSignature>
+
+Write data from source connector or already cached source data.
+
+Caching is enabled by default, unless explicitly disabled.
+
+**Args:**
+
+- **`source_data`**: The source data to write. Can be a `Source` or a `ReadResult` object.
+- **`streams`**: The streams to write to the destination. If omitted or if "*" is provided, all streams will be written. If `source_data` is a source, then streams must be selected here or on the source. If both are specified, this setting will override the stream selection on the source.
+- **`cache`**: The cache to use for reading source_data. If `None`, no cache will be used. If False, the cache will be disabled. This must be `None` if `source_data` is already a `Cache` object.
+- **`state_cache`**: A cache to use for storing incremental state. You do not need to set this if `cache` is specified or if `source_data` is a `Cache` object. Set to `False` to disable state management.
+- **`write_strategy`**: The strategy to use for writing source_data. If `AUTO`, the connector will decide the best strategy to use.
+- **`force_full_refresh`**: Whether to force a full refresh of the source_data. If `True`, any existing state will be ignored and all source data will be reloaded.
+
+For incremental syncs, `cache` or `state_cache` will be checked for matching state values.
+If the cache has tracked state, this will be used for the sync. Otherwise, if there is
+a known destination state, the destination-specific state will be used. If neither are
+available, a full refresh will be performed.
+
+</ApiMember>
+
+</ApiMember>
