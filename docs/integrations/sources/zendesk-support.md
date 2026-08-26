@@ -241,13 +241,15 @@ To sync all available streams, authenticate with a Zendesk account that has an A
 
 #### Side conversations access
 
-Side conversations are included in Zendesk Suite Professional and above, and are available to Support Professional and above through the [Collaboration add-on](https://support.zendesk.com/hc/en-us/articles/4408834152730-About-Zendesk-product-add-ons). You also have to [activate side conversations](https://support.zendesk.com/hc/en-us/articles/4408832279962-Activating-and-configuring-side-conversations) in Admin Center, and on Enterprise plans a custom role can restrict which agents may use them. If your account doesn't have side conversations, the `side_conversations` stream returns no records.
+Side conversations are included in Zendesk Suite Professional and above, and are available to Support Professional and above through the [Collaboration add-on](https://support.zendesk.com/hc/en-us/articles/4408834152730-About-Zendesk-product-add-ons). You also have to [activate side conversations](https://support.zendesk.com/hc/en-us/articles/4408832279962-Activating-and-configuring-side-conversations) in Admin Center, and on Enterprise plans a custom role can restrict which agents may use them.
 
-Zendesk grants access to side conversations per ticket, so this stream can read some tickets and be refused on others. As of version 5.5.2, the connector logs the ticket, skips it, and keeps syncing the rest of the stream when Zendesk returns:
+Zendesk grants access to side conversations per ticket, so this stream can read some tickets and be refused on others. As of version 5.5.2, the connector logs a message for the ticket, skips it, and keeps syncing the rest of the stream when Zendesk returns:
 
 - `403`, when Zendesk denies access to that ticket's side conversations.
 - `404`, when the ticket no longer exists. The `tickets` stream returns deleted tickets, so this is expected.
 - `422`, when the ticket type doesn't support side conversations.
+
+If your account doesn't have side conversations at all, Zendesk refuses every ticket this way, so the stream ends up empty rather than failing.
 
 Versions before 5.5.2 failed the whole sync on a `403` or `404` (the `422` case has been skipped since 5.4.1). Because `side_conversations` reads its parent tickets incrementally, that failure also stopped the parent cursor from advancing, so every following sync restarted from the same ticket and failed again. Upgrade to 5.5.2 or later if your syncs fail this way.
 
