@@ -55,11 +55,14 @@ class GithubStreamABC(HttpStream, ABC):
     max_retries: int = 5
     stream_base_params = {}
 
-    def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
-        # No `max_waiting_time` handling here on purpose: the wait bound belongs to the shared
-        # manifest authenticator, which reads that config key through its own `max_wait_time`
-        # field. Setting it on the stream would write a dead attribute onto an authenticator
-        # instance shared with every other stream.
+    def __init__(
+        self,
+        api_url: str = "https://api.github.com",
+        access_token_type: str = "",
+        max_wait_time_seconds: float = 120 * 60,
+        **kwargs,
+    ):
+        self.max_wait_time_seconds = max_wait_time_seconds
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -117,7 +120,7 @@ class GithubStreamABC(HttpStream, ABC):
         )
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return GithubStreamABCBackoffStrategy(stream=self)
+        return GithubStreamABCBackoffStrategy(stream=self, max_wait_time_seconds=self.max_wait_time_seconds)
 
     @staticmethod
     def check_graphql_rate_limited(response_json: dict) -> bool:

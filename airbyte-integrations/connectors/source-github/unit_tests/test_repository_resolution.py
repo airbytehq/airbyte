@@ -276,10 +276,16 @@ def test_rate_limit_404_on_github_dot_com_is_not_swallowed_into_a_broken_sync(re
 
 
 @pytest.mark.parametrize(
-    "max_waiting_time",
-    [pytest.param(v, id=i) for v, i in [(None, "null"), (0, "zero"), (1, "spec_minimum"), (240, "spec_maximum")]],
+    "max_waiting_time_config",
+    [
+        pytest.param({}, id="absent"),
+        pytest.param({"max_waiting_time": None}, id="null"),
+        pytest.param({"max_waiting_time": 0}, id="zero"),
+        pytest.param({"max_waiting_time": 1}, id="spec_minimum"),
+        pytest.param({"max_waiting_time": 240}, id="spec_maximum"),
+    ],
 )
-def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waiting_time):
+def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waiting_time_config):
     """`max_waiting_time` reaches three interpolations — the authenticator's `max_wait_time` and
     the two backoff caps — and CDK 7.28.1 resolves the caps when the strategy is constructed, so a
     value one of them cannot render fails every command rather than one retry. Null is the case
@@ -296,13 +302,17 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     config = {
         "credentials": {"personal_access_token": "test_token"},
         "repositories": ["org/repo"],
-        "max_waiting_time": max_waiting_time,
+        **max_waiting_time_config,
     }
 
     source = SourceGithub(config=dict(config))
+    python_stream = source.streams(config)[0]
     streams = ConcurrentDeclarativeSource.streams(source, config)
 
     assert [stream.name for stream in streams] == ["repositories"]
+    max_waiting_time = max_waiting_time_config.get("max_waiting_time")
+    expected_wait_time = max_waiting_time if max_waiting_time is not None else 120
+    assert python_stream.max_wait_time_seconds == expected_wait_time * 60
 
 
 def test_resolution_raises_on_no_tokens():

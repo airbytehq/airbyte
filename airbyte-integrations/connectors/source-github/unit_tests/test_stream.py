@@ -90,8 +90,8 @@ def test_internal_server_error_retry(time_mock, requests_mock):
         (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804454"}, 60.0),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804724"}, 300.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804454"}, 60.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}, 300.0),
     ],
 )
 @patch("time.time", return_value=1655804424.0)
@@ -102,6 +102,61 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
+
+
+def test_non_rate_limited_404_does_not_wait_for_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.NOT_FOUND
+    response_mock.headers = {"X-RateLimit-Reset": "1655808024"}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_retry_after_takes_precedence_over_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {
+        "Retry-After": "120",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1655808024",
+    }
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 120.0
+
+
+def test_rate_limit_wait_is_bounded():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}
+    args = {
+        "authenticator": None,
+        "repositories": ["test_repo"],
+        "start_date": "start_date",
+        "page_size_for_large_streams": 30,
+        "max_wait_time_seconds": 120,
+    }
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_graphql_rate_limit_wait_applies():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
+    response_mock.json.return_value = {"errors": [{"type": "RATE_LIMITED"}]}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = ProjectsV2(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 300.0
 
 
 @pytest.mark.parametrize(

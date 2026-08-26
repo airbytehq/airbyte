@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 import requests
 
@@ -84,38 +84,39 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
     return False
 
 
+def is_rate_limited_response(
+    response: requests.Response, graphql_rate_limit_checker: Callable[[dict], bool], logger: logging.Logger
+) -> bool:
+    if response.headers.get("X-RateLimit-Resource") == "graphql":
+        try:
+            body = response.json()
+        except ValueError:
+            logger.warning(
+                "GraphQL rate-limit check received non-JSON response (HTTP %s, first 50 chars: %r).",
+                response.status_code,
+                response.text[:50],
+            )
+            graphql_rate_limited = False
+        else:
+            graphql_rate_limited = graphql_rate_limit_checker(body or {})
+
+        if graphql_rate_limited:
+            return True
+
+    return (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0") or "Retry-After" in response.headers
+
+
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
         super().__init__(**kwargs)
 
-    def _safe_json_check_graphql_rate_limited(self, response: requests.Response) -> bool:
-        try:
-            body = response.json()
-        except ValueError:
-            self._logger.warning(
-                "GraphQL rate-limit check received non-JSON response (HTTP %s, first 50 chars: %r).",
-                response.status_code,
-                response.text[:50],
-            )
-            return False
-        return self.stream.check_graphql_rate_limited(body or {})
-
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
-            retry_flag = (
-                # The GitHub GraphQL API has limitations
-                # https://docs.github.com/en/graphql/overview/resource-limitations
-                (
-                    response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                    and self._safe_json_check_graphql_rate_limited(response_or_exception)
-                )
-                # Rate limit HTTP headers
-                # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-                or (response_or_exception.status_code != 200 and response_or_exception.headers.get("X-RateLimit-Remaining") == "0")
-                # Secondary rate limits
-                # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-                or "Retry-After" in response_or_exception.headers
+            retry_flag = is_rate_limited_response(
+                response_or_exception,
+                self.stream.check_graphql_rate_limited,
+                self._logger,
             )
             if retry_flag:
                 headers = [
