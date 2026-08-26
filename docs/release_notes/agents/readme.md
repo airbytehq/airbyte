@@ -11,7 +11,7 @@ Connectors
 
 Other
 
-- Cached connector data that gets stuck partway through an update now recovers on its own, so your agents keep searching current data without anyone needing to restart it.
+- Context Store data that gets stuck partway through an update now recovers on its own, so your agents keep searching current data without anyone needing to restart it.
 
 ## August 12, 2026
 
