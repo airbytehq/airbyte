@@ -249,6 +249,7 @@ def test_single_stream_per_report_reads_each_property_partition():
             "keepEmptyRows": False,
             "limit": 25000,
             "dateRanges": [{"startDate": "2025-01-01", "endDate": "2025-01-01"}],
+            "orderBys": [{"dimension": {"dimensionName": "date"}}],
         }
     ] * 2
     assert sorted(record.record.data["property_id"] for record in output.records) == ["111", "222"]

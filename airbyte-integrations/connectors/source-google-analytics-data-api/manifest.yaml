@@ -999,6 +999,18 @@ dynamic_streams:
               {% if dimensionFilter %}
               dimensionFilter: {{ dimensionFilter }}
               {% endif %}
+              {# Offset pagination is only correct when the server returns a stable row order,
+                 and GA4 documents no default ordering for runReport (it may also sample or
+                 re-aggregate between requests). GA4 returns one row per unique dimension-value
+                 combination, so ordering by every dimension is a total order and makes page
+                 boundaries stable. Omitted for pivot requests (RunPivotReportRequest has no
+                 top-level orderBys, and pivot streams use NoPagination), for cohort requests
+                 (Google documents cohort-specific request restrictions and says nothing about
+                 orderBys support there; cohort reports are small and end on the first page),
+                 and for metric-only reports (no dimensions to order by). #}
+              {% if components_values.get("dimensions") and not pivots and not (cohort and cohort.get("enabled") == "true") %}
+              orderBys: [{% for dimension in components_values.get("dimensions") %}{"dimension": {"dimensionName": "{{ dimension }}"}}{% if not loop.last %}, {% endif %}{% endfor %}]
+              {% endif %}
         # This mapping update pagination conditionally as pivots are not support pagination
         - type: ComponentMappingDefinition
           field_path: ["retriever", "paginator"]

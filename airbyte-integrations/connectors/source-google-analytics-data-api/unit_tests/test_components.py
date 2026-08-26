@@ -410,6 +410,129 @@ def test_dynamic_stream_paginates_run_report_results():
     assert request_bodies[1]["offset"] == 25000
 
 
+def test_dynamic_stream_orders_paged_run_report_requests_by_every_dimension():
+    """Offset pagination is only safe when the row order is stable, so every paged request must
+    carry the same total ordering over all configured dimensions."""
+    dimensions = ["date", "country", "deviceCategory"]
+    config = {
+        "credentials": {"auth_type": "Client", "client_id": "cid", "client_secret": "secret", "refresh_token": "refresh"},
+        "property_ids": ["12345"],
+        "custom_reports_array": [{"name": "large_report", "dimensions": dimensions, "metrics": ["sessions"]}],
+        "date_ranges_start_date": "2025-01-01",
+        "date_ranges_end_date": "2025-01-02",
+        "window_in_days": 1,
+    }
+    source = YamlDeclarativeSource(str(Path(__file__).parent.parent / "manifest.yaml"), config=config)
+    catalog = ConfiguredAirbyteCatalog(
+        streams=[
+            ConfiguredAirbyteStream(
+                stream=AirbyteStream(
+                    name="large_report",
+                    json_schema={
+                        "type": "object",
+                        "properties": {
+                            **{dimension: {"type": "string"} for dimension in dimensions},
+                            "sessions": {"type": "integer"},
+                        },
+                    },
+                    supported_sync_modes=[SyncMode.full_refresh],
+                ),
+                sync_mode=SyncMode.full_refresh,
+                destination_sync_mode=DestinationSyncMode.overwrite,
+            )
+        ]
+    )
+    report_url = "https://analyticsdata.googleapis.com/v1beta/properties/12345:runReport"
+    request_bodies = []
+
+    def report_callback(request, context):
+        request_body = request.json()
+        request_bodies.append(request_body)
+        offset = request_body.get("offset", 0)
+        rows = [
+            {
+                "dimensionValues": [{"value": str(offset + index)} for _ in dimensions],
+                "metricValues": [{"value": str(offset + index)}],
+            }
+            for index in range(25000 if offset == 0 else 1)
+        ]
+        return {
+            "dimensionHeaders": [{"name": dimension} for dimension in dimensions],
+            "metricHeaders": [{"name": "sessions"}],
+            "rows": rows,
+        }
+
+    with requests_mock.Mocker() as http_mock:
+        http_mock.post("https://www.googleapis.com/oauth2/v4/token", json={"access_token": "token", "expires_in": 3600})
+        http_mock.get(
+            "https://analyticsdata.googleapis.com/v1beta/properties/12345/metadata",
+            json={"metrics": [{"apiName": "sessions", "type": "TYPE_INTEGER"}]},
+        )
+        http_mock.post(report_url, json=report_callback)
+        output = read(source, config, catalog)
+
+    output.raise_if_errors()
+    expected_order_bys = [{"dimension": {"dimensionName": dimension}} for dimension in dimensions]
+    assert len(request_bodies) == 2
+    assert "offset" not in request_bodies[0]
+    assert request_bodies[1]["offset"] == 25000
+    assert [body["orderBys"] for body in request_bodies] == [expected_order_bys, expected_order_bys]
+
+
+
+@pytest.mark.parametrize(
+    "custom_report, expected_order_bys",
+    [
+        pytest.param(
+            {"name": "report", "dimensions": ["date", "country"], "metrics": ["sessions"]},
+            [{"dimension": {"dimensionName": "date"}}, {"dimension": {"dimensionName": "country"}}],
+            id="every_dimension_is_ordered",
+        ),
+        pytest.param(
+            {"name": "report", "dimensions": [], "metrics": ["sessions"]},
+            None,
+            id="metric_only_report_omits_order_bys",
+        ),
+        pytest.param(
+            {
+                "name": "report",
+                "dimensions": ["cohort", "cohortNthDay"],
+                "metrics": ["cohortActiveUsers"],
+                "cohortSpec": {
+                    "cohorts": [{"dimension": "firstSessionDate", "dateRange": {"startDate": "2023-04-24", "endDate": "2023-04-24"}}],
+                    "cohortsRange": {"endOffset": 100, "granularity": "DAILY"},
+                    "enabled": "true",
+                },
+            },
+            None,
+            id="cohort_report_omits_order_bys",
+        ),
+        pytest.param(
+            {
+                "name": "report",
+                "dimensions": ["country"],
+                "metrics": ["sessions"],
+                "pivots": [{"fieldNames": ["date"], "limit": 1, "offset": 0}],
+            },
+            None,
+            id="pivot_report_omits_top_level_order_bys",
+        ),
+    ],
+)
+def test_run_report_order_bys(manifest_path, custom_report, expected_order_bys):
+    """`orderBys` must cover every dimension for paginated runReport requests, and must be absent
+    where GA4 either does not accept it (pivot requests) or does not document it (cohorts), and
+    where there is nothing to order by."""
+    manifest = yaml.safe_load(manifest_path.read_text())
+    config = {"property_ids": ["12345"], "custom_reports_array": [custom_report]}
+
+    source = ConcurrentDeclarativeSource(source_config=manifest, config=config)
+    resolved_streams = source._dynamic_stream_configs(source._source_config)
+
+    stream = next(stream for stream in resolved_streams if stream["name"] == "report")
+    assert stream["retriever"]["requester"]["request_body_json"].get("orderBys") == expected_order_bys
+
+
 def test_dynamic_pivot_streams_disable_pagination():
     """Verify that dynamic pivot streams preserve GA4's no-pagination behavior."""
     config = {
@@ -461,3 +584,5 @@ def test_dynamic_pivot_streams_disable_pagination():
     output.raise_if_errors()
     assert len(request_bodies) == 1
     assert "offset" not in request_bodies[0]
+    # RunPivotReportRequest has no top-level `orderBys` field; pivot ordering lives inside each pivot.
+    assert "orderBys" not in request_bodies[0]
