@@ -586,7 +586,7 @@ Classes
     :   Board creator
 
     `description: Any`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: Any`
     :   Board groups
@@ -777,7 +777,7 @@ Classes
     :   Board creator
 
     `description: list[str]`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: list[list[typing.Any]]`
     :   Board groups
@@ -957,7 +957,7 @@ Classes
     :   Board creator
 
     `description: str | None`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: list[typing.Any] | None`
     :   Board groups
@@ -1045,7 +1045,7 @@ Classes
     :   Board creator
 
     `description: Literal['asc', 'desc']`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: Literal['asc', 'desc']`
     :   Board groups
@@ -1130,7 +1130,7 @@ Classes
     :   Board creator
 
     `description: str`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: str`
     :   Board groups
@@ -1254,7 +1254,7 @@ Classes
     :   Unique item identifier
 
     `name: Any`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: Any`
     :   Parent item (for subitems)
@@ -1427,7 +1427,7 @@ Classes
     :   Unique item identifier
 
     `name: list[str]`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: list[dict[str, typing.Any]]`
     :   Parent item (for subitems)
@@ -1594,7 +1594,7 @@ Classes
     :   Unique item identifier
 
     `name: str | None`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: dict[str, typing.Any] | None`
     :   Parent item (for subitems)
@@ -1664,7 +1664,7 @@ Classes
     :   Unique item identifier
 
     `name: Literal['asc', 'desc']`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: Literal['asc', 'desc']`
     :   Parent item (for subitems)
@@ -1731,7 +1731,7 @@ Classes
     :   Unique item identifier
 
     `name: str`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: str`
     :   Parent item (for subitems)
@@ -2619,7 +2619,7 @@ Classes
     :   Files attached to this update
 
     `body: Any`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: Any`
     :   When the update was created
@@ -2634,10 +2634,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: Any`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: Any`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: Any`
     :   When the update was last modified
@@ -2777,7 +2777,7 @@ Classes
     :   Files attached to this update
 
     `body: list[str]`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: list[str]`
     :   When the update was created
@@ -2792,10 +2792,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: list[list[typing.Any]]`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: list[str]`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: list[str]`
     :   When the update was last modified
@@ -2932,7 +2932,7 @@ Classes
     :   Files attached to this update
 
     `body: str | None`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: str | None`
     :   When the update was created
@@ -2947,10 +2947,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: list[typing.Any] | None`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: str | None`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: str | None`
     :   When the update was last modified
@@ -2987,7 +2987,7 @@ Classes
     :   Files attached to this update
 
     `body: Literal['asc', 'desc']`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: Literal['asc', 'desc']`
     :   When the update was created
@@ -3002,10 +3002,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: Literal['asc', 'desc']`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: Literal['asc', 'desc']`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: Literal['asc', 'desc']`
     :   When the update was last modified
@@ -3039,7 +3039,7 @@ Classes
     :   Files attached to this update
 
     `body: str`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: str`
     :   When the update was created
@@ -3054,10 +3054,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: str`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: str`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: str`
     :   When the update was last modified

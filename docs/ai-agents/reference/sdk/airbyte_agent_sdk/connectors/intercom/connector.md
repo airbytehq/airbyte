@@ -345,8 +345,8 @@ Classes
         - sent_at: The timestamp when the conversation was sent
         - sla_applied: Service Level Agreement details applied to the conversation.
         - snoozed_until: Timestamp until the conversation is snoozed
-        - source: Source details of the conversation.
-        - state: The state of the conversation (e.g., new, in progress)
+        - source: Source details of the conversation, including the opening message body.
+        - state: The state of the conversation: open, closed, or snoozed
         - statistics: Statistics related to the conversation.
         - tags: Tags applied to the conversation.
         - team_assignee_id: The ID of the team assigned to the conversation

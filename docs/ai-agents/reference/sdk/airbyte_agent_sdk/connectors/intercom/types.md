@@ -2178,10 +2178,10 @@ Classes
     :   Timestamp until the conversation is snoozed
 
     `source: Any`
-    :   Source details of the conversation.
+    :   Source details of the conversation, including the opening message body.
 
     `state: Any`
-    :   The state of the conversation (e.g., new, in progress)
+    :   The state of the conversation: open, closed, or snoozed
 
     `statistics: Any`
     :   Statistics related to the conversation.
@@ -2465,10 +2465,10 @@ Classes
     :   Timestamp until the conversation is snoozed
 
     `source: list[dict[str, typing.Any]]`
-    :   Source details of the conversation.
+    :   Source details of the conversation, including the opening message body.
 
     `state: list[str]`
-    :   The state of the conversation (e.g., new, in progress)
+    :   The state of the conversation: open, closed, or snoozed
 
     `statistics: list[dict[str, typing.Any]]`
     :   Statistics related to the conversation.
@@ -2692,10 +2692,10 @@ Classes
     :   Timestamp until the conversation is snoozed
 
     `source: dict[str, typing.Any] | None`
-    :   Source details of the conversation.
+    :   Source details of the conversation, including the opening message body.
 
     `state: str | None`
-    :   The state of the conversation (e.g., new, in progress)
+    :   The state of the conversation: open, closed, or snoozed
 
     `statistics: dict[str, typing.Any] | None`
     :   Statistics related to the conversation.
@@ -2819,10 +2819,10 @@ Classes
     :   Timestamp until the conversation is snoozed
 
     `source: Literal['asc', 'desc']`
-    :   Source details of the conversation.
+    :   Source details of the conversation, including the opening message body.
 
     `state: Literal['asc', 'desc']`
-    :   The state of the conversation (e.g., new, in progress)
+    :   The state of the conversation: open, closed, or snoozed
 
     `statistics: Literal['asc', 'desc']`
     :   Statistics related to the conversation.
@@ -2943,10 +2943,10 @@ Classes
     :   Timestamp until the conversation is snoozed
 
     `source: str`
-    :   Source details of the conversation.
+    :   Source details of the conversation, including the opening message body.
 
     `state: str`
-    :   The state of the conversation (e.g., new, in progress)
+    :   The state of the conversation: open, closed, or snoozed
 
     `statistics: str`
     :   Statistics related to the conversation.

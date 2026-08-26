@@ -125,6 +125,7 @@ Sub-modules
 * airbyte_agent_sdk.constants
 * airbyte_agent_sdk.executor
 * airbyte_agent_sdk.http_client
+* airbyte_agent_sdk.secrets_aws
 * airbyte_agent_sdk.tools
 * airbyte_agent_sdk.translation
 * airbyte_agent_sdk.types

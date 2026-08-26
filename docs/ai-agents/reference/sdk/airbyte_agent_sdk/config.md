@@ -23,6 +23,16 @@ Functions
 `get_config() ‑> airbyte_agent_sdk.config.SDKConfig | None`
 :   
 
+<a id="resolve_aws_credentials"></a>
+
+`resolve_aws_credentials(*, access_key_id: str | None = None, secret_access_key: str | None = None, session_token: str | None = None, region_name: str | None = None) ‑> airbyte_agent_sdk.config.AWSDataPlaneCredentials`
+:   Resolve AWS data-plane credentials: explicit arg -> env var.
+    
+    Prefer the enterprise-flex secret-manager convention, then fall back to the
+    standard AWS SDK environment variables. When no explicit keys are resolved,
+    the returned credentials allow boto3 to source an implicit IAM role. Only
+    consulted when ``SECRETS_CONFIGURED_FROM_ENVIRONMENT=true``.
+
 <a id="resolve_credentials"></a>
 
 `resolve_credentials(*, client_id: str | None = None, client_secret: str | None = None, organization_id: str | None = None, workspace_name: str | None = None) ‑> tuple[str, str, str | None, str]`
@@ -33,6 +43,33 @@ Functions
 
 Classes
 -------
+
+<a id="AWSDataPlaneCredentials"></a>
+
+`AWSDataPlaneCredentials(access_key_id: str | None = None, secret_access_key: str | None = None, session_token: str | None = None, region_name: str | None = None)`
+:   AWS credentials for the customer's data plane.
+    
+    Consulted only on the local hydration path, which is enabled by
+    ``SECRETS_CONFIGURED_FROM_ENVIRONMENT=true``. Any field may be ``None``:
+    when explicit keys are absent, boto3 falls back to its default provider
+    chain (e.g. an implicit IAM role).
+
+    ### Instance variables
+
+    `access_key_id: str | None`
+    :   The type of the None singleton.
+
+    `has_explicit_keys: bool`
+    :
+
+    `region_name: str | None`
+    :   The type of the None singleton.
+
+    `secret_access_key: str | None`
+    :   The type of the None singleton.
+
+    `session_token: str | None`
+    :   The type of the None singleton.
 
 <a id="SDKConfig"></a>
 
