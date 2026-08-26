@@ -14,7 +14,7 @@ Because of that, we highly recommend creating a **brand-new connection** with `s
 
 Steps:
 
-1. Create a new Greenhouse source on 1.0.0 and complete the OAuth consent flow (see [Authentication](#authentication)).
+1. Create a new Greenhouse source on 1.0.0 and complete the applicable authentication flow (see [Authentication](#authentication)).
 2. Create a new connection to your destination, writing to a different namespace or stream prefix than the existing Greenhouse connection.
 3. Enable the streams you need, optionally setting **Start date** to bound the initial backfill (omitting it replicates all history, matching the previous behavior).
 4. Sync, then update downstream models against the v3 columns — see [Stream and schema changes](#stream-and-schema-changes) for the removed and renamed fields.
@@ -24,11 +24,11 @@ If you upgrade the existing connection in place instead, you must re-authenticat
 
 ### Authentication
 
-Harvest v3 uses OAuth 2.0 Authorization Code authentication and refresh tokens instead of Harvest API keys. In Airbyte Cloud, enter the OAuth client ID and client secret and click **Authenticate** to complete the consent flow. In self-managed Airbyte, use the consent flow to mint a refresh token and provide it with the client ID and client secret. Reauthentication is required after upgrading to 1.0.0.
+Harvest v3 uses OAuth 2.0 instead of Harvest API keys. Airbyte Cloud and partner integrations use Authorization Code authentication and refresh tokens: enter the OAuth client ID and client secret and click **Authenticate** to complete the consent flow. Self-managed users create a custom integration in Greenhouse under **API Credentials**, choose credential type **Harvest V3 (OAuth)**, and provide its client ID and client secret through the **OAuth client credentials (self-managed)** option. This self-managed flow has no authorize step or refresh token; configure its scopes on the credential in the Greenhouse UI rather than requesting them at token time, and optionally provide a numeric authorizing user ID (`sub`). The authorizing user, or the integration service user Greenhouse uses when `sub` is omitted, must be a Site Admin because every v3 list endpoint requires Site Admin authorization. After upgrading to 1.0.0, Authorization Code connections require authentication again; self-managed users who previously used an API key should create the custom integration instead.
 
 Version 1.0.0 introduces a new optional `start_date` configuration value for incremental streams. When it is omitted, the connector preserves the previous full-history behavior.
 
-Greenhouse issues OAuth client credentials to partners on request by email. Start that external request before the 2026-08-31 Harvest v1/v2 sunset; see the [Greenhouse connector setup](./greenhouse.md#set-up-the-greenhouse-connector-in-airbyte) for the complete setup steps.
+For Airbyte Cloud and partner Authorization Code integrations, Greenhouse issues OAuth client credentials to partners on request by email. Start that external request before the 2026-08-31 Harvest v1/v2 sunset. Self-managed users can create the `Harvest V3 (OAuth)` custom integration themselves; see the [Greenhouse connector setup](./greenhouse.md#prerequisites) for the complete setup steps.
 
 ### Stream and schema changes
 
@@ -104,7 +104,7 @@ The deleted child streams were redundant in v3: `demographics_answers`, `intervi
 
 The connector uses Greenhouse's v3 rate-limit headers and a moving 30-second window. Existing connections may take longer or process fewer concurrent requests while the connector uses its own conservative default request budget.
 
-Greenhouse refresh tokens expire after 24 hours of non-use and rotate on every refresh, so set every Greenhouse connection to sync more often than once a day. A connection left paused, disabled, or failing for more than 24 hours requires re-running the consent flow from the source settings.
+For Airbyte Cloud and partner Authorization Code connections, Greenhouse refresh tokens expire after 24 hours of non-use and rotate on every refresh, so set each such connection to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. Self-managed Client Credentials connections do not use refresh tokens and are not subject to this warning.
 
 ## Connector upgrade guide
 

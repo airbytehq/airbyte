@@ -4,7 +4,10 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 application. Greenhouse issues these only to partners: email partner-support@greenhouse.io to request a client ID and client secret and to register your redirect URI. For Airbyte Cloud the redirect URI is `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte it is `<your-airbyte-url>/auth_flow`. The authorizing Greenhouse user must be a Site Admin, because every v3 list endpoint returns 403 otherwise.
+Choose the credential path that matches your deployment:
+
+- **Airbyte Cloud or partner integrations.** Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Greenhouse issues these only to partners: email partner-support@greenhouse.io to request a client ID and client secret and to register your redirect URI. For Airbyte Cloud the redirect URI is `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte it is `<your-airbyte-url>/auth_flow`.
+- **Self-managed Airbyte:** Create a custom integration in Greenhouse under **API Credentials**, choose credential type **Harvest V3 (OAuth)**, and copy the client ID and client secret. This path has no authorize step and does not issue a refresh token. Configure the integration's Harvest v3 scopes on the credential in the Greenhouse UI; unlike the partner flow, where consent carries the scope list, the connector does not request scopes at token time. The optional authorizing user, or the integration service user Greenhouse uses when no authorizing user is provided, must be a Site Admin because every v3 list endpoint requires Site Admin authorization.
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -12,10 +15,12 @@ To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code 
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Enter the **OAuth client ID** and **OAuth client secret** from your Greenhouse OAuth application.
-6. Click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token in **Refresh token**.
+5. Select the authentication method and provide its credentials:
+   - For Airbyte Cloud or a partner integration, select **OAuth (Airbyte Cloud)**, enter the **OAuth client ID** and **OAuth client secret**, then click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token in **Refresh token**.
+   - For self-managed Airbyte, select **OAuth client credentials (self-managed)** and enter the client ID and client secret from the **Harvest V3 (OAuth)** custom integration. This flow does not use **Authenticate** or **Refresh token**.
+6. For self-managed Airbyte, optionally enter the numeric **Authorizing user ID** from the user's Greenhouse URL. The user must be a Site Admin. If omitted, Greenhouse uses the integration service user attached to the custom integration, which must also be a Site Admin.
 7. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
-8. If your deployment does not surface the **Authenticate** button, mint the refresh token manually and paste it into **Refresh token**:
+8. For an Airbyte Cloud or partner Authorization Code integration whose deployment does not surface the **Authenticate** button, mint the refresh token manually and paste it into **Refresh token**. Self-managed users should use client credentials instead:
    1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
    2. Within 1 minute (the authorization code TTL), exchange the `code` query parameter:
 
@@ -27,7 +32,7 @@ To set up the Greenhouse source connector you need OAuth 2.0 Authorization Code 
 9. Click **Set up source**.
 
 :::warning
-Greenhouse refresh tokens live for 24 hours and rotate on every refresh. A connection that stays idle longer than 24 hours cannot refresh and must be reauthenticated by repeating steps 6-7.
+This warning applies to Authorization Code connections only. Greenhouse refresh tokens live for 24 hours and rotate on every refresh. A connection that stays idle longer than 24 hours cannot refresh and must complete the Authorization Code flow again. Client Credentials connections do not use refresh tokens; the connector requests a new access token as needed.
 :::
 
 ## Supported sync modes
@@ -80,13 +85,13 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
-## Refresh token lifetime
+## Authorization Code refresh token lifetime
 
-Greenhouse refresh tokens expire 24 hours after they are issued and rotate on every use. Keep each Greenhouse connection on a sync frequency of less than 24 hours so the connector refreshes the token before it expires. If a connection is paused, disabled, or fails for longer than 24 hours, the refresh token expires and syncs fail with "Refresh token is invalid or expired." Recover by opening **Sources > your Greenhouse source > Settings** and clicking **Authenticate** to repeat the OAuth consent flow.
+For Airbyte Cloud and partner Authorization Code connections, Greenhouse refresh tokens expire 24 hours after they are issued and rotate on every use. Keep each such connection on a sync frequency of less than 24 hours so the connector refreshes the token before it expires. If a connection is paused, turned off, or fails for longer than 24 hours, the refresh token expires and syncs fail with "Refresh token is invalid or expired." Recover by opening **Sources > your Greenhouse source > Settings** and clicking **Authenticate** to repeat the OAuth consent flow. Self-managed Client Credentials connections are not affected because they do not use refresh tokens.
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates the 33 remaining existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens, and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. The recommended path is to create a new connection on 1.0.0 rather than refresh the existing one; see the [recommended upgrade path](./greenhouse-migrations.md#recommended-upgrade-path-create-a-new-connection) before upgrading.
+Version 1.0.0 migrates the 33 remaining existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for Airbyte Cloud and partner integrations or OAuth Client Credentials authentication for self-managed integrations, and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. The recommended path is to create a new connection on 1.0.0 rather than refresh the existing one; see the [recommended upgrade path](./greenhouse-migrations.md#recommended-upgrade-path-create-a-new-connection) before upgrading.
 
 ## IP allow list
 
@@ -99,7 +104,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of 33 remaining streams from Harvest v1 to v3, removal of three redundant child streams, plus the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth (Authorization Code + refresh token) authentication is required. |
+| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of 33 remaining streams from Harvest v1 to v3, removal of three redundant child streams, plus the new `custom_field_options` stream because Greenhouse has scheduled the end of support for Harvest v1 and v2 on 2026-08-31; OAuth Authorization Code authentication is used for Airbyte Cloud and partner integrations, and OAuth Client Credentials authentication is available for self-managed integrations. |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |

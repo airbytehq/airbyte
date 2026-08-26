@@ -20,7 +20,7 @@ definitions:
           - 403
         action: FAIL
         failure_type: config_error
-        error_message: Greenhouse requires Site Admin authorization for this list endpoint.
+        error_message: "Harvest v3 list endpoint denied: missing OAuth scope or authorizing user is not a Site Admin."
       - type: HttpResponseFilter
         http_codes:
           - 422
