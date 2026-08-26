@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLikeCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FormsAnyCondition"></a>
@@ -133,7 +133,7 @@ Classes
 <a id="FormsContainsCondition"></a>
 
 `FormsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -142,6 +142,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.FormsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="FormsEndswithCondition"></a>
+
+`FormsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.typeform.types.FormsStringFilter`
     :   The type of the None singleton.
 
 <a id="FormsEqCondition"></a>
@@ -303,20 +317,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.FormsStringFilter`
     :   The type of the None singleton.
 
-<a id="FormsLikeCondition"></a>
-
-`FormsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.typeform.types.FormsStringFilter`
-    :   The type of the None singleton.
-
 <a id="FormsListParams"></a>
 
 `FormsListParams(*args, **kwargs)`
@@ -395,7 +395,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLikeCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition`
     :   The type of the None singleton.
 
 <a id="FormsOrCondition"></a>
@@ -417,7 +417,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLikeCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FormsSearchFilter"></a>
@@ -484,7 +484,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLikeCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.typeform.types.FormsEqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNeqCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsGteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLtCondition | airbyte_agent_sdk.connectors.typeform.types.FormsLteCondition | airbyte_agent_sdk.connectors.typeform.types.FormsInCondition | airbyte_agent_sdk.connectors.typeform.types.FormsStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.FormsFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.FormsKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.FormsContainsCondition | airbyte_agent_sdk.connectors.typeform.types.FormsNotCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAndCondition | airbyte_agent_sdk.connectors.typeform.types.FormsOrCondition | airbyte_agent_sdk.connectors.typeform.types.FormsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.FormsSortFilter]`
@@ -543,10 +543,24 @@ Classes
     `workspace: Literal['asc', 'desc']`
     :   Workspace details where the form belongs
 
+<a id="FormsStartswithCondition"></a>
+
+`FormsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.typeform.types.FormsStringFilter`
+    :   The type of the None singleton.
+
 <a id="FormsStringFilter"></a>
 
 `FormsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -615,7 +629,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ImagesAnyCondition"></a>
@@ -678,7 +692,7 @@ Classes
 <a id="ImagesContainsCondition"></a>
 
 `ImagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -687,6 +701,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.ImagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ImagesEndswithCondition"></a>
+
+`ImagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.typeform.types.ImagesStringFilter`
     :   The type of the None singleton.
 
 <a id="ImagesEqCondition"></a>
@@ -816,20 +844,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.ImagesStringFilter`
     :   The type of the None singleton.
 
-<a id="ImagesLikeCondition"></a>
-
-`ImagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.typeform.types.ImagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ImagesListParams"></a>
 
 `ImagesListParams(*args, **kwargs)`
@@ -900,7 +914,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ImagesOrCondition"></a>
@@ -922,7 +936,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ImagesSearchFilter"></a>
@@ -971,7 +985,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.typeform.types.ImagesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesInCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ImagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.ImagesSortFilter]`
@@ -1012,10 +1026,24 @@ Classes
     `width: Literal['asc', 'desc']`
     :   Width of the image in pixels
 
+<a id="ImagesStartswithCondition"></a>
+
+`ImagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.typeform.types.ImagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ImagesStringFilter"></a>
 
 `ImagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1066,7 +1094,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ResponsesAnyCondition"></a>
@@ -1141,7 +1169,7 @@ Classes
 <a id="ResponsesContainsCondition"></a>
 
 `ResponsesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1150,6 +1178,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ResponsesEndswithCondition"></a>
+
+`ResponsesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.typeform.types.ResponsesStringFilter`
     :   The type of the None singleton.
 
 <a id="ResponsesEqCondition"></a>
@@ -1291,20 +1333,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.ResponsesStringFilter`
     :   The type of the None singleton.
 
-<a id="ResponsesLikeCondition"></a>
-
-`ResponsesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.typeform.types.ResponsesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ResponsesListParams"></a>
 
 `ResponsesListParams(*args, **kwargs)`
@@ -1404,7 +1432,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ResponsesOrCondition"></a>
@@ -1426,7 +1454,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ResponsesSearchFilter"></a>
@@ -1487,7 +1515,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.typeform.types.ResponsesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesInCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ResponsesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.ResponsesSortFilter]`
@@ -1540,10 +1568,24 @@ Classes
     `variables: Literal['asc', 'desc']`
     :   Variables associated with the response
 
+<a id="ResponsesStartswithCondition"></a>
+
+`ResponsesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.typeform.types.ResponsesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ResponsesStringFilter"></a>
 
 `ResponsesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1606,7 +1648,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ThemesAnyCondition"></a>
@@ -1681,7 +1723,7 @@ Classes
 <a id="ThemesContainsCondition"></a>
 
 `ThemesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1690,6 +1732,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.ThemesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ThemesEndswithCondition"></a>
+
+`ThemesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.typeform.types.ThemesStringFilter`
     :   The type of the None singleton.
 
 <a id="ThemesEqCondition"></a>
@@ -1831,20 +1887,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.ThemesStringFilter`
     :   The type of the None singleton.
 
-<a id="ThemesLikeCondition"></a>
-
-`ThemesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.typeform.types.ThemesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ThemesListParams"></a>
 
 `ThemesListParams(*args, **kwargs)`
@@ -1923,7 +1965,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ThemesOrCondition"></a>
@@ -1945,7 +1987,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ThemesSearchFilter"></a>
@@ -2006,7 +2048,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.typeform.types.ThemesEqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesGteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLtCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesLteCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesInCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesNotCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAndCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesOrCondition | airbyte_agent_sdk.connectors.typeform.types.ThemesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.ThemesSortFilter]`
@@ -2059,10 +2101,24 @@ Classes
     `visibility: Literal['asc', 'desc']`
     :   Visibility setting of the theme
 
+<a id="ThemesStartswithCondition"></a>
+
+`ThemesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.typeform.types.ThemesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ThemesStringFilter"></a>
 
 `ThemesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2125,7 +2181,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WebhooksAnyCondition"></a>
@@ -2188,7 +2244,7 @@ Classes
 <a id="WebhooksContainsCondition"></a>
 
 `WebhooksContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2197,6 +2253,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="WebhooksEndswithCondition"></a>
+
+`WebhooksEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.typeform.types.WebhooksStringFilter`
     :   The type of the None singleton.
 
 <a id="WebhooksEqCondition"></a>
@@ -2326,20 +2396,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.WebhooksStringFilter`
     :   The type of the None singleton.
 
-<a id="WebhooksLikeCondition"></a>
-
-`WebhooksLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.typeform.types.WebhooksStringFilter`
-    :   The type of the None singleton.
-
 <a id="WebhooksListParams"></a>
 
 `WebhooksListParams(*args, **kwargs)`
@@ -2415,7 +2471,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition`
     :   The type of the None singleton.
 
 <a id="WebhooksOrCondition"></a>
@@ -2437,7 +2493,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WebhooksSearchFilter"></a>
@@ -2486,7 +2542,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.typeform.types.WebhooksEqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksGteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLtCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksLteCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksInCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksNotCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAndCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksOrCondition | airbyte_agent_sdk.connectors.typeform.types.WebhooksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.WebhooksSortFilter]`
@@ -2527,10 +2583,24 @@ Classes
     `verify_ssl: Literal['asc', 'desc']`
     :   Whether SSL verification is enforced
 
+<a id="WebhooksStartswithCondition"></a>
+
+`WebhooksStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.typeform.types.WebhooksStringFilter`
+    :   The type of the None singleton.
+
 <a id="WebhooksStringFilter"></a>
 
 `WebhooksStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2581,7 +2651,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WorkspacesAnyCondition"></a>
@@ -2641,7 +2711,7 @@ Classes
 <a id="WorkspacesContainsCondition"></a>
 
 `WorkspacesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2650,6 +2720,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="WorkspacesEndswithCondition"></a>
+
+`WorkspacesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.typeform.types.WorkspacesStringFilter`
     :   The type of the None singleton.
 
 <a id="WorkspacesEqCondition"></a>
@@ -2776,20 +2860,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.typeform.types.WorkspacesStringFilter`
     :   The type of the None singleton.
 
-<a id="WorkspacesLikeCondition"></a>
-
-`WorkspacesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.typeform.types.WorkspacesStringFilter`
-    :   The type of the None singleton.
-
 <a id="WorkspacesListParams"></a>
 
 `WorkspacesListParams(*args, **kwargs)`
@@ -2868,7 +2938,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
 <a id="WorkspacesOrCondition"></a>
@@ -2890,7 +2960,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WorkspacesSearchFilter"></a>
@@ -2936,7 +3006,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.typeform.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.typeform.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.typeform.types.WorkspacesSortFilter]`
@@ -2974,10 +3044,24 @@ Classes
     `shared: Literal['asc', 'desc']`
     :   Whether this workspace is shared
 
+<a id="WorkspacesStartswithCondition"></a>
+
+`WorkspacesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.typeform.types.WorkspacesStringFilter`
+    :   The type of the None singleton.
+
 <a id="WorkspacesStringFilter"></a>
 
 `WorkspacesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

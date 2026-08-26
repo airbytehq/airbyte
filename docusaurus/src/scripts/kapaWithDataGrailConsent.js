@@ -1,9 +1,9 @@
 /**
- * Kapa AI integration with Osano consent management.
- * 
- * This module handles loading the Kapa AI widget only after Osano consent is received.
- * If Osano is not present (e.g., on Vercel preview deployments), Kapa loads immediately.
- * If Osano is present but consent is not given, the Ask AI button is hidden and Kapa is not loaded.
+ * Kapa AI integration with DataGrail consent management.
+ *
+ * This module handles loading the Kapa AI widget only after DataGrail consent is received.
+ * If DataGrail is not present (e.g., on Vercel preview deployments), Kapa loads immediately.
+ * If DataGrail is present but consent is not given, the Ask AI button is hidden and Kapa is not loaded.
  */
 
 const KAPA_CONFIG = {
@@ -34,6 +34,13 @@ const KAPA_CONFIG = {
   "data-modal-inner-position-bottom": "0",
   "data-modal-size": "calc(100vh - 1rem)",
 };
+
+/**
+ * DataGrail consent category for analytics/performance tags, as configured in the
+ * shared Airbyte container.
+ * @see https://docs.datagrail.io/docs/consent/banner/banner-api/
+ */
+const ANALYTICS_CATEGORY = "performance";
 
 let kapaLoaded = false;
 let consentGranted = false;
@@ -85,62 +92,49 @@ function hideAskAiButton() {
 }
 
 /**
- * Check if Osano is present and handle consent
+ * Check whether the visitor has granted analytics consent via DataGrail
  */
-function initKapaWithOsanoConsent() {
-  // Check if Osano is available
-  if (typeof window.Osano !== "undefined" && window.Osano.cm) {
-    // Osano is present, check current consent status
-    const consent = window.Osano.cm.getConsent();
+function hasAnalyticsConsent() {
+  return Boolean(
+    window.DG_BANNER_API &&
+    typeof window.DG_BANNER_API.categoryEnabled === "function" &&
+    window.DG_BANNER_API.categoryEnabled(ANALYTICS_CATEGORY),
+  );
+}
 
-    // Check if analytics consent is granted (Kapa uses analytics/tracking)
-    if (consent && consent.ANALYTICS === "ACCEPT") {
-      loadKapaScript();
-    } else {
-      hideAskAiButton();
-    }
-
-    // Listen for consent changes
-    window.Osano.cm.addEventListener(
-      "osano-cm-consent-changed",
-      (newConsent) => {
-        if (newConsent.ANALYTICS === "ACCEPT") {
-          loadKapaScript();
-        } else {
-          hideAskAiButton();
-        }
-      }
-    );
-  } else if (typeof window.Osano === "function") {
-    // Osano pre-load interface is available but not fully loaded yet
-    // Use the pre-load interface to listen for initialization
-    window.Osano("onInitialized", (consent) => {
-      if (consent && consent.ANALYTICS === "ACCEPT") {
-        loadKapaScript();
-      } else {
-        hideAskAiButton();
-      }
-    });
-
-    window.Osano("onConsentChanged", (newConsent) => {
-      if (newConsent.ANALYTICS === "ACCEPT") {
-        loadKapaScript();
-      } else {
-        hideAskAiButton();
-      }
-    });
-  } else {
-    // Osano is not present (e.g., Vercel preview, local development)
-    // Load Kapa immediately
+/**
+ * Apply the current consent state: load Kapa if consented, hide the button otherwise
+ */
+function applyConsentState() {
+  if (hasAnalyticsConsent()) {
     loadKapaScript();
+  } else {
+    hideAskAiButton();
   }
+}
+
+/**
+ * Register DataGrail consent callbacks. DataGrail processes the window.dgEvent queue,
+ * so callbacks can be registered before or after the consent script loads.
+ * @see https://docs.datagrail.io/docs/consent/banner/banner-api/
+ */
+function registerConsentCallbacks() {
+  window.dgEvent = window.dgEvent || [];
+  window.dgEvent.push({
+    event: "initial_preference_callback",
+    params: applyConsentState,
+  });
+  window.dgEvent.push({
+    event: "preference_callback",
+    params: applyConsentState,
+  });
 }
 
 /**
  * Check if consent has been granted (for use by React components)
  */
 export function hasKapaConsent() {
-  return consentGranted || !isOsanoPresent();
+  return consentGranted || !isDataGrailPresent();
 }
 
 /**
@@ -154,39 +148,36 @@ export function onRouteDidUpdate() {
 }
 
 /**
- * Check if Osano is present
+ * Check if DataGrail is present
  */
-function isOsanoPresent() {
+function isDataGrailPresent() {
   return (
-    typeof window !== "undefined" &&
-    (typeof window.Osano !== "undefined" ||
-      (typeof window.Osano === "function" && window.Osano.data))
+    typeof window !== "undefined" && typeof window.DG_BANNER_API !== "undefined"
   );
 }
 
 /**
- * Poll for Osano's presence and initialize once found.
- * Osano is injected via Cloudflare and may load after our script runs.
- * We poll for up to 5 seconds before assuming Osano is not present.
+ * Poll for DataGrail's presence and initialize once found.
+ * DataGrail is injected via Cloudflare and may load after our script runs.
+ * We poll for up to 5 seconds before assuming DataGrail is not present.
  */
-function pollForOsanoAndInit() {
+function pollForDataGrailAndInit() {
   const maxAttempts = 10;
   const pollInterval = 500; // 500ms between attempts
   let attempts = 0;
 
+  registerConsentCallbacks();
+
   function checkAndInit() {
     attempts++;
-    const osanoPresent =
-      (typeof window.Osano !== "undefined" && window.Osano.cm) ||
-      typeof window.Osano === "function";
 
-    if (osanoPresent) {
-      initKapaWithOsanoConsent();
+    if (isDataGrailPresent()) {
+      applyConsentState();
     } else if (attempts < maxAttempts) {
       setTimeout(checkAndInit, pollInterval);
     } else {
-      // Osano not found after polling, assume it's not present (e.g., Vercel preview)
-      initKapaWithOsanoConsent();
+      // DataGrail not found after polling, assume it's not present (e.g., Vercel preview)
+      loadKapaScript();
     }
   }
 
@@ -196,11 +187,11 @@ function pollForOsanoAndInit() {
 // Initialize when the DOM is ready
 if (typeof window !== "undefined") {
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", pollForOsanoAndInit);
+    document.addEventListener("DOMContentLoaded", pollForDataGrailAndInit);
   } else {
-    // DOM is already ready, start polling for Osano
-    pollForOsanoAndInit();
+    // DOM is already ready, start polling for DataGrail
+    pollForDataGrailAndInit();
   }
 }
 
-export default initKapaWithOsanoConsent;
+export default pollForDataGrailAndInit;

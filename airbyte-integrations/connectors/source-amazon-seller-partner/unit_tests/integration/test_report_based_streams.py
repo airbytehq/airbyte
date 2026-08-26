@@ -1386,17 +1386,32 @@ class TestVendorJsonReportsFullRefresh:
         [
             pytest.param(
                 "GET_VENDOR_TRAFFIC_REPORT",
-                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_traffic_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_net_pure_product_margin_report",
             ),
             pytest.param(
                 "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
-                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_real_time_inventory_report",
             ),
         ],
@@ -1405,6 +1420,7 @@ class TestVendorJsonReportsFullRefresh:
     def test_given_report_when_read_then_return_records(self, stream_name: str, create_report_body: dict, http_mocker: HttpMocker) -> None:
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
         http_mocker.post(
             _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
             _create_report_response(_REPORT_ID),
@@ -1434,17 +1450,32 @@ class TestVendorJsonReportsFullRefresh:
         [
             pytest.param(
                 "GET_VENDOR_TRAFFIC_REPORT",
-                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_traffic_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
-                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_net_pure_product_margin_report",
             ),
             pytest.param(
                 "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
-                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-01T00:00:00Z",
+                    "dataEndTime": "2023-01-01T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_real_time_inventory_report",
             ),
         ],
@@ -1492,19 +1523,34 @@ class TestVendorJsonReportsIncremental:
             pytest.param(
                 "GET_VENDOR_TRAFFIC_REPORT",
                 "endDate",
-                {"reportType": "GET_VENDOR_TRAFFIC_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_traffic_report",
             ),
             pytest.param(
                 "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
                 "endDate",
-                {"reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_net_pure_product_margin_report",
             ),
             pytest.param(
                 "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
                 "endTime",
-                {"reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT", "marketplaceIds": [MARKETPLACE_ID]},
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
                 id="vendor_real_time_inventory_report",
             ),
         ],
@@ -1518,6 +1564,7 @@ class TestVendorJsonReportsIncremental:
 
         http_mocker.clear_all_matchers()
         mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
         http_mocker.post(
             _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
             _create_report_response(_REPORT_ID),
@@ -1536,4 +1583,169 @@ class TestVendorJsonReportsIncremental:
         )
 
         output = self._read(stream_name, config(), state=initial_state)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name, cursor_field, create_report_body",
+        [
+            pytest.param(
+                "GET_VENDOR_TRAFFIC_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_TRAFFIC_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_traffic_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                "endDate",
+                {
+                    "reportType": "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_net_pure_product_margin_report",
+            ),
+            pytest.param(
+                "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                "endTime",
+                {
+                    "reportType": "GET_VENDOR_REAL_TIME_INVENTORY_REPORT",
+                    "dataStartTime": "2023-01-29T00:00:00Z",
+                    "dataEndTime": "2023-01-29T23:59:59Z",
+                    "marketplaceIds": [MARKETPLACE_ID],
+                },
+                id="vendor_real_time_inventory_report",
+            ),
+        ],
+    )
+    @HttpMocker()
+    def test_given_off_midnight_state_when_incremental_read_then_report_window_is_day_aligned(
+        self, stream_name: str, cursor_field: str, create_report_body: dict, http_mocker: HttpMocker
+    ) -> None:
+        """Regression test for the off-midnight window drift (oncall #13097).
+
+        These P1D vendor streams replace the shared creation requester's ``request_body_json``
+        wholesale, so before the fix they sent no ``dataStartTime``/``dataEndTime`` at all while
+        still labelling every record with the raw, off-midnight slice end. The window must now be a
+        single day-aligned calendar day derived from the slice start day, and the emitted cursor
+        value must be day-aligned too so destination deduplication compares stable per-day values.
+
+        The mocked create-report matcher only matches the day-aligned body, so a missing or drifted
+        window would produce zero records and fail the assertions below.
+        """
+        initial_state = StateBuilder().with_stream_state(stream_name, {cursor_field: "2023-01-29T13:27:00Z"}).build()
+
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(create_report_body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+        output = self._read(stream_name, config().with_end_date(pendulum.parse("2023-01-30T13:27:00Z")), state=initial_state)
+
+        assert not output.errors
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+        assert all(record.record.data.get(cursor_field) == "2023-01-29T23:59:59Z" for record in output.records)
+        # The day-aligned cursor is what stops the drift from recurring: the next slice starts at
+        # 2023-01-30T00:00:00Z (cursor_granularity is PT1S), so every later slice is day-aligned too.
+        assert output.most_recent_state.stream_state.__dict__[cursor_field] == "2023-01-29T23:59:59Z"
+
+
+@freezegun.freeze_time(NOW.isoformat())
+class TestReportOptions:
+    """Tests that report_options_list config entries are reflected in the POST /reports request body."""
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_,
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    @staticmethod
+    def _mock_report_flow(http_mocker: HttpMocker, stream_name: str, create_report_request: RequestBuilder) -> None:
+        http_mocker.clear_all_matchers()
+        mock_auth(http_mocker)
+        http_mocker.post(create_report_request.build(), _create_report_response(_REPORT_ID))
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name),
+        )
+
+    @pytest.mark.parametrize("stream_name", ("GET_LEDGER_DETAIL_VIEW_DATA", "GET_LEDGER_SUMMARY_VIEW_DATA"))
+    @pytest.mark.parametrize("matching_key", ("stream_name", "report_name"))
+    @HttpMocker()
+    def test_given_report_options_list_when_read_then_options_included_in_request_body(
+        self, matching_key: str, stream_name: str, http_mocker: HttpMocker
+    ) -> None:
+        """When report_options_list is configured for a ledger stream (matched by either
+        stream_name or report_name - the latter covers legacy configs where stream_name is
+        a custom alias), the options must appear as reportOptions in the POST /reports body."""
+        configured_options = {"option1": "value1", "option2": "value2"}
+
+        self._mock_report_flow(
+            http_mocker,
+            stream_name,
+            RequestBuilder.create_report_endpoint(stream_name, report_options=configured_options),
+        )
+
+        # Both keys are required by the spec; only one of them matches the stream under test.
+        entry = {"stream_name": "custom_stream_alias", "report_name": "GET_SELLER_FEEDBACK_DATA", matching_key: stream_name}
+        entry["options_list"] = [{"option_name": k, "option_value": v} for k, v in configured_options.items()]
+        _config = config().with_report_options_list([entry])
+
+        output = self._read(stream_name, _config)
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_given_report_options_for_other_stream_when_read_then_options_not_included_in_request_body(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """Options configured for a different stream must not leak into the ledger stream's
+        POST /reports request body - the reportOptions key must be omitted entirely."""
+        stream_name = "GET_LEDGER_DETAIL_VIEW_DATA"
+
+        # _create_report_request builds the body without a reportOptions key; the byte-exact
+        # body matcher fails if any options leak in.
+        self._mock_report_flow(http_mocker, stream_name, _create_report_request(stream_name))
+
+        _config = config().with_report_options_list(
+            [
+                {
+                    "stream_name": "GET_SELLER_FEEDBACK_DATA",
+                    "report_name": "GET_SELLER_FEEDBACK_DATA",
+                    "options_list": [{"option_name": "leaked", "option_value": "should_not_appear"}],
+                }
+            ]
+        )
+
+        output = self._read(stream_name, _config)
         assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS

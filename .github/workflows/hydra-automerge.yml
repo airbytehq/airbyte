@@ -759,6 +759,49 @@ jobs:
           GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
         run: gh issue edit "$PR_NUMBER" --repo airbytehq/airbyte --add-label hyd-automerged
 
+      # Tag the team that owns the merged connector code so they can review the
+      # merge after the fact: API sources -> @oc-apis, DB/DW sources and any
+      # destination -> @oc-db-dw. Source ownership is decided by connector
+      # language (java/kotlin => DB/DW, everything else => API).
+      - name: Resolve owning team mentions for Slack
+        if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
+        id: owning-teams
+        env:
+          GH_TOKEN: ${{ steps.get-hoard-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          connectors="$(
+            gh api --paginate "repos/airbytehq/airbyte/pulls/$PR_NUMBER/files" \
+              --jq '.[].filename' \
+              | sed -n 's|^airbyte-integrations/connectors/\([^/]*\)/.*|\1|p;s|^docs/integrations/sources/\([^/.]*\).*|source-\1|p;s|^docs/integrations/destinations/\([^/.]*\).*|destination-\1|p' \
+              | sort -u
+          )"
+
+          tag_apis=false
+          tag_db_dw=false
+          for connector in $connectors; do
+            metadata="airbyte-integrations/connectors/$connector/metadata.yaml"
+            if [[ "$connector" == destination-* ]]; then
+              tag_db_dw=true
+            elif [[ -f "$metadata" ]] && grep -qE '^\s*- language:(java|kotlin)\s*$' "$metadata"; then
+              tag_db_dw=true
+            else
+              tag_apis=true
+            fi
+          done
+
+          mentions=""
+          if [[ "$tag_apis" == "true" ]]; then
+            mentions="<!subteam^S08SNSK5RHQ|@oc-apis>"
+          fi
+          if [[ "$tag_db_dw" == "true" ]]; then
+            mentions="${mentions:+$mentions }<!subteam^S0BKLTJNKC6|@oc-db-dw>"
+          fi
+          echo "mentions=$mentions" | tee -a "$GITHUB_OUTPUT"
+          echo "tag_apis=$tag_apis" | tee -a "$GITHUB_OUTPUT"
+          echo "tag_db_dw=$tag_db_dw" | tee -a "$GITHUB_OUTPUT"
+
       - name: Post automerge notification to Slack
         if: steps.evaluate.outputs.result == 'PASS' && inputs.dry-run != 'true' && vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true'
         uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
@@ -772,7 +815,53 @@ jobs:
               - type: section
                 text:
                   type: mrkdwn
-                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>"
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong."
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow run> | <${{ steps.devin.outputs.session-url }}|Devin session>"
+
+      - name: Post automerge notification to team-apis Slack channel
+        if: >
+          steps.evaluate.outputs.result == 'PASS' &&
+          inputs.dry-run != 'true' &&
+          vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' &&
+          steps.owning-teams.outputs.tag_apis == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C0BHDAPNPCY
+            text: "Hydra auto-merged PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong."
+              - type: context
+                elements:
+                  - type: mrkdwn
+                    text: "<https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|Workflow run> | <${{ steps.devin.outputs.session-url }}|Devin session>"
+
+      - name: Post automerge notification to team-hydra-connectors Slack channel
+        if: >
+          steps.evaluate.outputs.result == 'PASS' &&
+          inputs.dry-run != 'true' &&
+          vars.ENABLE_CONNECTOR_AUTO_MERGE == 'true' &&
+          steps.owning-teams.outputs.tag_db_dw == 'true'
+        uses: slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a # v2.1.1
+        with:
+          token: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
+          method: chat.postMessage
+          payload: |
+            channel: C043JHEEYKG
+            text: "Hydra auto-merged PR #${{ inputs.pr }}: ${{ steps.pre-check.outputs.title }}"
+            blocks:
+              - type: section
+                text:
+                  type: mrkdwn
+                  text: ":robot_face: *Hydra Auto-Merge*\n<https://github.com/airbytehq/airbyte/pull/${{ inputs.pr }}|#${{ inputs.pr }} ${{ steps.pre-check.outputs.title }}>\n${{ steps.owning-teams.outputs.mentions }} please review and flag if this merge was wrong."
               - type: context
                 elements:
                   - type: mrkdwn

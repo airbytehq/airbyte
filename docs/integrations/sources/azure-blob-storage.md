@@ -311,6 +311,9 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.31 | 2026-08-25 | [85007](https://github.com/airbytehq/airbyte/pull/85007) | Update dependencies |
+| 0.8.30 | 2026-08-18 | [84471](https://github.com/airbytehq/airbyte/pull/84471) | Update dependencies |
+| 0.8.29 | 2026-08-11 | [83826](https://github.com/airbytehq/airbyte/pull/83826) | Update dependencies |
 | 0.8.28 | 2026-08-04 | [83347](https://github.com/airbytehq/airbyte/pull/83347) | Update dependencies |
 | 0.8.27 | 2026-07-28 | [82801](https://github.com/airbytehq/airbyte/pull/82801) | Update dependencies |
 | 0.8.26 | 2026-07-22 | [82241](https://github.com/airbytehq/airbyte/pull/82241) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
