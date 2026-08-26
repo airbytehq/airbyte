@@ -48,6 +48,11 @@ validated to form a valid model.
 
 - **`metadata`**&nbsp;(`dict[str, Any]`)
 
-- **`page_content`**&nbsp;(`str`) — Return the content of the document.  This is an alias for the `content` property, and is provided for duck-type compatibility with the LangChain project's `Document` class.
+- **`page_content`**&nbsp;(`str`)
+
+  Return the content of the document.
+
+  This is an alias for the `content` property, and is provided for duck-type compatibility
+  with the LangChain project's `Document` class.
 
 </ApiMember>

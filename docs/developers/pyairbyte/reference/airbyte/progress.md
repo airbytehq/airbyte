@@ -16,13 +16,21 @@ Logging is controlled by the `AIRBYTE_LOGGING_ROOT` and `AIRBYTE_STRUCTURED_LOGG
 variables, as described in `airbyte.logs`. If `AIRBYTE_STRUCTURED_LOGGING` is set, logs will be
 written in JSONL format. Otherwise, log files will be written as text.
 
-- **`DEFAULT_REFRESHES_PER_SECOND`** — The default number of times per second to refresh the progress view.
+- **`DEFAULT_REFRESHES_PER_SECOND`**
 
-- **`MAX_ITEMIZED_STREAMS`** — The maximum number of streams to itemize in the progress view.
+  The default number of times per second to refresh the progress view.
 
-- **`MAX_UPDATE_FREQUENCY`** — The max number of records to read before updating the progress bar.
+- **`MAX_ITEMIZED_STREAMS`**
 
-- **`TIME_TO_FIRST_RECORD_THRESHOLD_SECONDS`** — Threshold for time_to_first_record above which adjusted metrics are calculated.
+  The maximum number of streams to itemize in the progress view.
+
+- **`MAX_UPDATE_FREQUENCY`**
+
+  The max number of records to read before updating the progress bar.
+
+- **`TIME_TO_FIRST_RECORD_THRESHOLD_SECONDS`**
+
+  Threshold for time_to_first_record above which adjusted metrics are calculated.
 
 ### `ProgressStyle` {#airbyte.progress.ProgressStyle}
 
@@ -50,15 +58,25 @@ An enum of progress bar styles.
 
 #### Attributes {#airbyte.progress.ProgressStyle--attributes}
 
-- **`AUTO`** — Automatically select the best style for the environment.
+- **`AUTO`**
 
-- **`IPYTHON`** — Use IPython display methods.
+  Automatically select the best style for the environment.
 
-- **`NONE`** — Skip progress prints.
+- **`IPYTHON`**
 
-- **`PLAIN`** — A plain text progress print.
+  Use IPython display methods.
 
-- **`RICH`** — A Rich progress bar.
+- **`NONE`**
+
+  Skip progress prints.
+
+- **`PLAIN`**
+
+  A plain text progress print.
+
+- **`RICH`**
+
+  A Rich progress bar.
 
 </ApiMember>
 
@@ -87,41 +105,81 @@ Initialize the progress tracker.
 
 #### Attributes {#airbyte.progress.ProgressTracker--attributes}
 
-- **`bytes_tracking_enabled`**&nbsp;(`bool`) — Return True if bytes are being tracked.
+- **`bytes_tracking_enabled`**&nbsp;(`bool`)
 
-- **`destination_records_delivered_per_second`**&nbsp;(`float`) — Return the number of records delivered per second.
+  Return True if bytes are being tracked.
 
-- **`elapsed_finalization_seconds`**&nbsp;(`float`) — Return the number of seconds elapsed since the read operation started.
+- **`destination_records_delivered_per_second`**&nbsp;(`float`)
 
-- **`elapsed_finalization_time_str`**&nbsp;(`str`) — Return duration as a string.
+  Return the number of records delivered per second.
 
-- **`elapsed_read_seconds`**&nbsp;(`float`) — Return the number of seconds elapsed since the read operation started.
+- **`elapsed_finalization_seconds`**&nbsp;(`float`)
 
-- **`elapsed_read_time_string`**&nbsp;(`str`) — Return duration as a string.
+  Return the number of seconds elapsed since the read operation started.
 
-- **`elapsed_seconds`**&nbsp;(`float`) — Return the number of seconds elapsed since the operation started.
+- **`elapsed_finalization_time_str`**&nbsp;(`str`)
 
-- **`elapsed_seconds_since_last_update`**&nbsp;(`float | None`) — Return the number of seconds elapsed since the last update.
+  Return duration as a string.
 
-- **`elapsed_time_string`**&nbsp;(`str`) — Return duration as a string.
+- **`elapsed_read_seconds`**&nbsp;(`float`)
 
-- **`job_description`**&nbsp;(`str`) — Return a description of the job, combining source, destination, and cache inputs.
+  Return the number of seconds elapsed since the read operation started.
 
-- **`total_bytes_read`**&nbsp;(`int`) — Return the total number of bytes read.  Return None if bytes are not being tracked.
+- **`elapsed_read_time_string`**&nbsp;(`str`)
 
-- **`total_destination_records_confirmed`**&nbsp;(`int`) — Return the total number of records confirmed by the destination.
+  Return duration as a string.
 
-- **`total_destination_records_delivered`**&nbsp;(`int`) — Return the total number of records delivered to the destination.
+- **`elapsed_seconds`**&nbsp;(`float`)
 
-- **`total_destination_write_time_seconds`**&nbsp;(`float`) — Return the total time elapsed in seconds.
+  Return the number of seconds elapsed since the operation started.
 
-- **`total_destination_write_time_str`**&nbsp;(`str`) — Return the total time elapsed as a string.
+- **`elapsed_seconds_since_last_update`**&nbsp;(`float | None`)
 
-- **`total_megabytes_read`**&nbsp;(`float`) — Return the total number of bytes read.  Return None if no bytes have been read, as this is generally due to bytes not being tracked.
+  Return the number of seconds elapsed since the last update.
 
-- **`total_time_elapsed_seconds`**&nbsp;(`float`) — Return the total time elapsed in seconds.
+- **`elapsed_time_string`**&nbsp;(`str`)
 
-- **`total_time_elapsed_str`**&nbsp;(`str`) — Return the total time elapsed as a string.
+  Return duration as a string.
+
+- **`job_description`**&nbsp;(`str`)
+
+  Return a description of the job, combining source, destination, and cache inputs.
+
+- **`total_bytes_read`**&nbsp;(`int`)
+
+  Return the total number of bytes read.
+
+  Return None if bytes are not being tracked.
+
+- **`total_destination_records_confirmed`**&nbsp;(`int`)
+
+  Return the total number of records confirmed by the destination.
+
+- **`total_destination_records_delivered`**&nbsp;(`int`)
+
+  Return the total number of records delivered to the destination.
+
+- **`total_destination_write_time_seconds`**&nbsp;(`float`)
+
+  Return the total time elapsed in seconds.
+
+- **`total_destination_write_time_str`**&nbsp;(`str`)
+
+  Return the total time elapsed as a string.
+
+- **`total_megabytes_read`**&nbsp;(`float`)
+
+  Return the total number of bytes read.
+
+  Return None if no bytes have been read, as this is generally due to bytes not being tracked.
+
+- **`total_time_elapsed_seconds`**&nbsp;(`float`)
+
+  Return the total time elapsed in seconds.
+
+- **`total_time_elapsed_str`**&nbsp;(`str`)
+
+  Return the total time elapsed as a string.
 
 #### `log_batch_written` {#airbyte.progress.ProgressTracker.log_batch_written}
 

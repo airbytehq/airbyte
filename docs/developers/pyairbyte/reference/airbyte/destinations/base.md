@@ -38,7 +38,12 @@ If config is provided, it will be validated against the spec if validate is True
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
 
-- **`is_cache_supported`**&nbsp;(`bool`) — Whether this destination has a compatible cache implementation.  Returns `True` when `get_sql_cache()` is expected to succeed for the destination's connector type.
+- **`is_cache_supported`**&nbsp;(`bool`)
+
+  Whether this destination has a compatible cache implementation.
+
+  Returns `True` when `get_sql_cache()` is expected to succeed for
+  the destination's connector type.
 
 #### `get_sql_cache` {#airbyte.destinations.base.Destination.get_sql_cache}
 

@@ -32,29 +32,62 @@ Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 
 #### Attributes {#airbyte.cloud.connections.CloudConnection--attributes}
 
-- **`connection_id`** — The ID of the connection.
+- **`connection_id`**
 
-- **`connection_url`**&nbsp;(`str | None`) — The web URL to the connection.
+  The ID of the connection.
 
-- **`destination`**&nbsp;(`CloudDestination`) — Get the destination object.
+- **`connection_url`**&nbsp;(`str | None`)
 
-- **`destination_id`**&nbsp;(`str`) — The ID of the destination.
+  The web URL to the connection.
 
-- **`enabled`**&nbsp;(`bool`) — Get the current enabled status of the connection.  This property always fetches fresh data from the API to ensure accuracy, as another process or user may have toggled the setting.   **Returns:**  True if the connection status is 'active', False otherwise. 
+- **`destination`**&nbsp;(`CloudDestination`)
 
-- **`job_history_url`**&nbsp;(`str | None`) — The URL to the job history for the connection.
+  Get the destination object.
 
-- **`name`**&nbsp;(`str | None`) — Get the display name of the connection, if available.  E.g. "My Postgres to Snowflake", not the connection ID.
+- **`destination_id`**&nbsp;(`str`)
 
-- **`source`**&nbsp;(`CloudSource`) — Get the source object.
+  The ID of the destination.
 
-- **`source_id`**&nbsp;(`str`) — The ID of the source.
+- **`enabled`**&nbsp;(`bool`)
 
-- **`stream_names`**&nbsp;(`list[str]`) — The stream names.
+  Get the current enabled status of the connection.
 
-- **`table_prefix`**&nbsp;(`str`) — The table prefix.
+  This property always fetches fresh data from the API to ensure accuracy,
+  as another process or user may have toggled the setting.
 
-- **`workspace`** — The workspace that the connection belongs to.
+  **Returns:**
+
+  True if the connection status is 'active', False otherwise.
+
+- **`job_history_url`**&nbsp;(`str | None`)
+
+  The URL to the job history for the connection.
+
+- **`name`**&nbsp;(`str | None`)
+
+  Get the display name of the connection, if available.
+
+  E.g. "My Postgres to Snowflake", not the connection ID.
+
+- **`source`**&nbsp;(`CloudSource`)
+
+  Get the source object.
+
+- **`source_id`**&nbsp;(`str`)
+
+  The ID of the source.
+
+- **`stream_names`**&nbsp;(`list[str]`)
+
+  The stream names.
+
+- **`table_prefix`**&nbsp;(`str`)
+
+  The table prefix.
+
+- **`workspace`**
+
+  The workspace that the connection belongs to.
 
 #### `cancel_sync` {#airbyte.cloud.connections.CloudConnection.cancel_sync}
 

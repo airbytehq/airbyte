@@ -44,21 +44,51 @@ Create a new SQL processor.
 
 #### Attributes {#airbyte.shared.SqlProcessorBase--attributes}
 
-- **`file_writer_class`**&nbsp;(`type[FileWriterBase]`) — The file writer class to use for writing files to the cache.
+- **`file_writer_class`**&nbsp;(`type[FileWriterBase]`)
 
-- **`normalizer`** — The name normalizer to user for table and column name normalization.
+  The file writer class to use for writing files to the cache.
 
-- **`supports_merge_insert`** — True if the database supports the MERGE INTO syntax.
+- **`normalizer`**
 
-- **`type_converter_class`**&nbsp;(`type[SQLTypeConverter]`) — The type converter class to use for converting JSON schema types to SQL types.
+  The name normalizer to user for table and column name normalization.
 
-- **`catalog_provider`**&nbsp;(`CatalogProvider`) — Return the catalog manager.  Subclasses should set this property to a valid catalog manager instance if one is not explicitly passed to the constructor.   **Raises:**  - **`PyAirbyteInternalError`**: If the catalog manager is not set. 
+- **`supports_merge_insert`**
 
-- **`database_name`**&nbsp;(`str`) — Return the name of the database.
+  True if the database supports the MERGE INTO syntax.
 
-- **`sql_config`**&nbsp;(`SqlConfig`) — Return the SQL configuration.
+- **`type_converter_class`**&nbsp;(`type[SQLTypeConverter]`)
 
-- **`state_writer`**&nbsp;(`StateWriterBase`) — Return the state writer instance.  Subclasses should set this property to a valid state manager instance if one is not explicitly passed to the constructor.   **Raises:**  - **`PyAirbyteInternalError`**: If the state manager is not set. 
+  The type converter class to use for converting JSON schema types to SQL types.
+
+- **`catalog_provider`**&nbsp;(`CatalogProvider`)
+
+  Return the catalog manager.
+
+  Subclasses should set this property to a valid catalog manager instance if one
+  is not explicitly passed to the constructor.
+
+  **Raises:**
+
+  - **`PyAirbyteInternalError`**: If the catalog manager is not set.
+
+- **`database_name`**&nbsp;(`str`)
+
+  Return the name of the database.
+
+- **`sql_config`**&nbsp;(`SqlConfig`)
+
+  Return the SQL configuration.
+
+- **`state_writer`**&nbsp;(`StateWriterBase`)
+
+  Return the state writer instance.
+
+  Subclasses should set this property to a valid state manager instance if one
+  is not explicitly passed to the constructor.
+
+  **Raises:**
+
+  - **`PyAirbyteInternalError`**: If the state manager is not set.
 
 #### `cleanup_all` {#airbyte.shared.SqlProcessorBase.cleanup_all}
 

@@ -94,11 +94,15 @@ Validate and initialize credentials.
 
 - **`client_secret`**&nbsp;(`SecretString | None`)
 
-- **`config_api_root`**&nbsp;(`str | None`) — The Config API root URL.
+- **`config_api_root`**&nbsp;(`str | None`)
+
+  The Config API root URL.
 
 - **`workspace_id`**&nbsp;(`str`)
 
-- **`workspace_url`**&nbsp;(`str | None`) — The web URL of the workspace.
+- **`workspace_url`**&nbsp;(`str | None`)
+
+  The web URL of the workspace.
 
 #### `from_env` {#airbyte.cloud.workspaces.CloudWorkspace.from_env}
 

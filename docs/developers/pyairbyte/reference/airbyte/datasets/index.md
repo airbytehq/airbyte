@@ -117,7 +117,9 @@ Base implementation for all datasets.
 
 #### Attributes {#airbyte.datasets.DatasetBase--attributes}
 
-- **`column_names`**&nbsp;(`list[str]`) — Return the list of top-level column names.
+- **`column_names`**&nbsp;(`list[str]`)
+
+  Return the list of top-level column names.
 
 #### `to_arrow` {#airbyte.datasets.DatasetBase.to_arrow}
 
@@ -306,7 +308,9 @@ If stream_configuration is set to False, we skip the stream configuration retrie
 
 #### Attributes {#airbyte.datasets.SQLDataset--attributes}
 
-- **`column_names`**&nbsp;(`list[str]`) — Return the list of top-level column names, including internal Airbyte columns.
+- **`column_names`**&nbsp;(`list[str]`)
+
+  Return the list of top-level column names, including internal Airbyte columns.
 
 - **`stream_name`**&nbsp;(`str`)
 

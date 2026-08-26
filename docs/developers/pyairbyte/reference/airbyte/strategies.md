@@ -36,13 +36,27 @@ If a destination does not support the declared method, it will raise an exceptio
 
 #### Attributes {#airbyte.strategies.WriteMethod--attributes}
 
-- **`APPEND`** — Append new records to existing records.
+- **`APPEND`**
 
-- **`MERGE`** — Merge new records with existing records.  This requires a primary key to be set on the stream. If no primary key is set, this will raise an exception.  To apply this strategy in cases where some destination streams don't have a primary key, please use the `auto` strategy instead.
+  Append new records to existing records.
 
-- **`REPLACE`** — Replace existing records with new records.
+- **`MERGE`**
 
-- **`destination_sync_mode`**&nbsp;(`DestinationSyncMode`) — Convert the write method to a destination sync mode.
+  Merge new records with existing records.
+
+  This requires a primary key to be set on the stream.
+  If no primary key is set, this will raise an exception.
+
+  To apply this strategy in cases where some destination streams don't have a primary key,
+  please use the `auto` strategy instead.
+
+- **`REPLACE`**
+
+  Replace existing records with new records.
+
+- **`destination_sync_mode`**&nbsp;(`DestinationSyncMode`)
+
+  Convert the write method to a destination sync mode.
 
 </ApiMember>
 
@@ -78,12 +92,31 @@ method.
 
 #### Attributes {#airbyte.strategies.WriteStrategy--attributes}
 
-- **`APPEND`** — Append new records to existing records.
+- **`APPEND`**
 
-- **`AUTO`** — Automatically determine the best strategy to use.  This will use the following logic: - If there's a primary key, use merge. - Else, if there's an incremental key, use append. - Else, use full replace (table swap).
+  Append new records to existing records.
 
-- **`MERGE`** — Merge new records with existing records.  This requires a primary key to be set on the stream. If no primary key is set, this will raise an exception.  To apply this strategy in cases where some destination streams don't have a primary key, please use the `auto` strategy instead.
+- **`AUTO`**
 
-- **`REPLACE`** — Replace existing records with new records.
+  Automatically determine the best strategy to use.
+
+  This will use the following logic:
+  - If there's a primary key, use merge.
+  - Else, if there's an incremental key, use append.
+  - Else, use full replace (table swap).
+
+- **`MERGE`**
+
+  Merge new records with existing records.
+
+  This requires a primary key to be set on the stream.
+  If no primary key is set, this will raise an exception.
+
+  To apply this strategy in cases where some destination streams don't have a primary key,
+  please use the `auto` strategy instead.
+
+- **`REPLACE`**
+
+  Replace existing records with new records.
 
 </ApiMember>

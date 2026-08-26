@@ -168,39 +168,73 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.sources.ConnectorMetadata--attributes}
 
-- **`connector_type`**&nbsp;(`str | None`) — Connector type: `source` or `destination`.
+- **`connector_type`**&nbsp;(`str | None`)
 
-- **`definition_id`**&nbsp;(`str | None`) — Source or destination definition ID.
+  Connector type: `source` or `destination`.
 
-- **`display_name`**&nbsp;(`str | None`) — Human-readable connector name.
+- **`definition_id`**&nbsp;(`str | None`)
 
-- **`docker_repository`**&nbsp;(`str | None`) — Docker repository for the connector image.
+  Source or destination definition ID.
 
-- **`documentation_url`**&nbsp;(`str | None`) — Connector documentation URL.
+- **`display_name`**&nbsp;(`str | None`)
 
-- **`github_issue_label`**&nbsp;(`str | None`) — GitHub issue label for the connector.
+  Human-readable connector name.
 
-- **`install_types`**&nbsp;(`set[airbyte.registry.InstallType]`) — The supported install types for the connector.
+- **`docker_repository`**&nbsp;(`str | None`)
 
-- **`language`**&nbsp;(`airbyte.registry.Language | None`) — The language of the connector.
+  Docker repository for the connector image.
 
-- **`latest_available_version`**&nbsp;(`str | None`) — The latest available version of the connector.
+- **`documentation_url`**&nbsp;(`str | None`)
 
-- **`name`**&nbsp;(`str`) — Connector name. For example, "source-google-sheets".
+  Connector documentation URL.
 
-- **`pypi_package_name`**&nbsp;(`str | None`) — The name of the PyPI package for the connector, if it exists.
+- **`github_issue_label`**&nbsp;(`str | None`)
 
-- **`release_date`**&nbsp;(`str | None`) — Connector release date.
+  GitHub issue label for the connector.
 
-- **`release_stage`**&nbsp;(`str | None`) — Connector release stage.
+- **`install_types`**&nbsp;(`set[airbyte.registry.InstallType]`)
 
-- **`source_type`**&nbsp;(`str | None`) — Connector subtype.
+  The supported install types for the connector.
 
-- **`suggested_streams`**&nbsp;(`list[str] | None`) — A list of suggested streams for the connector, if available.
+- **`language`**&nbsp;(`airbyte.registry.Language | None`)
 
-- **`support_level`**&nbsp;(`str | None`) — Connector support level.
+  The language of the connector.
 
-- **`default_install_type`**&nbsp;(`InstallType`) — Return the default install type for the connector.
+- **`latest_available_version`**&nbsp;(`str | None`)
+
+  The latest available version of the connector.
+
+- **`name`**&nbsp;(`str`)
+
+  Connector name. For example, "source-google-sheets".
+
+- **`pypi_package_name`**&nbsp;(`str | None`)
+
+  The name of the PyPI package for the connector, if it exists.
+
+- **`release_date`**&nbsp;(`str | None`)
+
+  Connector release date.
+
+- **`release_stage`**&nbsp;(`str | None`)
+
+  Connector release stage.
+
+- **`source_type`**&nbsp;(`str | None`)
+
+  Connector subtype.
+
+- **`suggested_streams`**&nbsp;(`list[str] | None`)
+
+  A list of suggested streams for the connector, if available.
+
+- **`support_level`**&nbsp;(`str | None`)
+
+  Connector support level.
+
+- **`default_install_type`**&nbsp;(`InstallType`)
+
+  Return the default install type for the connector.
 
 </ApiMember>
 
@@ -238,13 +272,38 @@ If config is provided, it will be validated against the spec if validate is True
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
 
-- **`config_spec`**&nbsp;(`dict[str, Any]`) — Generate a configuration spec for this connector, as a JSON Schema definition.  This function generates a JSON Schema dictionary with configuration specs for the current connector, as a dictionary.   **Returns:**  - **`dict`**: The JSON Schema configuration spec as a dictionary. 
+- **`config_spec`**&nbsp;(`dict[str, Any]`)
 
-- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`) — Get the configured catalog for the given streams.  If the raw catalog is not yet known, we call discover to get it.  If no specific streams are selected, we return a catalog that syncs all available streams.  TODO: We should consider disabling by default the streams that the connector would disable by default. (For instance, streams that require a premium license are sometimes disabled by default within the connector.)
+  Generate a configuration spec for this connector, as a JSON Schema definition.
 
-- **`discovered_catalog`**&nbsp;(`AirbyteCatalog`) — Get the raw catalog for the given streams.  If the catalog is not yet known, we call discover to get it.
+  This function generates a JSON Schema dictionary with configuration specs for the
+  current connector, as a dictionary.
 
-- **`docs_url`**&nbsp;(`str`) — Get the URL to the connector's documentation.
+  **Returns:**
+
+  - **`dict`**: The JSON Schema configuration spec as a dictionary.
+
+- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`)
+
+  Get the configured catalog for the given streams.
+
+  If the raw catalog is not yet known, we call discover to get it.
+
+  If no specific streams are selected, we return a catalog that syncs all available streams.
+
+  TODO: We should consider disabling by default the streams that the connector would
+  disable by default. (For instance, streams that require a premium license are sometimes
+  disabled by default within the connector.)
+
+- **`discovered_catalog`**&nbsp;(`AirbyteCatalog`)
+
+  Get the raw catalog for the given streams.
+
+  If the catalog is not yet known, we call discover to get it.
+
+- **`docs_url`**&nbsp;(`str`)
+
+  Get the URL to the connector's documentation.
 
 #### `get_available_streams` {#airbyte.sources.Source.get_available_streams}
 

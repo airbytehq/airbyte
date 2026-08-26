@@ -38,7 +38,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.bigquery.BigQueryCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -92,15 +94,27 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.caches.bigquery.BigQueryConfig--attributes}
 
-- **`credentials_path`**&nbsp;(`str | None`) — The path to the credentials file to use. If not passed, falls back to the default inferred from the environment.
+- **`credentials_path`**&nbsp;(`str | None`)
 
-- **`database_name`**&nbsp;(`str`) — The name of the project to use. In BigQuery, this is equivalent to the database name.
+  The path to the credentials file to use.
+  If not passed, falls back to the default inferred from the environment.
 
-- **`dataset_location`**&nbsp;(`str`) — The geographic location of the BigQuery dataset (e.g., 'US', 'EU', etc.). Defaults to 'US'. See: https://cloud.google.com/bigquery/docs/locations
+- **`database_name`**&nbsp;(`str`)
 
-- **`dataset_name`**&nbsp;(`str`) — Return the dataset name (alias of self.schema_name).
+  The name of the project to use. In BigQuery, this is equivalent to the database name.
 
-- **`project_name`**&nbsp;(`str`) — Return the project name (alias of self.database_name).
+- **`dataset_location`**&nbsp;(`str`)
+
+  The geographic location of the BigQuery dataset (e.g., 'US', 'EU', etc.).
+  Defaults to 'US'. See: https://cloud.google.com/bigquery/docs/locations
+
+- **`dataset_name`**&nbsp;(`str`)
+
+  Return the dataset name (alias of self.schema_name).
+
+- **`project_name`**&nbsp;(`str`)
+
+  Return the project name (alias of self.database_name).
 
 #### `get_database_name` {#airbyte.caches.bigquery.BigQueryConfig.get_database_name}
 

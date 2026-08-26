@@ -39,13 +39,38 @@ If config is provided, it will be validated against the spec if validate is True
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
 
-- **`config_spec`**&nbsp;(`dict[str, Any]`) — Generate a configuration spec for this connector, as a JSON Schema definition.  This function generates a JSON Schema dictionary with configuration specs for the current connector, as a dictionary.   **Returns:**  - **`dict`**: The JSON Schema configuration spec as a dictionary. 
+- **`config_spec`**&nbsp;(`dict[str, Any]`)
 
-- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`) — Get the configured catalog for the given streams.  If the raw catalog is not yet known, we call discover to get it.  If no specific streams are selected, we return a catalog that syncs all available streams.  TODO: We should consider disabling by default the streams that the connector would disable by default. (For instance, streams that require a premium license are sometimes disabled by default within the connector.)
+  Generate a configuration spec for this connector, as a JSON Schema definition.
 
-- **`discovered_catalog`**&nbsp;(`AirbyteCatalog`) — Get the raw catalog for the given streams.  If the catalog is not yet known, we call discover to get it.
+  This function generates a JSON Schema dictionary with configuration specs for the
+  current connector, as a dictionary.
 
-- **`docs_url`**&nbsp;(`str`) — Get the URL to the connector's documentation.
+  **Returns:**
+
+  - **`dict`**: The JSON Schema configuration spec as a dictionary.
+
+- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`)
+
+  Get the configured catalog for the given streams.
+
+  If the raw catalog is not yet known, we call discover to get it.
+
+  If no specific streams are selected, we return a catalog that syncs all available streams.
+
+  TODO: We should consider disabling by default the streams that the connector would
+  disable by default. (For instance, streams that require a premium license are sometimes
+  disabled by default within the connector.)
+
+- **`discovered_catalog`**&nbsp;(`AirbyteCatalog`)
+
+  Get the raw catalog for the given streams.
+
+  If the catalog is not yet known, we call discover to get it.
+
+- **`docs_url`**&nbsp;(`str`)
+
+  Get the URL to the connector's documentation.
 
 #### `get_available_streams` {#airbyte.sources.base.Source.get_available_streams}
 

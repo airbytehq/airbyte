@@ -37,9 +37,13 @@ streams as they are discovered.
 
 #### Attributes {#airbyte.shared.catalog_providers.CatalogProvider--attributes}
 
-- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`) — Return the configured catalog.
+- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`)
 
-- **`stream_names`**&nbsp;(`list[str]`) — Return the names of the streams in the catalog.
+  Return the configured catalog.
+
+- **`stream_names`**&nbsp;(`list[str]`)
+
+  Return the names of the streams in the catalog.
 
 #### `from_read_result` {#airbyte.shared.catalog_providers.CatalogProvider.from_read_result}
 

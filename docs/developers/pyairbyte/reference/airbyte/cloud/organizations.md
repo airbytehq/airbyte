@@ -36,16 +36,28 @@ Initialize a `CloudOrganization`.
 
 #### Attributes {#airbyte.cloud.organizations.CloudOrganization--attributes}
 
-- **`email`**&nbsp;(`str | None`) — Email associated with the organization.
+- **`email`**&nbsp;(`str | None`)
 
-- **`is_account_locked`**&nbsp;(`bool`) — Whether the account is locked due to billing issues.
+  Email associated with the organization.
 
-- **`organization_id`** — The organization ID.
+- **`is_account_locked`**&nbsp;(`bool`)
 
-- **`organization_name`**&nbsp;(`str | None`) — Display name of the organization.
+  Whether the account is locked due to billing issues.
 
-- **`payment_status`**&nbsp;(`str | None`) — Payment status of the organization.
+- **`organization_id`**
 
-- **`subscription_status`**&nbsp;(`str | None`) — Subscription status of the organization.
+  The organization ID.
+
+- **`organization_name`**&nbsp;(`str | None`)
+
+  Display name of the organization.
+
+- **`payment_status`**&nbsp;(`str | None`)
+
+  Payment status of the organization.
+
+- **`subscription_status`**&nbsp;(`str | None`)
+
+  Subscription status of the organization.
 
 </ApiMember>

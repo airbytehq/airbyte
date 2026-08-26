@@ -124,21 +124,31 @@ calling `.SyncResult.get_attempts()`.
 
 #### Attributes {#airbyte.cloud.sync_results.SyncAttempt--attributes}
 
-- **`attempt_id`**&nbsp;(`int`) — Return the attempt ID.
+- **`attempt_id`**&nbsp;(`int`)
+
+  Return the attempt ID.
 
 - **`attempt_number`**&nbsp;(`int`)
 
-- **`bytes_synced`**&nbsp;(`int`) — Return the number of bytes synced in this attempt.
+- **`bytes_synced`**&nbsp;(`int`)
+
+  Return the number of bytes synced in this attempt.
 
 - **`connection`**&nbsp;(`CloudConnection`)
 
-- **`created_at`**&nbsp;(`datetime`) — Return the creation time of the attempt.
+- **`created_at`**&nbsp;(`datetime`)
+
+  Return the creation time of the attempt.
 
 - **`job_id`**&nbsp;(`int`)
 
-- **`records_synced`**&nbsp;(`int`) — Return the number of records synced in this attempt.
+- **`records_synced`**&nbsp;(`int`)
 
-- **`status`**&nbsp;(`str`) — Return the attempt status.
+  Return the number of records synced in this attempt.
+
+- **`status`**&nbsp;(`str`)
+
+  Return the attempt status.
 
 - **`workspace`**&nbsp;(`CloudWorkspace`)
 
@@ -189,21 +199,42 @@ interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 
 #### Attributes {#airbyte.cloud.sync_results.SyncResult--attributes}
 
-- **`bytes_synced`**&nbsp;(`int`) — Return the number of records processed.
+- **`bytes_synced`**&nbsp;(`int`)
+
+  Return the number of records processed.
 
 - **`connection`**&nbsp;(`CloudConnection`)
 
 - **`job_id`**&nbsp;(`int`)
 
-- **`job_url`**&nbsp;(`str`) — Return the URL of the sync job.  Note: This currently returns the connection's job history URL, as there is no direct URL to a specific job in the Airbyte Cloud web app.  TODO: Implement a direct job logs URL on top of the event-id of the specific attempt number.       E.g. \{self.connection.job_history_url\}?eventId=\{event-guid\}&openLogs=true
+- **`job_url`**&nbsp;(`str`)
 
-- **`records_synced`**&nbsp;(`int`) — Return the number of records processed.
+  Return the URL of the sync job.
 
-- **`start_time`**&nbsp;(`datetime`) — Return the start time of the sync job in UTC.
+  Note: This currently returns the connection's job history URL, as there is no direct URL
+  to a specific job in the Airbyte Cloud web app.
 
-- **`stream_names`**&nbsp;(`list[str]`) — Return the set of stream names.
+  TODO: Implement a direct job logs URL on top of the event-id of the specific attempt number.
+        E.g. \{self.connection.job_history_url\}?eventId=\{event-guid\}&openLogs=true
 
-- **`streams`**&nbsp;(`_SyncResultStreams`) — Return a mapping of stream names to `airbyte.CachedDataset` objects.  This is a convenience wrapper around the `stream_names` property and `get_dataset()` method.
+- **`records_synced`**&nbsp;(`int`)
+
+  Return the number of records processed.
+
+- **`start_time`**&nbsp;(`datetime`)
+
+  Return the start time of the sync job in UTC.
+
+- **`stream_names`**&nbsp;(`list[str]`)
+
+  Return the set of stream names.
+
+- **`streams`**&nbsp;(`_SyncResultStreams`)
+
+  Return a mapping of stream names to `airbyte.CachedDataset` objects.
+
+  This is a convenience wrapper around the `stream_names`
+  property and `get_dataset()` method.
 
 - **`table_name_prefix`**&nbsp;(`str`)
 

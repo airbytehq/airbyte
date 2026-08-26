@@ -42,7 +42,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.postgres.PostgresCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 

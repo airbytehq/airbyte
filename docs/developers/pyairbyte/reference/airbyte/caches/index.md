@@ -83,7 +83,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.BigQueryCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -141,21 +143,35 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.CacheBase--attributes}
 
-- **`cache_dir`**&nbsp;(`Path`) — The directory to store the cache in.
+- **`cache_dir`**&nbsp;(`Path`)
 
-- **`cleanup`**&nbsp;(`bool`) — Whether to clean up the cache after use.
+  The directory to store the cache in.
+
+- **`cleanup`**&nbsp;(`bool`)
+
+  Whether to clean up the cache after use.
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
-- **`config_hash`**&nbsp;(`str | None`) — Return a hash of the cache configuration.  This is the same as the SQLConfig hash from the superclass.
+- **`config_hash`**&nbsp;(`str | None`)
 
-- **`paired_destination_config`**&nbsp;(`Any | dict[str, Any]`) — Return a dictionary of destination configuration values.
+  Return a hash of the cache configuration.
 
-- **`processor`**&nbsp;(`SqlProcessorBase`) — Return the SQL processor instance.
+  This is the same as the SQLConfig hash from the superclass.
 
-- **`streams`**&nbsp;(`dict[str, CachedDataset]`) — Return a temporary table name.
+- **`paired_destination_config`**&nbsp;(`Any | dict[str, Any]`)
+
+  Return a dictionary of destination configuration values.
+
+- **`processor`**&nbsp;(`SqlProcessorBase`)
+
+  Return the SQL processor instance.
+
+- **`streams`**&nbsp;(`dict[str, CachedDataset]`)
+
+  Return a temporary table name.
 
 #### `close` {#airbyte.caches.CacheBase.close}
 
@@ -471,7 +487,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.DuckDBCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -523,7 +541,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.PostgresCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -569,7 +589,9 @@ Initialize the cache and backends.
 
 - **`dedupe_mode`**&nbsp;(`RecordDedupeMode`)
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationSnowflake(database: 'str', host: 'str', role: 'str', schema: 'str', username: 'str', warehouse: 'str', credentials: 'Optional[AuthorizationMethod]' = None, DESTINATION_TYPE: 'Final[Snowflake]' = &lt;Snowflake.SNOWFLAKE: 'snowflake'&gt;, disable_type_dedupe: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, raw_data_schema: 'Optional[str]' = None, retention_period_days: 'Optional[int]' = 1, use_merge_for_upsert: 'Optional[bool]' = False)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationSnowflake(database: 'str', host: 'str', role: 'str', schema: 'str', username: 'str', warehouse: 'str', credentials: 'Optional[AuthorizationMethod]' = None, DESTINATION_TYPE: 'Final[Snowflake]' = &lt;Snowflake.SNOWFLAKE: 'snowflake'&gt;, disable_type_dedupe: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, raw_data_schema: 'Optional[str]' = None, retention_period_days: 'Optional[int]' = 1, use_merge_for_upsert: 'Optional[bool]' = False)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 

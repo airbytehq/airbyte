@@ -82,19 +82,33 @@ will raise a validation error.
 
 #### Attributes {#airbyte.cloud.client_config.CloudClientConfig--attributes}
 
-- **`api_root`**&nbsp;(`str`) — The API root URL. Defaults to Airbyte Cloud API.
+- **`api_root`**&nbsp;(`str`)
 
-- **`bearer_token`**&nbsp;(`airbyte.secrets.base.SecretString | None`) — Bearer token for direct authentication (alternative to client credentials).
+  The API root URL. Defaults to Airbyte Cloud API.
 
-- **`client_id`**&nbsp;(`airbyte.secrets.base.SecretString | None`) — OAuth2 client ID for client credentials authentication.
+- **`bearer_token`**&nbsp;(`airbyte.secrets.base.SecretString | None`)
 
-- **`client_secret`**&nbsp;(`airbyte.secrets.base.SecretString | None`) — OAuth2 client secret for client credentials authentication.
+  Bearer token for direct authentication (alternative to client credentials).
 
-- **`config_api_root`**&nbsp;(`str | None`) — The Config API root URL.
+- **`client_id`**&nbsp;(`airbyte.secrets.base.SecretString | None`)
 
-- **`uses_bearer_token`**&nbsp;(`bool`) — Return True if using bearer token authentication.
+  OAuth2 client ID for client credentials authentication.
 
-- **`uses_client_credentials`**&nbsp;(`bool`) — Return True if using client credentials authentication.
+- **`client_secret`**&nbsp;(`airbyte.secrets.base.SecretString | None`)
+
+  OAuth2 client secret for client credentials authentication.
+
+- **`config_api_root`**&nbsp;(`str | None`)
+
+  The Config API root URL.
+
+- **`uses_bearer_token`**&nbsp;(`bool`)
+
+  Return True if using bearer token authentication.
+
+- **`uses_client_credentials`**&nbsp;(`bool`)
+
+  Return True if using client credentials authentication.
 
 #### `from_env` {#airbyte.cloud.client_config.CloudClientConfig.from_env}
 

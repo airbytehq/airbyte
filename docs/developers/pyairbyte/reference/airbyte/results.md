@@ -42,11 +42,17 @@ method of the `Source` class.
 
 #### Attributes {#airbyte.results.ReadResult--attributes}
 
-- **`cache`**&nbsp;(`CacheBase`) — Return the cache object.
+- **`cache`**&nbsp;(`CacheBase`)
 
-- **`processed_records`**&nbsp;(`int`) — The total number of records read from the source.
+  Return the cache object.
 
-- **`streams`**&nbsp;(`Mapping[str, CachedDataset]`) — Return a mapping of stream names to cached datasets.
+- **`processed_records`**&nbsp;(`int`)
+
+  The total number of records read from the source.
+
+- **`streams`**&nbsp;(`Mapping[str, CachedDataset]`)
+
+  Return a mapping of stream names to cached datasets.
 
 #### `get_sql_engine` {#airbyte.results.ReadResult.get_sql_engine}
 
@@ -98,7 +104,9 @@ method of the `Destination` class.
 
 #### Attributes {#airbyte.results.WriteResult--attributes}
 
-- **`processed_records`**&nbsp;(`int`) — The total number of records written to the destination.
+- **`processed_records`**&nbsp;(`int`)
+
+  The total number of records written to the destination.
 
 #### `get_state_provider` {#airbyte.results.WriteResult.get_state_provider}
 

@@ -34,21 +34,35 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.base.CacheBase--attributes}
 
-- **`cache_dir`**&nbsp;(`Path`) — The directory to store the cache in.
+- **`cache_dir`**&nbsp;(`Path`)
 
-- **`cleanup`**&nbsp;(`bool`) — Whether to clean up the cache after use.
+  The directory to store the cache in.
+
+- **`cleanup`**&nbsp;(`bool`)
+
+  Whether to clean up the cache after use.
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
-- **`config_hash`**&nbsp;(`str | None`) — Return a hash of the cache configuration.  This is the same as the SQLConfig hash from the superclass.
+- **`config_hash`**&nbsp;(`str | None`)
 
-- **`paired_destination_config`**&nbsp;(`Any | dict[str, Any]`) — Return a dictionary of destination configuration values.
+  Return a hash of the cache configuration.
 
-- **`processor`**&nbsp;(`SqlProcessorBase`) — Return the SQL processor instance.
+  This is the same as the SQLConfig hash from the superclass.
 
-- **`streams`**&nbsp;(`dict[str, CachedDataset]`) — Return a temporary table name.
+- **`paired_destination_config`**&nbsp;(`Any | dict[str, Any]`)
+
+  Return a dictionary of destination configuration values.
+
+- **`processor`**&nbsp;(`SqlProcessorBase`)
+
+  Return the SQL processor instance.
+
+- **`streams`**&nbsp;(`dict[str, CachedDataset]`)
+
+  Return a temporary table name.
 
 #### `close` {#airbyte.caches.base.CacheBase.close}
 

@@ -48,11 +48,22 @@ A class to provide state artifacts.
 
 #### Attributes {#airbyte.shared.state_providers.StateProviderBase--attributes}
 
-- **`known_stream_names`**&nbsp;(`set[str]`) — Return the unique set of all stream names with stored state.
+- **`known_stream_names`**&nbsp;(`set[str]`)
 
-- **`state_message_artifacts`**&nbsp;(`Iterable[AirbyteStreamState]`) — Return all state artifacts.  This is just a type guard around the private variable `_state_message_artifacts`.
+  Return the unique set of all stream names with stored state.
 
-- **`stream_state_artifacts`**&nbsp;(`list[AirbyteStreamState]`) — Return all state artifacts.  This is just a type guard around the private variable `_stream_state_artifacts` and the cast to `AirbyteStreamState` objects.
+- **`state_message_artifacts`**&nbsp;(`Iterable[AirbyteStreamState]`)
+
+  Return all state artifacts.
+
+  This is just a type guard around the private variable `_state_message_artifacts`.
+
+- **`stream_state_artifacts`**&nbsp;(`list[AirbyteStreamState]`)
+
+  Return all state artifacts.
+
+  This is just a type guard around the private variable `_stream_state_artifacts` and the
+  cast to `AirbyteStreamState` objects.
 
 #### `get_stream_state` {#airbyte.shared.state_providers.StateProviderBase.get_stream_state}
 

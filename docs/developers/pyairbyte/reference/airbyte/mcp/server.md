@@ -42,7 +42,9 @@ single token both authenticates transport (verified here) and authorizes
 downstream Cloud API calls, because an Airbyte-Cloud-issued JWT is itself a valid
 Cloud API bearer.
 
-- **`app`** — The Airbyte MCP Server application instance.
+- **`app`**
+
+  The Airbyte MCP Server application instance.
 
 ### `health_check` {#airbyte.mcp.server.health_check}
 

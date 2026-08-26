@@ -39,7 +39,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.caches.duckdb.DuckDBCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -70,7 +72,12 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.caches.duckdb.DuckDBConfig--attributes}
 
-- **`db_path`**&nbsp;(`Path | str`) — Normally db_path is a Path object.  The database name will be inferred from the file name. For example, given a `db_path` of `/path/to/my/duckdb-file`, the database name is `my_db`.
+- **`db_path`**&nbsp;(`Path | str`)
+
+  Normally db_path is a Path object.
+
+  The database name will be inferred from the file name. For example, given a `db_path` of
+  `/path/to/my/duckdb-file`, the database name is `my_db`.
 
 #### `get_sql_alchemy_url` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_alchemy_url}
 

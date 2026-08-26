@@ -26,15 +26,25 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.shared.sql_processor.ColumnStatistics--attributes}
 
-- **`column_name`**&nbsp;(`str`) — The column name as found in the destination.
+- **`column_name`**&nbsp;(`str`)
 
-- **`column_type`**&nbsp;(`str`) — The SQL data type name as reported by the database.
+  The column name as found in the destination.
 
-- **`non_null_count`**&nbsp;(`int | None`) — Number of non-NULL values in this column.
+- **`column_type`**&nbsp;(`str`)
 
-- **`null_count`**&nbsp;(`int | None`) — Number of NULL values in this column.
+  The SQL data type name as reported by the database.
 
-- **`total_count`**&nbsp;(`int | None`) — Total row count (null_count + non_null_count).
+- **`non_null_count`**&nbsp;(`int | None`)
+
+  Number of non-NULL values in this column.
+
+- **`null_count`**&nbsp;(`int | None`)
+
+  Number of NULL values in this column.
+
+- **`total_count`**&nbsp;(`int | None`)
+
+  Total row count (null_count + non_null_count).
 
 </ApiMember>
 
@@ -113,11 +123,23 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.shared.sql_processor.SqlConfig--attributes}
 
-- **`schema_name`**&nbsp;(`str`) — The name of the schema to write to.
+- **`schema_name`**&nbsp;(`str`)
 
-- **`table_prefix`**&nbsp;(`str | None`) — A prefix to add to created table names.
+  The name of the schema to write to.
 
-- **`config_hash`**&nbsp;(`str | None`) — Return a unique one-way hash of the configuration.  The generic implementation uses the SQL Alchemy URL, schema name, and table prefix. Some inputs may be redundant with the SQL Alchemy URL, but this does not hurt the hash uniqueness.  In most cases, subclasses do not need to override this method.
+- **`table_prefix`**&nbsp;(`str | None`)
+
+  A prefix to add to created table names.
+
+- **`config_hash`**&nbsp;(`str | None`)
+
+  Return a unique one-way hash of the configuration.
+
+  The generic implementation uses the SQL Alchemy URL, schema name, and table prefix. Some
+  inputs may be redundant with the SQL Alchemy URL, but this does not hurt the hash
+  uniqueness.
+
+  In most cases, subclasses do not need to override this method.
 
 #### `dispose_engine` {#airbyte.shared.sql_processor.SqlConfig.dispose_engine}
 
@@ -267,21 +289,51 @@ Create a new SQL processor.
 
 #### Attributes {#airbyte.shared.sql_processor.SqlProcessorBase--attributes}
 
-- **`file_writer_class`**&nbsp;(`type[FileWriterBase]`) — The file writer class to use for writing files to the cache.
+- **`file_writer_class`**&nbsp;(`type[FileWriterBase]`)
 
-- **`normalizer`** — The name normalizer to user for table and column name normalization.
+  The file writer class to use for writing files to the cache.
 
-- **`supports_merge_insert`** — True if the database supports the MERGE INTO syntax.
+- **`normalizer`**
 
-- **`type_converter_class`**&nbsp;(`type[SQLTypeConverter]`) — The type converter class to use for converting JSON schema types to SQL types.
+  The name normalizer to user for table and column name normalization.
 
-- **`catalog_provider`**&nbsp;(`CatalogProvider`) — Return the catalog manager.  Subclasses should set this property to a valid catalog manager instance if one is not explicitly passed to the constructor.   **Raises:**  - **`PyAirbyteInternalError`**: If the catalog manager is not set. 
+- **`supports_merge_insert`**
 
-- **`database_name`**&nbsp;(`str`) — Return the name of the database.
+  True if the database supports the MERGE INTO syntax.
 
-- **`sql_config`**&nbsp;(`SqlConfig`) — Return the SQL configuration.
+- **`type_converter_class`**&nbsp;(`type[SQLTypeConverter]`)
 
-- **`state_writer`**&nbsp;(`StateWriterBase`) — Return the state writer instance.  Subclasses should set this property to a valid state manager instance if one is not explicitly passed to the constructor.   **Raises:**  - **`PyAirbyteInternalError`**: If the state manager is not set. 
+  The type converter class to use for converting JSON schema types to SQL types.
+
+- **`catalog_provider`**&nbsp;(`CatalogProvider`)
+
+  Return the catalog manager.
+
+  Subclasses should set this property to a valid catalog manager instance if one
+  is not explicitly passed to the constructor.
+
+  **Raises:**
+
+  - **`PyAirbyteInternalError`**: If the catalog manager is not set.
+
+- **`database_name`**&nbsp;(`str`)
+
+  Return the name of the database.
+
+- **`sql_config`**&nbsp;(`SqlConfig`)
+
+  Return the SQL configuration.
+
+- **`state_writer`**&nbsp;(`StateWriterBase`)
+
+  Return the state writer instance.
+
+  Subclasses should set this property to a valid state manager instance if one
+  is not explicitly passed to the constructor.
+
+  **Raises:**
+
+  - **`PyAirbyteInternalError`**: If the state manager is not set.
 
 #### `cleanup_all` {#airbyte.shared.sql_processor.SqlProcessorBase.cleanup_all}
 
@@ -592,14 +644,24 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.shared.sql_processor.TableStatistics--attributes}
 
-- **`column_statistics`**&nbsp;(`list[airbyte.shared.sql_processor.ColumnStatistics]`) — Per-column names, types, and null/non-null statistics.
+- **`column_statistics`**&nbsp;(`list[airbyte.shared.sql_processor.ColumnStatistics]`)
 
-- **`database_name`**&nbsp;(`str | None`) — The database name where this table resides.
+  Per-column names, types, and null/non-null statistics.
 
-- **`row_count`**&nbsp;(`int | None`) — Number of rows found.
+- **`database_name`**&nbsp;(`str | None`)
 
-- **`schema_name`**&nbsp;(`str | None`) — The schema name where this table resides.
+  The database name where this table resides.
 
-- **`table_name`**&nbsp;(`str`) — The table name as found in the destination.
+- **`row_count`**&nbsp;(`int | None`)
+
+  Number of rows found.
+
+- **`schema_name`**&nbsp;(`str | None`)
+
+  The schema name where this table resides.
+
+- **`table_name`**&nbsp;(`str`)
+
+  The table name as found in the destination.
 
 </ApiMember>

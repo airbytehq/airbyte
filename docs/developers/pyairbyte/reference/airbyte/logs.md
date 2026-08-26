@@ -12,9 +12,22 @@ files within the same directory, under a subfolder with the name of the connecto
 PyAirbyte supports structured JSON logging, which is disabled by default. To enable structured
 logging in JSON, set `AIRBYTE_STRUCTURED_LOGGING` to `True`.
 
-- **`AIRBYTE_LOGGING_ROOT`**&nbsp;(`pathlib.Path | None`) — The root directory for Airbyte logs.  This value can be overridden by setting the `AIRBYTE_LOGGING_ROOT` environment variable.  If not provided, PyAirbyte will use `/tmp/airbyte/logs/` where `/tmp/` is the OS's default temporary directory. If the directory cannot be created, PyAirbyte will log a warning and set this value to `None`.
+- **`AIRBYTE_LOGGING_ROOT`**&nbsp;(`pathlib.Path | None`)
 
-- **`AIRBYTE_STRUCTURED_LOGGING`**&nbsp;(`bool`) — Whether to enable structured logging.  This value is read from the `AIRBYTE_STRUCTURED_LOGGING` environment variable. If the variable is not set, the default value is `False`.
+  The root directory for Airbyte logs.
+
+  This value can be overridden by setting the `AIRBYTE_LOGGING_ROOT` environment variable.
+
+  If not provided, PyAirbyte will use `/tmp/airbyte/logs/` where `/tmp/` is the OS's default
+  temporary directory. If the directory cannot be created, PyAirbyte will log a warning and
+  set this value to `None`.
+
+- **`AIRBYTE_STRUCTURED_LOGGING`**&nbsp;(`bool`)
+
+  Whether to enable structured logging.
+
+  This value is read from the `AIRBYTE_STRUCTURED_LOGGING` environment variable. If the variable is
+  not set, the default value is `False`.
 
 ### `get_global_file_logger` {#airbyte.logs.get_global_file_logger}
 

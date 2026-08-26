@@ -32,17 +32,29 @@ Initialize a `CloudClient` from explicit auth values.
 
 #### Attributes {#airbyte.cloud.client.CloudClient--attributes}
 
-- **`bearer_token`**&nbsp;(`SecretString | None`) — Bearer token used for authentication.
+- **`bearer_token`**&nbsp;(`SecretString | None`)
 
-- **`client_id`**&nbsp;(`SecretString | None`) — OAuth client ID used for authentication.
+  Bearer token used for authentication.
 
-- **`client_secret`**&nbsp;(`SecretString | None`) — OAuth client secret used for authentication.
+- **`client_id`**&nbsp;(`SecretString | None`)
 
-- **`config_api_root`**&nbsp;(`str | None`) — Airbyte Config API root.
+  OAuth client ID used for authentication.
 
-- **`organization_id`**&nbsp;(`str | None`) — Default organization ID for organization-scoped operations.
+- **`client_secret`**&nbsp;(`SecretString | None`)
 
-- **`public_api_root`**&nbsp;(`str`) — Airbyte Public API root.
+  OAuth client secret used for authentication.
+
+- **`config_api_root`**&nbsp;(`str | None`)
+
+  Airbyte Config API root.
+
+- **`organization_id`**&nbsp;(`str | None`)
+
+  Default organization ID for organization-scoped operations.
+
+- **`public_api_root`**&nbsp;(`str`)
+
+  Airbyte Public API root.
 
 #### `from_auth` {#airbyte.cloud.client.CloudClient.from_auth}
 

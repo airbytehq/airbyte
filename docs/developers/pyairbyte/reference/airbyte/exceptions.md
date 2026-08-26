@@ -71,17 +71,29 @@ An connection error occurred while communicating with the hosted Airbyte instanc
 
 #### Attributes {#airbyte.exceptions.AirbyteConnectionError--attributes}
 
-- **`connection_id`**&nbsp;(`str | None`) — The connection ID where the error occurred.
+- **`connection_id`**&nbsp;(`str | None`)
 
-- **`connection_url`**&nbsp;(`str | None`) — The web URL to the connection where the error occurred.
+  The connection ID where the error occurred.
 
-- **`job_history_url`**&nbsp;(`str | None`) — The URL to the job history where the error occurred.
+- **`connection_url`**&nbsp;(`str | None`)
 
-- **`job_id`**&nbsp;(`int | None`) — The job ID where the error occurred (if applicable).
+  The web URL to the connection where the error occurred.
 
-- **`job_status`**&nbsp;(`str | None`) — The latest status of the job where the error occurred (if applicable).
+- **`job_history_url`**&nbsp;(`str | None`)
 
-- **`job_url`**&nbsp;(`str | None`) — The URL to the job where the error occurred.
+  The URL to the job history where the error occurred.
+
+- **`job_id`**&nbsp;(`int | None`)
+
+  The job ID where the error occurred (if applicable).
+
+- **`job_status`**&nbsp;(`str | None`)
+
+  The latest status of the job where the error occurred (if applicable).
+
+- **`job_url`**&nbsp;(`str | None`)
+
+  The URL to the job where the error occurred.
 
 </ApiMember>
 
@@ -184,7 +196,9 @@ An timeout occurred while waiting for the remote Airbyte job to complete.
 
 #### Attributes {#airbyte.exceptions.AirbyteConnectionSyncTimeoutError--attributes}
 
-- **`timeout`**&nbsp;(`int | None`) — The timeout in seconds that was reached.
+- **`timeout`**&nbsp;(`int | None`)
+
+  The timeout in seconds that was reached.
 
 </ApiMember>
 
@@ -742,11 +756,17 @@ An error occurred while communicating with the hosted Airbyte instance.
 
 #### Attributes {#airbyte.exceptions.AirbyteError--attributes}
 
-- **`response`**&nbsp;(`AirbyteApiResponseDuckType | None`) — The API response from the failed request.
+- **`response`**&nbsp;(`AirbyteApiResponseDuckType | None`)
 
-- **`workspace`**&nbsp;(`_WorkspaceWithUrl | None`) — The workspace where the error occurred.
+  The API response from the failed request.
 
-- **`workspace_url`**&nbsp;(`str | None`) — The URL to the workspace where the error occurred.
+- **`workspace`**&nbsp;(`_WorkspaceWithUrl | None`)
+
+  The workspace where the error occurred.
+
+- **`workspace_url`**&nbsp;(`str | None`)
+
+  The URL to the workspace where the error occurred.
 
 </ApiMember>
 
@@ -1179,13 +1199,21 @@ from the API and the workspace ID in the response does not match the expected wo
 
 #### Attributes {#airbyte.exceptions.AirbyteWorkspaceMismatchError--attributes}
 
-- **`actual_workspace_id`**&nbsp;(`str | None`) — The workspace ID returned by the API.
+- **`actual_workspace_id`**&nbsp;(`str | None`)
 
-- **`expected_workspace_id`**&nbsp;(`str | None`) — The workspace ID that was expected.
+  The workspace ID returned by the API.
 
-- **`resource_id`**&nbsp;(`str | None`) — The ID of the resource that was fetched.
+- **`expected_workspace_id`**&nbsp;(`str | None`)
 
-- **`resource_type`**&nbsp;(`str | None`) — The type of resource (e.g., 'connection', 'source', 'destination').
+  The workspace ID that was expected.
+
+- **`resource_id`**&nbsp;(`str | None`)
+
+  The ID of the resource that was fetched.
+
+- **`resource_type`**&nbsp;(`str | None`)
+
+  The type of resource (e.g., 'connection', 'source', 'destination').
 
 </ApiMember>
 
@@ -1220,9 +1248,13 @@ Workspace cannot be deleted because it contains connections.
 
 #### Attributes {#airbyte.exceptions.AirbyteWorkspaceNotEmptyError--attributes}
 
-- **`connection_ids`**&nbsp;(`list[str] | None`) — The connection IDs found in the workspace.
+- **`connection_ids`**&nbsp;(`list[str] | None`)
 
-- **`workspace_id`**&nbsp;(`str | None`) — The workspace ID that was expected to be empty.
+  The connection IDs found in the workspace.
+
+- **`workspace_id`**&nbsp;(`str | None`)
+
+  The workspace ID that was expected to be empty.
 
 </ApiMember>
 

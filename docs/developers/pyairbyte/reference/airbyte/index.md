@@ -444,7 +444,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.BigQueryCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -596,7 +598,12 @@ If config is provided, it will be validated against the spec if validate is True
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
 
-- **`is_cache_supported`**&nbsp;(`bool`) — Whether this destination has a compatible cache implementation.  Returns `True` when `get_sql_cache()` is expected to succeed for the destination's connector type.
+- **`is_cache_supported`**&nbsp;(`bool`)
+
+  Whether this destination has a compatible cache implementation.
+
+  Returns `True` when `get_sql_cache()` is expected to succeed for
+  the destination's connector type.
 
 #### `get_sql_cache` {#airbyte.Destination.get_sql_cache}
 
@@ -692,7 +699,9 @@ Initialize the cache and backends.
 
 #### Attributes {#airbyte.DuckDBCache--attributes}
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationDuckdb(destination_path: 'str', DESTINATION_TYPE: 'Final[Duckdb]' = &lt;Duckdb.DUCKDB: 'duckdb'&gt;, motherduck_api_key: 'Optional[str]' = None, schema: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -731,11 +740,17 @@ method of the `Source` class.
 
 #### Attributes {#airbyte.ReadResult--attributes}
 
-- **`cache`**&nbsp;(`CacheBase`) — Return the cache object.
+- **`cache`**&nbsp;(`CacheBase`)
 
-- **`processed_records`**&nbsp;(`int`) — The total number of records read from the source.
+  Return the cache object.
 
-- **`streams`**&nbsp;(`Mapping[str, CachedDataset]`) — Return a mapping of stream names to cached datasets.
+- **`processed_records`**&nbsp;(`int`)
+
+  The total number of records read from the source.
+
+- **`streams`**&nbsp;(`Mapping[str, CachedDataset]`)
+
+  Return a mapping of stream names to cached datasets.
 
 #### `get_sql_engine` {#airbyte.ReadResult.get_sql_engine}
 
@@ -827,13 +842,38 @@ If config is provided, it will be validated against the spec if validate is True
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
 
-- **`config_spec`**&nbsp;(`dict[str, Any]`) — Generate a configuration spec for this connector, as a JSON Schema definition.  This function generates a JSON Schema dictionary with configuration specs for the current connector, as a dictionary.   **Returns:**  - **`dict`**: The JSON Schema configuration spec as a dictionary. 
+- **`config_spec`**&nbsp;(`dict[str, Any]`)
 
-- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`) — Get the configured catalog for the given streams.  If the raw catalog is not yet known, we call discover to get it.  If no specific streams are selected, we return a catalog that syncs all available streams.  TODO: We should consider disabling by default the streams that the connector would disable by default. (For instance, streams that require a premium license are sometimes disabled by default within the connector.)
+  Generate a configuration spec for this connector, as a JSON Schema definition.
 
-- **`discovered_catalog`**&nbsp;(`AirbyteCatalog`) — Get the raw catalog for the given streams.  If the catalog is not yet known, we call discover to get it.
+  This function generates a JSON Schema dictionary with configuration specs for the
+  current connector, as a dictionary.
 
-- **`docs_url`**&nbsp;(`str`) — Get the URL to the connector's documentation.
+  **Returns:**
+
+  - **`dict`**: The JSON Schema configuration spec as a dictionary.
+
+- **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`)
+
+  Get the configured catalog for the given streams.
+
+  If the raw catalog is not yet known, we call discover to get it.
+
+  If no specific streams are selected, we return a catalog that syncs all available streams.
+
+  TODO: We should consider disabling by default the streams that the connector would
+  disable by default. (For instance, streams that require a premium license are sometimes
+  disabled by default within the connector.)
+
+- **`discovered_catalog`**&nbsp;(`AirbyteCatalog`)
+
+  Get the raw catalog for the given streams.
+
+  If the catalog is not yet known, we call discover to get it.
+
+- **`docs_url`**&nbsp;(`str`)
+
+  Get the URL to the connector's documentation.
 
 #### `get_available_streams` {#airbyte.Source.get_available_streams}
 
@@ -1373,7 +1413,9 @@ method of the `Destination` class.
 
 #### Attributes {#airbyte.WriteResult--attributes}
 
-- **`processed_records`**&nbsp;(`int`) — The total number of records written to the destination.
+- **`processed_records`**&nbsp;(`int`)
+
+  The total number of records written to the destination.
 
 #### `get_state_provider` {#airbyte.WriteResult.get_state_provider}
 

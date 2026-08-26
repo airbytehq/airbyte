@@ -120,17 +120,29 @@ Initialize a `CloudClient` from explicit auth values.
 
 #### Attributes {#airbyte.cloud.CloudClient--attributes}
 
-- **`bearer_token`**&nbsp;(`SecretString | None`) — Bearer token used for authentication.
+- **`bearer_token`**&nbsp;(`SecretString | None`)
 
-- **`client_id`**&nbsp;(`SecretString | None`) — OAuth client ID used for authentication.
+  Bearer token used for authentication.
 
-- **`client_secret`**&nbsp;(`SecretString | None`) — OAuth client secret used for authentication.
+- **`client_id`**&nbsp;(`SecretString | None`)
 
-- **`config_api_root`**&nbsp;(`str | None`) — Airbyte Config API root.
+  OAuth client ID used for authentication.
 
-- **`organization_id`**&nbsp;(`str | None`) — Default organization ID for organization-scoped operations.
+- **`client_secret`**&nbsp;(`SecretString | None`)
 
-- **`public_api_root`**&nbsp;(`str`) — Airbyte Public API root.
+  OAuth client secret used for authentication.
+
+- **`config_api_root`**&nbsp;(`str | None`)
+
+  Airbyte Config API root.
+
+- **`organization_id`**&nbsp;(`str | None`)
+
+  Default organization ID for organization-scoped operations.
+
+- **`public_api_root`**&nbsp;(`str`)
+
+  Airbyte Public API root.
 
 #### `from_auth` {#airbyte.cloud.CloudClient.from_auth}
 
@@ -353,19 +365,33 @@ will raise a validation error.
 
 #### Attributes {#airbyte.cloud.CloudClientConfig--attributes}
 
-- **`api_root`**&nbsp;(`str`) — The API root URL. Defaults to Airbyte Cloud API.
+- **`api_root`**&nbsp;(`str`)
 
-- **`bearer_token`**&nbsp;(`airbyte.secrets.base.SecretString | None`) — Bearer token for direct authentication (alternative to client credentials).
+  The API root URL. Defaults to Airbyte Cloud API.
 
-- **`client_id`**&nbsp;(`airbyte.secrets.base.SecretString | None`) — OAuth2 client ID for client credentials authentication.
+- **`bearer_token`**&nbsp;(`airbyte.secrets.base.SecretString | None`)
 
-- **`client_secret`**&nbsp;(`airbyte.secrets.base.SecretString | None`) — OAuth2 client secret for client credentials authentication.
+  Bearer token for direct authentication (alternative to client credentials).
 
-- **`config_api_root`**&nbsp;(`str | None`) — The Config API root URL.
+- **`client_id`**&nbsp;(`airbyte.secrets.base.SecretString | None`)
 
-- **`uses_bearer_token`**&nbsp;(`bool`) — Return True if using bearer token authentication.
+  OAuth2 client ID for client credentials authentication.
 
-- **`uses_client_credentials`**&nbsp;(`bool`) — Return True if using client credentials authentication.
+- **`client_secret`**&nbsp;(`airbyte.secrets.base.SecretString | None`)
+
+  OAuth2 client secret for client credentials authentication.
+
+- **`config_api_root`**&nbsp;(`str | None`)
+
+  The Config API root URL.
+
+- **`uses_bearer_token`**&nbsp;(`bool`)
+
+  Return True if using bearer token authentication.
+
+- **`uses_client_credentials`**&nbsp;(`bool`)
+
+  Return True if using client credentials authentication.
 
 #### `from_env` {#airbyte.cloud.CloudClientConfig.from_env}
 
@@ -443,29 +469,62 @@ Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 
 #### Attributes {#airbyte.cloud.CloudConnection--attributes}
 
-- **`connection_id`** — The ID of the connection.
+- **`connection_id`**
 
-- **`connection_url`**&nbsp;(`str | None`) — The web URL to the connection.
+  The ID of the connection.
 
-- **`destination`**&nbsp;(`CloudDestination`) — Get the destination object.
+- **`connection_url`**&nbsp;(`str | None`)
 
-- **`destination_id`**&nbsp;(`str`) — The ID of the destination.
+  The web URL to the connection.
 
-- **`enabled`**&nbsp;(`bool`) — Get the current enabled status of the connection.  This property always fetches fresh data from the API to ensure accuracy, as another process or user may have toggled the setting.   **Returns:**  True if the connection status is 'active', False otherwise. 
+- **`destination`**&nbsp;(`CloudDestination`)
 
-- **`job_history_url`**&nbsp;(`str | None`) — The URL to the job history for the connection.
+  Get the destination object.
 
-- **`name`**&nbsp;(`str | None`) — Get the display name of the connection, if available.  E.g. "My Postgres to Snowflake", not the connection ID.
+- **`destination_id`**&nbsp;(`str`)
 
-- **`source`**&nbsp;(`CloudSource`) — Get the source object.
+  The ID of the destination.
 
-- **`source_id`**&nbsp;(`str`) — The ID of the source.
+- **`enabled`**&nbsp;(`bool`)
 
-- **`stream_names`**&nbsp;(`list[str]`) — The stream names.
+  Get the current enabled status of the connection.
 
-- **`table_prefix`**&nbsp;(`str`) — The table prefix.
+  This property always fetches fresh data from the API to ensure accuracy,
+  as another process or user may have toggled the setting.
 
-- **`workspace`** — The workspace that the connection belongs to.
+  **Returns:**
+
+  True if the connection status is 'active', False otherwise.
+
+- **`job_history_url`**&nbsp;(`str | None`)
+
+  The URL to the job history for the connection.
+
+- **`name`**&nbsp;(`str | None`)
+
+  Get the display name of the connection, if available.
+
+  E.g. "My Postgres to Snowflake", not the connection ID.
+
+- **`source`**&nbsp;(`CloudSource`)
+
+  Get the source object.
+
+- **`source_id`**&nbsp;(`str`)
+
+  The ID of the source.
+
+- **`stream_names`**&nbsp;(`list[str]`)
+
+  The stream names.
+
+- **`table_prefix`**&nbsp;(`str`)
+
+  The table prefix.
+
+- **`workspace`**
+
+  The workspace that the connection belongs to.
 
 #### `cancel_sync` {#airbyte.cloud.CloudConnection.cancel_sync}
 
@@ -1081,17 +1140,29 @@ Initialize a `CloudOrganization`.
 
 #### Attributes {#airbyte.cloud.CloudOrganization--attributes}
 
-- **`email`**&nbsp;(`str | None`) — Email associated with the organization.
+- **`email`**&nbsp;(`str | None`)
 
-- **`is_account_locked`**&nbsp;(`bool`) — Whether the account is locked due to billing issues.
+  Email associated with the organization.
 
-- **`organization_id`** — The organization ID.
+- **`is_account_locked`**&nbsp;(`bool`)
 
-- **`organization_name`**&nbsp;(`str | None`) — Display name of the organization.
+  Whether the account is locked due to billing issues.
 
-- **`payment_status`**&nbsp;(`str | None`) — Payment status of the organization.
+- **`organization_id`**
 
-- **`subscription_status`**&nbsp;(`str | None`) — Subscription status of the organization.
+  The organization ID.
+
+- **`organization_name`**&nbsp;(`str | None`)
+
+  Display name of the organization.
+
+- **`payment_status`**&nbsp;(`str | None`)
+
+  Payment status of the organization.
+
+- **`subscription_status`**&nbsp;(`str | None`)
+
+  Subscription status of the organization.
 
 </ApiMember>
 
@@ -1153,11 +1224,15 @@ Validate and initialize credentials.
 
 - **`client_secret`**&nbsp;(`SecretString | None`)
 
-- **`config_api_root`**&nbsp;(`str | None`) — The Config API root URL.
+- **`config_api_root`**&nbsp;(`str | None`)
+
+  The Config API root URL.
 
 - **`workspace_id`**&nbsp;(`str`)
 
-- **`workspace_url`**&nbsp;(`str | None`) — The web URL of the workspace.
+- **`workspace_url`**&nbsp;(`str | None`)
+
+  The web URL of the workspace.
 
 #### `from_env` {#airbyte.cloud.CloudWorkspace.from_env}
 
@@ -1781,15 +1856,25 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.cloud.CloudWorkspaceInfo--attributes}
 
-- **`data_residency`**&nbsp;(`str | None`) — The data residency setting for the workspace, if available.
+- **`data_residency`**&nbsp;(`str | None`)
 
-- **`name`**&nbsp;(`str`) — The workspace name.
+  The data residency setting for the workspace, if available.
 
-- **`notifications`**&nbsp;(`dict[str, object | None] | list[dict[str, object | None]]`) — Workspace notification settings.
+- **`name`**&nbsp;(`str`)
 
-- **`organization_id`**&nbsp;(`str | None`) — The organization ID for the workspace, if available.
+  The workspace name.
 
-- **`workspace_id`**&nbsp;(`str`) — The workspace ID.
+- **`notifications`**&nbsp;(`dict[str, object | None] | list[dict[str, object | None]]`)
+
+  Workspace notification settings.
+
+- **`organization_id`**&nbsp;(`str | None`)
+
+  The organization ID for the workspace, if available.
+
+- **`workspace_id`**&nbsp;(`str`)
+
+  The workspace ID.
 
 #### `from_api_response` {#airbyte.cloud.CloudWorkspaceInfo.from_api_response}
 
@@ -1946,21 +2031,42 @@ interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 
 #### Attributes {#airbyte.cloud.SyncResult--attributes}
 
-- **`bytes_synced`**&nbsp;(`int`) — Return the number of records processed.
+- **`bytes_synced`**&nbsp;(`int`)
+
+  Return the number of records processed.
 
 - **`connection`**&nbsp;(`CloudConnection`)
 
 - **`job_id`**&nbsp;(`int`)
 
-- **`job_url`**&nbsp;(`str`) — Return the URL of the sync job.  Note: This currently returns the connection's job history URL, as there is no direct URL to a specific job in the Airbyte Cloud web app.  TODO: Implement a direct job logs URL on top of the event-id of the specific attempt number.       E.g. \{self.connection.job_history_url\}?eventId=\{event-guid\}&openLogs=true
+- **`job_url`**&nbsp;(`str`)
 
-- **`records_synced`**&nbsp;(`int`) — Return the number of records processed.
+  Return the URL of the sync job.
 
-- **`start_time`**&nbsp;(`datetime`) — Return the start time of the sync job in UTC.
+  Note: This currently returns the connection's job history URL, as there is no direct URL
+  to a specific job in the Airbyte Cloud web app.
 
-- **`stream_names`**&nbsp;(`list[str]`) — Return the set of stream names.
+  TODO: Implement a direct job logs URL on top of the event-id of the specific attempt number.
+        E.g. \{self.connection.job_history_url\}?eventId=\{event-guid\}&openLogs=true
 
-- **`streams`**&nbsp;(`_SyncResultStreams`) — Return a mapping of stream names to `airbyte.CachedDataset` objects.  This is a convenience wrapper around the `stream_names` property and `get_dataset()` method.
+- **`records_synced`**&nbsp;(`int`)
+
+  Return the number of records processed.
+
+- **`start_time`**&nbsp;(`datetime`)
+
+  Return the start time of the sync job in UTC.
+
+- **`stream_names`**&nbsp;(`list[str]`)
+
+  Return the set of stream names.
+
+- **`streams`**&nbsp;(`_SyncResultStreams`)
+
+  Return a mapping of stream names to `airbyte.CachedDataset` objects.
+
+  This is a convenience wrapper around the `stream_names`
+  property and `get_dataset()` method.
 
 - **`table_name_prefix`**&nbsp;(`str`)
 

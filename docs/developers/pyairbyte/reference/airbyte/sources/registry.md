@@ -73,39 +73,73 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.sources.registry.ConnectorMetadata--attributes}
 
-- **`connector_type`**&nbsp;(`str | None`) — Connector type: `source` or `destination`.
+- **`connector_type`**&nbsp;(`str | None`)
 
-- **`definition_id`**&nbsp;(`str | None`) — Source or destination definition ID.
+  Connector type: `source` or `destination`.
 
-- **`display_name`**&nbsp;(`str | None`) — Human-readable connector name.
+- **`definition_id`**&nbsp;(`str | None`)
 
-- **`docker_repository`**&nbsp;(`str | None`) — Docker repository for the connector image.
+  Source or destination definition ID.
 
-- **`documentation_url`**&nbsp;(`str | None`) — Connector documentation URL.
+- **`display_name`**&nbsp;(`str | None`)
 
-- **`github_issue_label`**&nbsp;(`str | None`) — GitHub issue label for the connector.
+  Human-readable connector name.
 
-- **`install_types`**&nbsp;(`set[airbyte.registry.InstallType]`) — The supported install types for the connector.
+- **`docker_repository`**&nbsp;(`str | None`)
 
-- **`language`**&nbsp;(`airbyte.registry.Language | None`) — The language of the connector.
+  Docker repository for the connector image.
 
-- **`latest_available_version`**&nbsp;(`str | None`) — The latest available version of the connector.
+- **`documentation_url`**&nbsp;(`str | None`)
 
-- **`name`**&nbsp;(`str`) — Connector name. For example, "source-google-sheets".
+  Connector documentation URL.
 
-- **`pypi_package_name`**&nbsp;(`str | None`) — The name of the PyPI package for the connector, if it exists.
+- **`github_issue_label`**&nbsp;(`str | None`)
 
-- **`release_date`**&nbsp;(`str | None`) — Connector release date.
+  GitHub issue label for the connector.
 
-- **`release_stage`**&nbsp;(`str | None`) — Connector release stage.
+- **`install_types`**&nbsp;(`set[airbyte.registry.InstallType]`)
 
-- **`source_type`**&nbsp;(`str | None`) — Connector subtype.
+  The supported install types for the connector.
 
-- **`suggested_streams`**&nbsp;(`list[str] | None`) — A list of suggested streams for the connector, if available.
+- **`language`**&nbsp;(`airbyte.registry.Language | None`)
 
-- **`support_level`**&nbsp;(`str | None`) — Connector support level.
+  The language of the connector.
 
-- **`default_install_type`**&nbsp;(`InstallType`) — Return the default install type for the connector.
+- **`latest_available_version`**&nbsp;(`str | None`)
+
+  The latest available version of the connector.
+
+- **`name`**&nbsp;(`str`)
+
+  Connector name. For example, "source-google-sheets".
+
+- **`pypi_package_name`**&nbsp;(`str | None`)
+
+  The name of the PyPI package for the connector, if it exists.
+
+- **`release_date`**&nbsp;(`str | None`)
+
+  Connector release date.
+
+- **`release_stage`**&nbsp;(`str | None`)
+
+  Connector release stage.
+
+- **`source_type`**&nbsp;(`str | None`)
+
+  Connector subtype.
+
+- **`suggested_streams`**&nbsp;(`list[str] | None`)
+
+  A list of suggested streams for the connector, if available.
+
+- **`support_level`**&nbsp;(`str | None`)
+
+  Connector support level.
+
+- **`default_install_type`**&nbsp;(`InstallType`)
+
+  Return the default install type for the connector.
 
 </ApiMember>
 
@@ -135,17 +169,31 @@ The type of installation for a connector.
 
 #### Attributes {#airbyte.sources.registry.InstallType--attributes}
 
-- **`ANY`** — All connectors in the registry (environment-independent).
+- **`ANY`**
 
-- **`DOCKER`** — Docker-based connectors (returns all connectors for backward compatibility).
+  All connectors in the registry (environment-independent).
 
-- **`INSTALLABLE`** — Connectors installable in the current environment (environment-sensitive).  Returns all connectors if Docker is installed, otherwise only Python and YAML.
+- **`DOCKER`**
 
-- **`JAVA`** — Java-based connectors.
+  Docker-based connectors (returns all connectors for backward compatibility).
 
-- **`PYTHON`** — Python-based connectors available via PyPI.
+- **`INSTALLABLE`**
 
-- **`YAML`** — Manifest-only connectors that can be run without Docker.
+  Connectors installable in the current environment (environment-sensitive).
+
+  Returns all connectors if Docker is installed, otherwise only Python and YAML.
+
+- **`JAVA`**
+
+  Java-based connectors.
+
+- **`PYTHON`**
+
+  Python-based connectors available via PyPI.
+
+- **`YAML`**
+
+  Manifest-only connectors that can be run without Docker.
 
 </ApiMember>
 

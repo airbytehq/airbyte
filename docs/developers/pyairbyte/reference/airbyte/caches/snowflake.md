@@ -82,7 +82,9 @@ Initialize the cache and backends.
 
 - **`dedupe_mode`**&nbsp;(`RecordDedupeMode`)
 
-- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`) — DestinationSnowflake(database: 'str', host: 'str', role: 'str', schema: 'str', username: 'str', warehouse: 'str', credentials: 'Optional[AuthorizationMethod]' = None, DESTINATION_TYPE: 'Final[Snowflake]' = &lt;Snowflake.SNOWFLAKE: 'snowflake'&gt;, disable_type_dedupe: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, raw_data_schema: 'Optional[str]' = None, retention_period_days: 'Optional[int]' = 1, use_merge_for_upsert: 'Optional[bool]' = False)
+- **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
+
+  DestinationSnowflake(database: 'str', host: 'str', role: 'str', schema: 'str', username: 'str', warehouse: 'str', credentials: 'Optional[AuthorizationMethod]' = None, DESTINATION_TYPE: 'Final[Snowflake]' = &lt;Snowflake.SNOWFLAKE: 'snowflake'&gt;, disable_type_dedupe: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, raw_data_schema: 'Optional[str]' = None, retention_period_days: 'Optional[int]' = 1, use_merge_for_upsert: 'Optional[bool]' = False)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 

@@ -60,11 +60,17 @@ A cloud check result object.
 
 #### Attributes {#airbyte.cloud.connectors.CheckResult--attributes}
 
-- **`error_message`**&nbsp;(`str | None`) — None if the check was successful. Otherwise the failure message from the check result.
+- **`error_message`**&nbsp;(`str | None`)
 
-- **`internal_error`**&nbsp;(`str | None`) — None if the check was able to be run. Otherwise, this will describe the internal failure.
+  None if the check was successful. Otherwise the failure message from the check result.
 
-- **`success`**&nbsp;(`bool`) — Whether the check result is valid.
+- **`internal_error`**&nbsp;(`str | None`)
+
+  None if the check was able to be run. Otherwise, this will describe the internal failure.
+
+- **`success`**&nbsp;(`bool`)
+
+  Whether the check result is valid.
 
 </ApiMember>
 
@@ -92,17 +98,33 @@ Initialize a cloud connector object.
 
 #### Attributes {#airbyte.cloud.connectors.CloudConnector--attributes}
 
-- **`connector_type`**&nbsp;(`ClassVar[Literal['source', 'destination']]`) — The type of the connector.
+- **`connector_type`**&nbsp;(`ClassVar[Literal['source', 'destination']]`)
 
-- **`connector_id`** — The ID of the connector.
+  The type of the connector.
 
-- **`connector_url`**&nbsp;(`str`) — Get the web URL of the source connector.
+- **`connector_id`**
 
-- **`definition_id`**&nbsp;(`str`) — Get the connector definition ID.  E.g. the definition ID for `source-postgres`, not the ID of this deployed connector.
+  The ID of the connector.
 
-- **`name`**&nbsp;(`str | None`) — Get the display name of the connector, if available.  E.g. "My Postgres Source", not the canonical connector name ("source-postgres").
+- **`connector_url`**&nbsp;(`str`)
 
-- **`workspace`** — The workspace that the connector belongs to.
+  Get the web URL of the source connector.
+
+- **`definition_id`**&nbsp;(`str`)
+
+  Get the connector definition ID.
+
+  E.g. the definition ID for `source-postgres`, not the ID of this deployed connector.
+
+- **`name`**&nbsp;(`str | None`)
+
+  Get the display name of the connector, if available.
+
+  E.g. "My Postgres Source", not the canonical connector name ("source-postgres").
+
+- **`workspace`**
+
+  The workspace that the connector belongs to.
 
 #### `check` {#airbyte.cloud.connectors.CloudConnector.check}
 
@@ -168,7 +190,11 @@ Initialize a cloud connector object.
 
 #### Attributes {#airbyte.cloud.connectors.CloudDestination--attributes}
 
-- **`destination_id`**&nbsp;(`str`) — Get the ID of the destination.  This is an alias for `connector_id`.
+- **`destination_id`**&nbsp;(`str`)
+
+  Get the ID of the destination.
+
+  This is an alias for `connector_id`.
 
 #### `rename` {#airbyte.cloud.connectors.CloudDestination.rename}
 
@@ -246,7 +272,11 @@ Initialize a cloud connector object.
 
 #### Attributes {#airbyte.cloud.connectors.CloudSource--attributes}
 
-- **`source_id`**&nbsp;(`str`) — Get the ID of the source.  This is an alias for `connector_id`.
+- **`source_id`**&nbsp;(`str`)
+
+  Get the ID of the source.
+
+  This is an alias for `connector_id`.
 
 #### `rename` {#airbyte.cloud.connectors.CloudSource.rename}
 
@@ -331,29 +361,75 @@ will raise NotImplementedError.
 
 #### Attributes {#airbyte.cloud.connectors.CustomCloudSourceDefinition--attributes}
 
-- **`connector_type`**&nbsp;(`ClassVar[Literal['source', 'destination']]`) — The type of the connector: 'source' or 'destination'.
+- **`connector_type`**&nbsp;(`ClassVar[Literal['source', 'destination']]`)
 
-- **`connector_builder_project_id`**&nbsp;(`str | None`) — Get the connector builder project ID. Only present for YAML connectors.
+  The type of the connector: 'source' or 'destination'.
 
-- **`connector_builder_project_url`**&nbsp;(`str | None`) — Get the connector builder project URL. Only present for YAML connectors.
+- **`connector_builder_project_id`**&nbsp;(`str | None`)
 
-- **`definition_url`**&nbsp;(`str`) — Get the web URL of the custom source definition.  For YAML connectors, this is the connector builder 'edit' URL. For Docker connectors, this is the custom connectors page.
+  Get the connector builder project ID. Only present for YAML connectors.
 
-- **`docker_image_tag`**&nbsp;(`str | None`) — Get the Docker image tag. Only present for Docker connectors.  Note: Docker connectors are not yet supported and will raise NotImplementedError.
+- **`connector_builder_project_url`**&nbsp;(`str | None`)
 
-- **`docker_repository`**&nbsp;(`str | None`) — Get the Docker repository. Only present for Docker connectors.  Note: Docker connectors are not yet supported and will raise NotImplementedError.
+  Get the connector builder project URL. Only present for YAML connectors.
 
-- **`documentation_url`**&nbsp;(`str | None`) — Get the documentation URL. Only present for Docker connectors.  Note: Docker connectors are not yet supported and will raise NotImplementedError.
+- **`definition_url`**&nbsp;(`str`)
 
-- **`draft_manifest`**&nbsp;(`dict[str, Any] | None`) — Get the draft (unpublished) manifest from the Connector Builder, if one exists.  This reads the working draft that has been saved in the Connector Builder UI but not yet published. Returns None if no draft exists or if this is not a YAML connector.   **Returns:**  The draft manifest as a dictionary, or None if no draft exists. 
+  Get the web URL of the custom source definition.
 
-- **`has_draft`**&nbsp;(`bool | None`) — Check whether this definition has an unpublished draft in Connector Builder.   **Returns:**  True if a draft exists, False if no draft exists, or None if this is not a YAML connector or the project ID is unavailable. 
+  For YAML connectors, this is the connector builder 'edit' URL.
+  For Docker connectors, this is the custom connectors page.
 
-- **`manifest`**&nbsp;(`dict[str, Any] | None`) — Get the Low-code CDK manifest. Only present for YAML connectors.
+- **`docker_image_tag`**&nbsp;(`str | None`)
 
-- **`name`**&nbsp;(`str`) — Get the display name of the custom connector definition.
+  Get the Docker image tag. Only present for Docker connectors.
 
-- **`version`**&nbsp;(`str | None`) — Get the manifest version. Only present for YAML connectors.
+  Note: Docker connectors are not yet supported and will raise NotImplementedError.
+
+- **`docker_repository`**&nbsp;(`str | None`)
+
+  Get the Docker repository. Only present for Docker connectors.
+
+  Note: Docker connectors are not yet supported and will raise NotImplementedError.
+
+- **`documentation_url`**&nbsp;(`str | None`)
+
+  Get the documentation URL. Only present for Docker connectors.
+
+  Note: Docker connectors are not yet supported and will raise NotImplementedError.
+
+- **`draft_manifest`**&nbsp;(`dict[str, Any] | None`)
+
+  Get the draft (unpublished) manifest from the Connector Builder, if one exists.
+
+  This reads the working draft that has been saved in the Connector Builder UI
+  but not yet published. Returns None if no draft exists or if this is not a
+  YAML connector.
+
+  **Returns:**
+
+  The draft manifest as a dictionary, or None if no draft exists.
+
+- **`has_draft`**&nbsp;(`bool | None`)
+
+  Check whether this definition has an unpublished draft in Connector Builder.
+
+  **Returns:**
+
+  True if a draft exists, False if no draft exists,
+  or None if this is not a YAML connector or the project ID is unavailable.
+
+- **`manifest`**&nbsp;(`dict[str, Any] | None`)
+
+  Get the Low-code CDK manifest. Only present for YAML connectors.
+
+- **`name`**&nbsp;(`str`)
+
+  Get the display name of the custom connector definition.
+
+- **`version`**&nbsp;(`str | None`)
+
+  Get the manifest version. Only present for YAML connectors.
 
 #### `deploy_source` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.deploy_source}
 

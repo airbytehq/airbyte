@@ -26,21 +26,37 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.cloud.models.CloudConnectionInfo--attributes}
 
-- **`configurations`**&nbsp;(`Any`) — Stream configuration details for the connection.
+- **`configurations`**&nbsp;(`Any`)
 
-- **`connection_id`**&nbsp;(`str`) — The connection ID.
+  Stream configuration details for the connection.
 
-- **`destination_id`**&nbsp;(`str`) — The destination ID.
+- **`connection_id`**&nbsp;(`str`)
 
-- **`name`**&nbsp;(`str`) — The connection name.
+  The connection ID.
 
-- **`prefix`**&nbsp;(`str | None`) — The destination table prefix.
+- **`destination_id`**&nbsp;(`str`)
 
-- **`source_id`**&nbsp;(`str`) — The source ID.
+  The destination ID.
 
-- **`status`**&nbsp;(`str`) — The connection status.
+- **`name`**&nbsp;(`str`)
 
-- **`workspace_id`**&nbsp;(`str`) — The workspace ID.
+  The connection name.
+
+- **`prefix`**&nbsp;(`str | None`)
+
+  The destination table prefix.
+
+- **`source_id`**&nbsp;(`str`)
+
+  The source ID.
+
+- **`status`**&nbsp;(`str`)
+
+  The connection status.
+
+- **`workspace_id`**&nbsp;(`str`)
+
+  The workspace ID.
 
 #### `from_api_response` {#airbyte.cloud.models.CloudConnectionInfo.from_api_response}
 
@@ -83,13 +99,21 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo--attributes}
 
-- **`definition_id`**&nbsp;(`str`) — The source definition ID.
+- **`definition_id`**&nbsp;(`str`)
 
-- **`manifest`**&nbsp;(`dict[str, typing.Any] | None`) — The source definition manifest.
+  The source definition ID.
 
-- **`name`**&nbsp;(`str`) — The source definition name.
+- **`manifest`**&nbsp;(`dict[str, typing.Any] | None`)
 
-- **`version`**&nbsp;(`str`) — The source definition version.
+  The source definition manifest.
+
+- **`name`**&nbsp;(`str`)
+
+  The source definition name.
+
+- **`version`**&nbsp;(`str`)
+
+  The source definition version.
 
 #### `from_api_response` {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo.from_api_response}
 
@@ -132,11 +156,17 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.cloud.models.CloudDestinationInfo--attributes}
 
-- **`definition_id`**&nbsp;(`str`) — The connector definition ID (for example, the ID for `destination-snowflake`).
+- **`definition_id`**&nbsp;(`str`)
 
-- **`destination_id`**&nbsp;(`str`) — The destination ID.
+  The connector definition ID (for example, the ID for `destination-snowflake`).
 
-- **`name`**&nbsp;(`str`) — The destination name.
+- **`destination_id`**&nbsp;(`str`)
+
+  The destination ID.
+
+- **`name`**&nbsp;(`str`)
+
+  The destination name.
 
 #### `from_api_response` {#airbyte.cloud.models.CloudDestinationInfo.from_api_response}
 
@@ -179,15 +209,25 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.cloud.models.CloudJobInfo--attributes}
 
-- **`bytes_synced`**&nbsp;(`int | None`) — The number of bytes synced by the job, if available.
+- **`bytes_synced`**&nbsp;(`int | None`)
 
-- **`job_id`**&nbsp;(`int`) — The job ID.
+  The number of bytes synced by the job, if available.
 
-- **`rows_synced`**&nbsp;(`int | None`) — The number of rows synced by the job, if available.
+- **`job_id`**&nbsp;(`int`)
 
-- **`start_time`**&nbsp;(`str`) — The job start time.
+  The job ID.
 
-- **`status`**&nbsp;(`airbyte.cloud.models.JobStatusEnum`) — The job status.
+- **`rows_synced`**&nbsp;(`int | None`)
+
+  The number of rows synced by the job, if available.
+
+- **`start_time`**&nbsp;(`str`)
+
+  The job start time.
+
+- **`status`**&nbsp;(`airbyte.cloud.models.JobStatusEnum`)
+
+  The job status.
 
 #### `from_api_response` {#airbyte.cloud.models.CloudJobInfo.from_api_response}
 
@@ -230,11 +270,17 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.cloud.models.CloudSourceInfo--attributes}
 
-- **`definition_id`**&nbsp;(`str`) — The connector definition ID (for example, the ID for `source-postgres`).
+- **`definition_id`**&nbsp;(`str`)
 
-- **`name`**&nbsp;(`str`) — The source name.
+  The connector definition ID (for example, the ID for `source-postgres`).
 
-- **`source_id`**&nbsp;(`str`) — The source ID.
+- **`name`**&nbsp;(`str`)
+
+  The source name.
+
+- **`source_id`**&nbsp;(`str`)
+
+  The source ID.
 
 #### `from_api_response` {#airbyte.cloud.models.CloudSourceInfo.from_api_response}
 
@@ -277,15 +323,25 @@ validated to form a valid model.
 
 #### Attributes {#airbyte.cloud.models.CloudWorkspaceInfo--attributes}
 
-- **`data_residency`**&nbsp;(`str | None`) — The data residency setting for the workspace, if available.
+- **`data_residency`**&nbsp;(`str | None`)
 
-- **`name`**&nbsp;(`str`) — The workspace name.
+  The data residency setting for the workspace, if available.
 
-- **`notifications`**&nbsp;(`dict[str, object | None] | list[dict[str, object | None]]`) — Workspace notification settings.
+- **`name`**&nbsp;(`str`)
 
-- **`organization_id`**&nbsp;(`str | None`) — The organization ID for the workspace, if available.
+  The workspace name.
 
-- **`workspace_id`**&nbsp;(`str`) — The workspace ID.
+- **`notifications`**&nbsp;(`dict[str, object | None] | list[dict[str, object | None]]`)
+
+  Workspace notification settings.
+
+- **`organization_id`**&nbsp;(`str | None`)
+
+  The organization ID for the workspace, if available.
+
+- **`workspace_id`**&nbsp;(`str`)
+
+  The workspace ID.
 
 #### `from_api_response` {#airbyte.cloud.models.CloudWorkspaceInfo.from_api_response}
 
