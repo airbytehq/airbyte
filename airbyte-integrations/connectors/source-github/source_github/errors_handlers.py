@@ -87,6 +87,8 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
 def is_rate_limited_response(
     response: requests.Response, graphql_rate_limit_checker: Callable[[dict], bool], logger: logging.Logger
 ) -> bool:
+    # GitHub GraphQL resource limitations:
+    # https://docs.github.com/en/graphql/overview/resource-limitations
     if response.headers.get("X-RateLimit-Resource") == "graphql":
         try:
             body = response.json()
@@ -103,6 +105,10 @@ def is_rate_limited_response(
         if graphql_rate_limited:
             return True
 
+    # GitHub REST rate-limit HTTP headers:
+    # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
+    # GitHub secondary rate limits:
+    # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
     return (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0") or "Retry-After" in response.headers
 
 
