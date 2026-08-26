@@ -109,4 +109,7 @@ data:
     - title: monday.com Status
       url: https://status.monday.com/
       type: status_page
+    - title: monday.com GraphQL API schema repository
+      url: https://github.com/mondaycom/monday-graphql-api
+      type: spec_repository
 metadataSpecVersion: "1.0"
