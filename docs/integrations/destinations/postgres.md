@@ -32,13 +32,11 @@ You'll need the following information to configure the Postgres destination:
 - **Host** - The host name of the server.
 - **Port** - The port number the server is listening on. Defaults to the PostgreSQL™ standard port
   number (5432).
+- **Database Name** - The name of the database to write to.
+- **Default Schema** - The schema Airbyte writes a stream to when the source doesn't specify a
+  namespace. Defaults to `public`.
 - **Username**
 - **Password**
-- **Default Schema Name** - Specify the schema (or several schemas separated by commas) to be set in
-  the search-path. These schemas will be used to resolve unqualified object names used in statements
-  executed over this connection.
-- **Database** - The database name. The default is to connect to a database with the same name as
-  the user name.
 - **JDBC URL Params** (optional)
 
 [Refer to this guide for more details](https://jdbc.postgresql.org/documentation/use/#connecting-to-the-database)
@@ -53,19 +51,35 @@ add Airbyte's [IP addresses](/platform/operating-airbyte/ip-allowlist) to your a
 
 #### **Permissions**
 
-You need a Postgres user with the following permissions:
+The connector creates the schemas and tables it syncs into, adds and alters columns as your source
+schema changes, creates indexes, and renames and drops tables between syncs. The user you connect
+as needs to be able to do all of that:
 
-- can create tables and write rows.
-- can create schemas e.g:
+- Create schemas in the target database.
+- Create tables and indexes, and write rows.
+- Own the tables it manages, because Postgres restricts `ALTER TABLE`, `DROP TABLE`, and `RENAME` to
+  a table's owner.
 
-You can create such a user by running:
+Creating a dedicated user and letting the connector create its own schemas satisfies all three,
+because the creating role owns what it creates:
 
-```
+```sql
 CREATE USER airbyte_user WITH PASSWORD '<password>';
-GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
+GRANT CREATE ON DATABASE <database> TO airbyte_user;
 ```
 
-You can also use a pre-existing user but we highly recommend creating a dedicated user for Airbyte.
+If you want the connector to write into a schema that already exists, grant it access to that schema
+instead of relying on database-level `CREATE`:
+
+```sql
+GRANT USAGE, CREATE ON SCHEMA <schema> TO airbyte_user;
+```
+
+In that case, don't point the connector at tables another role owns. It can insert into them, but it
+can't alter or replace them, so the sync fails the first time the stream's schema changes or the
+connection runs in overwrite mode.
+
+You can also use a pre-existing user, but we highly recommend creating a dedicated user for Airbyte.
 
 ## Step 2: Set up the Postgres connector in Airbyte
 
@@ -77,7 +91,7 @@ synced data from Airbyte.
 ## Naming Conventions
 
 From
-[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/9.0/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
+[Postgres SQL Identifiers syntax](https://www.postgresql.org/docs/current/sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS):
 
 - SQL identifiers and key words must begin with a letter \(a-z, but also letters with diacritical
   marks and non-Latin letters\) or an underscore \(\_\).
@@ -105,7 +119,7 @@ From
 
 Airbyte Postgres destination creates final tables and their corresponding columns using Quoted identifiers, preserving the case sensitivity. Special characters in table and column names are replaced with underscores.
 
-When using the legacy "Raw tables only" mode, raw tables and schemas are created using Unquoted identifiers by replacing any special characters with an underscore.
+When using the legacy "Raw tables only" mode, raw table and schema names are lowercased. Raw tables have a fixed set of Airbyte columns, so your source's field names aren't used as column names at all. They're preserved as-is inside the `_airbyte_data` JSONB payload.
 
 :::
 
@@ -117,14 +131,14 @@ When using the legacy "Raw tables only" mode, raw tables and schemas are created
 3. On the Set up the destination page, enter the name for the Postgres connector and select
    **Postgres** from the Destination type dropdown.
 4. Enter a name for your destination.
-5. For the **Host**, **Port**, and **DB Name**, enter the hostname, port number, and name for your
-   Postgres database.
-6. List the **Default Schemas**.
+5. For the **Host**, **Port**, and **Database Name**, enter the hostname, port number, and name for
+   your Postgres database.
+6. For **Default Schema**, enter the schema Airbyte writes to when a stream has no namespace.
 
    :::note
 
-   The schema names are case sensitive. The 'public' schema is set by default. Multiple schemas may be
-   used at one time. No schemas set explicitly - will sync all of existing.
+   Schema names are case sensitive. The `public` schema is used by default. Streams that carry a
+   namespace are written to a schema named after that namespace, not to the default schema.
 
    :::
 
@@ -179,10 +193,22 @@ Mode**; otherwise, the connection will fail.
 
 12. Click **Set up destination**.
 
+## Optional settings
+
+These settings are optional. Unless you have a specific reason to change them, the defaults are fine.
+
+| Setting | Default | What it does |
+| :------ | :------ | :----------- |
+| **CDC deletion mode** | Hard delete | Controls what happens when a CDC source reports a deleted record. **Hard delete** removes the row from the destination table. **Soft delete** keeps the row and populates its `_ab_cdc_deleted_at` column, so you can filter deleted records downstream yourself. Only affects streams that are deduplicated and carry CDC metadata. |
+| **Airbyte Internal Schema Name** | `airbyte_internal` | The schema Airbyte uses for internal tables. In legacy raw tables mode, raw tables are written here. |
+| **Disable Final Tables** | Off | Turns on legacy "raw tables only" mode. Airbyte writes a single `_airbyte_data` JSONB column per stream instead of typed columns, and syncs run in append mode even when the connection uses a deduplicating sync mode. Only use this if you depend on the pre-3.0.0 raw table format. |
+| **Drop tables with CASCADE** | Off | Adds `CASCADE` to the `DROP TABLE` statements the connector runs. See [Creating dependent objects](#creating-dependent-objects) before you enable it. |
+| **Unconstrained numeric columns** | Off | Has no effect in version 3.0.0 and later. Number columns are always created as unconstrained `DECIMAL`. |
+
 ## Supported sync modes
 
 The Postgres destination connector supports the
-following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+following [sync modes](/platform/using-airbyte/core-concepts/sync-modes/):
 
 | Sync mode | Supported? |
 | :--- | :--- |
@@ -191,6 +217,10 @@ following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-s
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) | Yes |
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
+
+If a deduplicating stream's primary key or cursor field doesn't exist in the stream's schema, the
+sync fails with a configuration error. In legacy "raw tables only" mode, deduplication isn't
+possible at all, so the connector falls back to appending and logs a warning.
 
 ## Schema map
 
@@ -206,6 +236,11 @@ The Postgres destination uses Direct Load architecture. Each stream is written d
   and any schema changes. The column type in Postgres is `JSONB`.
 - `_airbyte_generation_id`: an identifier for the generation of the sync. The column type in
   Postgres is `BIGINT`.
+
+The connector also creates indexes on each final table. Every table gets an index on
+`_airbyte_extracted_at`. Deduplicated streams additionally get an index on the primary key columns
+and, when the stream has one, an index on the cursor column. The connector recreates these indexes
+when the columns they cover change, so don't modify or drop them yourself.
 
 ### Output Schema (Raw Tables) - Deprecated
 
@@ -243,6 +278,8 @@ will contain 4 columns:
 | boolean                    | BOOLEAN                  |
 | object                     | JSONB                    |
 | array                      | JSONB                    |
+| union                      | JSONB                    |
+| unknown                    | JSONB                    |
 | timestamp_with_timezone    | TIMESTAMP WITH TIME ZONE |
 | timestamp_without_timezone | TIMESTAMP                |
 | time_with_timezone         | TIME WITH TIME ZONE      |
@@ -251,9 +288,33 @@ will contain 4 columns:
 
 ### Naming limitations
 
-Postgres restricts all identifiers to 63 characters or less. If your stream includes column names
-longer than 63 characters, they will be truncated to this length. If this results in two columns
-having the same name, Airbyte may modify these column names to avoid the collision.
+Postgres restricts identifiers to 63 bytes. If a stream or column name is longer than that, the
+connector shortens it to the first 54 characters, an underscore, and an 8-character hash of the
+original name. Two long names that share the same first 54 characters therefore still produce
+distinct tables and columns, but the resulting names aren't the ones your source used.
+
+The connector also replaces each character that isn't a letter, digit, or underscore with an
+underscore, and prefixes a name that begins with a digit with an underscore. Names that only differ
+by those replaced characters collide after this transformation — `my.field` and `my-field` both
+become `my_field`, for example. Airbyte resolves the collision instead of failing: colliding column
+names get a numeric suffix (`my_field_1`), and colliding table names get a short hash suffix.
+
+### Value limitations
+
+The connector adapts some values to what Postgres accepts:
+
+- Null bytes (`\u0000`) are removed before the record is written. Postgres rejects them in `text`,
+  `varchar`, and `jsonb` values, so a record containing one would otherwise fail to write.
+  Starting with version 3.0.17, the connector removes them everywhere they can appear: in top-level
+  string values, in strings nested inside objects and arrays, and in the keys of JSON objects. If
+  removing a null byte makes two keys in the same object identical, the last value wins. This edit
+  isn't recorded in `_airbyte_meta`, so compare against your source if you need to know which
+  records were affected.
+- Values that exceed a Postgres type's range are written as `NULL`, and the record's
+  `_airbyte_meta` column records a `DESTINATION_FIELD_SIZE_LIMITATION` change. This applies to
+  integers outside the `BIGINT` range, numbers with more than 131,072 digits before the decimal
+  point, strings larger than the 1 GB field limit, and timestamps outside the range Postgres
+  supports (4713 BC to 294276 AD).
 
 ## Creating dependent objects
 
@@ -299,10 +360,10 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                                                                                                               |
 |:--------|:-----------|:-----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.17  | 2026-08-18 | [84853](https://github.com/airbytehq/airbyte/pull/84853)   | Strip null bytes nested inside objects and arrays, which PostgreSQL rejects in `jsonb` columns                                                                                                                                                                                                        |
-| 3.0.16  | 2026-03-31 | [75902](https://github.com/airbytehq/airbyte/pull/75902)   | Fix silent error swallowing in COPY flush and sanitize null bytes in raw JSON data                                                                                                                                                                                                                    |
-| 3.0.15  | 2026-08-07 | [83235](https://github.com/airbytehq/airbyte/pull/83235)   | Fail sync on transient DB errors.                                                                                                                                                                                                                                                                     |
-| 3.0.14  | 2026-07-30 | [82273](https://github.com/airbytehq/airbyte/pull/82273)   | Remove column DROP logic during schema evolution; upgrade CDK to 1.0.20                                                                                                                                                                                                                               |
+| 3.0.17  | 2026-08-20 | [84853](https://github.com/airbytehq/airbyte/pull/84853)   | Strip null bytes nested inside objects and arrays, which PostgreSQL rejects in `jsonb` columns                                                                                                                                                                                                        |
+| 3.0.16  | 2026-08-10 | [75902](https://github.com/airbytehq/airbyte/pull/75902)   | Fail the sync when a batch of records can't be loaded, instead of logging the error and continuing; strip null bytes from raw JSON data                                                                                                                                                               |
+| 3.0.15  | 2026-08-10 | [83235](https://github.com/airbytehq/airbyte/pull/83235)   | Fail the sync when a database error prevents reading an existing table, instead of treating that table as missing.                                                                                                                                                                                    |
+| 3.0.14  | 2026-08-05 | [82273](https://github.com/airbytehq/airbyte/pull/82273)   | Remove column DROP logic during schema evolution; upgrade CDK to 1.0.20                                                                                                                                                                                                                               |
 | 3.0.13  | 2026-04-17 | [76409](https://github.com/airbytehq/airbyte/pull/76409)   | Upgrade CDK to 1.0.9.                                                                                                                                                                                                                                                                                 |
 | 3.0.12  | 2026-03-26 | [75481](https://github.com/airbytehq/airbyte/pull/75481)   | Upgrade CDK to 1.0.6; fix duplicate records in dedup+truncate mode by dropping temp tables after successful upsert.                                                                                                                                                                                   |
 | 3.0.11  | 2026-02-25 | [74040](https://github.com/airbytehq/airbyte/pull/74040)   | Upgrade CDK to 1.0.2 and base image to 2.0.4 for CVE patches.                                                                                                                                                                                                                                         |
@@ -367,7 +428,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 | 0.3.21  | 2022-07-06 | [\#14479](https://github.com/airbytehq/airbyte/pull/14479) | Publish amd64 and arm64 versions of the connector                                                                                                                                                                                                                                                     |
 | 0.3.20  | 2022-05-17 | [\#12820](https://github.com/airbytehq/airbyte/pull/12820) | Improved 'check' operation performance                                                                                                                                                                                                                                                                |
 | 0.3.19  | 2022-04-25 | [\#12195](https://github.com/airbytehq/airbyte/pull/12195) | Add support for additional JDBC URL Params input                                                                                                                                                                                                                                                      |
-| 0.3.18  | 2022-04-12 | [\#11729](https://github.com/airbytehq/airbyte/pull/11514) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                                                                                                                                                                                                                    |
+| 0.3.18  | 2022-04-23 | [\#12290](https://github.com/airbytehq/airbyte/pull/12290) | Bump mina-sshd from 2.7.0 to 2.8.0                                                                                                                                                                                                                                                                    |
 | 0.3.17  | 2022-04-05 | [\#11729](https://github.com/airbytehq/airbyte/pull/11729) | Fixed bug with dashes in schema name                                                                                                                                                                                                                                                                  |
 | 0.3.15  | 2022-02-25 | [\#10421](https://github.com/airbytehq/airbyte/pull/10421) | Refactor JDBC parameters handling                                                                                                                                                                                                                                                                     |
 | 0.3.14  | 2022-02-14 | [\#10256](https://github.com/airbytehq/airbyte/pull/10256) | (unpublished) Add `-XX:+ExitOnOutOfMemoryError` JVM option                                                                                                                                                                                                                                            |
