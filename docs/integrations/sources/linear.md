@@ -91,7 +91,7 @@ The Linear source connector supports the following streams. Streams marked as in
 | `cycles` | Yes | Cycles (sprints) for each team. |
 | `issue_labels` | Yes | Labels that can be applied to issues. |
 | `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
-| `issues` | Yes | Issues in every team. |
+| `issues` | Yes | Issues in every team, including archived issues. Archived issues have a non-null `archivedAt` value. |
 | `project_milestones` | Yes | Milestones defined inside projects. |
 | `project_statuses` | No | Status definitions for projects. |
 | `projects` | Yes | Projects across all teams. |
@@ -125,13 +125,6 @@ Linear enforces three types of rate limits:
 
 Workspace-level OAuth applications receive dynamically increased limits based on the number of paid seats. For more information, see the [Linear rate limiting documentation](https://linear.app/developers/rate-limiting).
 
-### Archived records aren't synced
-
-Linear's GraphQL API hides archived records from paginated responses unless the caller requests them explicitly, and the connector doesn't request them. As a result:
-
-- Archived issues, projects, cycles, comments, and other archived entities never appear in your synced data. The `archivedAt` field is present in the schemas but is `null` for every synced record.
-- When a record you already synced is archived or deleted in Linear, it stops appearing in the API response, and Airbyte doesn't delete rows it already synced, so whatever was written stays in the destination. If you need to detect these records, compare a full refresh of the stream against your destination table.
-
 ### OAuth authorization stops working
 
 If an OAuth source starts failing with an authorization error, re-authenticate the source from its settings page to issue a fresh refresh token. Linear rotates the refresh token every time the connector exchanges it, so a source breaks permanently once its stored token is replaced with an older value. Don't restore an earlier copy of a source's configuration, and don't paste the same refresh token into more than one source.
@@ -139,6 +132,10 @@ If an OAuth source starts failing with an authorization error, re-authenticate t
 ### Data availability
 
 The connector retrieves only the data its credentials can see. With API key authentication, that's everything the key's owner can see in Linear. With OAuth, it's what the installed app can see in the workspace. If teams, projects, or issues are missing from your synced data, check those permissions in Linear first.
+
+### Archived and deleted records
+
+Archived records are returned with a non-null `archivedAt` value, which the connector uses as the deletion signal. Linear also supports permanent hard deletion (for example, `issueDelete` with `permanently`), which leaves no signal; hard-deleted records cannot be detected. The first sync after upgrading to version 0.3.0 backfills previously invisible archived records and may transfer a large one-time volume.
 
 ### Syncs fail on errors Linear returns in the response body
 
@@ -181,6 +178,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 0.3.0 | 2026-08-25 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Include archived records in all streams (`includeArchived: true`) and declare `archivedAt` (and `trashed` on issues/projects) in stream schemas; the first sync after upgrade backfills previously invisible archived records and may transfer a large one-time volume |
 | 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |
 | 0.2.22 | 2026-08-25 | [84954](https://github.com/airbytehq/airbyte/pull/84954) | Add proactive rate-limit pacing for Linear API requests |
 | 0.2.21 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Fix OAuth consent scope encoding and persist the access token issued during authorization. |
