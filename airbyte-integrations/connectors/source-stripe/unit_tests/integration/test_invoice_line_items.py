@@ -35,7 +35,6 @@ _INVOICE_ID = "in_1K9GK0EcXtiJtvvhSo2LvGqT"
 _NOW = datetime.now(timezone.utc)
 _START_DATE = _NOW - timedelta(days=75)
 _STATE_DATE = _NOW - timedelta(days=10)
-_EVENT_TYPES = ["invoice.created", "invoice.deleted", "invoice.updated"]
 
 
 def _config() -> ConfigBuilder:
