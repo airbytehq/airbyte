@@ -2077,11 +2077,6 @@ metadata:
     issue_relations: true
     customer_statuses: true
     customer_tiers: true
-    # Connector Builder's auto-import infers bare strings without formats from a test read,
-    # which would erase the date / date-time declarations these streams provide for
-    # airbytehq/airbyte-internal-issues#17016.
-    # It would also collapse issue_history.changes to an inferred shape and drop nullable
-    # relationship fields that happen to be absent from the records returned by that read.
     initiatives: false
     initiative_to_projects: false
     project_updates: false
