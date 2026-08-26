@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AbandonedCheckoutsAnyCondition"></a>
@@ -98,7 +98,7 @@ Classes
 <a id="AbandonedCheckoutsContainsCondition"></a>
 
 `AbandonedCheckoutsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -107,6 +107,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="AbandonedCheckoutsEndswithCondition"></a>
+
+`AbandonedCheckoutsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStringFilter`
     :   The type of the None singleton.
 
 <a id="AbandonedCheckoutsEqCondition"></a>
@@ -242,20 +256,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStringFilter`
     :   The type of the None singleton.
 
-<a id="AbandonedCheckoutsLikeCondition"></a>
-
-`AbandonedCheckoutsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStringFilter`
-    :   The type of the None singleton.
-
 <a id="AbandonedCheckoutsListParams"></a>
 
 `AbandonedCheckoutsListParams(*args, **kwargs)`
@@ -349,7 +349,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AbandonedCheckoutsOrCondition"></a>
@@ -371,7 +371,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AbandonedCheckoutsSearchFilter"></a>
@@ -426,7 +426,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsGteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLtCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsLteCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsInCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsNotCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAndCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsOrCondition | airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsSortFilter]`
@@ -473,10 +473,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the checkout was last updated
 
+<a id="AbandonedCheckoutsStartswithCondition"></a>
+
+`AbandonedCheckoutsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.AbandonedCheckoutsStringFilter`
+    :   The type of the None singleton.
+
 <a id="AbandonedCheckoutsStringFilter"></a>
 
 `AbandonedCheckoutsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -556,7 +570,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ArticlesAnyCondition"></a>
@@ -628,7 +642,7 @@ Classes
 <a id="ArticlesContainsCondition"></a>
 
 `ArticlesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -637,6 +651,94 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ArticlesCreateParams"></a>
+
+`ArticlesCreateParams(*args, **kwargs)`
+:   Parameters for articles.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `article: airbyte_agent_sdk.connectors.shopify.types.ArticlesCreateParamsArticle`
+    :   The type of the None singleton.
+
+<a id="ArticlesCreateParamsArticle"></a>
+
+`ArticlesCreateParamsArticle(*args, **kwargs)`
+:   Nested schema for ArticlesCreateParams.article
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `author: airbyte_agent_sdk.connectors.shopify.types.ArticlesCreateParamsArticleAuthor`
+    :   The type of the None singleton.
+
+    `blog_id: str`
+    :   The type of the None singleton.
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesCreateParamsArticleAuthor"></a>
+
+`ArticlesCreateParamsArticleAuthor(*args, **kwargs)`
+:   Author of the article. Required by Shopify's articleCreate mutation (ArticleCreateInput.author is non-null).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `name: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesDeleteParams"></a>
+
+`ArticlesDeleteParams(*args, **kwargs)`
+:   Parameters for articles.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesEndswithCondition"></a>
+
+`ArticlesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.ArticlesStringFilter`
     :   The type of the None singleton.
 
 <a id="ArticlesEqCondition"></a>
@@ -792,20 +894,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.ArticlesStringFilter`
     :   The type of the None singleton.
 
-<a id="ArticlesLikeCondition"></a>
-
-`ArticlesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.ArticlesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ArticlesListParams"></a>
 
 `ArticlesListParams(*args, **kwargs)`
@@ -902,7 +990,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ArticlesOrCondition"></a>
@@ -924,7 +1012,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ArticlesSearchFilter"></a>
@@ -982,7 +1070,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ArticlesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.ArticlesSortFilter]`
@@ -1032,10 +1120,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the article was last updated
 
+<a id="ArticlesStartswithCondition"></a>
+
+`ArticlesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.ArticlesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ArticlesStringFilter"></a>
 
 `ArticlesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1076,6 +1178,49 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the article was last updated
 
+<a id="ArticlesUpdateParams"></a>
+
+`ArticlesUpdateParams(*args, **kwargs)`
+:   Parameters for articles.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `article: airbyte_agent_sdk.connectors.shopify.types.ArticlesUpdateParamsArticle`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="ArticlesUpdateParamsArticle"></a>
+
+`ArticlesUpdateParamsArticle(*args, **kwargs)`
+:   Nested schema for ArticlesUpdateParams.article
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
 <a id="BalanceTransactionsAndCondition"></a>
 
 `BalanceTransactionsAndCondition(*args, **kwargs)`
@@ -1095,7 +1240,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BalanceTransactionsAnyCondition"></a>
@@ -1167,7 +1312,7 @@ Classes
 <a id="BalanceTransactionsContainsCondition"></a>
 
 `BalanceTransactionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1176,6 +1321,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BalanceTransactionsEndswithCondition"></a>
+
+`BalanceTransactionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStringFilter`
     :   The type of the None singleton.
 
 <a id="BalanceTransactionsEqCondition"></a>
@@ -1314,20 +1473,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStringFilter`
     :   The type of the None singleton.
 
-<a id="BalanceTransactionsLikeCondition"></a>
-
-`BalanceTransactionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="BalanceTransactionsListParams"></a>
 
 `BalanceTransactionsListParams(*args, **kwargs)`
@@ -1412,7 +1557,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BalanceTransactionsOrCondition"></a>
@@ -1434,7 +1579,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BalanceTransactionsSearchFilter"></a>
@@ -1492,7 +1637,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsSortFilter]`
@@ -1542,10 +1687,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
 
+<a id="BalanceTransactionsStartswithCondition"></a>
+
+`BalanceTransactionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.BalanceTransactionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="BalanceTransactionsStringFilter"></a>
 
 `BalanceTransactionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1605,7 +1764,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlogsAnyCondition"></a>
@@ -1665,7 +1824,7 @@ Classes
 <a id="BlogsContainsCondition"></a>
 
 `BlogsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1674,6 +1833,65 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.BlogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BlogsCreateParams"></a>
+
+`BlogsCreateParams(*args, **kwargs)`
+:   Parameters for blogs.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blog: airbyte_agent_sdk.connectors.shopify.types.BlogsCreateParamsBlog`
+    :   The type of the None singleton.
+
+<a id="BlogsCreateParamsBlog"></a>
+
+`BlogsCreateParamsBlog(*args, **kwargs)`
+:   Nested schema for BlogsCreateParams.blog
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="BlogsDeleteParams"></a>
+
+`BlogsDeleteParams(*args, **kwargs)`
+:   Parameters for blogs.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="BlogsEndswithCondition"></a>
+
+`BlogsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.BlogsStringFilter`
     :   The type of the None singleton.
 
 <a id="BlogsEqCondition"></a>
@@ -1814,20 +2032,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.BlogsStringFilter`
     :   The type of the None singleton.
 
-<a id="BlogsLikeCondition"></a>
-
-`BlogsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.BlogsStringFilter`
-    :   The type of the None singleton.
-
 <a id="BlogsListParams"></a>
 
 `BlogsListParams(*args, **kwargs)`
@@ -1906,7 +2110,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BlogsOrCondition"></a>
@@ -1928,7 +2132,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlogsSearchFilter"></a>
@@ -1974,7 +2178,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.BlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.BlogsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.BlogsSortFilter]`
@@ -2012,10 +2216,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the blog was last updated
 
+<a id="BlogsStartswithCondition"></a>
+
+`BlogsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.BlogsStringFilter`
+    :   The type of the None singleton.
+
 <a id="BlogsStringFilter"></a>
 
 `BlogsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2044,6 +2262,40 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the blog was last updated
 
+<a id="BlogsUpdateParams"></a>
+
+`BlogsUpdateParams(*args, **kwargs)`
+:   Parameters for blogs.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `blog: airbyte_agent_sdk.connectors.shopify.types.BlogsUpdateParamsBlog`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="BlogsUpdateParamsBlog"></a>
+
+`BlogsUpdateParamsBlog(*args, **kwargs)`
+:   Nested schema for BlogsUpdateParams.blog
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
 <a id="CollectsAndCondition"></a>
 
 `CollectsAndCondition(*args, **kwargs)`
@@ -2063,7 +2315,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CollectsAnyCondition"></a>
@@ -2120,7 +2372,7 @@ Classes
 <a id="CollectsContainsCondition"></a>
 
 `CollectsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2129,6 +2381,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.CollectsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CollectsEndswithCondition"></a>
+
+`CollectsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.CollectsStringFilter`
     :   The type of the None singleton.
 
 <a id="CollectsEqCondition"></a>
@@ -2266,20 +2532,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.CollectsStringFilter`
     :   The type of the None singleton.
 
-<a id="CollectsLikeCondition"></a>
-
-`CollectsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.CollectsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CollectsListParams"></a>
 
 `CollectsListParams(*args, **kwargs)`
@@ -2364,7 +2616,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CollectsOrCondition"></a>
@@ -2386,7 +2638,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CollectsSearchFilter"></a>
@@ -2429,7 +2681,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.CollectsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsInCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CollectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.CollectsSortFilter]`
@@ -2464,10 +2716,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the collect was last updated
 
+<a id="CollectsStartswithCondition"></a>
+
+`CollectsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.CollectsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CollectsStringFilter"></a>
 
 `CollectsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2512,7 +2778,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CountriesAnyCondition"></a>
@@ -2563,7 +2829,7 @@ Classes
 <a id="CountriesContainsCondition"></a>
 
 `CountriesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2572,6 +2838,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.CountriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CountriesEndswithCondition"></a>
+
+`CountriesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.CountriesStringFilter`
     :   The type of the None singleton.
 
 <a id="CountriesEqCondition"></a>
@@ -2703,20 +2983,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.CountriesStringFilter`
     :   The type of the None singleton.
 
-<a id="CountriesLikeCondition"></a>
-
-`CountriesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.CountriesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CountriesListParams"></a>
 
 `CountriesListParams(*args, **kwargs)`
@@ -2792,7 +3058,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CountriesOrCondition"></a>
@@ -2814,7 +3080,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CountriesSearchFilter"></a>
@@ -2851,7 +3117,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.CountriesEqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesGteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLtCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesLteCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesInCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesNotCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAndCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesOrCondition | airbyte_agent_sdk.connectors.shopify.types.CountriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.CountriesSortFilter]`
@@ -2880,10 +3146,24 @@ Classes
     `tax_name: Literal['asc', 'desc']`
     :   Localized name of the tax applied in this country
 
+<a id="CountriesStartswithCondition"></a>
+
+`CountriesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.CountriesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CountriesStringFilter"></a>
 
 `CountriesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2922,7 +3202,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomCollectionsAnyCondition"></a>
@@ -2982,7 +3262,7 @@ Classes
 <a id="CustomCollectionsContainsCondition"></a>
 
 `CustomCollectionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2991,6 +3271,128 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsCreateParams"></a>
+
+`CustomCollectionsCreateParams(*args, **kwargs)`
+:   Parameters for custom_collections.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsCreateParamsInput"></a>
+
+`CustomCollectionsCreateParamsInput(*args, **kwargs)`
+:   Nested schema for CustomCollectionsCreateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `rule_set: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInputRuleset`
+    :   The type of the None singleton.
+
+    `sort_order: str`
+    :   The type of the None singleton.
+
+    `template_suffix: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsCreateParamsInputRuleset"></a>
+
+`CustomCollectionsCreateParamsInputRuleset(*args, **kwargs)`
+:   Rule set for smart collections
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `applied_disjunctively: bool`
+    :   The type of the None singleton.
+
+    `rules: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsCreateParamsInputRulesetRulesItem]`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsCreateParamsInputRulesetRulesItem"></a>
+
+`CustomCollectionsCreateParamsInputRulesetRulesItem(*args, **kwargs)`
+:   Nested schema for CustomCollectionsCreateParamsInputRuleset.rules_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `column: str`
+    :   The type of the None singleton.
+
+    `condition: str`
+    :   The type of the None singleton.
+
+    `relation: str`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsDeleteParams"></a>
+
+`CustomCollectionsDeleteParams(*args, **kwargs)`
+:   Parameters for custom_collections.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsDeleteParamsInput"></a>
+
+`CustomCollectionsDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for CustomCollectionsDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsEndswithCondition"></a>
+
+`CustomCollectionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStringFilter`
     :   The type of the None singleton.
 
 <a id="CustomCollectionsEqCondition"></a>
@@ -3131,20 +3533,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStringFilter`
     :   The type of the None singleton.
 
-<a id="CustomCollectionsLikeCondition"></a>
-
-`CustomCollectionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CustomCollectionsListParams"></a>
 
 `CustomCollectionsListParams(*args, **kwargs)`
@@ -3235,7 +3623,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomCollectionsOrCondition"></a>
@@ -3257,7 +3645,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomCollectionsSearchFilter"></a>
@@ -3303,7 +3691,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsSortFilter]`
@@ -3341,10 +3729,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the collection was last updated
 
+<a id="CustomCollectionsStartswithCondition"></a>
+
+`CustomCollectionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CustomCollectionsStringFilter"></a>
 
 `CustomCollectionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3372,6 +3774,46 @@ Classes
 
     `updated_at: str`
     :   ISO 8601 timestamp when the collection was last updated
+
+<a id="CustomCollectionsUpdateParams"></a>
+
+`CustomCollectionsUpdateParams(*args, **kwargs)`
+:   Parameters for custom_collections.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomCollectionsUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomCollectionsUpdateParamsInput"></a>
+
+`CustomCollectionsUpdateParamsInput(*args, **kwargs)`
+:   Nested schema for CustomCollectionsUpdateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `sort_order: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
 
 <a id="CustomerAddressGetParams"></a>
 
@@ -3426,7 +3868,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomersAnyCondition"></a>
@@ -3498,7 +3940,7 @@ Classes
 <a id="CustomersContainsCondition"></a>
 
 `CustomersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3507,6 +3949,135 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.CustomersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CustomersCreateParams"></a>
+
+`CustomersCreateParams(*args, **kwargs)`
+:   Parameters for customers.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomersCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomersCreateParamsInput"></a>
+
+`CustomersCreateParamsInput(*args, **kwargs)`
+:   CustomerInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `addresses: list[airbyte_agent_sdk.connectors.shopify.types.CustomersCreateParamsInputAddressesItem]`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `tax_exempt: bool`
+    :   The type of the None singleton.
+
+<a id="CustomersCreateParamsInputAddressesItem"></a>
+
+`CustomersCreateParamsInputAddressesItem(*args, **kwargs)`
+:   Nested schema for CustomersCreateParamsInput.addresses_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `address2: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `province: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
+<a id="CustomersDeleteParams"></a>
+
+`CustomersDeleteParams(*args, **kwargs)`
+:   Parameters for customers.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomersDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomersDeleteParamsInput"></a>
+
+`CustomersDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for CustomersDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="CustomersEndswithCondition"></a>
+
+`CustomersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.CustomersStringFilter`
     :   The type of the None singleton.
 
 <a id="CustomersEqCondition"></a>
@@ -3659,20 +4230,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.CustomersStringFilter`
     :   The type of the None singleton.
 
-<a id="CustomersLikeCondition"></a>
-
-`CustomersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.CustomersStringFilter`
-    :   The type of the None singleton.
-
 <a id="CustomersListParams"></a>
 
 `CustomersListParams(*args, **kwargs)`
@@ -3763,7 +4320,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomersOrCondition"></a>
@@ -3785,7 +4342,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomersSearchFilter"></a>
@@ -3843,7 +4400,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.CustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.CustomersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.CustomersSortFilter]`
@@ -3893,10 +4450,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the customer record was last updated
 
+<a id="CustomersStartswithCondition"></a>
+
+`CustomersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.CustomersStringFilter`
+    :   The type of the None singleton.
+
 <a id="CustomersStringFilter"></a>
 
 `CustomersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3937,6 +4508,55 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the customer record was last updated
 
+<a id="CustomersUpdateParams"></a>
+
+`CustomersUpdateParams(*args, **kwargs)`
+:   Parameters for customers.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.CustomersUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="CustomersUpdateParamsInput"></a>
+
+`CustomersUpdateParamsInput(*args, **kwargs)`
+:   CustomerInput object with id
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `phone: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `tax_exempt: bool`
+    :   The type of the None singleton.
+
 <a id="DiscountCodesAndCondition"></a>
 
 `DiscountCodesAndCondition(*args, **kwargs)`
@@ -3956,7 +4576,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DiscountCodesAnyCondition"></a>
@@ -4013,7 +4633,7 @@ Classes
 <a id="DiscountCodesContainsCondition"></a>
 
 `DiscountCodesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4022,6 +4642,161 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParams"></a>
+
+`DiscountCodesCreateParams(*args, **kwargs)`
+:   Parameters for discount_codes.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `basic_code_discount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscount`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscount"></a>
+
+`DiscountCodesCreateParamsBasiccodediscount(*args, **kwargs)`
+:   Nested schema for DiscountCodesCreateParams.basicCodeDiscount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `code: str`
+    :   The type of the None singleton.
+
+    `customer_gets: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergets`
+    :   The type of the None singleton.
+
+    `customer_selection: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomerselection`
+    :   The type of the None singleton.
+
+    `ends_at: str`
+    :   The type of the None singleton.
+
+    `starts_at: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `usage_limit: int`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergets"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergets(*args, **kwargs)`
+:   What the customer gets from this discount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `value: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsValue`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `items(self, /) ‑> airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsItems`
+    :   Return a set-like object providing a view on the dict's items.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergetsItems"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergetsItems(*args, **kwargs)`
+:   Which items the discount applies to
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `all: bool`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergetsValue"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergetsValue(*args, **kwargs)`
+:   The discount value
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `discount_amount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount`
+    :   The type of the None singleton.
+
+    `percentage: float`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomergetsValueDiscountamount(*args, **kwargs)`
+:   Nested schema for DiscountCodesCreateParamsBasiccodediscountCustomergetsValue.discountAmount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   The type of the None singleton.
+
+    `applies_on_each_item: bool`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesCreateParamsBasiccodediscountCustomerselection"></a>
+
+`DiscountCodesCreateParamsBasiccodediscountCustomerselection(*args, **kwargs)`
+:   Which customers can use this discount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `all: bool`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesDeleteParams"></a>
+
+`DiscountCodesDeleteParams(*args, **kwargs)`
+:   Parameters for discount_codes.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesEndswithCondition"></a>
+
+`DiscountCodesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStringFilter`
     :   The type of the None singleton.
 
 <a id="DiscountCodesEqCondition"></a>
@@ -4162,20 +4937,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStringFilter`
     :   The type of the None singleton.
 
-<a id="DiscountCodesLikeCondition"></a>
-
-`DiscountCodesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStringFilter`
-    :   The type of the None singleton.
-
 <a id="DiscountCodesListParams"></a>
 
 `DiscountCodesListParams(*args, **kwargs)`
@@ -4254,7 +5015,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition`
     :   The type of the None singleton.
 
 <a id="DiscountCodesOrCondition"></a>
@@ -4276,7 +5037,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DiscountCodesSearchFilter"></a>
@@ -4319,7 +5080,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesInCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DiscountCodesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.DiscountCodesSortFilter]`
@@ -4354,10 +5115,24 @@ Classes
     `usage_count: Literal['asc', 'desc']`
     :   Number of times the code has been redeemed
 
+<a id="DiscountCodesStartswithCondition"></a>
+
+`DiscountCodesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesStringFilter`
+    :   The type of the None singleton.
+
 <a id="DiscountCodesStringFilter"></a>
 
 `DiscountCodesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4383,6 +5158,49 @@ Classes
     `usage_count: str`
     :   Number of times the code has been redeemed
 
+<a id="DiscountCodesUpdateParams"></a>
+
+`DiscountCodesUpdateParams(*args, **kwargs)`
+:   Parameters for discount_codes.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `basic_code_discount: airbyte_agent_sdk.connectors.shopify.types.DiscountCodesUpdateParamsBasiccodediscount`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="DiscountCodesUpdateParamsBasiccodediscount"></a>
+
+`DiscountCodesUpdateParamsBasiccodediscount(*args, **kwargs)`
+:   Nested schema for DiscountCodesUpdateParams.basicCodeDiscount
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `code: str`
+    :   The type of the None singleton.
+
+    `ends_at: str`
+    :   The type of the None singleton.
+
+    `starts_at: str`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `usage_limit: int`
+    :   The type of the None singleton.
+
 <a id="DisputesAndCondition"></a>
 
 `DisputesAndCondition(*args, **kwargs)`
@@ -4402,7 +5220,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DisputesAnyCondition"></a>
@@ -4474,7 +5292,7 @@ Classes
 <a id="DisputesContainsCondition"></a>
 
 `DisputesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4483,6 +5301,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.DisputesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DisputesEndswithCondition"></a>
+
+`DisputesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.DisputesStringFilter`
     :   The type of the None singleton.
 
 <a id="DisputesEqCondition"></a>
@@ -4635,20 +5467,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.DisputesStringFilter`
     :   The type of the None singleton.
 
-<a id="DisputesLikeCondition"></a>
-
-`DisputesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.DisputesStringFilter`
-    :   The type of the None singleton.
-
 <a id="DisputesListParams"></a>
 
 `DisputesListParams(*args, **kwargs)`
@@ -4733,7 +5551,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition`
     :   The type of the None singleton.
 
 <a id="DisputesOrCondition"></a>
@@ -4755,7 +5573,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DisputesSearchFilter"></a>
@@ -4813,7 +5631,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.DisputesEqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesGteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLtCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesLteCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesInCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesNotCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAndCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesOrCondition | airbyte_agent_sdk.connectors.shopify.types.DisputesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.DisputesSortFilter]`
@@ -4863,10 +5681,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Whether the dispute is an inquiry or chargeback
 
+<a id="DisputesStartswithCondition"></a>
+
+`DisputesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.DisputesStringFilter`
+    :   The type of the None singleton.
+
 <a id="DisputesStringFilter"></a>
 
 `DisputesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4907,6 +5739,23 @@ Classes
     `type_: str`
     :   Whether the dispute is an inquiry or chargeback
 
+<a id="DraftOrderCompleteUpdateParams"></a>
+
+`DraftOrderCompleteUpdateParams(*args, **kwargs)`
+:   Parameters for draft_order_complete.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `payment_pending: bool`
+    :   The type of the None singleton.
+
 <a id="DraftOrdersAndCondition"></a>
 
 `DraftOrdersAndCondition(*args, **kwargs)`
@@ -4926,7 +5775,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DraftOrdersAnyCondition"></a>
@@ -4995,7 +5844,7 @@ Classes
 <a id="DraftOrdersContainsCondition"></a>
 
 `DraftOrdersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5004,6 +5853,140 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParams"></a>
+
+`DraftOrdersCreateParams(*args, **kwargs)`
+:   Parameters for draft_orders.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParamsInput"></a>
+
+`DraftOrdersCreateParamsInput(*args, **kwargs)`
+:   DraftOrderInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `customer_id: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputLineitemsItem]`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersCreateParamsInputShippingaddress`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParamsInputLineitemsItem"></a>
+
+`DraftOrdersCreateParamsInputLineitemsItem(*args, **kwargs)`
+:   Nested schema for DraftOrdersCreateParamsInput.lineItems_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `original_unit_price: str`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `variant_id: str`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersCreateParamsInputShippingaddress"></a>
+
+`DraftOrdersCreateParamsInputShippingaddress(*args, **kwargs)`
+:   Nested schema for DraftOrdersCreateParamsInput.shippingAddress
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `province_code: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersDeleteParams"></a>
+
+`DraftOrdersDeleteParams(*args, **kwargs)`
+:   Parameters for draft_orders.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersDeleteParamsInput"></a>
+
+`DraftOrdersDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for DraftOrdersDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersEndswithCondition"></a>
+
+`DraftOrdersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="DraftOrdersEqCondition"></a>
@@ -5153,20 +6136,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStringFilter`
     :   The type of the None singleton.
 
-<a id="DraftOrdersLikeCondition"></a>
-
-`DraftOrdersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStringFilter`
-    :   The type of the None singleton.
-
 <a id="DraftOrdersListParams"></a>
 
 `DraftOrdersListParams(*args, **kwargs)`
@@ -5254,7 +6223,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition`
     :   The type of the None singleton.
 
 <a id="DraftOrdersOrCondition"></a>
@@ -5276,7 +6245,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DraftOrdersSearchFilter"></a>
@@ -5331,7 +6300,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.DraftOrdersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersSortFilter]`
@@ -5378,10 +6347,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the draft order was last updated
 
+<a id="DraftOrdersStartswithCondition"></a>
+
+`DraftOrdersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="DraftOrdersStringFilter"></a>
 
 `DraftOrdersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5419,6 +6402,69 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the draft order was last updated
 
+<a id="DraftOrdersUpdateParams"></a>
+
+`DraftOrdersUpdateParams(*args, **kwargs)`
+:   Parameters for draft_orders.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.DraftOrdersUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersUpdateParamsInput"></a>
+
+`DraftOrdersUpdateParamsInput(*args, **kwargs)`
+:   DraftOrderInput object with updated fields
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.DraftOrdersUpdateParamsInputLineitemsItem]`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="DraftOrdersUpdateParamsInputLineitemsItem"></a>
+
+`DraftOrdersUpdateParamsInputLineitemsItem(*args, **kwargs)`
+:   Nested schema for DraftOrdersUpdateParamsInput.lineItems_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `original_unit_price: str`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `variant_id: str`
+    :   The type of the None singleton.
+
 <a id="FulfillmentOrdersAndCondition"></a>
 
 `FulfillmentOrdersAndCondition(*args, **kwargs)`
@@ -5438,7 +6484,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FulfillmentOrdersAnyCondition"></a>
@@ -5501,7 +6547,7 @@ Classes
 <a id="FulfillmentOrdersContainsCondition"></a>
 
 `FulfillmentOrdersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5510,6 +6556,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="FulfillmentOrdersEndswithCondition"></a>
+
+`FulfillmentOrdersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="FulfillmentOrdersEqCondition"></a>
@@ -5653,20 +6713,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStringFilter`
     :   The type of the None singleton.
 
-<a id="FulfillmentOrdersLikeCondition"></a>
-
-`FulfillmentOrdersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStringFilter`
-    :   The type of the None singleton.
-
 <a id="FulfillmentOrdersListParams"></a>
 
 `FulfillmentOrdersListParams(*args, **kwargs)`
@@ -5742,7 +6788,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition`
     :   The type of the None singleton.
 
 <a id="FulfillmentOrdersOrCondition"></a>
@@ -5764,7 +6810,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FulfillmentOrdersSearchFilter"></a>
@@ -5813,7 +6859,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersSortFilter]`
@@ -5854,10 +6900,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the fulfillment order was last updated
 
+<a id="FulfillmentOrdersStartswithCondition"></a>
+
+`FulfillmentOrdersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.FulfillmentOrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="FulfillmentOrdersStringFilter"></a>
 
 `FulfillmentOrdersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5908,7 +6968,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FulfillmentsAnyCondition"></a>
@@ -5974,7 +7034,7 @@ Classes
 <a id="FulfillmentsContainsCondition"></a>
 
 `FulfillmentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -5983,6 +7043,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="FulfillmentsEndswithCondition"></a>
+
+`FulfillmentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStringFilter`
     :   The type of the None singleton.
 
 <a id="FulfillmentsEqCondition"></a>
@@ -6132,20 +7206,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStringFilter`
     :   The type of the None singleton.
 
-<a id="FulfillmentsLikeCondition"></a>
-
-`FulfillmentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="FulfillmentsListParams"></a>
 
 `FulfillmentsListParams(*args, **kwargs)`
@@ -6239,7 +7299,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="FulfillmentsOrCondition"></a>
@@ -6261,7 +7321,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="FulfillmentsSearchFilter"></a>
@@ -6313,7 +7373,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsGteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLtCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsLteCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsInCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsNotCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAndCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsOrCondition | airbyte_agent_sdk.connectors.shopify.types.FulfillmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.FulfillmentsSortFilter]`
@@ -6357,10 +7417,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the fulfillment was last updated
 
+<a id="FulfillmentsStartswithCondition"></a>
+
+`FulfillmentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.FulfillmentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="FulfillmentsStringFilter"></a>
 
 `FulfillmentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6395,6 +7469,63 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the fulfillment was last updated
 
+<a id="InventoryAdjustCreateParams"></a>
+
+`InventoryAdjustCreateParams(*args, **kwargs)`
+:   Parameters for inventory_adjust.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.InventoryAdjustCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="InventoryAdjustCreateParamsInput"></a>
+
+`InventoryAdjustCreateParamsInput(*args, **kwargs)`
+:   Nested schema for InventoryAdjustCreateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `changes: list[airbyte_agent_sdk.connectors.shopify.types.InventoryAdjustCreateParamsInputChangesItem]`
+    :   The type of the None singleton.
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `reference_document_uri: str`
+    :   The type of the None singleton.
+
+<a id="InventoryAdjustCreateParamsInputChangesItem"></a>
+
+`InventoryAdjustCreateParamsInputChangesItem(*args, **kwargs)`
+:   Nested schema for InventoryAdjustCreateParamsInput.changes_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `delta: int`
+    :   The type of the None singleton.
+
+    `inventory_item_id: str`
+    :   The type of the None singleton.
+
+    `location_id: str`
+    :   The type of the None singleton.
+
 <a id="InventoryItemsAndCondition"></a>
 
 `InventoryItemsAndCondition(*args, **kwargs)`
@@ -6414,7 +7545,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InventoryItemsAnyCondition"></a>
@@ -6474,7 +7605,7 @@ Classes
 <a id="InventoryItemsContainsCondition"></a>
 
 `InventoryItemsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -6483,6 +7614,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InventoryItemsEndswithCondition"></a>
+
+`InventoryItemsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStringFilter`
     :   The type of the None singleton.
 
 <a id="InventoryItemsEqCondition"></a>
@@ -6623,20 +7768,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStringFilter`
     :   The type of the None singleton.
 
-<a id="InventoryItemsLikeCondition"></a>
-
-`InventoryItemsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStringFilter`
-    :   The type of the None singleton.
-
 <a id="InventoryItemsListParams"></a>
 
 `InventoryItemsListParams(*args, **kwargs)`
@@ -6715,7 +7846,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition`
     :   The type of the None singleton.
 
 <a id="InventoryItemsOrCondition"></a>
@@ -6737,7 +7868,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InventoryItemsSearchFilter"></a>
@@ -6783,7 +7914,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryItemsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.InventoryItemsSortFilter]`
@@ -6821,10 +7952,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the inventory item was last updated
 
+<a id="InventoryItemsStartswithCondition"></a>
+
+`InventoryItemsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.InventoryItemsStringFilter`
+    :   The type of the None singleton.
+
 <a id="InventoryItemsStringFilter"></a>
 
 `InventoryItemsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6872,7 +8017,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InventoryLevelsAnyCondition"></a>
@@ -6923,7 +8068,7 @@ Classes
 <a id="InventoryLevelsContainsCondition"></a>
 
 `InventoryLevelsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -6932,6 +8077,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="InventoryLevelsEndswithCondition"></a>
+
+`InventoryLevelsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStringFilter`
     :   The type of the None singleton.
 
 <a id="InventoryLevelsEqCondition"></a>
@@ -7049,20 +8208,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStringFilter`
     :   The type of the None singleton.
 
-<a id="InventoryLevelsLikeCondition"></a>
-
-`InventoryLevelsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStringFilter`
-    :   The type of the None singleton.
-
 <a id="InventoryLevelsListParams"></a>
 
 `InventoryLevelsListParams(*args, **kwargs)`
@@ -7141,7 +8286,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition`
     :   The type of the None singleton.
 
 <a id="InventoryLevelsOrCondition"></a>
@@ -7163,7 +8308,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InventoryLevelsSearchFilter"></a>
@@ -7200,7 +8345,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsGteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLtCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsLteCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsInCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsNotCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAndCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsOrCondition | airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsSortFilter]`
@@ -7229,10 +8374,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the inventory level was last updated
 
+<a id="InventoryLevelsStartswithCondition"></a>
+
+`InventoryLevelsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.InventoryLevelsStringFilter`
+    :   The type of the None singleton.
+
 <a id="InventoryLevelsStringFilter"></a>
 
 `InventoryLevelsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7251,6 +8410,63 @@ Classes
 
     `updated_at: str`
     :   ISO 8601 timestamp when the inventory level was last updated
+
+<a id="InventorySetCreateParams"></a>
+
+`InventorySetCreateParams(*args, **kwargs)`
+:   Parameters for inventory_set.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.InventorySetCreateParamsInput`
+    :   The type of the None singleton.
+
+<a id="InventorySetCreateParamsInput"></a>
+
+`InventorySetCreateParamsInput(*args, **kwargs)`
+:   Nested schema for InventorySetCreateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `quantities: list[airbyte_agent_sdk.connectors.shopify.types.InventorySetCreateParamsInputQuantitiesItem]`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `reference_document_uri: str`
+    :   The type of the None singleton.
+
+<a id="InventorySetCreateParamsInputQuantitiesItem"></a>
+
+`InventorySetCreateParamsInputQuantitiesItem(*args, **kwargs)`
+:   Nested schema for InventorySetCreateParamsInput.quantities_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `inventory_item_id: str`
+    :   The type of the None singleton.
+
+    `location_id: str`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
 
 <a id="LocationsAndCondition"></a>
 
@@ -7271,7 +8487,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LocationsAnyCondition"></a>
@@ -7343,7 +8559,7 @@ Classes
 <a id="LocationsContainsCondition"></a>
 
 `LocationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -7352,6 +8568,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.LocationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="LocationsEndswithCondition"></a>
+
+`LocationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.LocationsStringFilter`
     :   The type of the None singleton.
 
 <a id="LocationsEqCondition"></a>
@@ -7504,20 +8734,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.LocationsStringFilter`
     :   The type of the None singleton.
 
-<a id="LocationsLikeCondition"></a>
-
-`LocationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.LocationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="LocationsListParams"></a>
 
 `LocationsListParams(*args, **kwargs)`
@@ -7588,7 +8804,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="LocationsOrCondition"></a>
@@ -7610,7 +8826,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LocationsSearchFilter"></a>
@@ -7668,7 +8884,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.LocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.LocationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.LocationsSortFilter]`
@@ -7718,10 +8934,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the location was last updated
 
+<a id="LocationsStartswithCondition"></a>
+
+`LocationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.LocationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="LocationsStringFilter"></a>
 
 `LocationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7781,7 +9011,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldArticlesAnyCondition"></a>
@@ -7850,7 +9080,7 @@ Classes
 <a id="MetafieldArticlesContainsCondition"></a>
 
 `MetafieldArticlesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -7859,6 +9089,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldArticlesEndswithCondition"></a>
+
+`MetafieldArticlesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldArticlesEqCondition"></a>
@@ -7994,20 +9238,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldArticlesLikeCondition"></a>
-
-`MetafieldArticlesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldArticlesListParams"></a>
 
 `MetafieldArticlesListParams(*args, **kwargs)`
@@ -8089,7 +9319,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldArticlesOrCondition"></a>
@@ -8111,7 +9341,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldArticlesSearchFilter"></a>
@@ -8166,7 +9396,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesSortFilter]`
@@ -8213,10 +9443,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   The metafield value
 
+<a id="MetafieldArticlesStartswithCondition"></a>
+
+`MetafieldArticlesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldArticlesStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldArticlesStringFilter"></a>
 
 `MetafieldArticlesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8273,7 +9517,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldBlogsAnyCondition"></a>
@@ -8342,7 +9586,7 @@ Classes
 <a id="MetafieldBlogsContainsCondition"></a>
 
 `MetafieldBlogsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -8351,6 +9595,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldBlogsEndswithCondition"></a>
+
+`MetafieldBlogsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldBlogsEqCondition"></a>
@@ -8486,20 +9744,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldBlogsLikeCondition"></a>
-
-`MetafieldBlogsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldBlogsListParams"></a>
 
 `MetafieldBlogsListParams(*args, **kwargs)`
@@ -8578,7 +9822,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldBlogsOrCondition"></a>
@@ -8600,7 +9844,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldBlogsSearchFilter"></a>
@@ -8655,7 +9899,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsSortFilter]`
@@ -8702,10 +9946,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   The metafield value
 
+<a id="MetafieldBlogsStartswithCondition"></a>
+
+`MetafieldBlogsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldBlogsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldBlogsStringFilter"></a>
 
 `MetafieldBlogsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8762,7 +10020,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldCustomersAnyCondition"></a>
@@ -8831,7 +10089,7 @@ Classes
 <a id="MetafieldCustomersContainsCondition"></a>
 
 `MetafieldCustomersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -8840,6 +10098,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldCustomersEndswithCondition"></a>
+
+`MetafieldCustomersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldCustomersEqCondition"></a>
@@ -8975,20 +10247,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldCustomersLikeCondition"></a>
-
-`MetafieldCustomersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldCustomersListParams"></a>
 
 `MetafieldCustomersListParams(*args, **kwargs)`
@@ -9076,7 +10334,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldCustomersOrCondition"></a>
@@ -9098,7 +10356,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldCustomersSearchFilter"></a>
@@ -9153,7 +10411,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersSortFilter]`
@@ -9200,10 +10458,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldCustomersStartswithCondition"></a>
+
+`MetafieldCustomersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldCustomersStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldCustomersStringFilter"></a>
 
 `MetafieldCustomersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -9260,7 +10532,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldDraftOrdersAnyCondition"></a>
@@ -9329,7 +10601,7 @@ Classes
 <a id="MetafieldDraftOrdersContainsCondition"></a>
 
 `MetafieldDraftOrdersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -9338,6 +10610,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldDraftOrdersEndswithCondition"></a>
+
+`MetafieldDraftOrdersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldDraftOrdersEqCondition"></a>
@@ -9473,20 +10759,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldDraftOrdersLikeCondition"></a>
-
-`MetafieldDraftOrdersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldDraftOrdersListParams"></a>
 
 `MetafieldDraftOrdersListParams(*args, **kwargs)`
@@ -9574,7 +10846,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldDraftOrdersOrCondition"></a>
@@ -9596,7 +10868,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldDraftOrdersSearchFilter"></a>
@@ -9651,7 +10923,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersSortFilter]`
@@ -9698,10 +10970,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldDraftOrdersStartswithCondition"></a>
+
+`MetafieldDraftOrdersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldDraftOrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldDraftOrdersStringFilter"></a>
 
 `MetafieldDraftOrdersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -9758,7 +11044,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldLocationsAnyCondition"></a>
@@ -9827,7 +11113,7 @@ Classes
 <a id="MetafieldLocationsContainsCondition"></a>
 
 `MetafieldLocationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -9836,6 +11122,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldLocationsEndswithCondition"></a>
+
+`MetafieldLocationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldLocationsEqCondition"></a>
@@ -9971,20 +11271,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldLocationsLikeCondition"></a>
-
-`MetafieldLocationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldLocationsListParams"></a>
 
 `MetafieldLocationsListParams(*args, **kwargs)`
@@ -10072,7 +11358,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldLocationsOrCondition"></a>
@@ -10094,7 +11380,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldLocationsSearchFilter"></a>
@@ -10149,7 +11435,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsSortFilter]`
@@ -10196,10 +11482,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldLocationsStartswithCondition"></a>
+
+`MetafieldLocationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldLocationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldLocationsStringFilter"></a>
 
 `MetafieldLocationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -10256,7 +11556,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldOrdersAnyCondition"></a>
@@ -10325,7 +11625,7 @@ Classes
 <a id="MetafieldOrdersContainsCondition"></a>
 
 `MetafieldOrdersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -10334,6 +11634,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldOrdersEndswithCondition"></a>
+
+`MetafieldOrdersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldOrdersEqCondition"></a>
@@ -10469,20 +11783,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldOrdersLikeCondition"></a>
-
-`MetafieldOrdersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldOrdersListParams"></a>
 
 `MetafieldOrdersListParams(*args, **kwargs)`
@@ -10570,7 +11870,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldOrdersOrCondition"></a>
@@ -10592,7 +11892,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldOrdersSearchFilter"></a>
@@ -10647,7 +11947,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersSortFilter]`
@@ -10694,10 +11994,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldOrdersStartswithCondition"></a>
+
+`MetafieldOrdersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldOrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldOrdersStringFilter"></a>
 
 `MetafieldOrdersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -10754,7 +12068,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldPagesAnyCondition"></a>
@@ -10823,7 +12137,7 @@ Classes
 <a id="MetafieldPagesContainsCondition"></a>
 
 `MetafieldPagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -10832,6 +12146,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldPagesEndswithCondition"></a>
+
+`MetafieldPagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldPagesEqCondition"></a>
@@ -10967,20 +12295,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldPagesLikeCondition"></a>
-
-`MetafieldPagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldPagesListParams"></a>
 
 `MetafieldPagesListParams(*args, **kwargs)`
@@ -11059,7 +12373,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldPagesOrCondition"></a>
@@ -11081,7 +12395,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldPagesSearchFilter"></a>
@@ -11136,7 +12450,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesSortFilter]`
@@ -11183,10 +12497,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   The metafield value
 
+<a id="MetafieldPagesStartswithCondition"></a>
+
+`MetafieldPagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldPagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldPagesStringFilter"></a>
 
 `MetafieldPagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -11243,7 +12571,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldProductImagesAnyCondition"></a>
@@ -11312,7 +12640,7 @@ Classes
 <a id="MetafieldProductImagesContainsCondition"></a>
 
 `MetafieldProductImagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -11321,6 +12649,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldProductImagesEndswithCondition"></a>
+
+`MetafieldProductImagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldProductImagesEqCondition"></a>
@@ -11456,20 +12798,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldProductImagesLikeCondition"></a>
-
-`MetafieldProductImagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldProductImagesListParams"></a>
 
 `MetafieldProductImagesListParams(*args, **kwargs)`
@@ -11560,7 +12888,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldProductImagesOrCondition"></a>
@@ -11582,7 +12910,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldProductImagesSearchFilter"></a>
@@ -11637,7 +12965,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesSortFilter]`
@@ -11684,10 +13012,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldProductImagesStartswithCondition"></a>
+
+`MetafieldProductImagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductImagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldProductImagesStringFilter"></a>
 
 `MetafieldProductImagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -11744,7 +13086,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldProductVariantsAnyCondition"></a>
@@ -11813,7 +13155,7 @@ Classes
 <a id="MetafieldProductVariantsContainsCondition"></a>
 
 `MetafieldProductVariantsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -11822,6 +13164,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldProductVariantsEndswithCondition"></a>
+
+`MetafieldProductVariantsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldProductVariantsEqCondition"></a>
@@ -11957,20 +13313,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldProductVariantsLikeCondition"></a>
-
-`MetafieldProductVariantsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldProductVariantsListParams"></a>
 
 `MetafieldProductVariantsListParams(*args, **kwargs)`
@@ -12058,7 +13400,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldProductVariantsOrCondition"></a>
@@ -12080,7 +13422,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldProductVariantsSearchFilter"></a>
@@ -12135,7 +13477,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsSortFilter]`
@@ -12182,10 +13524,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldProductVariantsStartswithCondition"></a>
+
+`MetafieldProductVariantsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductVariantsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldProductVariantsStringFilter"></a>
 
 `MetafieldProductVariantsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -12242,7 +13598,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldProductsAnyCondition"></a>
@@ -12311,7 +13667,7 @@ Classes
 <a id="MetafieldProductsContainsCondition"></a>
 
 `MetafieldProductsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -12320,6 +13676,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldProductsEndswithCondition"></a>
+
+`MetafieldProductsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldProductsEqCondition"></a>
@@ -12455,20 +13825,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldProductsLikeCondition"></a>
-
-`MetafieldProductsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldProductsListParams"></a>
 
 `MetafieldProductsListParams(*args, **kwargs)`
@@ -12556,7 +13912,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldProductsOrCondition"></a>
@@ -12578,7 +13934,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldProductsSearchFilter"></a>
@@ -12633,7 +13989,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsSortFilter]`
@@ -12680,10 +14036,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldProductsStartswithCondition"></a>
+
+`MetafieldProductsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldProductsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldProductsStringFilter"></a>
 
 `MetafieldProductsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -12740,7 +14110,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldShopsAnyCondition"></a>
@@ -12809,7 +14179,7 @@ Classes
 <a id="MetafieldShopsContainsCondition"></a>
 
 `MetafieldShopsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -12818,6 +14188,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldShopsEndswithCondition"></a>
+
+`MetafieldShopsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldShopsEqCondition"></a>
@@ -12967,20 +14351,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldShopsLikeCondition"></a>
-
-`MetafieldShopsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldShopsListParams"></a>
 
 `MetafieldShopsListParams(*args, **kwargs)`
@@ -13068,7 +14438,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldShopsOrCondition"></a>
@@ -13090,7 +14460,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldShopsSearchFilter"></a>
@@ -13145,7 +14515,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsSortFilter]`
@@ -13192,10 +14562,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldShopsStartswithCondition"></a>
+
+`MetafieldShopsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldShopsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldShopsStringFilter"></a>
 
 `MetafieldShopsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -13252,7 +14636,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldSmartCollectionsAnyCondition"></a>
@@ -13321,7 +14705,7 @@ Classes
 <a id="MetafieldSmartCollectionsContainsCondition"></a>
 
 `MetafieldSmartCollectionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -13330,6 +14714,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="MetafieldSmartCollectionsEndswithCondition"></a>
+
+`MetafieldSmartCollectionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStringFilter`
     :   The type of the None singleton.
 
 <a id="MetafieldSmartCollectionsEqCondition"></a>
@@ -13465,20 +14863,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStringFilter`
     :   The type of the None singleton.
 
-<a id="MetafieldSmartCollectionsLikeCondition"></a>
-
-`MetafieldSmartCollectionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="MetafieldSmartCollectionsListParams"></a>
 
 `MetafieldSmartCollectionsListParams(*args, **kwargs)`
@@ -13566,7 +14950,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MetafieldSmartCollectionsOrCondition"></a>
@@ -13588,7 +14972,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MetafieldSmartCollectionsSearchFilter"></a>
@@ -13643,7 +15027,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsSortFilter]`
@@ -13690,10 +15074,24 @@ Classes
     `value: Literal['asc', 'desc']`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldSmartCollectionsStartswithCondition"></a>
+
+`MetafieldSmartCollectionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.MetafieldSmartCollectionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="MetafieldSmartCollectionsStringFilter"></a>
 
 `MetafieldSmartCollectionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -13731,6 +15129,80 @@ Classes
     `value: str`
     :   Serialized value stored in the metafield
 
+<a id="MetafieldsCreateParams"></a>
+
+`MetafieldsCreateParams(*args, **kwargs)`
+:   Parameters for metafields.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `metafields: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldsCreateParamsMetafieldsItem]`
+    :   The type of the None singleton.
+
+<a id="MetafieldsCreateParamsMetafieldsItem"></a>
+
+`MetafieldsCreateParamsMetafieldsItem(*args, **kwargs)`
+:   Nested schema for MetafieldsCreateParams.metafields_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `key: str`
+    :   The type of the None singleton.
+
+    `namespace: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
+    `type_: str`
+    :   The type of the None singleton.
+
+    `value: str`
+    :   The type of the None singleton.
+
+<a id="MetafieldsDeleteParams"></a>
+
+`MetafieldsDeleteParams(*args, **kwargs)`
+:   Parameters for metafields.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `metafields: list[airbyte_agent_sdk.connectors.shopify.types.MetafieldsDeleteParamsMetafieldsItem]`
+    :   The type of the None singleton.
+
+<a id="MetafieldsDeleteParamsMetafieldsItem"></a>
+
+`MetafieldsDeleteParamsMetafieldsItem(*args, **kwargs)`
+:   Nested schema for MetafieldsDeleteParams.metafields_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `key: str`
+    :   The type of the None singleton.
+
+    `namespace: str`
+    :   The type of the None singleton.
+
+    `owner_id: str`
+    :   The type of the None singleton.
+
 <a id="OrderRefundsAndCondition"></a>
 
 `OrderRefundsAndCondition(*args, **kwargs)`
@@ -13750,7 +15222,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderRefundsAnyCondition"></a>
@@ -13807,7 +15279,7 @@ Classes
 <a id="OrderRefundsContainsCondition"></a>
 
 `OrderRefundsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -13816,6 +15288,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrderRefundsEndswithCondition"></a>
+
+`OrderRefundsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStringFilter`
     :   The type of the None singleton.
 
 <a id="OrderRefundsEqCondition"></a>
@@ -13956,20 +15442,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStringFilter`
     :   The type of the None singleton.
 
-<a id="OrderRefundsLikeCondition"></a>
-
-`OrderRefundsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrderRefundsListParams"></a>
 
 `OrderRefundsListParams(*args, **kwargs)`
@@ -14048,7 +15520,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrderRefundsOrCondition"></a>
@@ -14070,7 +15542,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderRefundsSearchFilter"></a>
@@ -14113,7 +15585,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsInCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrderRefundsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.OrderRefundsSortFilter]`
@@ -14148,10 +15620,24 @@ Classes
     `user_id: Literal['asc', 'desc']`
     :   Identifier of the staff user who processed the refund
 
+<a id="OrderRefundsStartswithCondition"></a>
+
+`OrderRefundsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.OrderRefundsStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrderRefundsStringFilter"></a>
 
 `OrderRefundsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -14196,7 +15682,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrdersAnyCondition"></a>
@@ -14298,7 +15784,7 @@ Classes
 <a id="OrdersContainsCondition"></a>
 
 `OrdersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -14307,6 +15793,195 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParams"></a>
+
+`OrdersCreateParams(*args, **kwargs)`
+:   Parameters for orders.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `options: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOptions`
+    :   The type of the None singleton.
+
+    `order: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrder`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOptions"></a>
+
+`OrdersCreateParamsOptions(*args, **kwargs)`
+:   OrderCreateOptionsInput
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `inventory_behaviour: str`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrder"></a>
+
+`OrdersCreateParamsOrder(*args, **kwargs)`
+:   OrderCreateOrderInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `customer_id: str`
+    :   The type of the None singleton.
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `line_items: list[airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItem]`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderShippingaddress`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderLineitemsItem"></a>
+
+`OrdersCreateParamsOrderLineitemsItem(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrder.lineItems_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `price_set: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPriceset`
+    :   The type of the None singleton.
+
+    `quantity: int`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `variant_id: str`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderLineitemsItemPriceset"></a>
+
+`OrdersCreateParamsOrderLineitemsItemPriceset(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrderLineitemsItem.priceSet
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `shop_money: airbyte_agent_sdk.connectors.shopify.types.OrdersCreateParamsOrderLineitemsItemPricesetShopmoney`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderLineitemsItemPricesetShopmoney"></a>
+
+`OrdersCreateParamsOrderLineitemsItemPricesetShopmoney(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrderLineitemsItemPriceset.shopMoney
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `amount: str`
+    :   The type of the None singleton.
+
+    `currency_code: str`
+    :   The type of the None singleton.
+
+<a id="OrdersCreateParamsOrderShippingaddress"></a>
+
+`OrdersCreateParamsOrderShippingaddress(*args, **kwargs)`
+:   Nested schema for OrdersCreateParamsOrder.shippingAddress
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `first_name: str`
+    :   The type of the None singleton.
+
+    `last_name: str`
+    :   The type of the None singleton.
+
+    `province_code: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
+<a id="OrdersDeleteParams"></a>
+
+`OrdersDeleteParams(*args, **kwargs)`
+:   Parameters for orders.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `notify_customer: bool`
+    :   The type of the None singleton.
+
+    `order_id: str`
+    :   The type of the None singleton.
+
+    `reason: str`
+    :   The type of the None singleton.
+
+    `refund: bool`
+    :   The type of the None singleton.
+
+    `restock: bool`
+    :   The type of the None singleton.
+
+    `staff_note: str`
+    :   The type of the None singleton.
+
+<a id="OrdersEndswithCondition"></a>
+
+`OrdersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="OrdersEqCondition"></a>
@@ -14489,20 +16164,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
     :   The type of the None singleton.
 
-<a id="OrdersLikeCondition"></a>
-
-`OrdersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrdersListParams"></a>
 
 `OrdersListParams(*args, **kwargs)`
@@ -14602,7 +16263,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrdersOrCondition"></a>
@@ -14624,7 +16285,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrdersSearchFilter"></a>
@@ -14712,7 +16373,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.OrdersEqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersGteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLtCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersLteCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersInCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersNotCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAndCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersOrCondition | airbyte_agent_sdk.connectors.shopify.types.OrdersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.OrdersSortFilter]`
@@ -14792,10 +16453,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the order was last updated
 
+<a id="OrdersStartswithCondition"></a>
+
+`OrdersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.OrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrdersStringFilter"></a>
 
 `OrdersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -14866,6 +16541,72 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the order was last updated
 
+<a id="OrdersUpdateParams"></a>
+
+`OrdersUpdateParams(*args, **kwargs)`
+:   Parameters for orders.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.OrdersUpdateParamsInput`
+    :   The type of the None singleton.
+
+<a id="OrdersUpdateParamsInput"></a>
+
+`OrdersUpdateParamsInput(*args, **kwargs)`
+:   Nested schema for OrdersUpdateParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `email: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `note: str`
+    :   The type of the None singleton.
+
+    `shipping_address: airbyte_agent_sdk.connectors.shopify.types.OrdersUpdateParamsInputShippingaddress`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+<a id="OrdersUpdateParamsInputShippingaddress"></a>
+
+`OrdersUpdateParamsInputShippingaddress(*args, **kwargs)`
+:   Nested schema for OrdersUpdateParamsInput.shippingAddress
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `address1: str`
+    :   The type of the None singleton.
+
+    `city: str`
+    :   The type of the None singleton.
+
+    `country_code: str`
+    :   The type of the None singleton.
+
+    `province_code: str`
+    :   The type of the None singleton.
+
+    `zip: str`
+    :   The type of the None singleton.
+
 <a id="PagesAndCondition"></a>
 
 `PagesAndCondition(*args, **kwargs)`
@@ -14885,7 +16626,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesAnyCondition"></a>
@@ -14948,7 +16689,7 @@ Classes
 <a id="PagesContainsCondition"></a>
 
 `PagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -14957,6 +16698,71 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PagesCreateParams"></a>
+
+`PagesCreateParams(*args, **kwargs)`
+:   Parameters for pages.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `page: airbyte_agent_sdk.connectors.shopify.types.PagesCreateParamsPage`
+    :   The type of the None singleton.
+
+<a id="PagesCreateParamsPage"></a>
+
+`PagesCreateParamsPage(*args, **kwargs)`
+:   Nested schema for PagesCreateParams.page
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+<a id="PagesDeleteParams"></a>
+
+`PagesDeleteParams(*args, **kwargs)`
+:   Parameters for pages.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="PagesEndswithCondition"></a>
+
+`PagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.PagesStringFilter`
     :   The type of the None singleton.
 
 <a id="PagesEqCondition"></a>
@@ -15100,20 +16906,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.PagesStringFilter`
     :   The type of the None singleton.
 
-<a id="PagesLikeCondition"></a>
-
-`PagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.PagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="PagesListParams"></a>
 
 `PagesListParams(*args, **kwargs)`
@@ -15207,7 +16999,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="PagesOrCondition"></a>
@@ -15229,7 +17021,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesSearchFilter"></a>
@@ -15278,7 +17070,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.PagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PagesInCondition | airbyte_agent_sdk.connectors.shopify.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.PagesSortFilter]`
@@ -15319,10 +17111,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the page was last updated
 
+<a id="PagesStartswithCondition"></a>
+
+`PagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.PagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="PagesStringFilter"></a>
 
 `PagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -15354,6 +17160,46 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the page was last updated
 
+<a id="PagesUpdateParams"></a>
+
+`PagesUpdateParams(*args, **kwargs)`
+:   Parameters for pages.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `page: airbyte_agent_sdk.connectors.shopify.types.PagesUpdateParamsPage`
+    :   The type of the None singleton.
+
+<a id="PagesUpdateParamsPage"></a>
+
+`PagesUpdateParamsPage(*args, **kwargs)`
+:   Nested schema for PagesUpdateParams.page
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `body: str`
+    :   The type of the None singleton.
+
+    `handle: str`
+    :   The type of the None singleton.
+
+    `is_published: bool`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
 <a id="PriceRulesAndCondition"></a>
 
 `PriceRulesAndCondition(*args, **kwargs)`
@@ -15373,7 +17219,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PriceRulesAnyCondition"></a>
@@ -15445,7 +17291,7 @@ Classes
 <a id="PriceRulesContainsCondition"></a>
 
 `PriceRulesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -15454,6 +17300,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PriceRulesEndswithCondition"></a>
+
+`PriceRulesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.PriceRulesStringFilter`
     :   The type of the None singleton.
 
 <a id="PriceRulesEqCondition"></a>
@@ -15606,20 +17466,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.PriceRulesStringFilter`
     :   The type of the None singleton.
 
-<a id="PriceRulesLikeCondition"></a>
-
-`PriceRulesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.PriceRulesStringFilter`
-    :   The type of the None singleton.
-
 <a id="PriceRulesListParams"></a>
 
 `PriceRulesListParams(*args, **kwargs)`
@@ -15710,7 +17556,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition`
     :   The type of the None singleton.
 
 <a id="PriceRulesOrCondition"></a>
@@ -15732,7 +17578,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PriceRulesSearchFilter"></a>
@@ -15790,7 +17636,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.PriceRulesEqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesGteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLtCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesLteCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesInCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesNotCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAndCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesOrCondition | airbyte_agent_sdk.connectors.shopify.types.PriceRulesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.PriceRulesSortFilter]`
@@ -15840,10 +17686,24 @@ Classes
     `value_type: Literal['asc', 'desc']`
     :   How the discount value is interpreted (`fixed_amount` or `percentage`)
 
+<a id="PriceRulesStartswithCondition"></a>
+
+`PriceRulesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.PriceRulesStringFilter`
+    :   The type of the None singleton.
+
 <a id="PriceRulesStringFilter"></a>
 
 `PriceRulesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -15903,7 +17763,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductImagesAnyCondition"></a>
@@ -15969,7 +17829,7 @@ Classes
 <a id="ProductImagesContainsCondition"></a>
 
 `ProductImagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -15978,6 +17838,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductImagesEndswithCondition"></a>
+
+`ProductImagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.ProductImagesStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductImagesEqCondition"></a>
@@ -16127,20 +18001,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.ProductImagesStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductImagesLikeCondition"></a>
-
-`ProductImagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.ProductImagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductImagesListParams"></a>
 
 `ProductImagesListParams(*args, **kwargs)`
@@ -16219,7 +18079,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductImagesOrCondition"></a>
@@ -16241,7 +18101,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductImagesSearchFilter"></a>
@@ -16293,7 +18153,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductImagesEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductImagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.ProductImagesSortFilter]`
@@ -16337,10 +18197,24 @@ Classes
     `width: Literal['asc', 'desc']`
     :   Image width in pixels
 
+<a id="ProductImagesStartswithCondition"></a>
+
+`ProductImagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.ProductImagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductImagesStringFilter"></a>
 
 `ProductImagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -16394,7 +18268,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductVariantsAnyCondition"></a>
@@ -16463,7 +18337,7 @@ Classes
 <a id="ProductVariantsContainsCondition"></a>
 
 `ProductVariantsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -16472,6 +18346,111 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsCreateParams"></a>
+
+`ProductVariantsCreateParams(*args, **kwargs)`
+:   Parameters for product_variants.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product_id: str`
+    :   The type of the None singleton.
+
+    `variants: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItem]`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsCreateParamsVariantsItem"></a>
+
+`ProductVariantsCreateParamsVariantsItem(*args, **kwargs)`
+:   Nested schema for ProductVariantsCreateParams.variants_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `barcode: str`
+    :   The type of the None singleton.
+
+    `compare_at_price: str`
+    :   The type of the None singleton.
+
+    `inventory_item: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemInventoryitem`
+    :   The type of the None singleton.
+
+    `option_values: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsCreateParamsVariantsItemOptionvaluesItem]`
+    :   The type of the None singleton.
+
+    `price: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsCreateParamsVariantsItemInventoryitem"></a>
+
+`ProductVariantsCreateParamsVariantsItemInventoryitem(*args, **kwargs)`
+:   Inventory-item attributes for the variant. As of Admin API 2024-07+ the SKU is no longer a variant-level field and must be set here (a top-level sku is ignored/rejected by productVariantsBulkCreate).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `sku: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsCreateParamsVariantsItemOptionvaluesItem"></a>
+
+`ProductVariantsCreateParamsVariantsItemOptionvaluesItem(*args, **kwargs)`
+:   Nested schema for ProductVariantsCreateParamsVariantsItem.optionValues_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `name: str`
+    :   The type of the None singleton.
+
+    `option_name: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsDeleteParams"></a>
+
+`ProductVariantsDeleteParams(*args, **kwargs)`
+:   Parameters for product_variants.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product_id: str`
+    :   The type of the None singleton.
+
+    `variants_ids: list[str]`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsEndswithCondition"></a>
+
+`ProductVariantsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductVariantsEqCondition"></a>
@@ -16621,20 +18600,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductVariantsLikeCondition"></a>
-
-`ProductVariantsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductVariantsListParams"></a>
 
 `ProductVariantsListParams(*args, **kwargs)`
@@ -16716,7 +18681,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductVariantsOrCondition"></a>
@@ -16738,7 +18703,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductVariantsSearchFilter"></a>
@@ -16793,7 +18758,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductVariantsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsSortFilter]`
@@ -16840,10 +18805,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the variant was last updated
 
+<a id="ProductVariantsStartswithCondition"></a>
+
+`ProductVariantsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductVariantsStringFilter"></a>
 
 `ProductVariantsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -16881,6 +18860,63 @@ Classes
     `updated_at: str`
     :   ISO 8601 timestamp when the variant was last updated
 
+<a id="ProductVariantsUpdateParams"></a>
+
+`ProductVariantsUpdateParams(*args, **kwargs)`
+:   Parameters for product_variants.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product_id: str`
+    :   The type of the None singleton.
+
+    `variants: list[airbyte_agent_sdk.connectors.shopify.types.ProductVariantsUpdateParamsVariantsItem]`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsUpdateParamsVariantsItem"></a>
+
+`ProductVariantsUpdateParamsVariantsItem(*args, **kwargs)`
+:   Nested schema for ProductVariantsUpdateParams.variants_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `barcode: str`
+    :   The type of the None singleton.
+
+    `compare_at_price: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `inventory_item: airbyte_agent_sdk.connectors.shopify.types.ProductVariantsUpdateParamsVariantsItemInventoryitem`
+    :   The type of the None singleton.
+
+    `price: str`
+    :   The type of the None singleton.
+
+<a id="ProductVariantsUpdateParamsVariantsItemInventoryitem"></a>
+
+`ProductVariantsUpdateParamsVariantsItemInventoryitem(*args, **kwargs)`
+:   Inventory-item attributes for the variant. As of Admin API 2024-07+ the SKU is no longer a variant-level field and must be set here (a top-level sku is ignored/rejected by productVariantsBulkUpdate, which silently returns null instead of updating).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `sku: str`
+    :   The type of the None singleton.
+
 <a id="ProductsAndCondition"></a>
 
 `ProductsAndCondition(*args, **kwargs)`
@@ -16900,7 +18936,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductsAnyCondition"></a>
@@ -16975,7 +19011,7 @@ Classes
 <a id="ProductsContainsCondition"></a>
 
 `ProductsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -16984,6 +19020,111 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsCreateParams"></a>
+
+`ProductsCreateParams(*args, **kwargs)`
+:   Parameters for products.create operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `media: list[airbyte_agent_sdk.connectors.shopify.types.ProductsCreateParamsMediaItem]`
+    :   The type of the None singleton.
+
+    `product: airbyte_agent_sdk.connectors.shopify.types.ProductsCreateParamsProduct`
+    :   The type of the None singleton.
+
+<a id="ProductsCreateParamsMediaItem"></a>
+
+`ProductsCreateParamsMediaItem(*args, **kwargs)`
+:   Nested schema for ProductsCreateParams.media_item
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `media_content_type: str`
+    :   The type of the None singleton.
+
+    `original_source: str`
+    :   The type of the None singleton.
+
+<a id="ProductsCreateParamsProduct"></a>
+
+`ProductsCreateParamsProduct(*args, **kwargs)`
+:   ProductCreateInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `product_type: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `vendor: str`
+    :   The type of the None singleton.
+
+<a id="ProductsDeleteParams"></a>
+
+`ProductsDeleteParams(*args, **kwargs)`
+:   Parameters for products.delete operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `input: airbyte_agent_sdk.connectors.shopify.types.ProductsDeleteParamsInput`
+    :   The type of the None singleton.
+
+<a id="ProductsDeleteParamsInput"></a>
+
+`ProductsDeleteParamsInput(*args, **kwargs)`
+:   Nested schema for ProductsDeleteParams.input
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `id: str`
+    :   The type of the None singleton.
+
+<a id="ProductsEndswithCondition"></a>
+
+`ProductsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductsEqCondition"></a>
@@ -17139,20 +19280,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductsLikeCondition"></a>
-
-`ProductsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductsListParams"></a>
 
 `ProductsListParams(*args, **kwargs)`
@@ -17255,7 +19382,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductsOrCondition"></a>
@@ -17277,7 +19404,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductsSearchFilter"></a>
@@ -17338,7 +19465,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ProductsEqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsGteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLtCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsLteCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsInCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsNotCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAndCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsOrCondition | airbyte_agent_sdk.connectors.shopify.types.ProductsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.ProductsSortFilter]`
@@ -17391,10 +19518,24 @@ Classes
     `vendor: Literal['asc', 'desc']`
     :   Product vendor or manufacturer
 
+<a id="ProductsStartswithCondition"></a>
+
+`ProductsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.ProductsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductsStringFilter"></a>
 
 `ProductsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -17438,6 +19579,52 @@ Classes
     `vendor: str`
     :   Product vendor or manufacturer
 
+<a id="ProductsUpdateParams"></a>
+
+`ProductsUpdateParams(*args, **kwargs)`
+:   Parameters for products.update operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `product: airbyte_agent_sdk.connectors.shopify.types.ProductsUpdateParamsProduct`
+    :   The type of the None singleton.
+
+<a id="ProductsUpdateParamsProduct"></a>
+
+`ProductsUpdateParamsProduct(*args, **kwargs)`
+:   ProductUpdateInput object
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `description_html: str`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `product_type: str`
+    :   The type of the None singleton.
+
+    `status: str`
+    :   The type of the None singleton.
+
+    `tags: list[str]`
+    :   The type of the None singleton.
+
+    `title: str`
+    :   The type of the None singleton.
+
+    `vendor: str`
+    :   The type of the None singleton.
+
 <a id="ShopAndCondition"></a>
 
 `ShopAndCondition(*args, **kwargs)`
@@ -17457,7 +19644,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ShopAnyCondition"></a>
@@ -17529,7 +19716,7 @@ Classes
 <a id="ShopContainsCondition"></a>
 
 `ShopContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -17538,6 +19725,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.ShopAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ShopEndswithCondition"></a>
+
+`ShopEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.ShopStringFilter`
     :   The type of the None singleton.
 
 <a id="ShopEqCondition"></a>
@@ -17685,20 +19886,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.ShopStringFilter`
     :   The type of the None singleton.
 
-<a id="ShopLikeCondition"></a>
-
-`ShopLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.ShopStringFilter`
-    :   The type of the None singleton.
-
 <a id="ShopLtCondition"></a>
 
 `ShopLtCondition(*args, **kwargs)`
@@ -17760,7 +19947,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition`
     :   The type of the None singleton.
 
 <a id="ShopOrCondition"></a>
@@ -17782,7 +19969,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ShopSearchFilter"></a>
@@ -17840,7 +20027,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLikeCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.ShopEqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNeqCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopGteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLtCondition | airbyte_agent_sdk.connectors.shopify.types.ShopLteCondition | airbyte_agent_sdk.connectors.shopify.types.ShopInCondition | airbyte_agent_sdk.connectors.shopify.types.ShopStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.ShopFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.ShopKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.ShopContainsCondition | airbyte_agent_sdk.connectors.shopify.types.ShopNotCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAndCondition | airbyte_agent_sdk.connectors.shopify.types.ShopOrCondition | airbyte_agent_sdk.connectors.shopify.types.ShopAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.ShopSortFilter]`
@@ -17890,10 +20077,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the shop was last updated
 
+<a id="ShopStartswithCondition"></a>
+
+`ShopStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.ShopStringFilter`
+    :   The type of the None singleton.
+
 <a id="ShopStringFilter"></a>
 
 `ShopStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -17953,7 +20154,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SmartCollectionsAnyCondition"></a>
@@ -18013,7 +20214,7 @@ Classes
 <a id="SmartCollectionsContainsCondition"></a>
 
 `SmartCollectionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -18022,6 +20223,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SmartCollectionsEndswithCondition"></a>
+
+`SmartCollectionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStringFilter`
     :   The type of the None singleton.
 
 <a id="SmartCollectionsEqCondition"></a>
@@ -18162,20 +20377,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStringFilter`
     :   The type of the None singleton.
 
-<a id="SmartCollectionsLikeCondition"></a>
-
-`SmartCollectionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="SmartCollectionsListParams"></a>
 
 `SmartCollectionsListParams(*args, **kwargs)`
@@ -18266,7 +20467,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SmartCollectionsOrCondition"></a>
@@ -18288,7 +20489,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SmartCollectionsSearchFilter"></a>
@@ -18334,7 +20535,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsInCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsSortFilter]`
@@ -18372,10 +20573,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   ISO 8601 timestamp when the collection was last updated
 
+<a id="SmartCollectionsStartswithCondition"></a>
+
+`SmartCollectionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.SmartCollectionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="SmartCollectionsStringFilter"></a>
 
 `SmartCollectionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -18423,7 +20638,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TenderTransactionsAnyCondition"></a>
@@ -18486,7 +20701,7 @@ Classes
 <a id="TenderTransactionsContainsCondition"></a>
 
 `TenderTransactionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -18495,6 +20710,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TenderTransactionsEndswithCondition"></a>
+
+`TenderTransactionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStringFilter`
     :   The type of the None singleton.
 
 <a id="TenderTransactionsEqCondition"></a>
@@ -18624,20 +20853,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStringFilter`
     :   The type of the None singleton.
 
-<a id="TenderTransactionsLikeCondition"></a>
-
-`TenderTransactionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TenderTransactionsListParams"></a>
 
 `TenderTransactionsListParams(*args, **kwargs)`
@@ -18725,7 +20940,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TenderTransactionsOrCondition"></a>
@@ -18747,7 +20962,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TenderTransactionsSearchFilter"></a>
@@ -18796,7 +21011,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLikeCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNeqCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsGteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLtCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsLteCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsInCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStartswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsEndswithCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsFuzzyCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsKeywordCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsContainsCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsNotCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAndCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsOrCondition | airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsSortFilter]`
@@ -18837,10 +21052,24 @@ Classes
     `user_id: Literal['asc', 'desc']`
     :   Identifier of the staff user who processed the transaction
 
+<a id="TenderTransactionsStartswithCondition"></a>
+
+`TenderTransactionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.shopify.types.TenderTransactionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TenderTransactionsStringFilter"></a>
 
 `TenderTransactionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
