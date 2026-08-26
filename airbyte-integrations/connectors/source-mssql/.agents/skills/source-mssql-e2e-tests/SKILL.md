@@ -45,12 +45,14 @@ source-mssql-e2e-tests/
 │   ├── render-config.sh        # jq the backend bridge IP into a config template
 │   ├── make-catalog.sh         # configured catalog derived from a discover run's CATALOG message
 │   ├── reset-databases.sh      # docker exec sqlcmd → drop every non-system database (used by run.sh --reset=fixture)
+│   ├── extract-state.py        # pull STATE messages out of a read step's stdout.txt (for multi-phase drivers)
 │   ├── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
 │   └── run.sh                  # one-shot: backend → fixtures → config → spec/check/discover → catalog → read → teardown
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
     └── sql/
+        ├── .gitignore          # `.tmp/` — subtree for uncommitted per-bug scratch fixtures
         └── 00-init-base.sql    # CREATE DATABASE TestDb + dbo.sample table
 ```
 
@@ -123,11 +125,29 @@ Build the target image first when using `--test-version=dev`, or pass
 `--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--step-name`, `--catalog` (skip discover-derived generation),
-`--sync-mode=incremental`, `--cursor-field`, `--streams`,
-`--config-template`, `--reset=none|fixture|backend`, `--keep-backend`,
-and `--` to forward extra args to `airbyte-ops`. Per-command timeouts
-match the workflow's (30/30/60/180 minutes) and are overridable with
+`--state=PATH` (pass a saved STATE file to the read as `--state-path`;
+for use by multi-phase drivers), `--sync-mode=incremental`,
+`--cursor-field`, `--streams`, `--config-template`,
+`--reset=none|fixture|backend`, `--keep-backend`, and `--` to forward
+extra args to `airbyte-ops`. Per-command timeouts match the workflow's
+(30/30/60/180 minutes) and are overridable with
 `TIMEOUT_MINUTES_{SPEC,CHECK,DISCOVER,READ}`.
+
+### Multi-phase drivers
+
+`run.sh` runs one sweep. A driver script composes multi-phase flows
+(read → mutate → read-with-state) by calling `run.sh` more than once
+with `--step-name` for each invocation and `--state=` to feed the
+second read the state extracted from the first. `extract-state.py`
+lives in this skill because it walks Airbyte STATE messages, which is
+a protocol-level operation and not CDC-specific.
+
+The CDC skill's [`repro-11451.sh`](../source-mssql-e2e-cdc-tests/scripts/repro-11451.sh)
+is a worked example: it invokes `run-protocol-cmd.sh` around an
+intermediate `apply-sql.sh` mutation and `extract-state.py` step, and
+asserts inline on the connector's stderr. New multi-phase drivers can
+follow the same shape but call `run.sh --state=PATH` directly instead
+of smuggling `--state-path` through trailing args.
 
 ### Comparison modes with `--control-version`
 

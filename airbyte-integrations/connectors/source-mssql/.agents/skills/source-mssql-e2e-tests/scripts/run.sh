@@ -18,9 +18,15 @@
 #   run.sh [--command=all] [--fixture=PATH]… [--test-version=dev]
 #          [--control-version=TAG] [--reset=none|fixture|backend]
 #          [--skip-read] [--step-name=NAME] [--catalog=PATH]
-#          [--sync-mode=full_refresh|incremental] [--cursor-field=NAME]
-#          [--streams=a,b] [--config-template=PATH] [--build]
-#          [--keep-backend] [-- extra airbyte-ops args…]
+#          [--state=PATH] [--sync-mode=full_refresh|incremental]
+#          [--cursor-field=NAME] [--streams=a,b] [--config-template=PATH]
+#          [--build] [--keep-backend] [-- extra airbyte-ops args…]
+#
+#   --state passes a saved state file to the read step as
+#           `--state-path`. Meant for multi-phase drivers: a first
+#           `run.sh` writes the read's stdout, the driver extracts a
+#           STATE file with `extract-state.py`, and a second `run.sh`
+#           passes that state back via `--state=…`.
 #
 #   --command   all (default) runs the sweep; a single command
 #               (spec|check|discover|read) runs just that one.
@@ -80,6 +86,7 @@ RESET="none"
 SKIP_READ=false
 STEP_NAME=""
 CATALOG=""
+STATE_PATH=""
 SYNC_MODE="full_refresh"
 CURSOR_FIELD=""
 STREAMS=""
@@ -106,6 +113,7 @@ while [[ $# -gt 0 ]]; do
     --skip-read)         SKIP_READ=true ;;
     --step-name=*)       STEP_NAME="${1#*=}" ;;
     --catalog=*)         CATALOG="${1#*=}" ;;
+    --state=*)           STATE_PATH="${1#*=}" ;;
     --sync-mode=*)       SYNC_MODE="${1#*=}" ;;
     --cursor-field=*)    CURSOR_FIELD="${1#*=}" ;;
     --streams=*)         STREAMS="${1#*=}" ;;
@@ -113,7 +121,7 @@ while [[ $# -gt 0 ]]; do
     --build)             BUILD=true ;;
     --keep-backend)      KEEP_BACKEND=true ;;
     --)                  shift; EXTRA_ARGS=("$@"); break ;;
-    -h|--help)           sed -n '2,66p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help)           sed -n '2,72p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "[run] unknown argument: $1" >&2; exit 2 ;;
   esac
   shift
@@ -310,7 +318,12 @@ sweep() {
           fi
           side_catalog="$catalog_out"
         fi
-        run_step read "--config-path=$WORKING_CONFIG" "--catalog-path=$side_catalog"
+        local -a read_args=(
+          "--config-path=$WORKING_CONFIG"
+          "--catalog-path=$side_catalog"
+        )
+        [[ -n "$STATE_PATH" ]] && read_args+=("--state-path=$STATE_PATH")
+        run_step read "${read_args[@]}"
         ;;
     esac
   done
