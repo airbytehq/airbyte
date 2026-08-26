@@ -19,8 +19,8 @@ For more details, see Monday.com's [authentication documentation](https://develo
 2. Search for and select **Monday**.
 3. Enter a name for the connector.
 4. Choose your authentication method and enter the required credentials.
-5. Optionally, enter one or more IDs in **Boards to sync** to limit the Boards and Items streams to specific boards. If left empty, the connector syncs records from all boards in your account.
-6. Optionally, set **Number of concurrent threads** to control how many requests the connector makes in parallel. The default is 4 and the allowed range is 2 to 50. Increase this value only if your [Monday.com plan's rate limits](https://developer.monday.com/api-reference/docs/rate-limits) allow it; higher values can cause rate limit errors on lower tiers.
+5. Optionally, enter one or more IDs in **Boards to sync** to limit the Boards, Items, and Activity logs streams to specific boards. If left empty, the connector syncs records from all boards in your account.
+6. Optionally, set **Number of concurrent threads** to control how many requests the connector makes in parallel. The default is 4 and the allowed range is 2 to 50, but the connector caps effective concurrency at 40, Monday.com's concurrency limit for the lowest plan tier. Increase this value only if your [Monday.com plan's rate limits](https://developer.monday.com/api-reference/docs/rate-limits) allow it; higher values can cause rate limit errors on lower tiers.
 7. Click **Set up source**.
 
 ### Connect using OAuth 2.0
@@ -80,7 +80,7 @@ If there are additional endpoints you'd like Airbyte to support, [create an issu
 
 ## Performance considerations
 
-Monday.com enforces [rate limits](https://developer.monday.com/api-reference/docs/rate-limits) based on your plan, including per-minute query limits and a query complexity budget. The connector automatically retries rate limit and complexity budget errors with backoff. If you see rate limit errors, reduce the **Number of concurrent threads** setting. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Monday.com enforces [rate limits](https://developer.monday.com/api-reference/docs/rate-limits) based on your plan, including per-minute query limits and a query complexity budget. The connector automatically retries complexity budget errors and HTTP rate limit responses with backoff, honoring the `retry-after` header when present. If you see rate limit errors, reduce the **Number of concurrent threads** setting. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## IP allow list
 
