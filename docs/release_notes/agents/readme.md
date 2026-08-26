@@ -1,5 +1,18 @@
 # Airbyte Agents release notes
 
+## August 26, 2026
+
+Connectors
+
+- Your agents can now search Notion comments by meaning, so they can find relevant discussion without matching exact keywords.
+- Your agents can now search Sentry issues by meaning, including the issue title and where the error happened, so they can find related problems without knowing the exact error text.
+- Your agents can now search your Facebook Marketing ad creative text by meaning, including headlines and body copy, so they can find ads with similar messaging without matching exact wording.
+- Your agents can now search your Customer.io campaign email content by meaning, including subject lines and message bodies, so they can find campaigns on a similar topic without matching exact wording.
+
+Other
+
+- Cached connector data that gets stuck partway through an update now recovers on its own, so your agents keep searching current data without anyone needing to restart it.
+
 ## August 12, 2026
 
 Web app
