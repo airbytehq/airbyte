@@ -57,12 +57,11 @@ class ProjectStreamsPartitionRouter(SubstreamPartitionRouter):
         parent_stream = self.parent_stream_configs[0].stream
         projects_list = self.config.get("projects_list", [])
 
-        group_project_ids: list[str] = []
-        for partition in parent_stream.generate_partitions():
-            for record in partition.read():
-                path = record["path_with_namespace"]
-                if path not in group_project_ids:
-                    group_project_ids.append(path)
+        # dict.fromkeys keeps insertion order while deduplicating projects listed by more
+        # than one parent slice (e.g. a group reached via both groups_list and descendant_groups)
+        group_project_ids = list(
+            dict.fromkeys(record["path_with_namespace"] for partition in parent_stream.generate_partitions() for record in partition.read())
+        )
 
         if group_project_ids:
             for project_id in group_project_ids:

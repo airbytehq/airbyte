@@ -98,7 +98,11 @@ class TestProjectStreamsPartitionRouter:
             StreamSlice(partition={"id": project_id.replace("/", "%2F")}, cursor_slice={})
         ]
 
-    def test_projects_stream_slices_deduplicates_across_groups(self, requests_mock):
+    def test_projects_stream_slices_deduplicates_repeated_parent_listings(self, requests_mock):
+        # With with_shared=false a project belongs to one namespace, so two DIFFERENT groups never
+        # list the same project; the real duplicate source is the SAME group reached twice
+        # (groups_list containing both a parent and its descendant). The mock models the outcome:
+        # the parent stream yields the same project record from two slices.
         config = BASE_CONFIG | {"projects_list": []}
         source = get_source(config=config)
         shared_project = "org/shared-lib"
@@ -116,3 +120,19 @@ class TestProjectStreamsPartitionRouter:
         projects_stream = get_stream_by_name(source=source, stream_name="projects", config=config)
         slices = list(map(lambda p: p.to_slice(), projects_stream.generate_partitions()))
         assert slices == [StreamSlice(partition={"id": shared_project.replace("/", "%2F")}, cursor_slice={})]
+
+    def test_projects_stream_slices_paginates_group_projects(self, requests_mock):
+        """Regression: >100 projects per group must all be discovered (GET /groups/:id/projects is paginated)."""
+        config = BASE_CONFIG | {"projects_list": []}
+        source = get_source(config=config)
+        group_id = "paged_group"  # unique per test: the CDK requester shares one process-wide HTTP cache
+        projects_url = f"https://gitlab.com/api/v4/groups/{group_id}/projects?per_page=50&include_subgroups=false&with_shared=false"
+        requests_mock.get(url=GROUPS_LIST_URL, json=[{"id": group_id}])
+        requests_mock.get(url=f"https://gitlab.com/api/v4/groups/{group_id}?per_page=50", json=[{"id": group_id, "projects": []}])
+        requests_mock.get(url=projects_url, json=[{"id": i, "path_with_namespace": f"{group_id}/p{i}"} for i in range(50)])
+        requests_mock.get(url=f"{projects_url}&page=2", json=[{"id": i, "path_with_namespace": f"{group_id}/p{i}"} for i in range(50, 55)])
+
+        projects_stream = get_stream_by_name(source=source, stream_name="projects", config=config)
+        assert list(map(lambda p: p.to_slice(), projects_stream.generate_partitions())) == [
+            StreamSlice(partition={"id": f"{group_id}%2Fp{i}"}, cursor_slice={}) for i in range(55)
+        ]
