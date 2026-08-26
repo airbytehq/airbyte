@@ -5,6 +5,7 @@
 
 from os import remove
 
+import orjson
 import pytest
 import requests
 from source_shopify.shopify_graphql.bulk.exceptions import ShopifyBulkExceptions
@@ -17,6 +18,7 @@ from source_shopify.streams.streams import (
     FulfillmentOrders,
     InventoryItems,
     InventoryLevels,
+    MetafieldCustomers,
     MetafieldOrders,
     OrderRisks,
     ProductImages,
@@ -444,6 +446,54 @@ def test_bulk_stream_parse_response(
         assert test_records == expected_result
 
 
+def test_discount_codes_parse_more_than_100_grouped_redeem_codes(requests_mock, bulk_job_completed_response, auth_config) -> None:
+    stream = DiscountCodes(auth_config)
+    parent_id = "gid://shopify/DiscountCodeNode/945205379261"
+    parent_record = {
+        "__typename": "DiscountCodeNode",
+        "id": parent_id,
+        "codeDiscount": {
+            "__typename": "DiscountCodeFreeShipping",
+            "updatedAt": "2023-12-07T11:40:44Z",
+            "createdAt": "2021-07-08T12:40:37Z",
+            "discountType": "SHIPPING",
+            "startsAt": "2021-07-08T12:40:13Z",
+            "endsAt": "2024-01-02T07:59:59Z",
+            "status": "EXPIRED",
+            "title": "HZAVNV2487WC",
+            "usageLimit": None,
+            "appliesOncePerCustomer": False,
+            "asyncUsageCount": 0,
+            "codesCount": {"count": 101},
+            "totalSales": None,
+            "summary": "Free shipping",
+        },
+    }
+    child_records = [
+        {
+            "__typename": "DiscountRedeemCode",
+            "usageCount": 0,
+            "code": f"CODE-{index:03d}",
+            "id": f"gid://shopify/DiscountRedeemCode/{11545139282109 + index}",
+            "createdBy": None,
+            "__parentId": parent_id,
+        }
+        for index in range(101)
+    ]
+    jsonl_content = "\n".join(orjson.dumps(record).decode() for record in [parent_record, *child_records]) + "\n"
+    test_result_url = bulk_job_completed_response.get("data", {}).get("node", {}).get("url")
+
+    requests_mock.post(stream.job_manager.base_url, json=bulk_job_completed_response)
+    requests_mock.get(test_result_url, text=jsonl_content)
+
+    test_records = list(stream.read_records(SyncMode.full_refresh, stream_slice={}))
+
+    assert len(test_records) == 101
+    assert test_records[0]["code"] == "CODE-000"
+    assert test_records[-1]["code"] == "CODE-100"
+    assert {record["price_rule_id"] for record in test_records} == {945205379261}
+
+
 @pytest.mark.parametrize(
     "stream, stream_state, with_start_date, expected_start",
     [
@@ -516,3 +566,45 @@ def test_expand_stream_slices_job_size(
     list(stream.read_records(SyncMode.incremental, stream_slice=first_slice))
     # check the next slice
     assert stream.job_manager._job_size == adjusted_slice_size
+
+
+def test_effective_checkpoint_cursor_uses_parent_cursor_for_parent_backed_stream(auth_config) -> None:
+    """Reproduces the bug behind airbytehq/oncall#12004.
+
+    When a bulk job checkpoints mid-output for a stream whose emitted records'
+    cursor differs from the slice filter field, the next slice must not be
+    advanced using the child record's cursor. For `MetafieldCustomers` the
+    slice is filtered on `customers.updated_at` but emitted records carry
+    `metafield.updated_at`, which can be arbitrarily far outside the slice
+    window. Using the child cursor as the next-slice start silently skips
+    every customer between the current slice's end and the child's timestamp.
+
+    The fix is to source the checkpoint cursor from the bulk record
+    producer's tracked parent cursor, which is bounded by the slice upper
+    bound.
+    """
+    stream = MetafieldCustomers(auth_config)
+
+    # Simulate the pathological state captured in the oncall log:
+    #   - child record cursor advanced to a timestamp way past slice_end
+    #   - parent cursor tracked by the record producer stayed in-window
+    stream._checkpoint_cursor = "2026-02-26T01:31:14+00:00"
+    stream.job_manager.record_producer._parent_stream_cursor_value = "2023-06-28T00:00:00+00:00"
+
+    # Must NOT return the child cursor — that's what skipped 2.67 years of
+    # customers in oncall#12004's production sync.
+    assert stream._effective_checkpoint_cursor() == "2023-06-28T00:00:00+00:00"
+
+
+def test_effective_checkpoint_cursor_falls_back_when_no_parent_state(auth_config) -> None:
+    """Streams without a parent, or with no parent cursor yet tracked, keep
+    the pre-fix behavior of using `self._checkpoint_cursor`."""
+    stream = MetafieldOrders(auth_config)  # no parent_stream_class
+    stream._checkpoint_cursor = "2024-01-15T10:00:00+00:00"
+    assert stream._effective_checkpoint_cursor() == "2024-01-15T10:00:00+00:00"
+
+    # Parent-backed stream but producer hasn't seen any parent yet.
+    stream = MetafieldCustomers(auth_config)
+    stream._checkpoint_cursor = "2024-01-15T10:00:00+00:00"
+    stream.job_manager.record_producer._parent_stream_cursor_value = None
+    assert stream._effective_checkpoint_cursor() == "2024-01-15T10:00:00+00:00"

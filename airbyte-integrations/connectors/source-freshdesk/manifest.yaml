@@ -1438,6 +1438,34 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/tickets"
+    ticket_activities:
+      type: DeclarativeStream
+      name: ticket_activities
+      primary_key:
+        - _airbyte_ticket_activity_id
+      retriever:
+        type: CustomRetriever
+        class_name: source_declarative_manifest.components.TicketActivitiesRetriever
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: performed_at
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config.get('start_date') or day_delta(-30,
+            '%Y-%m-%dT%H:%M:%SZ') }}
+          min_datetime: "{{ day_delta(-30, '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%d-%m-%Y %H:%M:%S %z"
+        step: P1D
+        cursor_granularity: PT1S
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/ticket_activities"
     time_entries:
       type: DeclarativeStream
       name: time_entries
@@ -1521,6 +1549,7 @@ streams:
   - $ref: "#/definitions/streams/surveys"
   - $ref: "#/definitions/streams/ticket_fields"
   - $ref: "#/definitions/streams/tickets"
+  - $ref: "#/definitions/streams/ticket_activities"
   - $ref: "#/definitions/streams/time_entries"
 
 spec:
@@ -1685,6 +1714,16 @@ spec:
         order: 4
         title: Lookback Window
         default: 14
+      subscription_tier:
+        type: string
+        title: Subscription Plan/Tier
+        description: Your API subscription tier (affects rate limits)
+        enum:
+          - growth
+          - pro
+          - enterprise
+        default: growth
+        order: 5
       num_workers:
         type: integer
         title: Number of Concurrent Threads
@@ -1695,7 +1734,7 @@ spec:
         default: 5
         minimum: 2
         maximum: 16
-        order: 5
+        order: 6
     additionalProperties: true
 
 metadata:
@@ -1727,11 +1766,15 @@ metadata:
     surveys: false
     ticket_fields: false
     tickets: false
+    ticket_activities: false
     time_entries: false
   yamlComponents:
     streams:
       tickets:
         - paginator
+        - incrementalSync
+      ticket_activities:
+        - retriever
         - incrementalSync
     global:
       - authenticator
@@ -3683,6 +3726,39 @@ schemas:
           - object
           - "null"
     additionalProperties: true
+  ticket_activities:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    properties:
+      _airbyte_ticket_activity_id:
+        type: string
+      export_date:
+        type:
+          - string
+          - "null"
+        format: date
+      performed_at:
+        type:
+          - string
+          - "null"
+        format: date-time
+      ticket_id:
+        type:
+          - integer
+          - "null"
+      performer_type:
+        type:
+          - string
+          - "null"
+      performer_id:
+        type:
+          - integer
+          - "null"
+      activity:
+        type:
+          - object
+          - "null"
+    additionalProperties: true
   time_entries:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -3742,21 +3818,16 @@ concurrency_level:
   default_concurrency: "{{ config.get('num_workers', 5) }}"
   max_concurrency: 16
 
-# api_budget commented out for rc.4 tuning experiment — testing c=5 without rate limit budget
-# to determine if the 50 calls/min budget was throttling performance
-# api_budget:
-#   type: HTTPAPIBudget
-#   policies:
-#     - type: FixedWindowCallRatePolicy
-#       period: "PT1M"
-#       # due to lack for support for interpolated string for the call_limit field, this has been
-#       # hardcoded to 50 which is the default rate for free plan
-#       # in the near term use "{{ config.get('requests_per_minute')}}"
-#       # long term is to utilize the `rate_limit_plan` field in config and specifying for each endpoint
-#       call_limit: 50
-#       matchers:
-#         - method: GET
-#           url_base: "https://{{ config['domain'] }}/api/v2/"
-#   ratelimit_reset_header: Retry-After
-#   ratelimit_remaining_header: X-RateLimit-Remaining
-#   status_codes_for_ratelimit_hit: [429]
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ {'growth': 200, 'pro': 400, 'enterprise': 700}.get(config.get('subscription_tier', 'growth'), 200) }}"
+          interval: "PT1M"
+      matchers:
+        - method: GET
+          url_base: "https://{{ config['domain'] }}/api/v2/"
+  ratelimit_reset_header: Retry-After
+  ratelimit_remaining_header: X-RateLimit-Remaining
+  status_codes_for_ratelimit_hit: [429]

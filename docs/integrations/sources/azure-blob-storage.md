@@ -276,11 +276,7 @@ There are currently no options for JSONL parsing.
 
 <FieldAnchor field="streams.0.format[unstructured],streams.1.format[unstructured],streams.2.format[unstructured]">
 
-#### Document File Type Format (Experimental)
-
-:::warning
-The Document File Type Format is currently an experimental feature and not subject to SLAs. Use at your own risk.
-:::
+#### Document File Type Format
 
 The Document File Type Format is a special format that allows you to extract text from Markdown, TXT, PDF, Word and Powerpoint documents. If selected, the connector will extract text from the documents and output it as a single field named `content`. The `document_key` field will hold a unique identifier for the processed file which can be used as a primary key. The content of the document will contain markdown formatting converted from the original file format. Each file matching the defined glob pattern needs to either be a markdown (`md`), PDF (`pdf`), Word (`docx`) or Powerpoint (`.pptx`) file.
 
@@ -291,6 +287,10 @@ One record will be emitted for each document. Keep in mind that large files can 
 This connector utilizes the open source [Unstructured](https://unstructured-io.github.io/unstructured/introduction.html#product-offerings) library to perform OCR and text extraction from PDFs and MS Word files, as well as from embedded tables and images. You can read more about the parsing logic in the [Unstructured docs](https://unstructured-io.github.io/unstructured/core/partition.html) and you can learn about other Unstructured tools and services at [www.unstructured.io](https://www.unstructured.io).
 
 </FieldAnchor>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Performance considerations
 
@@ -311,6 +311,21 @@ When using the **Copy raw files** [delivery method](/platform/using-airbyte/deli
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                      |
 |:-----------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.8.31 | 2026-08-25 | [85007](https://github.com/airbytehq/airbyte/pull/85007) | Update dependencies |
+| 0.8.30 | 2026-08-18 | [84471](https://github.com/airbytehq/airbyte/pull/84471) | Update dependencies |
+| 0.8.29 | 2026-08-11 | [83826](https://github.com/airbytehq/airbyte/pull/83826) | Update dependencies |
+| 0.8.28 | 2026-08-04 | [83347](https://github.com/airbytehq/airbyte/pull/83347) | Update dependencies |
+| 0.8.27 | 2026-07-28 | [82801](https://github.com/airbytehq/airbyte/pull/82801) | Update dependencies |
+| 0.8.26 | 2026-07-22 | [82241](https://github.com/airbytehq/airbyte/pull/82241) | Bump base image to python-connector-base 4.1.1 (Python 3.13.14) |
+| 0.8.25 | 2026-07-21 | [82311](https://github.com/airbytehq/airbyte/pull/82311) | Update dependencies |
+| 0.8.24 | 2026-07-14 | [81715](https://github.com/airbytehq/airbyte/pull/81715) | Update dependencies |
+| 0.8.23 | 2026-07-07 | [81437](https://github.com/airbytehq/airbyte/pull/81437) | Update dependencies |
+| 0.8.22 | 2026-06-30 | [80986](https://github.com/airbytehq/airbyte/pull/80986) | Update dependencies |
+| 0.8.21 | 2026-06-23 | [80365](https://github.com/airbytehq/airbyte/pull/80365) | Update dependencies |
+| 0.8.20 | 2026-06-16 | [79773](https://github.com/airbytehq/airbyte/pull/79773) | Update dependencies |
+| 0.8.19 | 2026-06-09 | [79224](https://github.com/airbytehq/airbyte/pull/79224) | Update dependencies |
+| 0.8.18 | 2026-06-02 | [78559](https://github.com/airbytehq/airbyte/pull/78559) | Update dependencies |
+| 0.8.17 | 2026-04-28 | [77147](https://github.com/airbytehq/airbyte/pull/77147) | Update dependencies |
 | 0.8.16 | 2026-04-21 | [75028](https://github.com/airbytehq/airbyte/pull/75028) | Update dependencies |
 | 0.8.15 | 2026-03-10 | [74507](https://github.com/airbytehq/airbyte/pull/74507) | Update dependencies |
 | 0.8.14 | 2026-03-03 | [74178](https://github.com/airbytehq/airbyte/pull/74178) | Update dependencies |

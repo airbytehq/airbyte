@@ -15,10 +15,14 @@ import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Mapping
+from unittest.mock import MagicMock
 
 import pytest
+import yaml
+from requests import Response
 
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
 
 
@@ -52,6 +56,14 @@ FULL_REFRESH_ONLY_STREAMS = [
     "customer_tiers",
 ]
 
+STREAM_GRAPHQL_FIELDS: Mapping[str, str] = {
+    **INCREMENTAL_STREAM_GRAPHQL_FIELDS,
+    "project_statuses": "projectStatuses",
+    "issue_relations": "issueRelations",
+    "customer_statuses": "customerStatuses",
+    "customer_tiers": "customerTiers",
+}
+
 
 @pytest.fixture(scope="module")
 def source() -> YamlDeclarativeSource:
@@ -61,6 +73,11 @@ def source() -> YamlDeclarativeSource:
 @pytest.fixture(scope="module")
 def streams_by_name(source: YamlDeclarativeSource) -> Mapping[str, Any]:
     return {s.name: s for s in source.streams(config=CONFIG)}
+
+
+@pytest.fixture(scope="module")
+def manifest() -> Mapping[str, Any]:
+    return yaml.safe_load(Path(MANIFEST_PATH).read_text())
 
 
 @pytest.mark.parametrize("stream_name", INCREMENTAL_STREAMS)
@@ -73,6 +90,30 @@ def test_stream_declares_incremental_cursor(stream_name: str, streams_by_name: M
 def test_full_refresh_only_stream_has_no_cursor(stream_name: str, streams_by_name: Mapping[str, Any]) -> None:
     stream = streams_by_name[stream_name]
     assert not stream.cursor_field, f"stream {stream_name} should not declare a cursor_field but got {stream.cursor_field!r}"
+
+
+@pytest.mark.parametrize("stream_name, graphql_field", STREAM_GRAPHQL_FIELDS.items())
+def test_every_stream_query_includes_archived_records(
+    stream_name: str,
+    graphql_field: str,
+    streams_by_name: Mapping[str, Any],
+) -> None:
+    body = _build_full_request_body(streams_by_name[stream_name], next_page_token=None)
+    call_site = _top_level_call_site(body["query"], graphql_field)
+    assert "includeArchived: true" in call_site
+
+
+@pytest.mark.parametrize("stream_name", STREAM_GRAPHQL_FIELDS)
+def test_every_stream_schema_declares_archived_at(stream_name: str, manifest: Mapping[str, Any]) -> None:
+    archived_at = manifest["schemas"][stream_name]["properties"]["archivedAt"]
+    assert set(archived_at["type"]) == {"null", "string"}
+    assert archived_at["format"] == "date-time"
+
+
+@pytest.mark.parametrize("stream_name", ["issues", "projects"])
+def test_issues_and_projects_schemas_declare_trashed(stream_name: str, manifest: Mapping[str, Any]) -> None:
+    trashed = manifest["schemas"][stream_name]["properties"]["trashed"]
+    assert set(trashed["type"]) == {"boolean", "null"}
 
 
 def _build_full_request_body(
@@ -184,3 +225,71 @@ def test_default_start_date_is_roughly_two_years_ago() -> None:
     delta = abs((parsed - expected).total_seconds())
     # +/- 2 days tolerance for leap years and clock drift.
     assert delta < 2 * 24 * 3600, f"expected ~2 years ago, got {gte!r} (delta={delta}s)"
+
+
+def test_flat_api_key_config_migrates_to_api_key_credentials() -> None:
+    """Existing flat API key configs must keep using API key auth."""
+    config = {"api_key": "test-api-key"}
+
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=config)
+
+    assert src._config["credentials"] == {
+        "auth_type": "API Key",
+        "api_key": "test-api-key",
+    }
+
+
+def test_flat_api_key_config_after_migration_can_build_auth_header() -> None:
+    """The migrated API key must be available to CHECK stream requests."""
+    config = {"api_key": "test-api-key"}
+
+    src = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=config)
+    streams = {s.name: s for s in src.streams(config=config)}
+    stream = streams["issues"]
+    partition = next(iter(stream.generate_partitions()))
+    headers = partition._retriever.requester._request_headers()
+
+    assert headers["Authorization"] == "test-api-key"
+
+
+@pytest.mark.parametrize(
+    "status_code, response_json, expected_action, expected_error_message",
+    [
+        pytest.param(
+            400,
+            {
+                "errors": [
+                    {"message": "Rate limit exceeded. Only 2500 requests are allowed per 1 hour.", "extensions": {"code": "RATELIMITED"}}
+                ]
+            },
+            ResponseAction.RATE_LIMITED,
+            "Rate limit exceeded for Linear API.",
+            id="graphql_ratelimited_error",
+        ),
+        pytest.param(
+            400,
+            {"errors": [{"message": "Invalid input.", "extensions": {"code": "BAD_USER_INPUT"}}]},
+            ResponseAction.FAIL,
+            "Linear returned an error: Invalid input.",
+            id="graphql_generic_error",
+        ),
+    ],
+)
+def test_graphql_error_handler_response_action(
+    streams_by_name: Mapping[str, Any],
+    status_code: int,
+    response_json: Mapping[str, Any],
+    expected_action: ResponseAction,
+    expected_error_message: str,
+) -> None:
+    stream = streams_by_name["issues"]
+    retriever = next(iter(stream.generate_partitions()))._retriever
+    response = MagicMock(spec=Response, status_code=status_code)
+    response.ok = status_code == 200
+    response.headers = {"Content-Type": "application/json", "X-RateLimit-Requests-Reset": "1600000060000"}
+    response.json.return_value = response_json
+
+    result = retriever.requester.error_handler.interpret_response(response)
+
+    assert result.response_action == expected_action
+    assert result.error_message == expected_error_message

@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4e8c9fa0-3634-499b-b948-11581b5c3efa
-  dockerImageTag: 0.3.6
+  dockerImageTag: 1.1.0
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
@@ -37,7 +37,7 @@ data:
   connectorTestSuitesOptions:
     - suite: unitTests
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.17.2@sha256:1bfcca53335b2669b02414180fe9ad96b0abd9c95d6cbf50089c1d881fc07801
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   externalDocumentationUrls:
     - title: API documentation
       url: https://developers.ashbyhq.com/
@@ -45,4 +45,18 @@ data:
     - title: Authentication
       url: https://developers.ashbyhq.com/#authentication
       type: authentication_guide
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "This release declares item schemas for ten previously-untyped array columns across the `applications`, `candidates`, and `jobs` streams (`customFields`, `hiringTeam`, `emailAddresses`, `fileHandles`, `phoneNumbers`, `socialLinks`, and `tags`). This re-types those columns on data-lake destinations such as S3 Data Lake and Iceberg. Users must refresh the affected streams or recreate the affected tables after upgrading."
+        upgradeDeadline: "2026-09-01"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - applications
+              - candidates
+              - jobs
+    rolloutConfiguration:
+      enableProgressiveRollout: false
 metadataSpecVersion: "1.0"

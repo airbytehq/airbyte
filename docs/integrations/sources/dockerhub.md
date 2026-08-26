@@ -32,6 +32,10 @@ This connector has been tested for the Airbyte organization, which has 266 repos
 
 1. Define a `docker_username`: the username that the connector will pull all repo data from.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

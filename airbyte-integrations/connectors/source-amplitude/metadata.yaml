@@ -7,11 +7,11 @@ data:
       - amplitude.com
       - analytics.eu.amplitude.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.14.0@sha256:5b95dd9e71defeece4a1efb27688b15e482f18c82c745498611846466b72403e
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
-  dockerImageTag: 0.7.30
+  dockerImageTag: 0.7.38
   dockerRepository: airbyte/source-amplitude
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   githubIssueLabel: source-amplitude
@@ -31,7 +31,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - events
@@ -65,12 +70,15 @@ data:
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Analytics API
-      url: https://www.docs.developers.amplitude.com/analytics/apis/http-v2-api/
+      url: https://amplitude.com/docs/apis/analytics/http-v2
       type: api_reference
     - title: Authentication
-      url: https://www.docs.developers.amplitude.com/analytics/apis/authentication/
+      url: https://amplitude.com/docs/apis/authentication
       type: authentication_guide
     - title: Rate limits
-      url: https://www.docs.developers.amplitude.com/analytics/apis/http-v2-api/#rate-limits
+      url: https://amplitude.com/docs/apis/analytics/http-v2
       type: rate_limits
+    - title: Product Updates
+      url: https://amplitude.com/releases
+      type: api_release_history
 metadataSpecVersion: "1.0"

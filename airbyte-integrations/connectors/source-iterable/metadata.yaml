@@ -5,12 +5,13 @@ data:
   allowedHosts:
     hosts:
       - api.iterable.com
+      - api.eu.iterable.com
   connectorBuildOptions:
     baseImage: docker.io/airbyte/python-connector-base:4.0.2@sha256:9fdb1888c4264cf6fee473649ecb593f56f58e5d0096a87ee0b231777e2e3e73
   connectorSubtype: api
   connectorType: source
   definitionId: 2e875208-0c0b-4ee4-9e92-1cb3156ea799
-  dockerImageTag: 0.7.1
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-iterable
   documentationUrl: https://docs.airbyte.com/integrations/sources/iterable
   githubIssueLabel: source-iterable
@@ -27,6 +28,16 @@ data:
       enabled: true
     oss:
       enabled: true
+  releases:
+    breakingChanges:
+      1.0.0:
+        message: "The `users` stream schema has changed. Tenant-specific custom fields (e.g. Shopify fields like `addresses`, `default_address`, `aov`, `totalOrders`) are now nested inside a generic `data` object instead of being top-level properties. The `itblInternal` field changed from a nested object to flat dotted-key fields (e.g. `itblInternal.emailDomain`), and timestamp values are normalized to RFC3339 format. Refresh the source schema for the `users` stream after upgrading. Clearing the stream is optional: `users` has no primary key, so without a clear previously synced rows keep the old shape next to new rows; a clear rebuilds the table uniformly but only backfills profiles updated after your configured start date. See the [Iterable migration guide](https://docs.airbyte.com/integrations/sources/iterable-migrations#upgrading-to-100) for the full list of moved fields and steps."
+        upgradeDeadline: "2026-09-21"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - users
   releaseStage: generally_available
   supportLevel: community
   tags:
