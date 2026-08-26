@@ -44,6 +44,7 @@ source-mssql-e2e-tests/
 │   ├── apply-sql.sh            # docker cp + docker exec sqlcmd -i
 │   ├── render-config.sh        # jq the backend bridge IP into a config template
 │   ├── make-catalog.sh         # configured catalog derived from a discover run's CATALOG message
+│   ├── reset-databases.sh      # docker exec sqlcmd → drop every non-system database (used by run.sh --reset=fixture)
 │   ├── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
 │   └── run.sh                  # one-shot: backend → fixtures → config → spec/check/discover → catalog → read → teardown
 └── fixtures/
@@ -93,9 +94,14 @@ cd airbyte-integrations/connectors/source-mssql
 poe e2e-local --test-version=5.0.0 \
   --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
 
-# Target vs. control comparison (prove-fix shape).
+# Target vs. control comparison, non-CDC (airbyte-ops's built-in comparator).
 poe e2e-local --test-version=dev --control-version=5.0.0 \
   --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
+
+# Target vs. control comparison, CDC (per-image reset between the two runs).
+poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
+  --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/00-init-cdc.sql \
+  --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
 
 # One command only.
 poe e2e-local --command=read --test-version=5.0.0
@@ -118,18 +124,42 @@ Build the target image first when using `--test-version=dev`, or pass
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--step-name`, `--catalog` (skip discover-derived generation),
 `--sync-mode=incremental`, `--cursor-field`, `--streams`,
-`--config-template`, `--keep-backend`, and `--` to forward extra args to
-`airbyte-ops`. Per-command timeouts match the workflow's (30/30/60/180
-minutes) and are overridable with
+`--config-template`, `--reset=none|fixture|backend`, `--keep-backend`,
+and `--` to forward extra args to `airbyte-ops`. Per-command timeouts
+match the workflow's (30/30/60/180 minutes) and are overridable with
 `TIMEOUT_MINUTES_{SPEC,CHECK,DISCOVER,READ}`.
 
-When `--control-version` is set, `run.sh` drops
-`--skip-compare=True` and passes `--control-image`, so every command in
-the sweep runs both images and diffs their protocol output with the
-existing comparators (record counts, primary keys, per-record, schema).
-Both runs must see identical backend state — a full-refresh sweep is
-read-only, but for CDC that means recreating the backend and capture
-instance between them, which the comparators cannot check for you.
+### Comparison modes with `--control-version`
+
+- **`--reset=none` (default)** — `run.sh` invokes `airbyte-ops` once per
+  protocol command with both `--test-image` and `--control-image`, so
+  the two images run sequentially against a single backend and
+  `airbyte-ops`'s built-in comparators emit the target-vs-control diff
+  (record counts, primary keys, per-record, schema). Right for non-CDC
+  full-refresh work: the diff is meaningful and the shared-backend
+  assumption is safe because a full-refresh read does not mutate the
+  upstream. This is the current behavior for any caller that doesn't
+  set `--reset`.
+- **`--reset=fixture`** — `run.sh` runs the whole sweep against the
+  control image first, drops every non-system database, re-applies the
+  fixtures, then runs the sweep against the target image. Two
+  single-version `airbyte-ops` calls, no built-in comparator; artifacts
+  land under `$REPRO_OUT/<step-name>/{control,target}/<command>/`.
+  Right for **CDC comparisons**, where reusing the backend leaves the
+  target reading against a warm capture instance and an advanced log
+  position — the built-in diff can look clean while being meaningless.
+  The SQL Server log-LSN clock is server-wide and keeps ticking across
+  the reset, so per-record LSN columns and STATE offsets still differ
+  between runs; gate the verdict on record-level shape rather than on
+  those values.
+- **`--reset=backend`** — same as `--reset=fixture` but also recreates
+  the backend container between the two sweeps, resetting the LSN clock
+  at ~15s of extra startup cost. Use only when the reproduction depends
+  on matching LSN sequences across runs.
+
+`--reset` has no effect without `--control-version` and produces a
+warning; the flag governs the reset between two image runs, and there
+is no second run in single-version mode.
 
 ## Asserting on output
 
@@ -140,8 +170,10 @@ Inline assertions in driver scripts. Suggested helpers:
 - Connector-side log shape: `grep -c '<expected substring>' $REPRO_OUT/<step>/read/stderr.txt`.
 - Connection status: `jq -e 'select(.type == "CONNECTION_STATUS" and .connectionStatus.status == "SUCCEEDED")' $REPRO_OUT/<step>/check/stdout.txt`.
 
-In comparison mode each command's directory holds `target/` and
-`control/` subdirectories, and the raw output is under those.
+In comparison mode with `--reset=none` each command's directory holds
+`target/` and `control/` subdirectories (created by `airbyte-ops`).
+With `--reset=fixture|backend` the split lives one level up:
+`$REPRO_OUT/<step-name>/{control,target}/<command>/`.
 
 Pass `-- --enable-debug-logs=True` to `run.sh` to set `LOG_LEVEL=DEBUG`
 on the connector container. That surfaces the
