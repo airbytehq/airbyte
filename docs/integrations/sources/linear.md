@@ -91,7 +91,7 @@ The Linear source connector supports the following streams. Streams marked as in
 | `cycles` | Yes | Cycles (sprints) for each team. |
 | `issue_labels` | Yes | Labels that can be applied to issues. |
 | `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
-| `issues` | Yes | Issues in every team, including archived issues. Archived issues have a non-null `archivedAt` value. |
+| `issues` | Yes | Issues in every team. |
 | `project_milestones` | Yes | Milestones defined inside projects. |
 | `project_statuses` | No | Status definitions for projects. |
 | `projects` | Yes | Projects across all teams. |
@@ -110,6 +110,15 @@ Before `0.2.23`, if Linear refused a Customer Requests query, the connector repo
 :::
 
 See Linear's [Customer Requests documentation](https://linear.app/docs/customer-requests) for details.
+
+### Archived records
+
+Linear hides archived records from API responses by default rather than deleting them, and it archives some records for you: completed issues, cycles, and projects are auto-archived over time. Deletion is a separate action, described below in [Limitations and troubleshooting](#limitations-and-troubleshooting). Starting with connector version `0.3.0`, every stream asks Linear for archived records, so they sync alongside active ones. Each record's `archivedAt` field holds the time Linear archived it, and is `null` while the record is active.
+
+Before `0.3.0` the connector didn't request archived records, so Linear left them out of every response and `archivedAt` was always `null`. Upgrading changes what your syncs return:
+
+- Streams you sync in full refresh mode return all archived records on the next sync. In an established workspace this can be a large one-time increase in volume.
+- Streams you sync incrementally return an archived record only when its `updatedAt` value is later than the stream's cursor. Records Linear archives from now on qualify; records archived before the upgrade usually don't, because their `updatedAt` predates the cursor. To pick those up, [refresh the stream](https://docs.airbyte.com/platform/operator-guides/refreshes).
 
 ## Limitations and troubleshooting
 
@@ -133,9 +142,11 @@ If an OAuth source starts failing with an authorization error, re-authenticate t
 
 The connector retrieves only the data its credentials can see. With API key authentication, that's everything the key's owner can see in Linear. With OAuth, it's what the installed app can see in the workspace. If teams, projects, or issues are missing from your synced data, check those permissions in Linear first.
 
-### Archived and deleted records
+### Deleted records aren't removed from your destination
 
-Archived records are returned with a non-null `archivedAt` value, which the connector uses as the deletion signal. Linear also supports permanent hard deletion (for example, `issueDelete` with `permanently`), which leaves no signal; hard-deleted records cannot be detected. The first sync after upgrading to version 0.3.0 backfills previously invisible archived records and may transfer a large one-time volume.
+When you delete an issue or project in Linear, it moves to the team's **Recently deleted** tab for 30 days before Linear removes it permanently. The `issues` and `projects` streams carry a `trashed` field for this state, so you can filter these records out downstream. No other stream exposes `trashed`.
+
+Once Linear removes a record permanently, nothing in the API reports it, and Airbyte doesn't delete rows it has already written, so the row stays in your destination. If you need to find rows that no longer exist in Linear, compare a full refresh of the stream against your destination table.
 
 ### Syncs fail on errors Linear returns in the response body
 
@@ -179,7 +190,7 @@ For programmatic configuration, use these parameter names:
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
-| 0.3.0 | 2026-08-25 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Include archived records in all streams (`includeArchived: true`) and declare `archivedAt` (and `trashed` on issues/projects) in stream schemas; the first sync after upgrade backfills previously invisible archived records and may transfer a large one-time volume |
+| 0.3.0 | 2026-08-26 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Sync archived records in every stream and declare `archivedAt` (plus `trashed` on `issues` and `projects`) in the stream schemas |
 | 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |
 | 0.2.22 | 2026-08-25 | [84954](https://github.com/airbytehq/airbyte/pull/84954) | Add proactive rate-limit pacing for Linear API requests |
 | 0.2.21 | 2026-08-24 | [84947](https://github.com/airbytehq/airbyte/pull/84947) | Fix OAuth consent scope encoding and persist the access token issued during authorization. |
