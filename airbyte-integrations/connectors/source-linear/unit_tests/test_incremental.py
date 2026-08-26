@@ -21,6 +21,7 @@ import pytest
 import yaml
 from requests import Response
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
@@ -134,6 +135,25 @@ def test_stream_schema_date_formats(stream_name: str, manifest: Mapping[str, Any
         for property_name, property_schema in properties.items():
             if property_name.endswith("At") and property_name not in date_only:
                 assert property_schema["format"] == "date-time"
+
+
+def test_issue_history_parent_is_unfiltered_and_issues_remains_incremental(
+    streams_by_name: Mapping[str, Any],
+) -> None:
+    child_stream = streams_by_name["issue_history"]
+    parent_stream = child_stream._stream_partition_generator._partition_factory._retriever.request_option_provider.parent_stream_configs[
+        0
+    ].stream
+    parent_body = _build_full_request_body(parent_stream, next_page_token=None)
+    assert "filter" not in parent_body["variables"]
+
+    issues = streams_by_name["issues"]
+    issues_body = _build_full_request_body(issues, next_page_token=None)
+    assert issues_body["variables"]["filter"]["updatedAt"]["gte"].startswith("2024-01-01T00:00:00")
+    assert set(issues.as_airbyte_stream().supported_sync_modes) == {
+        SyncMode.full_refresh,
+        SyncMode.incremental,
+    }
 
 
 @pytest.mark.parametrize("stream_name", ["issues", "projects"])

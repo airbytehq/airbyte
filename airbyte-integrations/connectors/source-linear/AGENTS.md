@@ -14,7 +14,7 @@ The consent URL pins `actor=app`, which provides a rate-limit uplift but require
 
 ## Incremental Stream Considerations
 
-The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: { gte: ... } }` on most entity types, which the connector uses extensively — 14 streams are incremental (added in PR airbytehq/airbyte#76429). The remaining 6 streams are full-refresh or child streams without a usable `updatedAt` filter.
+The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: { gte: ... } }` on most entity types, which the connector uses extensively — 14 of the 20 streams are incremental (12 from PR airbytehq/airbyte#76429; `initiatives` and `project_updates` from PR airbytehq/airbyte#85056). The remaining 6 streams are full-refresh or child streams without a usable `updatedAt` filter.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|

@@ -15,6 +15,19 @@ check:
     - issues
 
 definitions:
+  # Parent cursor for the issue_history substream. Same shape as
+  # incremental_sync_updated_at but with no start_time_option, so the parent
+  # issues read is unfiltered and enumerates every issue on every sync.
+  parent_cursor_all_issues:
+    type: DatetimeBasedCursor
+    cursor_field: updatedAt
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "1970-01-01T00:00:00.000Z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
   incremental_sync_updated_at:
     type: DatetimeBasedCursor
     cursor_field: updatedAt
@@ -1401,8 +1414,9 @@ definitions:
               25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
               nodes { archivedAt canceledAt color completedAt createdAt creator
               { id } description health healthUpdatedAt icon id name owner { id }
-              slugId sortOrder startedAt status targetDate targetDateResolution
-              trashed updatedAt url } pageInfo { endCursor hasNextPage } } }
+              parentInitiative { id } slugId sortOrder startedAt status targetDate
+              targetDateResolution trashed updatedAt url } pageInfo { endCursor
+              hasNextPage } } }
             variables:
               orderBy: updatedAt
         record_selector:
@@ -1435,7 +1449,7 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - creatorId
-              value: "{{ record.creator.id }}"
+              value: "{{ record.creator.id if record.creator else None }}"
         - type: RemoveFields
           field_pointers:
             - - creator
@@ -1445,10 +1459,20 @@ definitions:
             - type: AddedFieldDefinition
               path:
                 - ownerId
-              value: "{{ record.owner.id }}"
+              value: "{{ record.owner.id if record.owner else None }}"
         - type: RemoveFields
           field_pointers:
             - - owner
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - parentInitiativeId
+              value: "{{ record.parentInitiative.id if record.parentInitiative else None }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parentInitiative
               - id
       schema_loader:
         type: InlineSchemaLoader
@@ -1597,7 +1621,7 @@ definitions:
       type: DeclarativeStream
       name: issue_history
       primary_key:
-        - issue_id
+        - issueId
         - id
       retriever:
         type: SimpleRetriever
@@ -1612,7 +1636,7 @@ definitions:
               query IssueHistory($issueId: String!, $after: String) { issue(id:
               $issueId) { history(after: $after, first: 50, includeArchived:
               true) { nodes { actorId addedLabelIds archived archivedAt
-              attachmentId autoArchived autoClosed createdAt customerNeedId
+              attachmentId autoArchived autoClosed changes createdAt customerNeedId
               fromAssigneeId fromCycleId fromDueDate fromEstimate fromParentId
               fromPriority fromProjectId fromStateId fromTeamId fromTitle id
               removedLabelIds toAssigneeId toConvertedProjectId toCycleId
@@ -1627,6 +1651,8 @@ definitions:
               partition_field: issue_id
               stream:
                 $ref: "#/definitions/streams/issues"
+                incremental_sync:
+                  $ref: "#/definitions/parent_cursor_all_issues"
               request_option:
                 type: RequestOption
                 inject_into: body_json
@@ -1652,8 +1678,8 @@ definitions:
               - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response.data.issue.history.pageInfo.endCursor or \"\" }}"
-            stop_condition: "{{ response.data.issue.history.pageInfo.hasNextPage is false }}"
+            cursor_value: '{{ ((((response.get("data") or {}).get("issue") or {}).get("history") or {}).get("pageInfo") or {}).get("endCursor") or "" }}'
+            stop_condition: '{{ ((((response.get("data") or {}).get("issue") or {}).get("history") or {}).get("pageInfo") or {}).get("hasNextPage") is not true }}'
         decoder:
           type: JsonDecoder
       transformations:
@@ -1661,7 +1687,7 @@ definitions:
           fields:
             - type: AddedFieldDefinition
               path:
-                - issue_id
+                - issueId
               value: "{{ stream_partition['issue_id'] }}"
       schema_loader:
         type: InlineSchemaLoader
@@ -1703,7 +1729,7 @@ definitions:
             If you authenticated with OAuth, re-authenticate to obtain a new refresh token.
             Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'authentication failed') }}
         # 3 · Permission and plan gating — user-correctable, but not a credential problem.
-        #     This handler is shared by all 16 streams and by `check`, so the text must stay stream-agnostic.
+        #     This handler is shared by all 20 streams and by `check`, so the text must stay stream-agnostic.
         - predicate: "{{ 'errors' in response and response['errors'] and (response['errors'][0].get('extensions', {}).get('code') in ['FORBIDDEN', 'FEATURE_NOT_ACCESSIBLE'] or response['errors'][0].get('extensions', {}).get('type') in ['forbidden', 'feature not accessible']) and not (response.get('data') or {}).values() | select | list }}"
           action: FAIL
           failure_type: config_error
@@ -1967,6 +1993,7 @@ spec:
         scopes:
           - scope: "read"
           - scope: "customer:read"
+          - scope: "initiative:read"
         scopes_join_strategy: comma
         consent_url: "https://linear.app/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}&{{scopes_param}}&actor=app&prompt=consent"
         access_token_url: "https://api.linear.app/oauth/token"
@@ -3675,6 +3702,14 @@ schemas:
         type:
           - string
           - "null"
+      parentInitiative:
+        type:
+          - object
+          - "null"
+      parentInitiativeId:
+        type:
+          - string
+          - "null"
       slugId:
         type:
           - string
@@ -3870,6 +3905,10 @@ schemas:
         type:
           - boolean
           - "null"
+      changes:
+        type:
+          - object
+          - "null"
       createdAt:
         type:
           - string
@@ -3922,7 +3961,7 @@ schemas:
           - "null"
       id:
         type: string
-      issue_id:
+      issueId:
         type: string
       removedLabelIds:
         type:
@@ -3990,4 +4029,4 @@ schemas:
           - "null"
     required:
       - id
-      - issue_id
+      - issueId
