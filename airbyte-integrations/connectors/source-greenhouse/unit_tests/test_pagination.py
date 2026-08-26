@@ -22,7 +22,8 @@ CONFIG = {
         "refresh_token": "test-refresh-token",
     }
 }
-CONFIG_WITH_START_DATE = {**CONFIG, "start_date": "1970-01-01T00:00:00Z"}
+CONFIG_WITH_EPOCH_START_DATE = {**CONFIG, "start_date": "1970-01-01T00:00:00Z"}
+CONFIG_WITH_LATER_START_DATE = {**CONFIG, "start_date": "2025-01-01T00:00:00Z"}
 
 
 def _register_token(requests_mock):
@@ -62,9 +63,9 @@ def test_applications_cursor_pagination_uses_cursor_only_follow_up(requests_mock
 
     requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
 
-    source = get_source(CONFIG_WITH_START_DATE)
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(application_requests) == 2
@@ -311,9 +312,9 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
         )
         .build()
     )
-    source = get_source(CONFIG_WITH_START_DATE, state=state)
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert application_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
     assert not output.errors
@@ -342,9 +343,9 @@ def test_flat_child_cursor_pagination_uses_cursor_only_follow_up(requests_mock, 
 
     requests_mock.get("https://harvest.greenhouse.io/v3/interviews", json=interviews_callback)
 
-    source = get_source(CONFIG_WITH_START_DATE)
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("applications_interviews", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(interview_requests) == 2
@@ -377,9 +378,9 @@ def test_manifest_flat_child_state_migration_reaches_request(requests_mock, get_
         )
         .build()
     )
-    source = get_source(CONFIG_WITH_START_DATE, state=state)
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("applications_interviews", SyncMode.incremental).build()
-    read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+    read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert interview_requests[0].qs == {
         "per_page": ["500"],
@@ -400,9 +401,9 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
 
     requests_mock.get("https://harvest.greenhouse.io/v3/users", json=users_callback)
 
-    source = get_source(CONFIG_WITH_START_DATE)
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("users", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert not output.errors
     assert len(user_requests) == 2
@@ -481,32 +482,46 @@ def test_grouped_substreams_batch_parent_ids_at_the_50_id_api_cap(requests_mock,
         assert len(request.qs["candidate_ids"][0].split(",")) <= 50
 
 
-def test_substream_parent_uses_full_history_while_standalone_parent_uses_start_date(requests_mock, get_source):
+@pytest.mark.parametrize(
+    "substream, parent_stream, parent_url, child_url",
+    [
+        ("jobs_openings", "jobs", "https://harvest.greenhouse.io/v3/jobs", "https://harvest.greenhouse.io/v3/openings"),
+        ("activity_feed", "candidates", "https://harvest.greenhouse.io/v3/candidates", "https://harvest.greenhouse.io/v3/notes"),
+        (
+            "user_permissions",
+            "users",
+            "https://harvest.greenhouse.io/v3/users",
+            "https://harvest.greenhouse.io/v3/user_job_permissions",
+        ),
+    ],
+)
+def test_substream_parents_ignore_start_date_while_standalone_parents_use_it(
+    requests_mock, get_source, substream, parent_stream, parent_url, child_url
+):
     _register_token(requests_mock)
-    job_requests = []
+    parent_requests = []
 
-    def jobs_callback(request, context):
-        job_requests.append(request)
+    def parent_callback(request, context):
+        parent_requests.append(request)
         context.status_code = 200
         return [{"id": 1, "updated_at": "2024-01-01T00:00:00.000Z"}]
 
-    requests_mock.get("https://harvest.greenhouse.io/v3/jobs", json=jobs_callback)
-    requests_mock.get("https://harvest.greenhouse.io/v3/openings", json=[])
+    requests_mock.get(parent_url, json=parent_callback)
+    requests_mock.get(child_url, json=[])
 
-    source = get_source(CONFIG_WITH_START_DATE)
-    catalog = CatalogBuilder().with_stream("jobs_openings", SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
-
-    assert not output.errors
-    assert job_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
-
-    configured_date = {**CONFIG, "start_date": "2025-01-01T00:00:00Z"}
-    source = get_source(configured_date)
-    catalog = CatalogBuilder().with_stream("jobs", SyncMode.incremental).build()
-    output = read(source, config=configured_date, catalog=catalog)
+    source = get_source(CONFIG_WITH_LATER_START_DATE)
+    catalog = CatalogBuilder().with_stream(substream, SyncMode.full_refresh).build()
+    output = read(source, config=CONFIG_WITH_LATER_START_DATE, catalog=catalog)
 
     assert not output.errors
-    assert job_requests[1].qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z"]
+    assert parent_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
+
+    source = get_source(CONFIG_WITH_LATER_START_DATE)
+    catalog = CatalogBuilder().with_stream(parent_stream, SyncMode.incremental).build()
+    output = read(source, config=CONFIG_WITH_LATER_START_DATE, catalog=catalog)
+
+    assert not output.errors
+    assert parent_requests[1].qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z"]
 
 
 def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
@@ -615,9 +630,9 @@ def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, 
 
     requests_mock.get("https://harvest.greenhouse.io/v3/eeoc", json=eeoc_callback)
 
-    source = get_source(CONFIG_WITH_START_DATE)
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("eeoc", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert not output.errors
     assert eeoc_requests[0].qs == {
@@ -640,9 +655,9 @@ def test_lookback_window_widens_resume_bound(requests_mock, get_source):
     requests_mock.get("https://harvest.greenhouse.io/v3/candidates", json=candidates_callback)
 
     state = StateBuilder().with_stream_state("candidates", {"updated_at": "2026-08-24T12:00:00.000Z"}).build()
-    source = get_source(CONFIG_WITH_START_DATE, state=state)
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("candidates", SyncMode.incremental).build()
-    read(source, config=CONFIG_WITH_START_DATE, catalog=catalog)
+    read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert candidate_requests[0].qs["updated_at"] == ["gte|2026-08-24t11:00:00.000z"]
 

@@ -46,7 +46,7 @@ The 36 existing streams now use their Harvest v3 collection endpoints, and this 
 | Stream | Dropped from this stream in v3 | Renamed in v3 |
 |---|---|---|
 | activity_feed | `activities`, `emails`, `notes` | |
-| applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_details`, `prospective_department`, `prospective_office`, `rejection_details`, `source` | `applied_at` -> `updated_at`; `rejection_reason` object -> `rejection_reason_id` (join to the `rejection_reasons` stream on `id`) |
+| applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_detail`, `prospective_department`, `prospective_office`, `rejection_details`, `source` | `applied_at` -> `updated_at`; `rejection_reason` object -> `rejection_reason_id` (join to the `rejection_reasons` stream on `id`) |
 | applications_interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
 | approvals | `approver_groups`, `requested_by_user_id` | |
 | candidates | `application_ids`, `applications`, `attachments`, `coordinator`, `educations`, `employments`, `keyed_custom_fields`, `photo_url`, `recruiter` | `is_private` -> `private`, `last_activity` -> `last_activity_at` |

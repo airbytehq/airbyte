@@ -10,11 +10,11 @@ All streams use the v3 cursor paginator with a first-page `per_page` value of 50
 v3 invariants a future edit must not break:
 
 - A request carrying `cursor` must carry **no other query parameter**. Anything else returns `422 {"errors":["When passing a cursor, do not include other query params."]}`. This is why every first-page parameter is wrapped in `{{ ... if not next_page_token }}`.
-- Only six streams have a partition router: `demographics_answers_answer_options`, `demographics_question_sets_questions`, `jobs_openings`, `activity_feed`, `approvals`, `user_permissions`. All six use `GroupingPartitionRouter` with `partition_field: parent_id`; the partition value is a list joined with `,`. `group_size: 50` is pinned by the documented `maxItems: 50` on every `*_ids` filter - do not raise it.
+- Five streams have grouped substream routers: `demographics_answers_answer_options`, `demographics_question_sets_questions`, `jobs_openings`, `activity_feed`, and `user_permissions`. All five use `GroupingPartitionRouter` with `partition_field: parent_id`; the partition value is a list joined with `,`. `group_size: 50` is pinned by the documented `maxItems: 50` on every `*_ids` filter - do not raise it. `job_posts` separately uses a `ListPartitionRouter` over `active` with `true` and `false` values.
 - v3 paginates by primary key **descending**, not by cursor field. Do not add `step`-based slicing or mid-stream checkpointing without also sending an `lte|` upper bound.
 - `users` must send `show_service_accounts=true` on the first page; v3 hides integration service users by default.
 - `/v3/demographic_questions` and `/v3/demographic_answer_options` expose no `created_at`/`updated_at` filter, which is why those streams are full refresh.
-- List endpoints return an empty array rather than an error when the authorizing Greenhouse user is not a Site Admin.
+- Incremental streams use the optional `start_date` configuration value and default to all history when it is omitted.
 - `job_ids` on `/v3/approval_flows` excludes `offer_candidate` flows.
 
 | Stream | Relationship | Cursor field | Request filter | Status |
@@ -37,7 +37,7 @@ v3 invariants a future edit must not break:
 | jobs | top-level | updated_at | updated_at | incremental |
 | jobs_openings | child | none | job_ids | full refresh |
 | interviews | top-level | updated_at | updated_at | incremental |
-| job_posts | top-level | updated_at | updated_at | incremental |
+| job_posts | top-level | updated_at | updated_at, active | incremental |
 | job_stages | top-level | updated_at | updated_at | incremental |
 | jobs_stages | child | updated_at | updated_at | incremental |
 | offers | top-level | updated_at | updated_at | incremental |
@@ -46,7 +46,7 @@ v3 invariants a future edit must not break:
 | sources | top-level | none | none | full refresh |
 | users | top-level | updated_at | updated_at | incremental |
 | activity_feed | child | none | candidate_ids | full refresh |
-| approvals | child | none | job_ids | full refresh |
+| approvals | top-level | none | none | full refresh |
 | disciplines | top-level | none | custom_field_key=discipline | full refresh |
 | schools | top-level | none | custom_field_key=school_name | full refresh |
 | eeoc | top-level | submitted_at | submitted_at | incremental |
