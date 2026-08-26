@@ -193,7 +193,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 0.4.0 | 2026-08-26 | [#PENDING] | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
+| 0.4.0 | 2026-08-26 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
 | 0.3.0 | 2026-08-26 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Sync archived records in every stream and declare `archivedAt` (plus `trashed` on `issues` and `projects`) in the stream schemas |
 | 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |
