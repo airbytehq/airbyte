@@ -59,14 +59,14 @@ The PayPal Transaction source connector supports the following [sync modes](http
 | Stream                                                                             | PayPal endpoint                      | Sync modes                | Cursor field               | Page size              | Date window                         |
 | :--------------------------------------------------------------------------------- | :----------------------------------- | :------------------------ | :------------------------- | :--------------------- | :---------------------------------- |
 | [Transactions](https://developer.paypal.com/docs/api/transaction-search/v1/)       | `GET /v1/reporting/transactions`     | Full refresh, incremental | `transaction_updated_date` | 500                    | 1 to 31 days (default 7)            |
-| [Balances](https://developer.paypal.com/docs/api/transaction-search/v1/)           | `GET /v1/reporting/balances`         | Full refresh, incremental | `as_of_time`               | 500                    | One request per cursor value        |
+| [Balances](https://developer.paypal.com/docs/api/transaction-search/v1/)           | `GET /v1/reporting/balances`         | Full refresh, incremental | `as_of_time`               | Not paginated          | One request per cursor value        |
 | [List Products](https://developer.paypal.com/docs/api/catalog-products/v1/)        | `GET /v1/catalogs/products`          | Full refresh              | None                       | 20                     | Not applicable                      |
 | [Show Product Details](https://developer.paypal.com/docs/api/catalog-products/v1/) | `GET /v1/catalogs/products/{id}`     | Full refresh              | None                       | One record per request | Not applicable                      |
 | [List Disputes](https://developer.paypal.com/docs/api/customer-disputes/v1/)       | `GET /v1/customer/disputes`          | Full refresh, incremental | `updated_time_cut`         | 50                     | 1 to 31 days (default 7)            |
 | [Search Invoices](https://developer.paypal.com/docs/api/invoicing/v2/)             | `POST /v2/invoicing/search-invoices` | Full refresh              | None                       | 100                    | Start Date to End Date in one range |
 | [List Payments](https://developer.paypal.com/api/deprecated/payments/v1)           | `GET /v1/payments/payment`           | Full refresh, incremental | `update_time`              | 20                     | 1 to 31 days (default 7)            |
 
-Page sizes are fixed. The connector always requests the maximum PayPal allows for each endpoint.
+Page sizes are fixed and can't be configured.
 
 ### Stream details
 
@@ -84,7 +84,7 @@ PayPal has [deprecated the `/v1/payments` API](https://developer.paypal.com/api/
 
 ## Performance considerations
 
-- **Rate limits**: PayPal [doesn't publish rate limits](https://developer.paypal.com/api/rest/reference/rate-limiting/) and throttles traffic it considers abusive with HTTP 429 `RATE_LIMIT_REACHED`. Every stream except `transactions` waits 100 seconds and retries when a request fails, and token requests retry 429 and 5XX responses with exponential backoff. If your syncs are throttled, lower **Number of days per request** so each sync issues fewer large requests.
+- **Rate limits**: PayPal [doesn't publish rate limits](https://developer.paypal.com/api/rest/reference/rate-limiting/) and throttles traffic it considers abusive with HTTP 429 `RATE_LIMIT_REACHED`. Every stream except `transactions` waits a fixed 100 seconds before retrying a retryable response, including 429 and 5XX. Token requests retry 429 and 5XX responses with exponential backoff. **Number of days per request** trades request size against request count: a larger window means fewer, larger requests but a higher chance of hitting the 10,000-record limit, and a smaller window means more requests.
 - **Historical data**: `transactions` and `balances` can't read more than three years of history. `list_disputes` can't read more than 180 days.
 - **Failing early on unavailable data**: `transactions` fails the sync when PayPal answers `Data for the given start date is not available`, rather than skipping the window silently. This usually means the start date is outside PayPal's three-year window.
 
