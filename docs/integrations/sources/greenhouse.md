@@ -43,8 +43,6 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 - [Activity Feed](https://harvestdocs.greenhouse.io/reference/get_v3-notes)
 - [Applications](https://harvestdocs.greenhouse.io/reference/get_v3-applications) \(Incremental\)
-- [Applications Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
-- [Applications Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
 - [Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
 - [Demographic Answer Options](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
 - [Demographic Answer Options For Question](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
@@ -66,7 +64,6 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Job Stages](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) \(Incremental\)
 - [Jobs](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) \(Incremental\)
 - [Job Openings](https://harvestdocs.greenhouse.io/reference/get_v3-openings)
-- [Jobs Stages](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) \(Incremental\)
 - [Offers](https://harvestdocs.greenhouse.io/reference/get_v3-offers) \(Incremental\)
 - [Offices](https://harvestdocs.greenhouse.io/reference/get_v3-offices)
 - [Prospect Pools](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools)
@@ -89,7 +86,7 @@ Greenhouse refresh tokens expire 24 hours after they are issued and rotate on ev
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates the 36 existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens, and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. The recommended path is to create a new connection on 1.0.0 rather than refresh the existing one; see the [recommended upgrade path](./greenhouse-migrations.md#recommended-upgrade-path-create-a-new-connection) before upgrading.
+Version 1.0.0 migrates the 33 remaining existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication and refresh tokens, and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. The recommended path is to create a new connection on 1.0.0 rather than refresh the existing one; see the [recommended upgrade path](./greenhouse-migrations.md#recommended-upgrade-path-create-a-new-connection) before upgrading.
 
 ## IP allow list
 
@@ -102,7 +99,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of 36 existing streams from Harvest v1 to v3 plus the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth (Authorization Code + refresh token) authentication is required. |
+| 1.0.0 | 2026-08-18 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration of 33 remaining streams from Harvest v1 to v3, removal of three redundant child streams, plus the new `custom_field_options` stream because Greenhouse is sunsetting Harvest v1 and v2 on 2026-08-31; OAuth (Authorization Code + refresh token) authentication is required. |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |

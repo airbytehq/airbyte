@@ -20,8 +20,6 @@ v3 invariants a future edit must not break:
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
 | applications | top-level | updated_at | updated_at | incremental |
-| applications_demographics_answers | child | updated_at | updated_at | incremental |
-| applications_interviews | child | updated_at | updated_at | incremental |
 | candidates | top-level | updated_at | updated_at | incremental |
 | close_reasons | top-level | none | none | full refresh |
 | custom_fields | top-level | none | none | full refresh |
@@ -39,7 +37,6 @@ v3 invariants a future edit must not break:
 | interviews | top-level | updated_at | updated_at | incremental |
 | job_posts | top-level | updated_at | updated_at, active | incremental |
 | job_stages | top-level | updated_at | updated_at | incremental |
-| jobs_stages | child | updated_at | updated_at | incremental |
 | offers | top-level | updated_at | updated_at | incremental |
 | rejection_reasons | top-level | none | none | full refresh |
 | scorecards | top-level | updated_at | updated_at | incremental |

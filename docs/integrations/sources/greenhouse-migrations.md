@@ -32,22 +32,22 @@ Greenhouse issues OAuth client credentials to partners on request by email. Star
 
 ### Stream and schema changes
 
-The 36 existing streams now use their Harvest v3 collection endpoints, and this release adds one new `custom_field_options` stream. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
+The 33 remaining existing streams now use their Harvest v3 collection endpoints, and this release adds one new `custom_field_options` stream. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
 
 - `applications` uses `updated_at` for incremental state instead of `applied_at` and exposes flat job, stage, recruiter, coordinator, and source identifiers.
 - `candidates` no longer embeds applications and uses `private`, `preferred_name`, `last_activity_at`, and linked user identifiers.
-- `applications_interviews` uses flat schedule, organizer, and interview identifiers.
 - `jobs_openings`, `offers`, and `users` use v3 relationship identifiers instead of the v1 nested objects.
 - `offices.location` is a string in v3 rather than the v1 object.
 - `activity_feed` changes record grain. In v1 it returned one row per candidate whose only columns were the `activities`, `emails`, and `notes` arrays, and the stream had no primary key. It now reads `GET /v3/notes` and emits one flat row per note, with `id` as the primary key. Every existing column is replaced and the row count grows to the number of notes per candidate - drop and re-create the destination table for this stream rather than refreshing the schema in place.
 
 #### Dropped and renamed top-level fields
 
+Version 1.0.0 removes the redundant `applications_demographics_answers`, `applications_interviews`, and `jobs_stages` streams. Their top-level replacements are `demographics_answers`, `interviews`, and `job_stages`, respectively.
+
 | Stream | Dropped from this stream in v3 | Renamed in v3 |
 |---|---|---|
 | activity_feed | `activities`, `emails`, `notes` | |
 | applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_detail`, `prospective_department`, `prospective_office`, `rejection_details`, `source` | `applied_at` -> `updated_at`; `rejection_reason` object -> `rejection_reason_id` (join to the `rejection_reasons` stream on `id`) |
-| applications_interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
 | approvals | `approver_groups`, `requested_by_user_id` | |
 | candidates | `application_ids`, `applications`, `attachments`, `coordinator`, `educations`, `employments`, `keyed_custom_fields`, `photo_url`, `recruiter` | `is_private` -> `private`, `last_activity` -> `last_activity_at` |
 | custom_fields | `departments`, `offices` | `priority` -> `sort_order` |
@@ -57,7 +57,7 @@ The 36 existing streams now use their Harvest v3 collection endpoints, and this 
 | email_templates | `cc`, `from`, `type`, `user` | |
 | interviews | `end`, `interview`, `interviewers`, `organizer`, `start` | |
 | job_posts | `external`, `location` | |
-| job_stages, jobs_stages | `interviews` | `priority` -> `sort_order` |
+| job_stages | `interviews` | `priority` -> `sort_order` |
 | jobs | `departments`, `hiring_team`, `keyed_custom_fields`, `offices`, `openings` | flattened to `department_id`, `office_ids` |
 | jobs_openings | `close_reason`, `keyed_custom_fields`, `status` | |
 | offers | `keyed_custom_fields`, `opening`, `sent_at`, `starts_at` | |
@@ -82,9 +82,9 @@ Most of the fields above are not gone from Harvest. Harvest v3 moved them off th
 | `candidates.educations` | `GET /v3/candidate_educations` |
 | `candidates.employments` | `GET /v3/candidate_employments` |
 | `custom_fields.departments`, `custom_fields.offices` | `GET /v3/custom_field_departments`, `GET /v3/custom_field_offices` |
-| `interviews.interviewers`, `applications_interviews.interviewers` | `GET /v3/interviewers` |
+| `interviews.interviewers` | `GET /v3/interviewers` |
 | `job_posts.location` | `GET /v3/job_post_locations` (a job post can carry several locations in v3) |
-| `job_stages.interviews`, `jobs_stages.interviews` | `GET /v3/job_interviews`, `GET /v3/interview_kits` |
+| `job_stages.interviews` | `GET /v3/job_interviews`, `GET /v3/interview_kits` |
 | `jobs.hiring_team` | `GET /v3/job_hiring_managers`, `GET /v3/job_owners` |
 | `prospect_pools.prospect_stages` | `GET /v3/prospect_pool_stages` |
 | `scorecards.attributes` | `GET /v3/scorecard_candidate_attributes` |
@@ -96,9 +96,9 @@ Most of the fields above are not gone from Harvest. Harvest v3 moved them off th
 
 ### Pagination and incremental state
 
-Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade because it is v3's `created_at`, so `applications` backfills once on the new `updated_at` cursor. Its three de-fanned child streams preserve the minimum recoverable `updated_at` cursor and resume without a backfill.
+Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade because it is v3's `created_at`, so `applications` backfills once on the new `updated_at` cursor. The remaining de-fanned child streams preserve the minimum recoverable `updated_at` cursor and resume without a backfill.
 
-In v3, `applications_demographics_answers` reads the same flat collection as `demographics_answers`, `applications_interviews` reads the same flat collection as `interviews`, and `jobs_stages` reads the same flat collection as `job_stages`. These child/top-level pairs are therefore redundant: each child stream now returns the full collection rather than only rows for parents in scope. If you sync both members of a pair, disable one to avoid duplicate rows and duplicate API cost.
+The deleted child streams were redundant in v3: `demographics_answers`, `interviews`, and `job_stages` now provide the complete collections formerly exposed through their child-stream counterparts.
 
 ### Rate limits
 

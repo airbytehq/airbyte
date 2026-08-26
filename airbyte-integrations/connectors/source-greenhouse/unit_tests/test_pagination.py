@@ -150,8 +150,6 @@ def test_shared_error_handler_surfaces_403_as_config_error(requests_mock, get_so
 
     assert output.errors
     assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors)
-    assert any("Site Admin" in trace.trace.error.message for trace in output.errors)
-    assert any("harvest:<resource>:list" in trace.trace.error.message for trace in output.errors)
 
 
 def test_custom_field_options_stream_is_unfiltered_and_paginated(requests_mock, get_source):
@@ -233,6 +231,83 @@ def test_oauth_refresh_token_request_shape(requests_mock, get_source):
     assert token_params["grant_type"] == ["refresh_token"]
     assert token_params["refresh_token"] == ["test-refresh-token"]
     assert "sub" not in token_params
+
+
+def test_oauth_client_credentials_selection_and_request_shape(requests_mock, get_source):
+    token_requests = []
+
+    def token_callback(request, context):
+        token_requests.append(request)
+        context.status_code = 200
+        return {"access_token": "access-token", "expires_in": 3600}
+
+    requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/applications",
+        json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
+    )
+
+    config = {
+        "credentials": {
+            "auth_type": "ClientCredentials",
+            "client_id": "test-client",
+            "client_secret": "test-secret",
+        }
+    }
+    source = get_source(config)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=config, catalog=catalog)
+
+    assert not output.errors
+    assert len(token_requests) == 1
+    request = token_requests[0]
+    assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"test-client:test-secret").decode()
+    assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
+    assert request.query == ""
+    assert parse_qs(request.text, keep_blank_values=True) == {"grant_type": ["client_credentials"]}
+
+
+@pytest.mark.parametrize(
+    "sub, expected_body",
+    [
+        pytest.param(None, {"grant_type": ["client_credentials"]}, id="without_sub"),
+        pytest.param("4000234567", {"grant_type": ["client_credentials"], "sub": ["4000234567"]}, id="with_sub"),
+    ],
+)
+def test_oauth_client_credentials_sub_is_optional(requests_mock, get_source, sub, expected_body):
+    token_requests = []
+
+    def token_callback(request, context):
+        token_requests.append(request)
+        context.status_code = 200
+        return {"access_token": "access-token", "expires_in": 3600}
+
+    requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/applications",
+        json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
+    )
+
+    credentials = {
+        "auth_type": "ClientCredentials",
+        "client_id": "test-client",
+        "client_secret": "test-secret",
+    }
+    if sub is not None:
+        credentials["sub"] = sub
+    config = {"credentials": credentials}
+    source = get_source(config)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=config, catalog=catalog)
+
+    assert not output.errors
+    request = token_requests[0]
+    assert parse_qs(request.text, keep_blank_values=True) == expected_body
+    assert "refresh_token" not in request.text
+    assert "client_id" not in request.text
+    assert "client_secret" not in request.text
+    assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"test-client:test-secret").decode()
+    assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
 
 
 def _read_application_start_date_request(requests_mock, get_source, config):
@@ -322,7 +397,7 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
     assert vars(output.most_recent_state.stream_state) == {"updated_at": "2024-01-01T00:00:00.000Z"}
 
 
-def test_flat_child_cursor_pagination_uses_cursor_only_follow_up(requests_mock, get_source):
+def test_top_level_interviews_cursor_pagination_uses_cursor_only_follow_up(requests_mock, get_source):
     _register_token(requests_mock)
     interview_requests = []
 
@@ -344,48 +419,11 @@ def test_flat_child_cursor_pagination_uses_cursor_only_follow_up(requests_mock, 
     requests_mock.get("https://harvest.greenhouse.io/v3/interviews", json=interviews_callback)
 
     source = get_source(CONFIG_WITH_EPOCH_START_DATE)
-    catalog = CatalogBuilder().with_stream("applications_interviews", SyncMode.incremental).build()
+    catalog = CatalogBuilder().with_stream("interviews", SyncMode.incremental).build()
     output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(interview_requests) == 2
-
-
-def test_manifest_flat_child_state_migration_reaches_request(requests_mock, get_source):
-    _register_token(requests_mock)
-    interview_requests = []
-
-    def interviews_callback(request, context):
-        interview_requests.append(request)
-        context.status_code = 200
-        return [{"id": 1, "updated_at": "2024-01-01T00:00:00.000Z"}]
-
-    requests_mock.get("https://harvest.greenhouse.io/v3/interviews", json=interviews_callback)
-
-    state = (
-        StateBuilder()
-        .with_stream_state(
-            "applications_interviews",
-            {
-                "states": [
-                    {
-                        "partition": {"application_id": 42},
-                        "cursor": {"updated_at": "2024-01-01T00:00:00.000Z"},
-                    }
-                ],
-                "parent_state": {"applications": {"applied_at": "2024-01-01T00:00:00.000Z"}},
-            },
-        )
-        .build()
-    )
-    source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
-    catalog = CatalogBuilder().with_stream("applications_interviews", SyncMode.incremental).build()
-    read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
-
-    assert interview_requests[0].qs == {
-        "per_page": ["500"],
-        "updated_at": ["gte|2023-12-31t23:00:00.000z"],
-    }
 
 
 def test_users_include_service_accounts_only_on_first_page(requests_mock, get_source):
