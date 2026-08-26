@@ -93,7 +93,7 @@ Sentry applies request and concurrency limits per caller and endpoint. The limit
 
 ### Deprecated endpoints
 
-Sentry marks the project-scoped issues endpoint that the `issues` stream uses as deprecated, and recommends the organization-level issues endpoint instead. The endpoint still returns data, and Sentry's [API deprecation policy](https://develop.sentry.dev/backend/api/deprecation-policy/) requires advance notice before removal. A future connector version is likely to move the stream to the newer endpoint, as version 1.0.0 did for `projects`.
+Sentry marks the project-scoped issues endpoint that the `issues` stream uses as deprecated, and recommends the organization-level issues endpoint instead. The endpoint still returns data, and Sentry's [API deprecation policy](https://develop.sentry.dev/backend/api/deprecation-policy/) requires advance notice before removal. Version 1.0.0 made the equivalent switch for the `projects` stream after Sentry deprecated the legacy projects endpoint.
 
 ## IP allow list
 
