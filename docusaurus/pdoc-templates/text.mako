@@ -229,8 +229,13 @@ ${docstring_md(func.docstring)}
     if annot:
         annot = ': ' + annot
     doc = docstring_md(var.docstring)
+    doc_lines = ["  " + l if l.strip() else "" for l in doc.split("\n")] if doc else []
 %>
-- **`${var.name}`**${annot and ("&nbsp;(`%s`)" % annot[2:]) or ''}${doc and (" — " + " ".join(doc.split("\n"))) or ''}
+- **`${var.name}`**${annot and ("&nbsp;(`%s`)" % annot[2:]) or ''}
+% if doc_lines:
+
+${"\n".join(doc_lines)}
+% endif
 </%def>
 
 <%def name="class_(cls, depth)" buffered="True">
