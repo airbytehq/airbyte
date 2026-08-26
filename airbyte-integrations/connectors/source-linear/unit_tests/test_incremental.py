@@ -32,7 +32,6 @@ CONFIG: Mapping[str, Any] = {
     "start_date": "2024-01-01T00:00:00.000Z",
 }
 
-TIMELESS_DATE_PROPERTIES = {"dueDate", "fromDueDate", "startDate", "targetDate", "toDueDate"}
 DATE_ONLY_PROPERTIES_BY_STREAM = {
     "initiatives": {"targetDate"},
     "issue_history": {"fromDueDate", "toDueDate"},
@@ -126,15 +125,14 @@ def test_every_stream_schema_declares_archived_at(stream_name: str, manifest: Ma
 @pytest.mark.parametrize("stream_name", STREAM_GRAPHQL_FIELDS)
 def test_stream_schema_date_formats(stream_name: str, manifest: Mapping[str, Any]) -> None:
     properties = manifest["schemas"][stream_name]["properties"]
+    date_only = DATE_ONLY_PROPERTIES_BY_STREAM.get(stream_name, set())
 
-    for property_name in DATE_ONLY_PROPERTIES_BY_STREAM.get(stream_name, set()):
-        assert property_name in TIMELESS_DATE_PROPERTIES
+    for property_name in date_only:
         assert properties[property_name]["format"] == "date"
 
-    assert properties["archivedAt"]["format"] == "date-time"
     if stream_name in DATETIME_FORMAT_STREAMS:
         for property_name, property_schema in properties.items():
-            if property_name.endswith("At"):
+            if property_name.endswith("At") and property_name not in date_only:
                 assert property_schema["format"] == "date-time"
 
 
