@@ -6,7 +6,7 @@ Every stream reads from the same Dust endpoint, [Export workspace analytics](htt
 
 ## Prerequisites
 
-- A Dust workspace hosted at `dust.tt`. Workspaces in Dust's European region (`eu.dust.tt`) aren't supported, because the connector always calls `dust.tt`.
+- A Dust workspace on `dust.tt`. The connector always calls `dust.tt` and offers no way to change the host, so it can't be pointed at Dust's European deployment (`eu.dust.tt`).
 - A Dust API key with workspace admin scope. Dust returns `403` for the analytics export endpoint if the key isn't an admin key.
 - Your Dust workspace ID.
 
@@ -47,7 +47,7 @@ Dust also exposes `skills` and `feedback` analytics tables, which this connector
 
 ### Sync behavior
 
-All streams except `agents` sync incrementally on a date cursor: `date` for the daily aggregate streams, `createdAt` for `messages`, and `snapshot_date` for `users`. These streams request one day of data at a time, so a backfill that starts years in the past issues one request per day per stream and the first sync of a long history takes a while.
+All streams except `agents` sync incrementally, using `date` as the cursor for the daily aggregate streams, `createdAt` for `messages`, and `snapshot_date` for `users`. These streams request one day of data at a time, so a backfill that starts years in the past issues one request per day per stream and the first sync of a long history takes a while.
 
 Dust doesn't return `snapshot_date` for the `users` table. The connector adds it from the day being requested, which makes `users` a daily snapshot of that day's top users rather than a single ranked list.
 
