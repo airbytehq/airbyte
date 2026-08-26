@@ -1,4 +1,4 @@
-version: 7.23.7
+version: 7.28.0
 
 type: DeclarativeSource
 
@@ -3382,7 +3382,6 @@ streams:
               $ref: "#/streams/10"
             parent_key: id
             partition_field: contact_id
-            incremental_dependency: true
     primary_key:
       - contactId
       - companyId
@@ -3964,7 +3963,6 @@ streams:
               $ref: "#/streams/9"
             parent_key: id
             partition_field: company_id
-            incremental_dependency: true
     primary_key:
       - company_id
       - id
@@ -7420,7 +7418,6 @@ streams:
               $ref: "#/streams/23"
             parent_key: id
             partition_field: fraction_id
-            incremental_dependency: true
     primary_key:
       - fraction_id
       - id
@@ -9863,7 +9860,6 @@ streams:
               $ref: "#/streams/23"
             parent_key: id
             partition_field: fraction_id
-            incremental_dependency: true
     primary_key:
       - fraction_id
       - id
@@ -14975,7 +14971,6 @@ streams:
               $ref: "#/streams/39"
             parent_key: id
             partition_field: owner_id
-            incremental_dependency: true
     primary_key:
       - ownerId
       - id
@@ -19663,6 +19658,1833 @@ streams:
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S%z"
   - type: DeclarativeStream
+    name: reservations_all_parent
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.scroll }}"
+          stop_condition: "{{ not response._embedded.reservations }}"
+      requester:
+        type: HttpRequester
+        url: https://{{ config.customer_domain }}/api/pms/reservations
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+        request_parameters:
+          size: "100"
+          scroll: "{{ next_page_token['next_page_token'] if next_page_token else '1' }}"
+          sortColumn: id
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - _embedded
+            - reservations
+    primary_key:
+      - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - id
+          - updatedAt
+        properties:
+          id:
+            type: number
+          user:
+            type:
+              - object
+              - "null"
+          uuid:
+            type:
+              - string
+              - "null"
+          group:
+            type:
+              - object
+              - "null"
+          nights:
+            type:
+              - number
+              - "null"
+          source:
+            type:
+              - string
+              - "null"
+          status:
+            type:
+              - string
+              - "null"
+          typeId:
+            type:
+              - number
+              - "null"
+          unitId:
+            type:
+              - number
+              - "null"
+          userId:
+            type:
+              - number
+              - "null"
+          altConf:
+            type:
+              - string
+              - "null"
+          channel:
+            type:
+              - object
+              - "null"
+          folioId:
+            type:
+              - number
+              - "null"
+          groupId:
+            type:
+              - number
+              - "null"
+          softEnd:
+            type:
+              - string
+              - "null"
+          bookedAt:
+            type:
+              - string
+              - "null"
+          campaign:
+            type:
+              - object
+              - "null"
+          unitType:
+            type:
+              - object
+              - "null"
+          _embedded:
+            type:
+              - object
+              - "null"
+            properties:
+              folio:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      self:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          href:
+                            type:
+                              - string
+                              - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+                  company:
+                    type:
+                      - object
+                      - "null"
+                  endDate:
+                    type:
+                      - string
+                      - "null"
+                  posAllow:
+                    type:
+                      - boolean
+                      - "null"
+                  posLimit:
+                    type:
+                      - string
+                      - "null"
+                  _embedded:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      account:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      contact:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      masterFolio:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      reservation:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      travelAgent:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      masterFolioRule:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                  accountId:
+                    type:
+                      - number
+                      - "null"
+                  companyId:
+                    type:
+                      - object
+                      - "null"
+                  contactId:
+                    type:
+                      - number
+                      - "null"
+                  createdAt:
+                    type:
+                      - string
+                      - "null"
+                  createdBy:
+                    type:
+                      - string
+                      - "null"
+                  startDate:
+                    type:
+                      - string
+                      - "null"
+                  taxExempt:
+                    type:
+                      - boolean
+                      - "null"
+                  updatedAt:
+                    type:
+                      - string
+                      - "null"
+                  updatedBy:
+                    type:
+                      - string
+                      - "null"
+                  closedDate:
+                    type:
+                      - string
+                      - "null"
+                  checkInDate:
+                    type:
+                      - string
+                      - "null"
+                  masterFolio:
+                    type:
+                      - object
+                      - "null"
+                  travelAgent:
+                    type:
+                      - object
+                      - "null"
+                  checkOutDate:
+                    type:
+                      - string
+                      - "null"
+                  hasException:
+                    type:
+                      - boolean
+                      - "null"
+                  ownerRevenue:
+                    type:
+                      - string
+                      - "null"
+                  generatedName:
+                    type:
+                      - string
+                      - "null"
+                  masterFolioId:
+                    type:
+                      - number
+                      - "null"
+                  reservationId:
+                    type:
+                      - number
+                      - "null"
+                  travelAgentId:
+                    type:
+                      - number
+                      - "null"
+                  currentBalance:
+                    type:
+                      - string
+                      - "null"
+                  agentCommission:
+                    type:
+                      - string
+                      - "null"
+                  masterFolioRule:
+                    type:
+                      - object
+                      - "null"
+                  ownerCommission:
+                    type:
+                      - string
+                      - "null"
+                  realizedBalance:
+                    type:
+                      - string
+                      - "null"
+                  exceptionMessage:
+                    type:
+                      - object
+                      - "null"
+                  masterFolioRuleId:
+                    type:
+                      - number
+                      - "null"
+              group:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      self:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          href:
+                            type:
+                              - string
+                              - "null"
+                  status:
+                    type:
+                      - string
+                      - "null"
+                  company:
+                    type:
+                      - object
+                      - "null"
+                  contact:
+                    type:
+                      - object
+                      - "null"
+                  endDate:
+                    type:
+                      - string
+                      - "null"
+                  campaign:
+                    type:
+                      - object
+                      - "null"
+                  dropDate:
+                    type:
+                      - string
+                      - "null"
+                  posAllow:
+                    type:
+                      - boolean
+                      - "null"
+                  posLimit:
+                    type:
+                      - object
+                      - "null"
+                  _embedded:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      account:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      company:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      contact:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      rateType:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      promoCode:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      travelAgent:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                      reservationType:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          _links:
+                            type:
+                              - object
+                              - "null"
+                            properties:
+                              self:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  href:
+                                    type:
+                                      - string
+                                      - "null"
+                  accountId:
+                    type:
+                      - number
+                      - "null"
+                  companyId:
+                    type:
+                      - number
+                      - "null"
+                  contactId:
+                    type:
+                      - number
+                      - "null"
+                  createdAt:
+                    type:
+                      - string
+                      - "null"
+                  createdBy:
+                    type:
+                      - string
+                      - "null"
+                  promoCode:
+                    type:
+                      - object
+                      - "null"
+                  startDate:
+                    type:
+                      - string
+                      - "null"
+                  taxExempt:
+                    type:
+                      - boolean
+                      - "null"
+                  updatedAt:
+                    type:
+                      - string
+                      - "null"
+                  updatedBy:
+                    type:
+                      - string
+                      - "null"
+                  campaignId:
+                    type:
+                      - object
+                      - "null"
+                  closedDate:
+                    type:
+                      - string
+                      - "null"
+                  rateTypeId:
+                    type:
+                      - number
+                      - "null"
+                  promoCodeId:
+                    type:
+                      - number
+                      - "null"
+                  travelAgent:
+                    type:
+                      - object
+                      - "null"
+                  travelAgentId:
+                    type:
+                      - number
+                      - "null"
+                  currentBalance:
+                    type:
+                      - string
+                      - "null"
+                  realizedBalance:
+                    type:
+                      - string
+                      - "null"
+                  reservationTypeId:
+                    type:
+                      - number
+                      - "null"
+              campaign:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  url:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  tags:
+                    type:
+                      - object
+                      - "null"
+                  brand:
+                    type:
+                      - object
+                      - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  token:
+                    type:
+                      - string
+                      - "null"
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      self:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          href:
+                            type:
+                              - string
+                              - "null"
+                  brandId:
+                    type:
+                      - object
+                      - "null"
+                  endDate:
+                    type:
+                      - object
+                      - "null"
+                  isActive:
+                    type:
+                      - boolean
+                      - "null"
+                  keywords:
+                    type:
+                      - object
+                      - "null"
+                  createdAt:
+                    type:
+                      - string
+                      - "null"
+                  createdBy:
+                    type:
+                      - string
+                      - "null"
+                  startDate:
+                    type:
+                      - object
+                      - "null"
+                  updatedAt:
+                    type:
+                      - string
+                      - "null"
+                  updatedBy:
+                    type:
+                      - string
+                      - "null"
+                  primaryNumber:
+                    type:
+                      - object
+                      - "null"
+                  defaultLeadType:
+                    type:
+                      - object
+                      - "null"
+                  primaryNumberId:
+                    type:
+                      - object
+                      - "null"
+                  disableRecording:
+                    type:
+                      - boolean
+                      - "null"
+                  defaultLeadTypeId:
+                    type:
+                      - object
+                      - "null"
+              promoCode:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  description:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  code:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      self:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          href:
+                            type:
+                              - string
+                              - "null"
+                  isActive:
+                    type:
+                      - boolean
+                      - "null"
+                  isPublic:
+                    type:
+                      - boolean
+                      - "null"
+                  createdAt:
+                    type:
+                      - string
+                      - "null"
+                  createdBy:
+                    type:
+                      - string
+                      - "null"
+                  updatedAt:
+                    type:
+                      - string
+                      - "null"
+                  updatedBy:
+                    type:
+                      - string
+                      - "null"
+                  discountType:
+                    type:
+                      - string
+                      - "null"
+                  bookingEndDate:
+                    type:
+                      - string
+                      - "null"
+                  dateConstraints:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - number
+                            - "null"
+                        dateGroup:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            id:
+                              type:
+                                - number
+                                - "null"
+                            name:
+                              type:
+                                - string
+                                - "null"
+                            dates:
+                              type:
+                                - array
+                                - "null"
+                              items:
+                                type:
+                                  - object
+                                  - "null"
+                                properties:
+                                  id:
+                                    type:
+                                      - number
+                                      - "null"
+                                  end:
+                                    type:
+                                      - string
+                                      - "null"
+                                  start:
+                                    type:
+                                      - string
+                                      - "null"
+                        isBlackoutDates:
+                          type:
+                            - boolean
+                            - "null"
+                  unitConstraints:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - number
+                            - "null"
+                        field:
+                          type:
+                            - string
+                            - "null"
+                        params:
+                          type:
+                            - object
+                            - "null"
+                          properties:
+                            values:
+                              type:
+                                - array
+                                - "null"
+                            operator:
+                              type:
+                                - string
+                                - "null"
+                        operand:
+                          type:
+                            - string
+                            - "null"
+                  bookingStartDate:
+                    type:
+                      - string
+                      - "null"
+                  valueAdjustments:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      type:
+                        type:
+                          - string
+                          - "null"
+                      value:
+                        type:
+                          - string
+                          - "null"
+                      numberOfStays:
+                        type:
+                          - number
+                          - "null"
+                      numberOfNights:
+                        type:
+                          - number
+                          - "null"
+                      adjustmentNights:
+                        type:
+                          - string
+                          - "null"
+                      discountConstraint:
+                        type:
+                          - string
+                          - "null"
+                      discountConstraintAmount:
+                        type:
+                          - string
+                          - "null"
+                  dateConstraintType:
+                    type:
+                      - string
+                      - "null"
+                  constraintMaxNights:
+                    type:
+                      - number
+                      - "null"
+                  constraintMinNights:
+                    type:
+                      - number
+                      - "null"
+                  customDatesConstraint:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        end:
+                          type:
+                            - string
+                            - "null"
+                        start:
+                          type:
+                            - string
+                            - "null"
+                  stayDatesConstraintType:
+                    type:
+                      - string
+                      - "null"
+                  constraintMaxDaysPriorArrival:
+                    type:
+                      - object
+                      - "null"
+                  constraintMinDaysPriorArrival:
+                    type:
+                      - number
+                      - "null"
+                  customBlackoutDatesConstraint:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        end:
+                          type:
+                            - string
+                            - "null"
+                        start:
+                          type:
+                            - string
+                            - "null"
+              travelAgent:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  type:
+                    type:
+                      - string
+                      - "null"
+                  id:
+                    type:
+                      - number
+                      - "null"
+                  fax:
+                    type:
+                      - string
+                      - "null"
+                  name:
+                    type:
+                      - string
+                      - "null"
+                  tags:
+                    type:
+                      - array
+                      - "null"
+                    items:
+                      type:
+                        - object
+                        - "null"
+                      properties:
+                        id:
+                          type:
+                            - number
+                            - "null"
+                        name:
+                          type:
+                            - string
+                            - "null"
+                  email:
+                    type:
+                      - string
+                      - "null"
+                  notes:
+                    type:
+                      - string
+                      - "null"
+                  phone:
+                    type:
+                      - string
+                      - "null"
+                  taxId:
+                    type:
+                      - string
+                      - "null"
+                  _links:
+                    type:
+                      - object
+                      - "null"
+                    properties:
+                      self:
+                        type:
+                          - object
+                          - "null"
+                        properties:
+                          href:
+                            type:
+                              - string
+                              - "null"
+                  postal:
+                    type:
+                      - string
+                      - "null"
+                  region:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  taxName:
+                    type:
+                      - string
+                      - "null"
+                  taxType:
+                    type:
+                      - string
+                      - "null"
+                  website:
+                    type:
+                      - string
+                      - "null"
+                  isActive:
+                    type:
+                      - boolean
+                      - "null"
+                  locality:
+                    type:
+                      - string
+                      - "null"
+                  createdAt:
+                    type:
+                      - string
+                      - "null"
+                  createdBy:
+                    type:
+                      - string
+                      - "null"
+                  updatedAt:
+                    type:
+                      - string
+                      - "null"
+                  updatedBy:
+                    type:
+                      - string
+                      - "null"
+                  paymentType:
+                    type:
+                      - string
+                      - "null"
+                  achVerifiedAt:
+                    type:
+                      - object
+                      - "null"
+                  streetAddress:
+                    type:
+                      - string
+                      - "null"
+                  achAccountType:
+                    type:
+                      - string
+                      - "null"
+                  extendedAddress:
+                    type:
+                      - string
+                      - "null"
+                  achAccountNumber:
+                    type:
+                      - string
+                      - "null"
+                  achRoutingNumber:
+                    type:
+                      - string
+                      - "null"
+                  glExpirationDate:
+                    type:
+                      - object
+                      - "null"
+                  wcExpirationDate:
+                    type:
+                      - object
+                      - "null"
+                  glInsurancePolicy:
+                    type:
+                      - string
+                      - "null"
+                  wcInsurancePolicy:
+                    type:
+                      - string
+                      - "null"
+                  travelAgentCommission:
+                    type:
+                      - number
+                      - "null"
+                  travelAgentIataNumber:
+                    type:
+                      - string
+                      - "null"
+                  travelAgentDeductCommission:
+                    type:
+                      - boolean
+                      - "null"
+          channelId:
+            type:
+              - number
+              - "null"
+          contactId:
+            type:
+              - number
+              - "null"
+          createdAt:
+            type:
+              - string
+              - "null"
+          createdBy:
+            type:
+              - string
+              - "null"
+          isTaxable:
+            type:
+              - boolean
+              - "null"
+          occupants:
+            type:
+              - object
+              - "null"
+            properties:
+              "1":
+                type:
+                  - number
+                  - "null"
+              "2":
+                type:
+                  - number
+                  - "null"
+              "3":
+                type:
+                  - number
+                  - "null"
+          promoCode:
+            type:
+              - object
+              - "null"
+          softStart:
+            type:
+              - string
+              - "null"
+          updatedAt:
+            type: string
+          updatedBy:
+            type:
+              - string
+              - "null"
+          campaignId:
+            type:
+              - number
+              - "null"
+          inviteUuid:
+            type:
+              - string
+              - "null"
+          rateTypeId:
+            type:
+              - number
+              - "null"
+          subChannel:
+            type:
+              - string
+              - "null"
+          typeInline:
+            type:
+              - object
+              - "null"
+            properties:
+              id:
+                type:
+                  - number
+                  - "null"
+              code:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+          unitCodeId:
+            type:
+              - number
+              - "null"
+          unitTypeId:
+            type:
+              - object
+              - "null"
+          arrivalDate:
+            type:
+              - string
+              - "null"
+          arrivalTime:
+            type:
+              - string
+              - "null"
+          cancelledAt:
+            type:
+              - string
+              - "null"
+          cancelledBy:
+            type:
+              - object
+              - "null"
+          promoCodeId:
+            type:
+              - number
+              - "null"
+          travelAgent:
+            type:
+              - object
+              - "null"
+          earlyArrival:
+            type:
+              - boolean
+              - "null"
+          isUnitLocked:
+            type:
+              - boolean
+              - "null"
+          cancelledById:
+            type:
+              - number
+              - "null"
+          departureDate:
+            type:
+              - string
+              - "null"
+          departureTime:
+            type:
+              - string
+              - "null"
+          lateDeparture:
+            type:
+              - boolean
+              - "null"
+          paymentMethod:
+            type:
+              - object
+              - "null"
+          travelAgentId:
+            type:
+              - number
+              - "null"
+          folioBreakdown:
+            type:
+              - object
+              - "null"
+            properties:
+              adr:
+                type:
+                  - string
+                  - "null"
+              fees:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    label:
+                      type:
+                        - string
+                        - "null"
+                    total:
+                      type:
+                        - string
+                        - "null"
+                    isManual:
+                      type:
+                        - boolean
+                        - "null"
+              rates:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    date:
+                      type:
+                        - string
+                        - "null"
+                    rate:
+                      type:
+                        - string
+                        - "null"
+                    nights:
+                      type:
+                        - string
+                        - "null"
+              taxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    total:
+                      type:
+                        - string
+                        - "null"
+              total:
+                type:
+                  - string
+                  - "null"
+              balance:
+                type:
+                  - string
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              payments:
+                type:
+                  - string
+                  - "null"
+              subTotal:
+                type:
+                  - string
+                  - "null"
+              insurance:
+                type:
+                  - string
+                  - "null"
+              totalFees:
+                type:
+                  - string
+                  - "null"
+              totalRent:
+                type:
+                  - string
+                  - "null"
+              transfers:
+                type:
+                  - string
+                  - "null"
+              chargelist:
+                anyOf:
+                  - type:
+                      - array
+                      - "null"
+                  - type:
+                      - object
+                      - "null"
+              grandTotal:
+                type:
+                  - string
+                  - "null"
+              totalTaxes:
+                type:
+                  - string
+                  - "null"
+              totalCharges:
+                type:
+                  - string
+                  - "null"
+              rentFeeSubtotal:
+                type:
+                  - string
+                  - "null"
+              totalManualFees:
+                type:
+                  - string
+                  - "null"
+              totalManualRent:
+                type:
+                  - string
+                  - "null"
+          holdExpiration:
+            type:
+              - string
+              - "null"
+          isUnitAssigned:
+            type:
+              - boolean
+              - "null"
+          ownerBreakdown:
+            type:
+              - object
+              - "null"
+            properties:
+              grossRent:
+                type:
+                  - string
+                  - "null"
+              feeRevenue:
+                type:
+                  - string
+                  - "null"
+              netRevenue:
+                type:
+                  - string
+                  - "null"
+              grossRevenue:
+                type:
+                  - string
+                  - "null"
+              agentCommission:
+                type:
+                  - string
+                  - "null"
+              managerCommission:
+                type:
+                  - string
+                  - "null"
+          quoteBreakdown:
+            type:
+              - object
+              - "null"
+            properties:
+              adr:
+                type:
+                  - string
+                  - "null"
+              fees:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - number
+                        - "null"
+                    label:
+                      type:
+                        - string
+                        - "null"
+                    value:
+                      type:
+                        - string
+                        - "null"
+                    display:
+                      type:
+                        - string
+                        - "null"
+                    quantity:
+                      type:
+                        - number
+                        - "null"
+                    unitRate:
+                      type:
+                        - string
+                        - "null"
+              rates:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    date:
+                      type:
+                        - string
+                        - "null"
+                    rate:
+                      type:
+                        - string
+                        - "null"
+                    nights:
+                      type:
+                        - number
+                        - "null"
+                    isQuoted:
+                      type:
+                        - boolean
+                        - "null"
+              taxes:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    id:
+                      type:
+                        - string
+                        - "null"
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    total:
+                      type:
+                        - string
+                        - "null"
+              total:
+                type:
+                  - string
+                  - "null"
+              balance:
+                type:
+                  - string
+                  - "null"
+              charges:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    name:
+                      type:
+                        - string
+                        - "null"
+                    total:
+                      type:
+                        - string
+                        - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+              discount:
+                type:
+                  - string
+                  - "null"
+              guestAdr:
+                type:
+                  - string
+                  - "null"
+              payments:
+                type:
+                  - string
+                  - "null"
+              subTotal:
+                type:
+                  - string
+                  - "null"
+              actualAdr:
+                type:
+                  - string
+                  - "null"
+              grossRent:
+                type:
+                  - string
+                  - "null"
+              guestFees:
+                type:
+                  - string
+                  - "null"
+              insurance:
+                type:
+                  - string
+                  - "null"
+              totalFees:
+                type:
+                  - string
+                  - "null"
+              totalRent:
+                type:
+                  - string
+                  - "null"
+              extraRates:
+                type:
+                  - object
+                  - "null"
+              grandTotal:
+                type:
+                  - string
+                  - "null"
+              totalTaxes:
+                type:
+                  - string
+                  - "null"
+              folioCharges:
+                type:
+                  - string
+                  - "null"
+              guestTaxFees:
+                type:
+                  - string
+                  - "null"
+              guestRentFees:
+                type:
+                  - string
+                  - "null"
+              additionalRent:
+                type:
+                  - string
+                  - "null"
+              guestGrossRent:
+                type:
+                  - string
+                  - "null"
+              guestTotalRent:
+                type:
+                  - string
+                  - "null"
+              guestServiceFees:
+                type:
+                  - string
+                  - "null"
+              guestItemizedFees:
+                type:
+                  - string
+                  - "null"
+          agreementStatus:
+            type:
+              - string
+              - "null"
+          automatePayment:
+            type:
+              - boolean
+              - "null"
+          paymentMethodId:
+            type:
+              - number
+              - "null"
+          isUnitTypeLocked:
+            type:
+              - boolean
+              - "null"
+          guaranteePolicyId:
+            type:
+              - number
+              - "null"
+          cancellationReason:
+            type:
+              - object
+              - "null"
+          cancellationPolicyId:
+            type:
+              - number
+              - "null"
+          cancellationReasonId:
+            type:
+              - number
+              - "null"
+          requiredSecurityDeposit:
+            type:
+              - string
+              - "null"
+          remainingSecurityDeposit:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - unit
+      - type: RemoveFields
+        field_pointers:
+          - - _links
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - links
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - guaranteePolicy
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - contact
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - cancellationPolicy
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - cancellationReason
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - user
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - type
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - rateType
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - cancelledBy
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - paymentMethod
+      - type: RemoveFields
+        field_pointers:
+          - - _embedded
+            - channel
+  - type: DeclarativeStream
     name: reservations_booking_fees
     retriever:
       type: SimpleRetriever
@@ -19728,7 +21550,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/48"
+              $ref: "#/streams/49"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -19739,6 +21561,9 @@ streams:
       schema:
         type: object
         $schema: http://json-schema.org/schema#
+        required:
+          - reservation_id
+          - id
         properties:
           type:
             type:
@@ -19749,10 +21574,6 @@ streams:
           value:
             type:
               - string
-              - "null"
-          bookingFeeId:
-            type:
-              - number
               - "null"
           createdAt:
             type:
@@ -19770,11 +21591,12 @@ streams:
             type:
               - string
               - "null"
+          bookingFeeId:
+            type:
+              - number
+              - "null"
           reservation_id:
             type: number
-        required:
-          - reservation_id
-          - id
         additionalProperties: true
     transformations:
       - type: AddFields
@@ -20134,168 +21956,6 @@ streams:
         field_pointers:
           - - _links
   - type: DeclarativeStream
-    name: reservations_discount
-    retriever:
-      type: SimpleRetriever
-      decoder:
-        type: JsonDecoder
-      paginator:
-        $ref: "#/definitions/linked/SimpleRetriever/paginator"
-      requester:
-        type: HttpRequester
-        url: >-
-          https://{{ config.customer_domain }}/api/pms/reservations/{{
-          stream_partition.reservation_id }}/discount
-        http_method: GET
-        authenticator:
-          $ref: "#/definitions/linked/HttpRequester/authenticator"
-        error_handler:
-          type: CompositeErrorHandler
-          error_handlers:
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: >-
-                    {{ response.status == 409 and response.detail == 'Invalid
-                    page provided' }}
-                  http_codes: []
-                  error_message: >-
-                    Track's inappropriate 409 for page numbers too high. Nothing
-                    to do but continue to work with the vendor.
-            - type: DefaultErrorHandler
-              response_filters:
-                - type: HttpResponseFilter
-                  action: IGNORE
-                  predicate: "{{ response.status == 404 }}"
-                  http_codes: []
-                  error_message: >-
-                    Track's 404 for a nonexistent resource endpoint. It is no
-                    issue if there is no data.
-            - type: DefaultErrorHandler
-              max_retries: 3
-              response_filters:
-                - type: HttpResponseFilter
-                  action: RATE_LIMITED
-                  predicate: "{{ response.status == 429 }}"
-                  http_codes: []
-                  error_message: >-
-                    Track rate limit (10,000 requests per 5 minutes) met,
-                    waiting 5 minutes and 5 seconds to reset.
-              backoff_strategies:
-                - type: ConstantBackoffStrategy
-                  backoff_time_in_seconds: 305
-        request_headers:
-          $ref: "#/definitions/linked/HttpRequester/request_headers"
-      record_selector:
-        type: RecordSelector
-        extractor:
-          type: DpathExtractor
-          field_path:
-            - _embedded
-            - discount
-      partition_router:
-        type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: "#/streams/48"
-            parent_key: id
-            partition_field: reservation_id
-    primary_key:
-      - reservation_id
-      - id
-    schema_loader:
-      type: InlineSchemaLoader
-      schema:
-        type: object
-        $schema: http://json-schema.org/schema#
-        required:
-          - reservation_id
-          - id
-        properties:
-          id:
-            type: number
-          value:
-            type:
-              - string
-              - "null"
-          chargeId:
-            type:
-              - number
-              - "null"
-          quantity:
-            type:
-              - string
-              - "null"
-          createdAt:
-            type:
-              - string
-              - "null"
-          createdBy:
-            type:
-              - string
-              - "null"
-          displayAs:
-            type:
-              - string
-              - "null"
-          unitValue:
-            type:
-              - string
-              - "null"
-          updatedAt:
-            type:
-              - string
-              - "null"
-          updatedBy:
-            type:
-              - string
-              - "null"
-          chargeOwner:
-            type:
-              - boolean
-              - "null"
-          chargeInline:
-            type:
-              - object
-              - "null"
-            properties:
-              id:
-                type:
-                  - number
-                  - "null"
-              name:
-                type:
-                  - string
-                  - "null"
-              realizedAt:
-                type:
-                  - string
-                  - "null"
-              displayName:
-                type:
-                  - string
-                  - "null"
-              allowFeeRemoval:
-                type:
-                  - boolean
-                  - "null"
-          reservation_id:
-            type: number
-        additionalProperties: true
-    transformations:
-      - type: AddFields
-        fields:
-          - type: AddedFieldDefinition
-            path:
-              - reservation_id
-            value: "{{ stream_partition.reservation_id }}"
-            value_type: integer
-      - type: RemoveFields
-        field_pointers:
-          - - _links
-  - type: DeclarativeStream
     name: reservations_discount_reasons
     retriever:
       type: SimpleRetriever
@@ -20433,7 +22093,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/48"
+              $ref: "#/streams/49"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -20796,7 +22456,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/48"
+              $ref: "#/streams/49"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -21035,7 +22695,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/48"
+              $ref: "#/streams/49"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -21156,7 +22816,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/48"
+              $ref: "#/streams/49"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -26379,7 +28039,6 @@ streams:
               $ref: "#/streams/69"
             parent_key: id
             partition_field: unit_id
-            incremental_dependency: true
     primary_key:
       - unit_id
       - id
@@ -27583,7 +29242,6 @@ streams:
               $ref: "#/streams/69"
             parent_key: id
             partition_field: unit_id
-            incremental_dependency: true
     primary_key:
       - unit_id
       - rateTypeId
@@ -27690,7 +29348,6 @@ streams:
               $ref: "#/streams/77"
             parent_key: id
             partition_field: unit_id
-            incremental_dependency: true
     primary_key:
       - unit_id
       - id
@@ -29441,13 +31098,13 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_tags:
+      isStale: false
       hasRecords: true
       streamHash: 71e7a53a6c1cb54bab22f8dbf47de59848c83ef1
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-      isStale: false
     accounting_charges:
       hasRecords: true
       streamHash: c72ff23f3afc4f20f5f952cf61be4b8954cf774c
@@ -29569,13 +31226,6 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-    reservations_discount:
-      hasRecords: true
-      streamHash: 693edff367f6dc15a89f6c8d8c2550d80c676097
-      hasResponse: true
-      primaryKeysAreUnique: true
-      primaryKeysArePresent: true
-      responsesAreSuccessful: true
     crm_company_attachment:
       hasRecords: true
       streamHash: ae4197805571dd4499eba6d1b104f2be96613e26
@@ -29612,6 +31262,9 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    reservations_all_parent:
+      streamHash: fce86f1c4ccd69e44b86f22c20abc0553ccb2bbe
+      isStale: false
     housekeeping_clean_types:
       hasRecords: true
       streamHash: bc6cd8a08ad00e1ca47f8b97f229e2f824b8a714
@@ -29627,13 +31280,13 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_booking_fees:
+      isStale: false
       hasRecords: true
-      streamHash: 50ac20404124bd7517de919764106e5010d59f7d
+      streamHash: 404e79b8fe01e5fae99ee2009a63d495a1f90194
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
-      isStale: false
     travel_insurance_products:
       hasRecords: true
       streamHash: 9bd195e511a9ffa6ee6228853b6a3829a7348dc7
@@ -29657,7 +31310,7 @@ metadata:
       responsesAreSuccessful: true
     reservations_discount_reasons:
       hasRecords: true
-      streamHash: 934a8ad55ecf99f7edf645c00b1bf6be60130587
+      streamHash: 693edff367f6dc15a89f6c8d8c2550d80c676097
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -29756,12 +31409,12 @@ metadata:
     units_amenity_groups: false
     contacts_pii_redacted: false
     fractionals_inventory: false
-    reservations_discount: false
     crm_company_attachment: false
     housekeeping_task_list: false
     units_daily_pricing_v2: false
     accounting_transactions: false
     maintenance_work_orders: false
+    reservations_all_parent: false
     housekeeping_clean_types: false
     housekeeping_work_orders: false
     reservations_booking_fees: false
