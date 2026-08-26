@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-server
-title: airbyte.mcp.server
+title: "airbyte.mcp.server Module"
+sidebar_label: "airbyte.mcp.server"
 ---
+
+# `airbyte.mcp.server` Module
 
 MCP (Model Context Protocol) server for PyAirbyte connector management.
 

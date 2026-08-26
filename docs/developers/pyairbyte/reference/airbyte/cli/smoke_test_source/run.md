@@ -1,7 +1,10 @@
 ---
 id: airbyte-cli-smoke_test_source-run
-title: airbyte.cli.smoke_test_source.run
+title: "airbyte.cli.smoke_test_source.run Module"
+sidebar_label: "airbyte.cli.smoke_test_source.run"
 ---
+
+# `airbyte.cli.smoke_test_source.run` Module
 
 Entry point for the Smoke Test source.
 

@@ -1,7 +1,10 @@
 ---
 id: airbyte-registry
-title: airbyte.registry
+title: "airbyte.registry Module"
+sidebar_label: "airbyte.registry"
 ---
+
+# `airbyte.registry` Module
 
 Connectivity to the connector catalog registry.
 

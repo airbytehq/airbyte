@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-connectors
-title: airbyte.cloud.connectors
+title: "airbyte.cloud.connectors Module"
+sidebar_label: "airbyte.cloud.connectors"
 ---
+
+# `airbyte.cloud.connectors` Module
 
 Cloud connectors module for working with Cloud sources and destinations.
 

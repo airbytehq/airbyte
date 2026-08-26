@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-snowflake
-title: airbyte.caches.snowflake
+title: "airbyte.caches.snowflake Module"
+sidebar_label: "airbyte.caches.snowflake"
 ---
+
+# `airbyte.caches.snowflake` Module
 
 A Snowflake implementation of the PyAirbyte cache.
 

@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-index
-title: airbyte.caches
+title: "airbyte.caches Module"
+sidebar_label: "airbyte.caches"
 ---
+
+# `airbyte.caches` Module
 
 Base module for all caches.
 

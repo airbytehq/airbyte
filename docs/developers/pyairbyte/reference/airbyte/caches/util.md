@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-util
-title: airbyte.caches.util
+title: "airbyte.caches.util Module"
+sidebar_label: "airbyte.caches.util"
 ---
+
+# `airbyte.caches.util` Module
 
 Utility functions for working with caches.
 

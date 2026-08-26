@@ -1,7 +1,10 @@
 ---
 id: airbyte-experimental-index
-title: airbyte.experimental
+title: "airbyte.experimental Module"
+sidebar_label: "airbyte.experimental"
 ---
+
+# `airbyte.experimental` Module
 
 Experimental features which may change.
 

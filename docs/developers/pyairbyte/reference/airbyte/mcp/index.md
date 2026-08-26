@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-index
-title: airbyte.mcp
+title: "airbyte.mcp Module"
+sidebar_label: "airbyte.mcp"
 ---
+
+# `airbyte.mcp` Module
 
 ***Airbyte Replication MCP Server - Model Context Protocol Integration***
 

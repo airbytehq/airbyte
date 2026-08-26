@@ -1,7 +1,10 @@
 ---
 id: airbyte-version
-title: airbyte.version
+title: "airbyte.version Module"
+sidebar_label: "airbyte.version"
 ---
+
+# `airbyte.version` Module
 
 Support for PyAirbyte version checks.
 

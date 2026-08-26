@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-index
-title: airbyte.cloud
+title: "airbyte.cloud Module"
+sidebar_label: "airbyte.cloud"
 ---
+
+# `airbyte.cloud` Module
 
 PyAirbyte classes and methods for interacting with the Airbyte Cloud API.
 

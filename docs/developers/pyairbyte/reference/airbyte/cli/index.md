@@ -1,7 +1,10 @@
 ---
 id: airbyte-cli-index
-title: airbyte.cli
+title: "airbyte.cli Module"
+sidebar_label: "airbyte.cli"
 ---
+
+# `airbyte.cli` Module
 
 CLI modules for PyAirbyte.
 

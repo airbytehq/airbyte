@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-local
-title: airbyte.mcp.local
+title: "airbyte.mcp.local Module"
+sidebar_label: "airbyte.mcp.local"
 ---
+
+# `airbyte.mcp.local` Module
 
 Local MCP operations.
 

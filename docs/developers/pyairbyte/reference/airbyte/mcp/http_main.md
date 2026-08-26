@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-http_main
-title: airbyte.mcp.http_main
+title: "airbyte.mcp.http_main Module"
+sidebar_label: "airbyte.mcp.http_main"
 ---
+
+# `airbyte.mcp.http_main` Module
 
 HTTP transport entry point for the Airbyte MCP server.
 

@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-constants
-title: airbyte.cloud.constants
+title: "airbyte.cloud.constants Module"
+sidebar_label: "airbyte.cloud.constants"
 ---
+
+# `airbyte.cloud.constants` Module
 
 Useful constants for working with Airbyte Cloud features in PyAirbyte.
 

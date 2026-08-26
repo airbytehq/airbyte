@@ -1,7 +1,10 @@
 ---
 id: airbyte-callbacks
-title: airbyte.callbacks
+title: "airbyte.callbacks Module"
+sidebar_label: "airbyte.callbacks"
 ---
+
+# `airbyte.callbacks` Module
 
 Callbacks for working with PyAirbyte.
 

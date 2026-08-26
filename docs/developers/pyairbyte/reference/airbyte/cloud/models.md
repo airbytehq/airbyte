@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-models
-title: airbyte.cloud.models
+title: "airbyte.cloud.models Module"
+sidebar_label: "airbyte.cloud.models"
 ---
+
+# `airbyte.cloud.models` Module
 
 Public response models for Airbyte Cloud APIs.
 

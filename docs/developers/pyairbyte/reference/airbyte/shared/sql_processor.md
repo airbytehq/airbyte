@@ -1,7 +1,10 @@
 ---
 id: airbyte-shared-sql_processor
-title: airbyte.shared.sql_processor
+title: "airbyte.shared.sql_processor Module"
+sidebar_label: "airbyte.shared.sql_processor"
 ---
+
+# `airbyte.shared.sql_processor` Module
 
 The base SQL Cache implementation.
 

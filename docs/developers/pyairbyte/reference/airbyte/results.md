@@ -1,7 +1,10 @@
 ---
 id: airbyte-results
-title: airbyte.results
+title: "airbyte.results Module"
+sidebar_label: "airbyte.results"
 ---
+
+# `airbyte.results` Module
 
 Module which defines the `ReadResult` and `WriteResult` classes.
 

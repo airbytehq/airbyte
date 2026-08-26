@@ -1,7 +1,10 @@
 ---
 id: airbyte-types
-title: airbyte.types
+title: "airbyte.types Module"
+sidebar_label: "airbyte.types"
 ---
+
+# `airbyte.types` Module
 
 Type conversion methods for SQL Caches.
 

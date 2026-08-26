@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-cloud
-title: airbyte.mcp.cloud
+title: "airbyte.mcp.cloud Module"
+sidebar_label: "airbyte.mcp.cloud"
 ---
+
+# `airbyte.mcp.cloud` Module
 
 Airbyte Cloud MCP operations.
 

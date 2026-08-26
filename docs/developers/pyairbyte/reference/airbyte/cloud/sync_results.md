@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-sync_results
-title: airbyte.cloud.sync_results
+title: "airbyte.cloud.sync_results Module"
+sidebar_label: "airbyte.cloud.sync_results"
 ---
+
+# `airbyte.cloud.sync_results` Module
 
 Sync results for Airbyte Cloud workspaces.
 

@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-bigquery
-title: airbyte.caches.bigquery
+title: "airbyte.caches.bigquery Module"
+sidebar_label: "airbyte.caches.bigquery"
 ---
+
+# `airbyte.caches.bigquery` Module
 
 A BigQuery implementation of the cache.
 

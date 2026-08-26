@@ -1,7 +1,10 @@
 ---
 id: airbyte-shared-state_writers
-title: airbyte.shared.state_writers
+title: "airbyte.shared.state_writers Module"
+sidebar_label: "airbyte.shared.state_writers"
 ---
+
+# `airbyte.shared.state_writers` Module
 
 State writer implementation.
 

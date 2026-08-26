@@ -1,7 +1,10 @@
 ---
 id: airbyte-index
-title: airbyte
+title: "airbyte Module"
+sidebar_label: "airbyte"
 ---
+
+# `airbyte` Module
 
 ***PyAirbyte brings the power of Airbyte to every Python developer.***
 

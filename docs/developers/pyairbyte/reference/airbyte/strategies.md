@@ -1,7 +1,10 @@
 ---
 id: airbyte-strategies
-title: airbyte.strategies
+title: "airbyte.strategies Module"
+sidebar_label: "airbyte.strategies"
 ---
+
+# `airbyte.strategies` Module
 
 Read and write strategies for PyAirbyte.
 

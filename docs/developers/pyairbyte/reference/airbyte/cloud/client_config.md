@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-client_config
-title: airbyte.cloud.client_config
+title: "airbyte.cloud.client_config Module"
+sidebar_label: "airbyte.cloud.client_config"
 ---
+
+# `airbyte.cloud.client_config` Module
 
 Cloud client configuration for Airbyte Cloud API authentication.
 

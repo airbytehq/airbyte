@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-auth
-title: airbyte.cloud.auth
+title: "airbyte.cloud.auth Module"
+sidebar_label: "airbyte.cloud.auth"
 ---
+
+# `airbyte.cloud.auth` Module
 
 Authentication-related constants and utilities for the Airbyte Cloud.
 

@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-generic
-title: airbyte.caches.generic
+title: "airbyte.caches.generic Module"
+sidebar_label: "airbyte.caches.generic"
 ---
+
+# `airbyte.caches.generic` Module
 
 A Generic SQL Cache implementation.
 

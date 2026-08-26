@@ -1,7 +1,10 @@
 ---
 id: airbyte-sources-base
-title: airbyte.sources.base
+title: "airbyte.sources.base Module"
+sidebar_label: "airbyte.sources.base"
 ---
+
+# `airbyte.sources.base` Module
 
 Base class implementation for sources.
 

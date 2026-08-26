@@ -1,7 +1,10 @@
 ---
 id: airbyte-destinations-base
-title: airbyte.destinations.base
+title: "airbyte.destinations.base Module"
+sidebar_label: "airbyte.destinations.base"
 ---
+
+# `airbyte.destinations.base` Module
 
 Destination base classes.
 

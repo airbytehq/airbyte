@@ -1,7 +1,10 @@
 ---
 id: airbyte-sources-util
-title: airbyte.sources.util
+title: "airbyte.sources.util Module"
+sidebar_label: "airbyte.sources.util"
 ---
+
+# `airbyte.sources.util` Module
 
 Utility functions for working with sources.
 

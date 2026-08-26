@@ -1,7 +1,10 @@
 ---
 id: airbyte-validate
-title: airbyte.validate
+title: "airbyte.validate Module"
+sidebar_label: "airbyte.validate"
 ---
+
+# `airbyte.validate` Module
 
 Defines the `airbyte-lib-validate-source` CLI.
 

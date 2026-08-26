@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-duckdb
-title: airbyte.caches.duckdb
+title: "airbyte.caches.duckdb Module"
+sidebar_label: "airbyte.caches.duckdb"
 ---
+
+# `airbyte.caches.duckdb` Module
 
 A DuckDB implementation of the PyAirbyte cache.
 

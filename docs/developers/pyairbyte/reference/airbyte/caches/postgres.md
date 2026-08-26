@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-postgres
-title: airbyte.caches.postgres
+title: "airbyte.caches.postgres Module"
+sidebar_label: "airbyte.caches.postgres"
 ---
+
+# `airbyte.caches.postgres` Module
 
 A Postgres implementation of the PyAirbyte cache.
 

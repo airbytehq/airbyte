@@ -1,7 +1,10 @@
 ---
 id: airbyte-destinations-util
-title: airbyte.destinations.util
+title: "airbyte.destinations.util Module"
+sidebar_label: "airbyte.destinations.util"
 ---
+
+# `airbyte.destinations.util` Module
 
 Destination utilities.
 

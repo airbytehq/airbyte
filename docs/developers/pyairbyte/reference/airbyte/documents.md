@@ -1,7 +1,10 @@
 ---
 id: airbyte-documents
-title: airbyte.documents
+title: "airbyte.documents Module"
+sidebar_label: "airbyte.documents"
 ---
+
+# `airbyte.documents` Module
 
 This module contains the `Documents` class for converting Airbyte records into documents.
 

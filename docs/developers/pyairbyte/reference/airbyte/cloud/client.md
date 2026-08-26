@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-client
-title: airbyte.cloud.client
+title: "airbyte.cloud.client Module"
+sidebar_label: "airbyte.cloud.client"
 ---
+
+# `airbyte.cloud.client` Module
 
 PyAirbyte Cloud client.
 

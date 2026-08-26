@@ -1,7 +1,10 @@
 ---
 id: airbyte-shared-state_providers
-title: airbyte.shared.state_providers
+title: "airbyte.shared.state_providers Module"
+sidebar_label: "airbyte.shared.state_providers"
 ---
+
+# `airbyte.shared.state_providers` Module
 
 State provider implementation.
 

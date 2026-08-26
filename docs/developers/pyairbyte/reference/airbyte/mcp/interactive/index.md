@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-interactive-index
-title: airbyte.mcp.interactive
+title: "airbyte.mcp.interactive Module"
+sidebar_label: "airbyte.mcp.interactive"
 ---
+
+# `airbyte.mcp.interactive` Module
 
 Interactive MCP tools for UI-capable clients.
 

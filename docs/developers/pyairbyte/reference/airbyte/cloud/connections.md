@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-connections
-title: airbyte.cloud.connections
+title: "airbyte.cloud.connections Module"
+sidebar_label: "airbyte.cloud.connections"
 ---
+
+# `airbyte.cloud.connections` Module
 
 Cloud Connections.
 

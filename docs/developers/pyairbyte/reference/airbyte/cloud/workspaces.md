@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-workspaces
-title: airbyte.cloud.workspaces
+title: "airbyte.cloud.workspaces Module"
+sidebar_label: "airbyte.cloud.workspaces"
 ---
+
+# `airbyte.cloud.workspaces` Module
 
 PyAirbyte classes and methods for interacting with the Airbyte Cloud API.
 

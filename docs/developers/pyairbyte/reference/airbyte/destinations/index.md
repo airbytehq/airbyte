@@ -1,7 +1,10 @@
 ---
 id: airbyte-destinations-index
-title: airbyte.destinations
+title: "airbyte.destinations Module"
+sidebar_label: "airbyte.destinations"
 ---
+
+# `airbyte.destinations` Module
 
 Destinations module.
 

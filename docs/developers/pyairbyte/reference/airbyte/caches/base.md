@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-base
-title: airbyte.caches.base
+title: "airbyte.caches.base Module"
+sidebar_label: "airbyte.caches.base"
 ---
+
+# `airbyte.caches.base` Module
 
 SQL Cache implementation.
 

@@ -1,7 +1,10 @@
 ---
 id: airbyte-progress
-title: airbyte.progress
+title: "airbyte.progress Module"
+sidebar_label: "airbyte.progress"
 ---
+
+# `airbyte.progress` Module
 
 A simple progress bar for the command line and IPython notebooks.
 

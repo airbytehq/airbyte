@@ -1,7 +1,10 @@
 ---
 id: airbyte-cloud-organizations
-title: airbyte.cloud.organizations
+title: "airbyte.cloud.organizations Module"
+sidebar_label: "airbyte.cloud.organizations"
 ---
+
+# `airbyte.cloud.organizations` Module
 
 PyAirbyte classes and methods for Airbyte Cloud organizations.
 

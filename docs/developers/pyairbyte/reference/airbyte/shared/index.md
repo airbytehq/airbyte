@@ -1,7 +1,10 @@
 ---
 id: airbyte-shared-index
-title: airbyte.shared
+title: "airbyte.shared Module"
+sidebar_label: "airbyte.shared"
 ---
+
+# `airbyte.shared` Module
 
 Module for future CDK components.
 

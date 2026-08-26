@@ -1,7 +1,10 @@
 ---
 id: airbyte-exceptions
-title: airbyte.exceptions
+title: "airbyte.exceptions Module"
+sidebar_label: "airbyte.exceptions"
 ---
+
+# `airbyte.exceptions` Module
 
 All exceptions used in the PyAirbyte.
 

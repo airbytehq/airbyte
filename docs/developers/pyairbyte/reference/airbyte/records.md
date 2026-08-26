@@ -1,7 +1,10 @@
 ---
 id: airbyte-records
-title: airbyte.records
+title: "airbyte.records Module"
+sidebar_label: "airbyte.records"
 ---
+
+# `airbyte.records` Module
 
 PyAirbyte Records module.
 

@@ -1,7 +1,10 @@
 ---
 id: airbyte-sources-registry
-title: airbyte.sources.registry
+title: "airbyte.sources.registry Module"
+sidebar_label: "airbyte.sources.registry"
 ---
+
+# `airbyte.sources.registry` Module
 
 Backwards compatibility shim for airbyte.sources.registry.
 

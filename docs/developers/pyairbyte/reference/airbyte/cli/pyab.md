@@ -1,7 +1,10 @@
 ---
 id: airbyte-cli-pyab
-title: airbyte.cli.pyab
+title: "airbyte.cli.pyab Module"
+sidebar_label: "airbyte.cli.pyab"
 ---
+
+# `airbyte.cli.pyab` Module
 
 CLI for PyAirbyte.
 

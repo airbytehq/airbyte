@@ -1,7 +1,10 @@
 ---
 id: airbyte-caches-motherduck
-title: airbyte.caches.motherduck
+title: "airbyte.caches.motherduck Module"
+sidebar_label: "airbyte.caches.motherduck"
 ---
+
+# `airbyte.caches.motherduck` Module
 
 A MotherDuck implementation of the PyAirbyte cache, built on DuckDB.
 

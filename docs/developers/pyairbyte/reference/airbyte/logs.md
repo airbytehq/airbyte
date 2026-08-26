@@ -1,7 +1,10 @@
 ---
 id: airbyte-logs
-title: airbyte.logs
+title: "airbyte.logs Module"
+sidebar_label: "airbyte.logs"
 ---
+
+# `airbyte.logs` Module
 
 PyAirbyte Logging features and related configuration.
 

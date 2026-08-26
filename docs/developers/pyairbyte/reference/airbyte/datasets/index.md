@@ -1,7 +1,10 @@
 ---
 id: airbyte-datasets-index
-title: airbyte.datasets
+title: "airbyte.datasets Module"
+sidebar_label: "airbyte.datasets"
 ---
+
+# `airbyte.datasets` Module
 
 PyAirbyte dataset classes.
 

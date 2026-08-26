@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-registry
-title: airbyte.mcp.registry
+title: "airbyte.mcp.registry Module"
+sidebar_label: "airbyte.mcp.registry"
 ---
+
+# `airbyte.mcp.registry` Module
 
 Airbyte connector registry MCP operations.
 

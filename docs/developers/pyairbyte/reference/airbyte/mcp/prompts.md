@@ -1,7 +1,10 @@
 ---
 id: airbyte-mcp-prompts
-title: airbyte.mcp.prompts
+title: "airbyte.mcp.prompts Module"
+sidebar_label: "airbyte.mcp.prompts"
 ---
+
+# `airbyte.mcp.prompts` Module
 
 MCP prompt definitions for the Airbyte Replication MCP server.
 

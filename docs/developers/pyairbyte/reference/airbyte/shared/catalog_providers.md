@@ -1,7 +1,10 @@
 ---
 id: airbyte-shared-catalog_providers
-title: airbyte.shared.catalog_providers
+title: "airbyte.shared.catalog_providers Module"
+sidebar_label: "airbyte.shared.catalog_providers"
 ---
+
+# `airbyte.shared.catalog_providers` Module
 
 Catalog provider implementation.
 

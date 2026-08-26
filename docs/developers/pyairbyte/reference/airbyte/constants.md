@@ -1,7 +1,10 @@
 ---
 id: airbyte-constants
-title: airbyte.constants
+title: "airbyte.constants Module"
+sidebar_label: "airbyte.constants"
 ---
+
+# `airbyte.constants` Module
 
 Constants shared across the PyAirbyte codebase.
 
