@@ -6,13 +6,13 @@ The connector reads from PayPal's REST APIs and authenticates with the [OAuth 2.
 
 ## Prerequisites
 
-- A PayPal business account. The reporting endpoints behind the `transactions` and `balances` streams aren't available to personal accounts.
+- A PayPal business account. Personal accounts can't call the business-level APIs this connector reads from.
 - A REST API app in the PayPal Developer Dashboard. The app provides the client ID and client secret the connector uses.
-- The **Transaction Search** feature enabled on that app. `transactions` and `balances` call PayPal's reporting APIs, which need the `https://uri.paypal.com/services/reporting/search/read` scope. Without it, PayPal rejects those streams with `NOT_AUTHORIZED` or `PERMISSION_DENIED`.
+- The **Transaction Search** feature enabled on that app. The `transactions` and `balances` streams call the [Transaction Search API](https://developer.paypal.com/docs/api/transaction-search/v1/), which requires the `https://uri.paypal.com/services/reporting/search/read` scope. Without it, PayPal rejects those streams with `NOT_AUTHORIZED`.
 
 :::warning
 
-PayPal caches access tokens for up to nine hours. If you enable **Transaction Search** on an app that has already requested tokens, the new scope can take up to nine hours to appear in a freshly issued token. Until then, the reporting streams keep failing with permission errors.
+If the app already made other PayPal API requests before you enabled **Transaction Search**, PayPal says the new permission can take up to nine hours to apply to newly issued access tokens. Until it does, the `transactions` and `balances` streams keep failing with permission errors.
 
 :::
 
@@ -56,15 +56,15 @@ The PayPal Transaction source connector supports the following [sync modes](http
 
 ## Supported streams
 
-| Stream                                                                       | PayPal endpoint                      | Sync modes                | Cursor field               | Page size              | Date window                         |
-| :--------------------------------------------------------------------------- | :----------------------------------- | :------------------------ | :------------------------- | :--------------------- | :---------------------------------- |
-| [Transactions](https://developer.paypal.com/api/transaction-search/v1)       | `GET /v1/reporting/transactions`     | Full refresh, incremental | `transaction_updated_date` | 500                    | 1 to 31 days (default 7)            |
-| [Balances](https://developer.paypal.com/api/transaction-search/v1)           | `GET /v1/reporting/balances`         | Full refresh, incremental | `as_of_time`               | 500                    | One request per cursor value        |
-| [List Products](https://developer.paypal.com/api/catalog-products/v1)        | `GET /v1/catalogs/products`          | Full refresh              | None                       | 20                     | Not applicable                      |
-| [Show Product Details](https://developer.paypal.com/api/catalog-products/v1) | `GET /v1/catalogs/products/{id}`     | Full refresh              | None                       | One record per request | Not applicable                      |
-| [List Disputes](https://developer.paypal.com/api/customer-disputes/v1)       | `GET /v1/customer/disputes`          | Full refresh, incremental | `updated_time_cut`         | 50                     | 1 to 31 days (default 7)            |
-| [Search Invoices](https://developer.paypal.com/api/invoicing/v2)             | `POST /v2/invoicing/search-invoices` | Full refresh              | None                       | 100                    | Start Date to End Date in one range |
-| [List Payments](https://developer.paypal.com/api/deprecated/payments/v1)     | `GET /v1/payments/payment`           | Full refresh, incremental | `update_time`              | 20                     | 1 to 31 days (default 7)            |
+| Stream                                                                             | PayPal endpoint                      | Sync modes                | Cursor field               | Page size              | Date window                         |
+| :--------------------------------------------------------------------------------- | :----------------------------------- | :------------------------ | :------------------------- | :--------------------- | :---------------------------------- |
+| [Transactions](https://developer.paypal.com/docs/api/transaction-search/v1/)       | `GET /v1/reporting/transactions`     | Full refresh, incremental | `transaction_updated_date` | 500                    | 1 to 31 days (default 7)            |
+| [Balances](https://developer.paypal.com/docs/api/transaction-search/v1/)           | `GET /v1/reporting/balances`         | Full refresh, incremental | `as_of_time`               | 500                    | One request per cursor value        |
+| [List Products](https://developer.paypal.com/docs/api/catalog-products/v1/)        | `GET /v1/catalogs/products`          | Full refresh              | None                       | 20                     | Not applicable                      |
+| [Show Product Details](https://developer.paypal.com/docs/api/catalog-products/v1/) | `GET /v1/catalogs/products/{id}`     | Full refresh              | None                       | One record per request | Not applicable                      |
+| [List Disputes](https://developer.paypal.com/docs/api/customer-disputes/v1/)       | `GET /v1/customer/disputes`          | Full refresh, incremental | `updated_time_cut`         | 50                     | 1 to 31 days (default 7)            |
+| [Search Invoices](https://developer.paypal.com/docs/api/invoicing/v2/)             | `POST /v2/invoicing/search-invoices` | Full refresh              | None                       | 100                    | Start Date to End Date in one range |
+| [List Payments](https://developer.paypal.com/api/deprecated/payments/v1)           | `GET /v1/payments/payment`           | Full refresh, incremental | `update_time`              | 20                     | 1 to 31 days (default 7)            |
 
 Page sizes are fixed. The connector always requests the maximum PayPal allows for each endpoint.
 
