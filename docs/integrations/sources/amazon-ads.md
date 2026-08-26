@@ -87,6 +87,7 @@ This source is capable of syncing the following streams:
 - [Portfolios](https://advertising.amazon.com/API/docs/en-us/reference/2/portfolios#/Portfolios%20extended)
 - [Sponsored Brands Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Campaigns)
 - [Sponsored Brands Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Ad%20groups)
+- [Sponsored Brands Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod#tag/Ads/operation/ListSponsoredBrandsAds)
 - [Sponsored Brands Keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi#/Keywords)
 - [Sponsored Display Campaigns](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Campaigns)
 - [Sponsored Display Ad groups](https://advertising.amazon.com/API/docs/en-us/sponsored-display/3-0/openapi#/Ad%20groups)
@@ -103,7 +104,7 @@ This source is capable of syncing the following streams:
 - [Sponsored Products Campaign Negative keywords](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Negative%20keywords)
 - [Sponsored Products Ads](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20ads)
 - [Sponsored Products Targetings](https://advertising.amazon.com/API/docs/en-us/sponsored-products/2-0/openapi#/Product%20targeting)
-- [Sponsored Brands Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview) (Purchased Products, Campaigns, Ad Groups)
+- [Sponsored Brands Reports](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/overview) (Purchased Products, Campaigns, Ad Groups, Ads)
 - Sponsored Display Reports (Campaigns, Ad Groups, Product Ads, Targets, ASINs)
 - Sponsored Products Reports (Campaigns, Ad Groups, Keywords, Targets, Product Ads, ASINs Keywords, ASINs Targets)
 - [Attribution Reports](https://advertising.amazon.com/API/docs/en-us/amazon-attribution-prod-3p/#/) (Products, Performance by Ad Group, Performance by Campaign, Performance by Creative)
@@ -139,15 +140,45 @@ Amazon may incorrectly detect duplicate report requests when syncing both summar
 
 ### Sponsored Brands report types
 
-The connector provides three types of Sponsored Brands V3 reports, each using a different Amazon Ads report type:
+The connector provides four types of Sponsored Brands V3 reports, each using a different Amazon Ads report type:
 
 | Stream prefix | Report type | Use case |
 | :--- | :--- | :--- |
-| `sponsored_brands_v3_report_stream` | `sbPurchasedProduct` | Purchased-product attribution data. Does not include `cost`. |
-| `sponsored_brands_campaigns_report_stream` | `sbCampaigns` | Campaign-level spend and performance (`cost`, `clicks`, `impressions`, `sales`, `purchases`, `unitsSold`). |
-| `sponsored_brands_adgroups_report_stream` | `sbAdGroup` | Ad-group-level spend and performance metrics. |
+| `sponsored_brands_v3_report_stream` | `sbPurchasedProduct` | Purchased-product attribution data. Does not include `cost`, `clicks`, or `impressions`. |
+| `sponsored_brands_campaigns_report_stream` | `sbCampaigns` | Campaign-level spend, traffic, conversion, and video metrics. |
+| `sponsored_brands_adgroups_report_stream` | `sbAdGroup` | Ad-group-level spend, traffic, conversion, and video metrics. |
+| `sponsored_brands_ads_report_stream` | `sbAds` | Ad-level metrics, keyed by `adId`. Join to `sponsored_brands_ads` to attribute metrics to a creative. |
 
 Each stream above is available in both summary and daily variants.
+
+### Identifying Sponsored Brands Video campaigns
+
+Sponsored Brands V3 reports do not carry a creative-type or ad-format column. Creative type moved to the ad entity when Amazon released Sponsored Brands V4, so use the `sponsored_brands_ads` stream: its `creative.type` field is one of `AUTO_COLLECTION`, `BRAND_VIDEO`, `MANUAL_COLLECTION`, `PRODUCT_COLLECTION`, `STORE_SPOTLIGHT`, or `VIDEO`. Join `sponsored_brands_ads.adId` to `sponsored_brands_ads_report_stream.adId` to split reporting by creative type.
+
+The connector does not set `creativeVersionToReturn` on the ads request, so Amazon returns its default `LATEST` creative for each ad — the newest revision, which may still be moderation-pending or rejected rather than the one that served during the report period. `creative.type` is fixed when an ad is created and is unaffected, but the editable fields (`creative.headline`, `creative.asins`, `creative.customImageUrl`, and so on) can describe an unapproved revision. Filter on `creative.creativeStatus` and `creative.creativeVersion`, both of which the stream emits, if you need only the serving creative.
+
+:::note
+Amazon types `adId` as a string on the ads entity API but as an integer in reporting v3, so the two streams land with different column types in your destination. Cast one side when joining — for example `... ON CAST(ads.adId AS STRING) = CAST(rpt.adId AS STRING)`. The same applies to `adGroupId` and `campaignId`.
+
+The same cast is needed between two _report_ streams. `sponsored_brands_ads_report_stream` declares `campaignId`, `adGroupId`, and `adId` as integers, matching Amazon's reporting v3 column reference. `sponsored_brands_campaigns_report_stream` and `sponsored_brands_adgroups_report_stream` still declare `campaignId` and `adGroupId` as strings; that typing predates these streams and cannot be corrected without a breaking schema change, so it is scheduled for the next major version. Until then, cast both sides when rolling ad-level metrics up to ad group or campaign level.
+
+Ads that belong to a legacy version 3 (non-multi-ad-group) Sponsored Brands campaign carry no `adId` and no `name` — Amazon lists only `adGroupId`, `campaignId`, and `state` as required on the [`Ad` object](https://advertising.amazon.com/API/docs/en-us/sponsored-brands/3-0/openapi/prod#tag/Ads/operation/ListSponsoredBrandsAds) and repeats the caveat in [Managing Sponsored Brands campaigns](https://advertising.amazon.com/API/docs/en-us/guides/sponsored-brands/campaigns/managing-multi-ad-group-campaigns#ads). Those rows arrive with `adId` null, so they never match the join above, and the `sponsored_brands_ads` primary key (`campaignId` + `adGroupId` + `adId`) effectively degrades to `campaignId` + `adGroupId` for them — pick a deduplicating destination sync mode for this stream only if one row per `(campaignId, adGroupId)` is acceptable for your legacy campaigns. This is the same population the `sbAds` preview excludes (see the warning below), so while the preview is in effect those ads have no report rows to join to anyway.
+:::
+
+The `sbCampaigns`, `sbAdGroup`, and `sbAds` reports carry the video metrics that the removed V2 `sponsored_brands_video_report_stream` returned. These are video-only metrics, so they are populated only for video creatives. Amazon does not offer every metric on every report type:
+
+| Metric | `sbCampaigns` | `sbAdGroup` | `sbAds` |
+| :--- | :---: | :---: | :---: |
+| `video5SecondViews`, `video5SecondViewRate`, `videoCompleteViews`, `videoFirstQuartileViews`, `videoMidpointViews`, `videoThirdQuartileViews`, `videoUnmutes` | ✅ | ✅ | ✅ |
+| `viewabilityRate` (V2 `vtr`) | ✅ | ✅ | ✅ |
+| `viewableImpressions` | ✅ | — | ✅ |
+| `viewClickThroughRate` (V2 `vctr`) | ✅ | — | — |
+
+Amazon's own references disagree on three of those cells. The [ad group](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad-group) and [ad](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad) report-type pages leave `viewableImpressions` and `viewClickThroughRate` out of the `sbAdGroup` metric list and `viewClickThroughRate` out of the `sbAds` list, while the [column reference](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/columns) lists `sbAdGroups` and `sbAds` under the "Report types" of both metrics. The connector follows the report-type pages, because Amazon rejects an entire report request when one column is not accepted for that report type, so guessing wrong returns no rows at all rather than one empty column. If you need these metrics at the ad group or ad level, open an issue and we will confirm against a live account.
+
+:::warning
+Amazon ships the `sbCampaigns`, `sbAdGroup`, and `sbAds` report types in preview. While they are in preview, Amazon excludes all data for Sponsored Brands campaigns whose `isMultiAdGroupsEnabled` flag is `false`, as noted on the [campaign](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/campaign), [ad group](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad-group), and [ad](https://advertising.amazon.com/API/docs/en-us/guides/reporting/v3/report-types/ad) report-type pages. Those campaigns return no rows and the sync still succeeds, so the gap is silent. Sync the `sponsored_brands_campaigns` stream and check its `isMultiAdGroupsEnabled` field to see which of your campaigns are excluded; enabling multiple ad groups on a campaign in the Amazon Ads console brings it into V3 reporting. When a campaign becomes V3-eligible — because you enabled multiple ad groups, or because Amazon ends the preview — clear the state of the affected report streams and resync. These streams are incremental with a 3-day lookback (`look_back_window`), so without a state reset they resume from the current cursor and the newly-available history inside Amazon's 60-day retention window is never fetched. `sponsored_brands_v3_report_stream` (`sbPurchasedProduct`) is not in preview and is unaffected.
+:::
 
 ## Performance considerations
 
@@ -185,6 +216,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 9.1.0 | 2026-08-20 | [83744](https://github.com/airbytehq/airbyte/pull/83744) | Add `sponsored_brands_ads` (`POST /sb/v4/ads/list`), `sponsored_brands_ads_report_stream`, and `sponsored_brands_ads_report_stream_daily`; request the full documented column set for the `sbCampaigns`, `sbAdGroup`, and `sbAds` report types, which restores the removed V2 `sponsored_brands_video_report_stream` video metrics in full on `sbCampaigns`, all but `viewClickThroughRate` (V2 `vctr`) on `sbAds`, and all but `viewClickThroughRate` and `viewableImpressions` on `sbAdGroup` — Amazon's report-type pages do not list those columns for those report types, and the V2 keyword grain has no V3 equivalent (see [Identifying Sponsored Brands Video campaigns](#identifying-sponsored-brands-video-campaigns)); add `goal`, `isMultiAdGroupsEnabled`, `kpi`, `siteRestrictions`, and `targetedPGDealId` to the `sponsored_brands_campaigns` schema; retry throttling and server errors on the entity streams instead of treating them as an empty page. All changes are additive — refresh the source schema in each connection to pick up the new fields. |
+| 9.0.7 | 2026-08-11 | [83379](https://github.com/airbytehq/airbyte/pull/83379) | Update dependencies |
+| 9.0.6 | 2026-07-28 | [82817](https://github.com/airbytehq/airbyte/pull/82817) | Update dependencies |
+| 9.0.5 | 2026-07-21 | [82341](https://github.com/airbytehq/airbyte/pull/82341) | Update dependencies |
+| 9.0.4 | 2026-07-14 | [81732](https://github.com/airbytehq/airbyte/pull/81732) | Update dependencies |
 | 9.0.3 | 2026-07-01 | [81333](https://github.com/airbytehq/airbyte/pull/81333) | Use `min_datetime` to cap report start date to Amazon's 60-day data retention limit, fixing off-by-one that requested 61 days back |
 | 9.0.2 | 2026-06-30 | [80957](https://github.com/airbytehq/airbyte/pull/80957) | Update dependencies |
 | 9.0.1 | 2026-06-23 | [80363](https://github.com/airbytehq/airbyte/pull/80363) | Update dependencies |
