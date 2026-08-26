@@ -11,6 +11,7 @@ https://github.com/airbytehq/oncall/issues/11998 for context.
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -20,11 +21,15 @@ from unittest.mock import MagicMock
 import pytest
 import yaml
 from requests import Response
+from test_incremental_boundary import _issue
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.sources.streams.http.error_handlers import ResponseAction
 from airbyte_cdk.sources.types import StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 
 
 MANIFEST_PATH = str(Path(__file__).resolve().parents[1] / "manifest.yaml")
@@ -162,9 +167,261 @@ def test_issues_and_projects_schemas_declare_trashed(stream_name: str, manifest:
     assert set(trashed["type"]) == {"boolean", "null"}
 
 
+def _request(body: Mapping[str, Any]) -> HttpRequest:
+    return HttpRequest("https://api.linear.app/graphql", body=body)
+
+
+def _connection_response(
+    field: str,
+    records: list[Mapping[str, Any]],
+    *,
+    has_next_page: bool = False,
+    end_cursor: str | None = None,
+) -> HttpResponse:
+    return HttpResponse(
+        body=json.dumps(
+            {
+                "data": {
+                    field: {
+                        "nodes": records,
+                        "pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor},
+                    }
+                }
+            }
+        )
+    )
+
+
+def _history_response(
+    records: list[Mapping[str, Any]],
+    *,
+    has_next_page: bool = False,
+    end_cursor: str | None = None,
+) -> HttpResponse:
+    return HttpResponse(
+        body=json.dumps(
+            {
+                "data": {
+                    "issue": {
+                        "history": {
+                            "nodes": records,
+                            "pageInfo": {"hasNextPage": has_next_page, "endCursor": end_cursor},
+                        }
+                    }
+                }
+            }
+        )
+    )
+
+
+def _missing_issue_history_response() -> HttpResponse:
+    return HttpResponse(body=json.dumps({"data": {"issue": None}}))
+
+
+def test_issue_history_reads_each_parent_with_exact_requests_and_paginates() -> None:
+    source = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG)
+    streams_by_name = {stream.name: stream for stream in source.streams(config=CONFIG)}
+    child_stream = streams_by_name["issue_history"]
+    parent_stream = child_stream._stream_partition_generator._partition_factory._retriever.request_option_provider.parent_stream_configs[
+        0
+    ].stream
+    parent_body = _build_full_request_body(parent_stream, next_page_token=None)
+    assert "filter" not in parent_body["variables"]
+    child_body_1 = _build_full_request_body(
+        child_stream,
+        partition={"issue_id": "issue-1"},
+        next_page_token=None,
+    )
+    child_body_1_page_2 = _build_full_request_body(
+        child_stream,
+        partition={"issue_id": "issue-1"},
+        next_page_token={"next_page_token": "HISTORY-PAGE-2"},
+    )
+    child_body_2 = _build_full_request_body(
+        child_stream,
+        partition={"issue_id": "issue-2"},
+        next_page_token=None,
+    )
+    parent_request = _request(parent_body)
+    child_request_1 = _request(child_body_1)
+    child_request_1_page_2 = _request(child_body_1_page_2)
+    child_request_2 = _request(child_body_2)
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            parent_request,
+            _connection_response(
+                "issues",
+                [_issue("issue-1", "2023-12-15T00:00:00.000Z"), _issue("issue-2", "2024-05-01T02:00:00.000Z")],
+            ),
+        )
+        http_mocker.post(
+            child_request_1,
+            _history_response([{"id": "history-1"}], has_next_page=True, end_cursor="HISTORY-PAGE-2"),
+        )
+        http_mocker.post(child_request_1_page_2, _history_response([{"id": "history-2"}]))
+        http_mocker.post(child_request_2, _history_response([{"id": "history-3"}]))
+
+        output = read(
+            source,
+            config=CONFIG,
+            catalog=CatalogBuilder().with_stream("issue_history", SyncMode.full_refresh).build(),
+        )
+
+    records = {message.record.data["id"]: message.record.data for message in output.records}
+    assert {record["issueId"] for record in records.values()} == {"issue-1", "issue-2"}
+    assert records["history-1"]["issueId"] == "issue-1"
+    assert records["history-2"]["issueId"] == "issue-1"
+    assert records["history-3"]["issueId"] == "issue-2"
+    for request in (parent_request, child_request_1, child_request_1_page_2, child_request_2):
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+def test_issue_history_skips_missing_parent_issue() -> None:
+    source = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG)
+    streams_by_name = {stream.name: stream for stream in source.streams(config=CONFIG)}
+    child_stream = streams_by_name["issue_history"]
+    parent_stream = child_stream._stream_partition_generator._partition_factory._retriever.request_option_provider.parent_stream_configs[
+        0
+    ].stream
+    parent_request = _request(_build_full_request_body(parent_stream, next_page_token=None))
+    child_request_1 = _request(
+        _build_full_request_body(
+            child_stream,
+            partition={"issue_id": "issue-1"},
+            next_page_token=None,
+        )
+    )
+    child_request_2 = _request(
+        _build_full_request_body(
+            child_stream,
+            partition={"issue_id": "issue-2"},
+            next_page_token=None,
+        )
+    )
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            parent_request,
+            _connection_response(
+                "issues",
+                [_issue("issue-1", "2023-12-15T00:00:00.000Z"), _issue("issue-2", "2024-05-01T02:00:00.000Z")],
+            ),
+        )
+        http_mocker.post(child_request_1, _history_response([{"id": "history-1"}]))
+        http_mocker.post(child_request_2, _missing_issue_history_response())
+
+        output = read(
+            source,
+            config=CONFIG,
+            catalog=CatalogBuilder().with_stream("issue_history", SyncMode.full_refresh).build(),
+        )
+
+    records = {message.record.data["id"]: message.record.data for message in output.records}
+    assert set(records) == {"history-1"}
+    assert records["history-1"]["issueId"] == "issue-1"
+    for request in (parent_request, child_request_1, child_request_2):
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+def test_initiative_to_projects_flattens_join_keys_and_paginates() -> None:
+    source = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG)
+    streams_by_name = {stream.name: stream for stream in source.streams(config=CONFIG)}
+    stream = streams_by_name["initiative_to_projects"]
+    page_2_body = _build_full_request_body(
+        stream,
+        next_page_token={"next_page_token": "ITP-PAGE-2"},
+    )
+    assert page_2_body["variables"]["after"] == "ITP-PAGE-2", "paginator must inject variables.after"
+    page_1 = _request(_build_full_request_body(stream, next_page_token=None))
+    page_2 = _request(page_2_body)
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(
+            page_1,
+            _connection_response(
+                "initiativeToProjects",
+                [{"id": "link-1", "initiative": {"id": "initiative-1"}, "project": {"id": "project-1"}}],
+                has_next_page=True,
+                end_cursor="ITP-PAGE-2",
+            ),
+        )
+        http_mocker.post(
+            page_2,
+            _connection_response(
+                "initiativeToProjects",
+                [{"id": "link-2", "initiative": {"id": "initiative-2"}, "project": {"id": "project-2"}}],
+            ),
+        )
+
+        output = read(
+            source,
+            config=CONFIG,
+            catalog=CatalogBuilder().with_stream("initiative_to_projects", SyncMode.full_refresh).build(),
+        )
+
+    records = {message.record.data["id"]: message.record.data for message in output.records}
+    assert set(records) == {"link-1", "link-2"}
+    assert records["link-1"]["initiativeId"] == "initiative-1"
+    assert records["link-1"]["projectId"] == "project-1"
+    assert records["link-2"]["initiativeId"] == "initiative-2"
+    assert records["link-2"]["projectId"] == "project-2"
+    for request in (page_1, page_2):
+        http_mocker.assert_number_of_calls(request, 1)
+
+
+@pytest.mark.parametrize(
+    ("response", "expected"),
+    [
+        pytest.param(
+            {
+                "id": "initiative-1",
+                "creator": {"id": "user-1"},
+                "owner": {"id": "user-2"},
+                "parentInitiative": {"id": "parent-1"},
+            },
+            {"creatorId": "user-1", "ownerId": "user-2", "parentInitiativeId": "parent-1"},
+            id="relationships-present",
+        ),
+        pytest.param(
+            {"id": "initiative-2", "creator": None, "owner": None, "parentInitiative": None},
+            {"creatorId": None, "ownerId": None, "parentInitiativeId": None},
+            id="relationships-null",
+        ),
+    ],
+)
+def test_initiatives_flatten_nullable_relationships(
+    response: Mapping[str, Any],
+    expected: Mapping[str, Any],
+) -> None:
+    source = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG)
+    streams_by_name = {stream.name: stream for stream in source.streams(config=CONFIG)}
+    stream = streams_by_name["initiatives"]
+    request = _request(_build_full_request_body(stream, next_page_token=None))
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(request, _connection_response("initiatives", [response]))
+
+        output = read(
+            source=source,
+            config=CONFIG,
+            catalog=CatalogBuilder().with_stream("initiatives", SyncMode.full_refresh).build(),
+        )
+
+    assert len(output.records) == 1
+    record = output.records[0].record.data
+    assert {field: record.get(field) for field in expected} == expected
+    if any(value is None for value in expected.values()):
+        selector = next(iter(stream.generate_partitions()))._retriever.record_selector
+        transformed = list(selector.filter_and_transform([response], {}, stream.get_json_schema()))
+        assert len(transformed) == 1
+        assert {field: transformed[0].data[field] for field in expected} == expected
+
+
 def _build_full_request_body(
     stream: Any,
     *,
+    partition: Mapping[str, Any] | None = None,
     next_page_token: Mapping[str, Any] | None,
 ) -> Mapping[str, Any]:
     """Compose the HTTP request body that the retriever sends on a single page.
@@ -176,7 +433,7 @@ def _build_full_request_body(
     """
     if stream.name == "issue_history":
         retriever = stream._stream_partition_generator._partition_factory._retriever
-        stream_slice = StreamSlice(partition={"issue_id": "test-issue"}, cursor_slice={})
+        stream_slice = StreamSlice(partition=partition or {"issue_id": "test-issue"}, cursor_slice={})
     else:
         partitions = list(stream.generate_partitions())
         assert partitions, f"expected at least one partition for stream {stream.name}"
