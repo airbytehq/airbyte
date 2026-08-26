@@ -15,7 +15,7 @@ Your API key must have read permissions enabled for the modules that correspond 
 
 | Ashby permission module | Streams |
 | :--- | :--- |
-| Candidates | `applications`, `application_criteria_evaluations`, `candidates` |
+| Candidates | `applications`, `application_criteria_evaluations`, `application_history`, `candidates` |
 | Interviews | `interviews`, `interview_stages`, `interview_schedules` |
 | Jobs | `jobs`, `job_postings` |
 | Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `sources` |
@@ -32,7 +32,7 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 2. Generate an API key following the [Ashby authentication guide](https://developers.ashbyhq.com/reference/authentication). Grant the API key read permissions for the modules listed in the prerequisites. At minimum, you must enable the **Organization** read permission (required for the connection check) plus read permissions for any additional modules whose streams you want to sync.
 3. In Airbyte, create a new Ashby source.
 4. Enter your **API key**.
-5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector sends this date as the `createdAfter` filter on the `applications` and `interview_schedules` streams, so records created before it aren't replicated. The date also limits `application_criteria_evaluations`, because that stream reads the same filtered application list to decide which applications to request evaluations for. All other streams ignore the start date and always return everything the API exposes.
+5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector sends this date as the `createdAfter` filter on the `applications` and `interview_schedules` streams, so records created before it aren't replicated. The date also limits `application_criteria_evaluations` and `application_history`, because those streams read the same filtered application list to decide which applications to request child records for. All other streams ignore the start date and always return everything the API exposes.
 
 ## Supported sync modes
 
@@ -49,6 +49,7 @@ This source syncs the following streams:
 
 - [applications](https://developers.ashbyhq.com/reference/applicationlist)
 - [application_criteria_evaluations](https://developers.ashbyhq.com/reference/applicationlistcriteriaevaluations) (substream of applications)
+- [application_history](https://developers.ashbyhq.com/reference/applicationlisthistory) (substream of applications)
 - [archive_reasons](https://developers.ashbyhq.com/reference/archivereasonlist)
 - [candidate_tags](https://developers.ashbyhq.com/reference/candidatetaglist)
 - [candidates](https://developers.ashbyhq.com/reference/candidatelist)
@@ -67,9 +68,17 @@ This source syncs the following streams:
 
 The `application_criteria_evaluations` stream is a substream of `applications`. The connector requests evaluations only for applications whose current interview stage has the type `PreInterviewScreen` and whose status is neither `Archived` nor `Hired`, so it doesn't cover every application in your account. Each record carries an `application_id` field copied from the parent application, which is how you join evaluations back to `applications`. This stream has no primary key, and the connector doesn't paginate the evaluations endpoint, so only the first page of evaluations is synced for each application.
 
+The `application_history` stream is a full-refresh substream of `applications`. Each record is one interview stage an application entered, with the `enteredStageAt` and `leftStageAt` timestamps that no other Ashby endpoint exposes. Join `application_history.application_id` to `applications.id` and `application_history.stageId` to `interview_stages.id`. Along with `application_id`, the connector copies the parent application's status and creation timestamp into each record as `application_status` and `application_created_at`, so you can analyze stage timing without joining back to `applications`. The stream has a primary key of `id`, so deduplicating destinations key history events instead of appending a copy on every sync.
+
+The parent application list uses the same `createdAfter` filter as the `applications` stream. A start date later than your oldest application returns partial history rather than an error.
+
+The connector requests history one application at a time, and `application.listHistory` accepts neither a date filter nor a `syncToken`, so every sync re-reads the full history of every selected application. The connector also caps this endpoint at 100 requests per minute, which puts a floor on how long a sync can take: 10,000 applications need at least 100 minutes, and applications with more than 100 history records need additional requests to paginate. Sync this stream on its own connection with an infrequent schedule rather than alongside the other streams.
+
+If Ashby returns an `application_not_found` error for an application, which happens when the application is deleted or your API key can't access it, the connector skips that application's history, logs the Ashby request ID, and continues. It retries HTTP 429 and 5xx responses. Any other error fails the sync.
+
 ## Performance considerations
 
-Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time, so syncs are unlikely to be throttled. Ashby's rate limits apply per organization, so an API key shared with other integrations has less headroom.
+Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time, so syncs are unlikely to be throttled. Ashby's rate limits apply per organization, so an API key shared with other integrations has less headroom. To protect that shared headroom, the connector limits itself to 100 requests per minute against `application.listHistory`, the one endpoint it calls at least once per application. The connector applies no request budget to any other endpoint, though Ashby's per-organization limits still apply everywhere.
 
 ## IP allow list
 
@@ -86,6 +95,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 1.1.0 | 2026-08-25 | [84392](https://github.com/airbytehq/airbyte/pull/84392) | Add application history stream |
 | 1.0.1 | 2026-08-25 | [84405](https://github.com/airbytehq/airbyte/pull/84405) | Send the pagination page size using Ashby's documented `limit` field instead of the undocumented `per_page` field |
 | 1.0.0 | 2026-08-18 | [84274](https://github.com/airbytehq/airbyte/pull/84274) | Breaking: declare documented API fields across stream schemas, including element schemas for previously untyped array columns. Data-lake users must refresh the affected streams, then recreate the affected tables if a sync still fails. See the [migration guide](/integrations/sources/ashby-migrations). |
 | 0.3.9 | 2026-08-18 | [78554](https://github.com/airbytehq/airbyte/pull/78554) | Update dependencies |
