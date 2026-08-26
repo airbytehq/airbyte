@@ -5,15 +5,18 @@
 import logging
 import os
 from unittest.mock import MagicMock, patch
+from urllib.parse import urljoin
 
 import pytest
 import responses
 from source_github import constants
 from source_github.source import SourceGithub
+from source_github.streams import Branches
 
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteStream, Status, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.concurrent_source.concurrent_source import ConcurrentSource
+from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
@@ -83,6 +86,45 @@ def test_connection_fail_due_to_config_error(api_url, deployment_env, expected_m
     assert e.value.message == expected_message
 
 
+@pytest.mark.parametrize("api_url", ("https://github.example.com/api/v3", "https://github.example.com/api/v3/"))
+def test_api_url_slash_normalization_keeps_python_and_manifest_urls_consistent(api_url):
+    """The manifest concatenates after `.rstrip('/')`, but Python streams `urljoin` their
+    `url_base` with a relative path — which silently drops the last path segment of a GHES
+    base URL lacking a trailing slash (`.../api/v3` + `repos/...` -> `.../api/repos/...`).
+    `_ensure_default_values` must normalize the slash so both halves resolve the same base."""
+    config = {"access_token": "test_token", "repository": "org/repo", "api_url": api_url}
+    source = SourceGithub()
+    config = source._validate_and_transform_config(config)
+    assert config["api_url"] == "https://github.example.com/api/v3/"
+
+    stream = Branches(repositories=["org/repo"], page_size_for_large_streams=10, api_url=config["api_url"])
+    joined = urljoin(stream.url_base, stream.path(stream_slice={"repository": "org/repo"}))
+    assert joined == "https://github.example.com/api/v3/repos/org/repo/branches"
+
+    manifest_url_base = SourceGithub(config=config).resolved_manifest["definitions"]["requester_base"]["url_base"]
+    interpolated = InterpolatedString.create(manifest_url_base, parameters={}).eval(config)
+    assert interpolated == "https://github.example.com/api/v3"
+
+
+@pytest.mark.parametrize(
+    "api_url_value",
+    (
+        pytest.param({}, id="key_absent"),
+        pytest.param({"api_url": None}, id="present_but_null"),
+        pytest.param({"api_url": ""}, id="empty_string"),
+        pytest.param({"api_url": "https://api.github.com"}, id="no_trailing_slash"),
+        pytest.param({"api_url": "https://api.github.com/"}, id="already_normalized"),
+    ),
+)
+def test_api_url_default_covers_absent_null_and_empty(api_url_value):
+    """A null or empty `api_url` must land on the default rather than reaching `urlparse` as a
+    non-string. Null arrives via the API and Terraform, and the spec description tells users to
+    "leave it empty to use GitHub", so both are configurations the connector invites."""
+    config = SourceGithub()._validate_and_transform_config({"access_token": "test_token", "repository": "org/repo", **api_url_value})
+
+    assert config["api_url"] == "https://api.github.com/"
+
+
 def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
     requests_mock.get(
         "https://api.github.com/repos/airbytehq/airbyte",
@@ -96,8 +138,9 @@ def test_check_connection_repos_only(rate_limit_mock_response, requests_mock):
 
 
 def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests_mock):
-    # A real GitHub listing page holds at most `per_page` (100) records; the paginator
-    # stops on the first page with fewer than that.
+    # A real GitHub listing page holds at most `per_page` (100) records. The paginator follows
+    # GitHub's `rel="next"` link and stops when the link is absent, which is why these mocked
+    # responses — no Link header — are a single page regardless of how many records they hold.
     repos = [{"name": f"name {i}", "full_name": f"full name {i}", "updated_at": "2020-01-01T00:00:00Z"} for i in range(99)]
     requests_mock.get("https://api.github.com/orgs/airbytehq/repos", json=repos)
     requests_mock.get("https://api.github.com/orgs/org/repos", json=repos)
@@ -284,14 +327,8 @@ def test_streams_config_start_date(config, expected, rate_limit_mock_response, r
 @pytest.mark.parametrize(
     "error_message, expected_user_friendly_message",
     [
-        (
-            "404 Client Error: Not Found for url: https://api.github.com/repos/repo_name",
-            'Repo name: "repo_name" is unknown, "repository" config option should use existing full repo name <organization>/<repository>',
-        ),
-        (
-            "404 Client Error: Not Found for url: https://api.github.com/orgs/org_name",
-            'Organization name: "org_name" is unknown, "repository" config option should be updated. Please validate your repository config.',
-        ),
+        # No 404 cases: the shared manifest error handler maps 404 to IGNORE, so those two
+        # branches were unreachable and have been removed from the helper.
         (
             "401 Client Error: Unauthorized for url",
             "GitHub authentication failed (HTTP 401). Please verify your Personal Access Token or OAuth credentials are valid and not expired.",

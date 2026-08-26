@@ -201,15 +201,18 @@ properties:
    interaction and the date of conversion event completion. The default is TIME_OF_AD_ACTION.
 9. **Attribution Types (Optional)**: Lists the types of attribution for the report, such as
    INDIVIDUAL or HOUSEHOLD.
-10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select up to
-    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
-    and DELETED_DRAFT. Include ARCHIVED to report on archived campaigns.
-11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select up to
-    six values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT,
-    and DELETED_DRAFT.
-12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select up to six values
-    from: APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
-    DELETED_DRAFT. This filter is not supported for Product Item level reports.
+10. **Campaign Statuses (Optional)**: Filters custom report results by campaign status. Select
+    values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. Include ARCHIVED to report on archived campaigns. When more than six values are
+    selected, the connector automatically splits them across multiple Pinterest report requests.
+11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select
+    values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
+    DELETED_DRAFT. When more than six values are selected, the connector automatically splits them
+    across multiple Pinterest report requests.
+12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select values from:
+    APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and DELETED_DRAFT.
+    When more than six values are selected, the connector automatically splits them across multiple
+    Pinterest report requests. This filter is not supported for Product Item level reports.
 13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
     latest allowed date by the report API (913 days from today).
 
@@ -230,6 +233,18 @@ When the connector encounters a rate-limit response, it automatically waits usin
 workers** setting (default: 2, range: 1–40) to lower rate-limit pressure at the cost of slower
 syncs.
 
+Custom report status filters are sent in chunks of at most six values per dimension. Selecting
+many campaign, ad group, and ad statuses multiplies async report-creation requests by
+`ceil(campaign_statuses / 6) × ceil(ad_group_statuses / 6) × ceil(ad_statuses / 6)` for each
+account and date window (at most 8x, since each field has eight possible values). Every entity
+has exactly one status, so chunked requests return disjoint row sets - no rows are duplicated
+or lost. Selecting more than six values for a filter requires the report level to be at or
+below the filtered dimension (for example, more than six ad statuses require a
+`PIN_PROMOTION`-level report); at coarser levels the same aggregated rows would be returned by
+several chunks, so the connector rejects such configurations. The connector retries
+rate-limited report calls automatically. If you hit analytics rate limits, select fewer
+statuses or lower concurrent workers.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -241,6 +256,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 |:------------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.0 | 2026-08-24 | [80303](https://github.com/airbytehq/airbyte/pull/80303) | Split Pinterest custom report status filters into multiple API calls when more than six values are selected. |
 | 2.2.12 | 2026-08-18 | [84706](https://github.com/airbytehq/airbyte/pull/84706) | Update dependencies |
 | 2.2.11 | 2026-08-11 | [83997](https://github.com/airbytehq/airbyte/pull/83997) | Update dependencies |
 | 2.2.10 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |

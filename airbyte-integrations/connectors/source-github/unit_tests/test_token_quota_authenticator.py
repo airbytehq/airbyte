@@ -194,11 +194,14 @@ def test_all_tokens_exhausted_raises_transient_error(sleep_mock, requests_mock):
 
     def request_callback_orgs(request, context):
         nonlocal counter_orgs
-        while counter_orgs < 1_501:
+        # `if`, not `while`: this returns on the first iteration, and the authenticator raises
+        # once every token's quota is spent (3 x 500), so the fall-through is never reached.
+        if counter_orgs < 1_501:
             counter_orgs += 1
             context.headers = {"Link": '<https://api.github.com/orgs/org1?page=2>; rel="next"', "Content-Type": "application/json"}
             context.status_code = 200
             return json.dumps({"id": 1})
+        raise AssertionError("the authenticator should have failed before the quota allowed this many requests")
 
     requests_mock.get("https://api.github.com/orgs/org1", text=request_callback_orgs)
 

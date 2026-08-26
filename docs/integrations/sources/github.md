@@ -170,15 +170,15 @@ This connector outputs the following incremental streams:
 4. Sometimes for large streams specifying very distant `start_date` in the past may result in keep on getting error from GitHub instead of records \(respective `WARN` log message will be outputted\). In this case Specifying more recent `start_date` may help.
    **The "Start date" configuration option does not apply to the streams below, because the GitHub API does not include dates which can be used for filtering:**
 
-- `assignees`
-- `branches`
-- `collaborators`
-- `issue_labels`
-- `organizations`
-- `pull_request_commits`
-- `tags`
-- `teams`
-- `users`
+   - `assignees`
+   - `branches`
+   - `collaborators`
+   - `issue_labels`
+   - `organizations`
+   - `pull_request_commits`
+   - `tags`
+   - `teams`
+   - `users`
 
 5. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
 
@@ -266,8 +266,9 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.1.43 | 2026-08-21 | [83804](https://github.com/airbytehq/airbyte/pull/83804) | Declarative migration Step 3 - move the assignees, branches, collaborators, issue_labels and tags streams to the manifest. For these five streams, a repository that keeps returning 502/504 after retries now fails the stream instead of being skipped with the sync still reported as successful |
-| 2.1.42 | 2026-08-20 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |
+| 2.1.44 | 2026-08-26 | [83804](https://github.com/airbytehq/airbyte/pull/83804) | Declarative migration Step 3 - move the assignees, branches, collaborators, issue_labels and tags streams to the manifest. For these five streams, a repository that keeps returning 502/504 after retries now fails the stream instead of being skipped with the sync still reported as successful |
+| 2.1.43 | 2026-08-25 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |
+| 2.1.42 | 2026-08-25 | [85011](https://github.com/airbytehq/airbyte/pull/85011) | Update dependencies |
 | 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
 | 2.1.40 | 2026-08-11 | [83943](https://github.com/airbytehq/airbyte/pull/83943) | Update dependencies |
 | 2.1.39 | 2026-08-04 | [83469](https://github.com/airbytehq/airbyte/pull/83469) | Update dependencies |

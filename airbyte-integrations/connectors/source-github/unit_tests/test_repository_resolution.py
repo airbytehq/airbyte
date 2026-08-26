@@ -158,6 +158,91 @@ def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
     assert max(call.args[0] for call in sleep_mock.call_args_list) < 60
 
 
+def test_check_retries_a_transient_error_instead_of_reporting_a_rate_limit(requests_mock):
+    """`check` must survive one GitHub blip. Its wait budget has to stay above the `min_wait: 60`
+    floor that `WaitUntilTimeFromHeader` returns for any retryable response without rate-limit
+    headers, or the cap refuses that floor and a 500 fails the connection test on the first
+    attempt — reported as "The rate limit wait time is longer than the connector is allowed to
+    wait." Measured with `max_waiting_time: 0` in `check_config`: exactly that, one attempt."""
+    _mock_rate_limit(requests_mock)
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        [
+            {"status_code": 500, "json": {"message": "Server Error"}},
+            {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
+        ],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+
+    with patch("time.sleep"):
+        ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+
+    assert (ok, message) == (True, None)
+    assert listing.call_count == 2
+
+
+def test_check_still_fails_fast_when_the_server_reports_a_rate_limit_after_the_retry_fix(requests_mock):
+    """The companion guard to the test above: giving `check` a budget instead of zero must not
+    bring back the sleep it exists to prevent. A reset an hour out is still refused immediately."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        status_code=403,
+        headers={"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(time.time()) + 3600)},
+        json={"message": "API rate limit exceeded for user ID 1."},
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
+
+    with patch("time.sleep") as sleep_mock:
+        ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+
+    assert ok is False
+    assert "rate limit" in message.lower()
+    assert sleep_mock.call_count == 0 or max(call.args[0] for call in sleep_mock.call_args_list) < 62
+
+
+def test_wildcard_with_an_interior_star_is_expanded(requests_mock):
+    """A `*` anywhere in the repo part is a pattern, which is what the legacy Python resolver did.
+    While `wildcard_organizations` anchored the star to the end of the entry, an interior-star
+    entry matched neither that expression nor the explicit-repo list (`^([^*]+)$`), so it was
+    dropped with no request and no warning."""
+    _mock_rate_limit(requests_mock)
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        json=[
+            {"id": 1, "full_name": "org/pre-a-fix", "owner": {"login": "org"}},
+            {"id": 2, "full_name": "org/unrelated", "owner": {"login": "org"}},
+        ],
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/pre*fix"]}
+
+    organizations, repositories = _resolve(config)
+
+    assert repositories == ["org/pre-a-fix"]
+    assert organizations == ["org"]
+    assert listing.call_count == 1
+
+
+@pytest.mark.parametrize(
+    "num_workers",
+    [pytest.param(v, id=i) for v, i in [(None, "null"), (1, "spec_minimum"), (4, "spec_default"), (25, "spec_maximum")]],
+)
+def test_every_num_workers_the_spec_allows_builds(requests_mock, num_workers):
+    """`num_workers` feeds `concurrency_level.default_concurrency`, which the CDK resolves while
+    the source is being constructed — so a value it cannot render fails every command, `spec`
+    included. Null is the case that bit: it renders as "None" and raised `ValueError:
+    default_concurrency did not evaluate to an integer`."""
+    config = {
+        "credentials": {"personal_access_token": "test_token"},
+        "repositories": ["org/repo"],
+        "num_workers": num_workers,
+    }
+
+    source = SourceGithub(config=dict(config))
+
+    assert source.spec(logging.getLogger("airbyte")).connectionSpecification["properties"]["num_workers"]["default"] == 4
+
+
 def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_mock):
     """GHES ships with HTTP API rate limiting off and answers /rate_limit with 404. Quota
     seeding runs before the first stream request, so that 404 used to fail every command;
