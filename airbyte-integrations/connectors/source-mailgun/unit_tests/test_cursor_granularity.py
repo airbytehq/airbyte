@@ -88,10 +88,9 @@ def _load_manifest() -> dict:
             id="definitions.streams.events",
         ),
         pytest.param(
-            lambda m: next(
-                s for s in m["streams"]
-                if s.get("type") == "DeclarativeStream" and s.get("name") == "events"
-            )["incremental_sync"],
+            lambda m: next(s for s in m["streams"] if s.get("type") == "DeclarativeStream" and s.get("name") == "events")[
+                "incremental_sync"
+            ],
             id="top-level-streams[events]",
         ),
     ],
