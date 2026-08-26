@@ -5,6 +5,7 @@
   ## generated API content so the Docusaurus theme controls presentation.
   ## Components are registered globally in docusaurus/src/theme/MDXComponents.
   import re
+  from pdoc import _pep224_docstrings
 
   # Docstring boilerplate injected by pydantic that adds noise to API docs.
   PYDANTIC_BOILERPLATE_SNIPPETS = (
@@ -295,10 +296,25 @@ ${function(m, depth + 1)}
 </ApiMember>
 </%def>
 
+<%def name="class_alias(cls, depth, doc)" buffered="True">
+<%
+  heading = '#' * depth
+  anchor = module.refname + '.' + cls.name
+%>
+${heading} `${cls.name}` {#${anchor}}
+
+<ApiMember kind="variable">
+
+${docstring_md(doc)}
+
+</ApiMember>
+</%def>
+
 ## Start the output logic for an entire module.
 
 <%
   variables = module.variables(sort=sort_identifiers)
+  module_variable_docstrings, _ = _pep224_docstrings(module)
   classes = module.classes(sort=sort_identifiers)
   functions = module.functions(sort=sort_identifiers)
   submodules = module.submodules()
@@ -333,6 +349,10 @@ ${function(f, 3)}
 ## Classes
 
 % for c in classes:
+% if c.name != c.refname.rsplit('.', 1)[-1] or not c.refname.startswith(module.refname + '.'):
+${class_alias(c, 3, module_variable_docstrings.get(c.name, ''))}
+% else:
 ${class_(c, 3)}
+% endif
 % endfor
 % endif
