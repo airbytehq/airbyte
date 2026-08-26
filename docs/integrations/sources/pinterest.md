@@ -231,10 +231,14 @@ properties:
     values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
     DELETED_DRAFT. Include ARCHIVED to report on archived campaigns. Pinterest accepts at most six
     values per request, so the connector splits larger selections across multiple report requests.
-    Selecting more than six values requires a report level of CAMPAIGN or below.
+    Selecting more than six values requires a report level at or below the campaign dimension:
+    CAMPAIGN, CAMPAIGN_TARGETING, AD_GROUP, AD_GROUP_TARGETING, PIN_PROMOTION,
+    PIN_PROMOTION_TARGETING, KEYWORD, PRODUCT_GROUP, or PRODUCT_GROUP_TARGETING.
 11. **Ad Group Statuses (Optional)**: Filters custom report results by ad group status. Select
     values from: RUNNING, PAUSED, NOT_STARTED, COMPLETED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and
-    DELETED_DRAFT. Selecting more than six values requires a report level of AD_GROUP or below.
+    DELETED_DRAFT. Selecting more than six values requires a report level at or below the ad group
+    dimension: AD_GROUP, AD_GROUP_TARGETING, PIN_PROMOTION, PIN_PROMOTION_TARGETING, KEYWORD,
+    PRODUCT_GROUP, or PRODUCT_GROUP_TARGETING.
 12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select values from:
     APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and DELETED_DRAFT.
     Selecting more than six values requires a PIN_PROMOTION or PIN_PROMOTION_TARGETING report level.
