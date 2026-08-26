@@ -47,21 +47,22 @@ access to the database.
 
 ![Username and Password](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_5.png)
 
-6. Under "Database User Privileges", click on "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database".
+6. Grant the user read access under "Database User Privileges":
+
+   - To sync **one** database, click "Specific Privileges", click "Add Specific Privilege", and grant `read` on that database.
+   - To sync **two or more** databases, click "Select one built-in role for this user" under "Built-in Role" and choose "Only read any database", which grants `readAnyDatabase`.
 
 ![Database User Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_step_6.png)
 
-7. If you plan to sync more than one database with this source, navigate to "Specific Privileges" under "Database User Privileges", click "Add Specific Privilege", and add `readAnyDatabase`.
-
-:::info Which privileges you need depends on how many databases you sync
+:::info Why the privileges differ
 Starting in version `2.0.0`, a single source can sync collections from multiple databases.
 
-When you configure **one** database, the connector opens its change stream against that database, so read access to
-that database alone is enough.
+When you configure one database, the connector opens its change stream against that database, so read access to that
+database alone is enough.
 
-When you configure **two or more** databases, the connector opens a single change stream against the whole deployment,
-which requires cluster-wide read access. Grant `readAnyDatabase` (or the equivalent `find` and `changeStream`
-privileges on all databases). Without it, syncs fail with an authorization error.
+When you configure two or more databases, the connector opens a single change stream against the whole deployment,
+which requires cluster-wide read access: `readAnyDatabase`, or the equivalent `find` and `changeStream` privileges on
+all databases. Without it, syncs fail with an authorization error.
 :::
 
 ![Read Database Privileges](/.gitbook/assets/source/mongodb/mongodb_atlas_database_user_read_permission.png)
