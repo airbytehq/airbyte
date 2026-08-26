@@ -1,6 +1,6 @@
 ---
 id: airbyte-sources-index
-title: airbyte.sources.index
+title: airbyte.sources
 ---
 
 Sources connectors module for PyAirbyte.

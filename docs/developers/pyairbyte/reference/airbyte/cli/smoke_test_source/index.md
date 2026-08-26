@@ -1,6 +1,6 @@
 ---
 id: airbyte-cli-smoke_test_source-index
-title: airbyte.cli.smoke_test_source.index
+title: airbyte.cli.smoke_test_source
 ---
 
 Smoke test source for destination regression testing.

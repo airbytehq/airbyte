@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-interactive-index
-title: airbyte.mcp.interactive.index
+title: airbyte.mcp.interactive
 ---
 
 Interactive MCP tools for UI-capable clients.

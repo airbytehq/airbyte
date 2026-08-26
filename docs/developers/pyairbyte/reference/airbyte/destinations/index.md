@@ -1,6 +1,6 @@
 ---
 id: airbyte-destinations-index
-title: airbyte.destinations.index
+title: airbyte.destinations
 ---
 
 Destinations module.

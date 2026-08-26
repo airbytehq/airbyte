@@ -1,6 +1,6 @@
 ---
 id: airbyte-experimental-index
-title: airbyte.experimental.index
+title: airbyte.experimental
 ---
 
 Experimental features which may change.

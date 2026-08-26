@@ -1,6 +1,6 @@
 ---
 id: airbyte-datasets-index
-title: airbyte.datasets.index
+title: airbyte.datasets
 ---
 
 PyAirbyte dataset classes.

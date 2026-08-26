@@ -1,6 +1,6 @@
 ---
 id: airbyte-cloud-index
-title: airbyte.cloud.index
+title: airbyte.cloud
 ---
 
 PyAirbyte classes and methods for interacting with the Airbyte Cloud API.

@@ -1,6 +1,6 @@
 ---
 id: airbyte-index
-title: airbyte.index
+title: airbyte
 ---
 
 ***PyAirbyte brings the power of Airbyte to every Python developer.***

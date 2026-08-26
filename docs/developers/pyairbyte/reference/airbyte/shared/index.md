@@ -1,6 +1,6 @@
 ---
 id: airbyte-shared-index
-title: airbyte.shared.index
+title: airbyte.shared
 ---
 
 Module for future CDK components.

@@ -1,6 +1,6 @@
 ---
 id: airbyte-mcp-index
-title: airbyte.mcp.index
+title: airbyte.mcp
 ---
 
 ***Airbyte Replication MCP Server - Model Context Protocol Integration***

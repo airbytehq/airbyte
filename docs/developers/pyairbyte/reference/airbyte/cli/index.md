@@ -1,6 +1,6 @@
 ---
 id: airbyte-cli-index
-title: airbyte.cli.index
+title: airbyte.cli
 ---
 
 CLI modules for PyAirbyte.
