@@ -22,7 +22,7 @@ After upgrading to 1.0.0, refresh the source schema and clear these affected str
 `restricted` means a non-private team inside a private-team boundary, so it is explicitly not private. Rewrite downstream logic as `visibility = 'private'` rather than `visibility != 'public'`.
 
 :::warning Preserve history before clearing incremental streams
-If **Start Date** is unset, do not clear `attachments`, `comments`, `customer_needs`, `customers`, `cycles`, `issues`, `project_milestones`, `projects`, `teams`, `users`, or `workflow_states` yet. First set and save **Start Date** to a fixed UTC timestamp at or before the earliest `updatedAt` record that you need to retain. When **Start Date** is unset, a fresh sync recalculates it as two years before that sync, so records older than the new boundary are not reloaded after the clear.
+If **Start Date** is unset, do not clear `attachments`, `comments`, `customer_needs`, `customers`, `cycles`, `issue_labels`, `issues`, `project_milestones`, `projects`, `teams`, `users`, or `workflow_states` yet. First set and save **Start Date** to a fixed UTC timestamp at or before the earliest `updatedAt` record that you need to retain. When **Start Date** is unset, a fresh sync recalculates it as two years before that sync, so records older than the new boundary are not reloaded after the clear.
 :::
 
 Clearing deletes the affected streams' data in the destination. Snapshot anything in those tables that your warehouse cannot reconstruct from a re-sync before you begin.
