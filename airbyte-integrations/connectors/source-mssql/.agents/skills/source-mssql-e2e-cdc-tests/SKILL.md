@@ -39,8 +39,7 @@ source-mssql-e2e-cdc-tests/
 ├── scripts/
 │   ├── repro-11451.sh                # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+
 │   ├── repro-12094.sh                # airbytehq/oncall#12094 — schema-history bloat
-│   ├── repro-12162.sh                # airbytehq/oncall#12162 — whitespace in stream name
-│   └── extract-state.py              # uv-PEP-723; pulls STATE messages out of stdout.txt
+│   └── repro-12162.sh                # airbytehq/oncall#12162 — whitespace in stream name
 └── fixtures/
     ├── configs/
     │   └── cdc.template.json
@@ -54,6 +53,11 @@ source-mssql-e2e-cdc-tests/
         └── repro-12162-spaces-in-name.sql
 ```
 
+`extract-state.py` lives in the generic skill
+([`../source-mssql-e2e-tests/scripts/extract-state.py`](../source-mssql-e2e-tests/scripts/extract-state.py)) —
+it walks Airbyte STATE messages, which is protocol-level and not
+CDC-specific.
+
 ## Conventions
 
 - All driver scripts assume the generic skill's backend is running and
@@ -66,13 +70,22 @@ source-mssql-e2e-cdc-tests/
 - Driver scripts default `VERSION=4.4.2`. Override with
   `VERSION=4.3.4 ./scripts/repro-12162.sh` to test against an earlier
   version, or `VERSION=dev` after a local
-  `./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker`
+  `./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx`
   to test a fix.
-- Assertions are inline in driver scripts: `grep -c '<substring>'` on
-  `stderr.txt`, `jq -e` on `stdout.txt`, exit-non-zero on miss.
-- The repro-11451 driver captures and uses Airbyte STATE messages. The
-  `extract-state.py` helper is `uv`-PEP-723 standalone; run with
-  `./scripts/extract-state.py <stdout.txt>` or pipe stdin.
+- **Assertions**: prefer `run.sh`'s declarative expectation flags
+  (`--expect-test`, `--expect-match=<channel>:<regex>[:N]`,
+  `--forbid-match`, `--min-records`, `--min-states`) over inline
+  `grep -q` / `jq -e` — the runner enforces them and exits non-zero on
+  any failure. The three existing driver scripts (`repro-12094`,
+  `repro-12162`, `repro-11451`) predate the flags and still use inline
+  assertions; they will migrate opportunistically. New drivers should
+  reach for the flags first.
+- Multi-phase drivers (repro-11451, and any future read → mutate →
+  read-with-state repros) capture Airbyte STATE messages between
+  reads. The generic skill's `extract-state.py` helper is
+  `uv`-PEP-723 standalone; run with
+  `./scripts/extract-state.py <stdout.txt>` or pipe stdin. `run.sh`'s
+  `--state=PATH` flag feeds the state file back into the second read.
 
 ## Usage
 

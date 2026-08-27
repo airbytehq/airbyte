@@ -111,7 +111,7 @@ Advanced users who need to inspect a connector's `ConnectorModel` or
 traverse tool-call records should import from the submodules directly:
 `airbyte_agent_sdk.types` for auth/spec types and
 `airbyte_agent_sdk.executor.models` for nested result dataclasses. See
-[`docs/CONTRIBUTING.md`](https://github.com/airbytehq/airbyte-embedded/blob/main/connector-sdk/docs/CONTRIBUTING.md)
+[`docs/CONTRIBUTING.md`](https://github.com/airbytehq/sonar/blob/main/connector-sdk/docs/CONTRIBUTING.md)
 for the public-API contract.
 
 Anything not listed in `__all__` is internal and may change between
@@ -125,6 +125,9 @@ Sub-modules
 * airbyte_agent_sdk.constants
 * airbyte_agent_sdk.executor
 * airbyte_agent_sdk.http_client
+* airbyte_agent_sdk.secrets_aws
+* airbyte_agent_sdk.secrets_gcp
+* airbyte_agent_sdk.tools
 * airbyte_agent_sdk.translation
 * airbyte_agent_sdk.types
 * airbyte_agent_sdk.utils
@@ -132,6 +135,14 @@ Sub-modules
 
 Functions
 ---------
+
+<a id="build_connector_tools"></a>
+
+`build_connector_tools(connector: Any, *, framework: FrameworkName | None = None, docs_provider: ConnectorDocsProvider | None = None, use_progressive_docs: bool = True, max_output_chars: int | None = 100000, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> airbyte_agent_sdk.tools.ConnectorTools`
+:   Build inspect/docs/execute tools bound to a single connector.
+    
+    Hosted connectors use the live inspect and skill-docs endpoints. Local
+    connectors keep the generated YAML-derived rich docs as their fallback.
 
 <a id="configure"></a>
 
@@ -275,8 +286,10 @@ Functions
         func: The function to wrap (when used without arguments, e.g.
             `@translate_exceptions`).
         framework: One of `"pydantic_ai" | "langchain" | "openai_agents" |
-            "mcp"`. Defaults to None → auto-detect by attempting each
-            framework's canonical import in order. Explicit always wins.
+            "mcp" | "none"`. Defaults to None → auto-detect by attempting each
+            framework's canonical import in order, falling back to `"none"`
+            (failures raise `AirbyteToolError`) when nothing is installed.
+            Explicit always wins.
         max_output_chars: Maximum serialized output size (`json.dumps`,
             `default=str`). Excess raises the framework's signal asking the
             LLM to narrow the query. Set to `None` or `0` to disable.
@@ -404,6 +417,8 @@ Classes
     * ``ExecutorError`` and subclasses (``EntityNotFoundError``,
       ``ActionNotSupportedError``, ``MissingParameterError``,
       ``InvalidParameterError``) raised by the local executor.
+    * ``AirbyteToolError`` raised by the framework-neutral
+      (``framework="none"``) tool-error translation strategy.
     
     Not caught by ``AirbyteError``:
     
@@ -427,8 +442,25 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.errors.AirbyteToolError
     * airbyte_agent_sdk.executor.models.ExecutorError
     * airbyte_agent_sdk.http.exceptions.HTTPClientError
+
+<a id="AirbyteToolError"></a>
+
+`AirbyteToolError(*args, **kwargs)`
+:   Tool failure surfaced by the framework-neutral translation strategy.
+    
+    Raised by ``translate_exceptions(framework="none")`` (and decorators
+    composing it) in place of a framework-specific retry signal. The message
+    carries the formatted underlying failure; ``__cause__`` preserves the
+    original exception.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.errors.AirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
 <a id="AuthenticationError"></a>
 
@@ -501,6 +533,24 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="ConnectorDocsProvider"></a>
+
+`ConnectorDocsProvider(*args, **kwargs)`
+:   Provider of connector inspection and skill-doc endpoints.
+
+    ### Ancestors (in MRO)
+
+    * typing.Protocol
+    * typing.Generic
+
+    ### Methods
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :
+
+    `read_skill_docs(self, id: str, section: str | None = None) ‑> dict[str, typing.Any]`
+    :
+
 <a id="ConnectorInfo"></a>
 
 `ConnectorInfo(id: str, name: str, connector_type: str | None = None, created_at: str | None = None, updated_at: str | None = None)`
@@ -534,6 +584,30 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="ConnectorTools"></a>
+
+`ConnectorTools(inspect_connector: ToolCallable, read_skill_docs: ToolCallable, execute: ToolCallable, use_progressive_docs: bool = True)`
+:   Connector tool callables for agent frameworks.
+
+    ### Instance variables
+
+    `execute: Callable[..., typing.Awaitable[typing.Any]]`
+    :   The type of the None singleton.
+
+    `inspect_connector: Callable[..., typing.Awaitable[typing.Any]]`
+    :   The type of the None singleton.
+
+    `read_skill_docs: Callable[..., typing.Awaitable[typing.Any]]`
+    :   The type of the None singleton.
+
+    `use_progressive_docs: bool`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `as_list(self) ‑> list[Callable[..., typing.Awaitable[typing.Any]]]`
+    :
+
 <a id="ConnectorValidationError"></a>
 
 `ConnectorValidationError(message: str, status_code: int = 400, response: HTTPResponse | None = None)`
@@ -560,6 +634,39 @@ Classes
     * builtins.Exception
     * builtins.BaseException
 
+<a id="DownloadChunkResult"></a>
+
+`DownloadChunkResult(content: str, encoding: "Literal['utf-8', 'base64']", bytes_returned: int, range_requested: str, next_range_header: str | None, has_more: bool, content_type: str | None = None)`
+:   JSON-safe result for a bounded download byte range.
+
+    ### Instance variables
+
+    `bytes_returned: int`
+    :   The type of the None singleton.
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `content_type: str | None`
+    :   The type of the None singleton.
+
+    `encoding: Literal['utf-8', 'base64']`
+    :   The type of the None singleton.
+
+    `has_more: bool`
+    :   The type of the None singleton.
+
+    `next_range_header: str | None`
+    :   The type of the None singleton.
+
+    `range_requested: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `to_dict(self) ‑> dict[str, typing.Any]`
+    :
+
 <a id="EntityNotFoundError"></a>
 
 `EntityNotFoundError(*args, **kwargs)`
@@ -574,7 +681,7 @@ Classes
 
 <a id="ExecutionConfig"></a>
 
-`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True)`
+`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None)`
 :   Configuration for connector execution.
     
     Used by both LocalExecutor and HostedExecutor to specify the operation to execute.
@@ -591,6 +698,7 @@ Classes
         select_fields: Optional allowlist of dot-notation fields to include
         exclude_fields: Optional blocklist of dot-notation fields to remove
         skip_truncation: Disable long-text truncation for collection actions
+        intent: Optional short description of why this execution is being performed (max 512 chars)
     
     Example:
         config = ExecutionConfig(
@@ -608,6 +716,9 @@ Classes
     :   The type of the None singleton.
 
     `exclude_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `intent: str | None`
     :   The type of the None singleton.
 
     `params: dict[str, typing.Any] | None`
@@ -631,7 +742,8 @@ Classes
         success: True if execution completed successfully, False if it failed
         data: Response data from the execution
             - dict[str, Any] for standard operations (GET, LIST, CREATE, etc.)
-            - AsyncIterator[bytes] for download operations (streaming file content)
+            - AsyncIterator[bytes] for streaming download operations
+            - dict[str, Any] for structured download chunks
         error: Error message if success=False, None otherwise
         meta: Optional metadata extracted from response (e.g., pagination info)
     
@@ -844,11 +956,11 @@ Classes
             finally:
                 await executor.close()
 
-    `execute(self, config_or_entity: ExecutionConfig | str, action: str | None = None, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
+    `execute(self, *args: ExecutionConfig | str, config_or_entity: ExecutionConfig | str | None = None, config: ExecutionConfig | None = None, params: dict[str, Any] | None = None, entity: str | None = None, action: str | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None) ‑> airbyte_agent_sdk.executor.models.ExecutionResult`
     :   Execute connector via cloud API (ExecutorProtocol implementation).
         
-        Accepts either an :class:`ExecutionConfig` or positional ``(entity, action)``
-        strings with an optional ``params`` keyword argument.
+        Accepts either an :class:`ExecutionConfig`, positional ``(entity, action)``
+        strings, or keyword ``entity=...``/``action=...`` strings.
         
         Flow:
         1. Use provided connector_id or look up from workspace_name + definition_id
@@ -856,7 +968,10 @@ Classes
         3. Parse the response into ExecutionResult
         
         Args:
-            config_or_entity: ExecutionConfig object *or* entity name string
+            config_or_entity: Backward-compatible alias for either an
+                ExecutionConfig object or entity name string.
+            config: ExecutionConfig object
+            entity: Entity name string, or an ExecutionConfig when passed positionally
             action: Action string (required when entity is a string)
             params: Optional parameters dict (only with string form)
             select_fields: Optional allowlist of dot-notation fields to include
@@ -865,6 +980,8 @@ Classes
                 (only with string form)
             skip_truncation: Disable long-text truncation for collection actions
                 (only with string form)
+            intent: Optional short description of why this execution is being
+                performed, max 512 chars (only with string form)
         
         Returns:
             ExecutionResult with success/failure status
@@ -889,6 +1006,12 @@ Classes
         
             # Shorthand form:
             result = await executor.execute("customers", "list", params=\{"limit": 10\})
+
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect hosted connector metadata and readiness.
+
+    `read_skill_docs(self, id: str, section: str | None = None) ‑> dict[str, typing.Any]`
+    :   Read hosted skill docs by skill ID.
 
 <a id="InvalidParameterError"></a>
 
@@ -954,6 +1077,37 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="SkillDocsAccessor"></a>
+
+`SkillDocsAccessor(connector: Any, *, docs_provider: ConnectorDocsProvider | None = None)`
+:   Stateful access to one connector's skill docs.
+    
+    Owns the ``docs_skill_id`` cache: populated after the first successful
+    :meth:`inspect`, re-inspected only when missing, never populated on
+    failure. Cache lifetime is the accessor instance — `build_connector_tools`
+    shares one across its tool closures; generated typed connectors hold one
+    per connector instance.
+
+    ### Instance variables
+
+    `provider: ConnectorDocsProvider | None`
+    :
+
+    ### Methods
+
+    `inspect(self) ‑> dict[str, typing.Any]`
+    :   Inspect the connector's hosted metadata and resolve its docs skill id.
+        
+        Local/offline connectors (no docs provider) get a local-mode payload
+        with a warning instead of a hosted inspection.
+
+    `read(self, section: str | None = None) ‑> str`
+    :   Read the connector's usage docs, rendered to text.
+        
+        Omit ``section`` for the outline and general guidance; pass an exact
+        section id for full details. Local/offline connectors return the full
+        generated docs and ignore ``section``.
 
 <a id="TimeoutError"></a>
 

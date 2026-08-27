@@ -2246,6 +2246,7 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResultWithMeta[list[IncidentUpdate], IncidentUpdatesListResultMeta]
     * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResultWithMeta[list[Incident], IncidentsListResultMeta]
     * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResultWithMeta[list[Schedule], SchedulesListResultMeta]
+    * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResultWithMeta[list[Team], TeamsListResultMeta]
     * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResultWithMeta[list[User], UsersListResultMeta]
 
     ### Class variables
@@ -2460,6 +2461,51 @@ Classes
 <a id="SchedulesListResult"></a>
 
 `SchedulesListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`IncidentIoExecuteResultWithMeta[list[Team], TeamsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.incident_io.models.IncidentIoExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="TeamsListResult"></a>
+
+`TeamsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -3799,6 +3845,123 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: str | None`
+    :   The type of the None singleton.
+
+<a id="Team"></a>
+
+`Team(**data: Any)`
+:   A team in incident.io
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `catalog_entry: airbyte_agent_sdk.connectors.incident_io.models.TeamCatalogEntry | None`
+    :   The type of the None singleton.
+
+    `id: str`
+    :   The type of the None singleton.
+
+    `members: list[airbyte_agent_sdk.connectors.incident_io.models.TeamMembersItem] | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+<a id="TeamCatalogEntry"></a>
+
+`TeamCatalogEntry(**data: Any)`
+:   Associated catalog entry for enrichment
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   ID of the catalog entry
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the catalog entry
+
+<a id="TeamMembersItem"></a>
+
+`TeamMembersItem(**data: Any)`
+:   Nested schema for Team.members_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `email: str | None`
+    :   Email address of the user
+
+    `id: str | None`
+    :   Unique identifier of the user
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Name of the user
+
+    `slack_user_id: str | None`
+    :   Slack ID of the user
+
+<a id="TeamsListResultMeta"></a>
+
+`TeamsListResultMeta(**data: Any)`
+:   Metadata for teams.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next_cursor: str | None`
     :   The type of the None singleton.
 
 <a id="User"></a>
