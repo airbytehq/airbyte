@@ -299,14 +299,14 @@ ${variable(v, depth + 1)}
 ${sub} Static Methods {#${cls.refname}--static-methods}
 
 % for f in static_methods:
-${function(f, depth + 1)}
+${function(f, depth + 2)}
 % endfor
 % endif
 % if methods:
 ${sub} Methods {#${cls.refname}--methods}
 
 % for m in methods:
-${function(m, depth + 1)}
+${function(m, depth + 2)}
 % endfor
 % endif
 
