@@ -171,7 +171,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.2.0 | 2026-07-03 | [81416](https://github.com/airbytehq/airbyte/pull/81416) | Include Smart+ ads that were previously dropped due to missing `modify_time` cursor field |
+| 5.1.13 | 2026-08-27 | [81416](https://github.com/airbytehq/airbyte/pull/81416) | Include Smart+ ads that were previously dropped due to missing `modify_time` cursor field |
 | 5.1.12 | 2026-08-18 | [84765](https://github.com/airbytehq/airbyte/pull/84765) | Update dependencies |
 | 5.1.11 | 2026-08-12 | [84290](https://github.com/airbytehq/airbyte/pull/84290) | Widen retry budget and retry transient TikTok API errors 51041 and 51004 |
 | 5.1.10 | 2026-08-11 | [84199](https://github.com/airbytehq/airbyte/pull/84199) | Retry transient TikTok API error 50000 |
