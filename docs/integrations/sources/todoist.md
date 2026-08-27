@@ -50,7 +50,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                    |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------- |
-| 0.3.44 | 2026-08-28 | [PENDING](https://github.com/airbytehq/airbyte/pull/PENDING) | Migrate from retired REST v2 (`/rest/v2`, 410 Gone) to API v1 (`/api/v1`) with `results` extraction and cursor pagination |
+| 0.3.44 | 2026-08-28 | [85102](https://github.com/airbytehq/airbyte/pull/85102) | Migrate from retired REST v2 (`/rest/v2`, 410 Gone) to API v1 (`/api/v1`) with `results` extraction and cursor pagination |
 | 0.3.43 | 2026-02-03 | [72753](https://github.com/airbytehq/airbyte/pull/72753) | Update dependencies |
 | 0.3.42 | 2026-01-20 | [72017](https://github.com/airbytehq/airbyte/pull/72017) | Update dependencies |
 | 0.3.41 | 2026-01-14 | [71417](https://github.com/airbytehq/airbyte/pull/71417) | Update dependencies |
