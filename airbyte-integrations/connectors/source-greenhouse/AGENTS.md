@@ -11,7 +11,7 @@ v3 invariants a future edit must not break:
 
 - A request carrying `cursor` must carry **no other query parameter**. Anything else returns `422 {"errors":["When passing a cursor, do not include other query params."]}`. This is why every first-page parameter is wrapped in `{{ ... if not next_page_token }}`.
 - Five streams have grouped substream routers: `demographics_answers_answer_options`, `demographics_question_sets_questions`, `jobs_openings`, `activity_feed`, and `user_permissions`. All five use `GroupingPartitionRouter` with `partition_field: parent_id`; the partition value is a list joined with `,`. `group_size: 50` is pinned by the documented `maxItems: 50` on every `*_ids` filter - do not raise it. `job_posts` separately uses a `ListPartitionRouter` over `active` with `true` and `false` values.
-- v3 paginates by primary key **descending**, not by cursor field. Do not add `step`-based slicing or mid-stream checkpointing without also sending an `lte|` upper bound.
+- v3 paginates by primary key **descending**, not by cursor field. Every incremental first request must send a two-sided `gte|…|lte|…` window bounded by the slice end because state advances to the maximum observed record; do not reduce it to a lower-bound-only filter.
 - `users` must send `show_service_accounts=true` on the first page; v3 hides integration service users by default.
 - `/v3/demographic_questions` and `/v3/demographic_answer_options` expose no `created_at`/`updated_at` filter, which is why those streams are full refresh.
 - Incremental streams use the optional `start_date` configuration value and default to all history when it is omitted.

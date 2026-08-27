@@ -26,6 +26,14 @@ CONFIG = {
 }
 CONFIG_WITH_EPOCH_START_DATE = {**CONFIG, "start_date": "1970-01-01T00:00:00Z"}
 CONFIG_WITH_LATER_START_DATE = {**CONFIG, "start_date": "2025-01-01T00:00:00Z"}
+CURSOR_NOW = datetime.datetime(2026, 8, 27, tzinfo=datetime.timezone.utc)
+
+
+def _freeze_cursor_time():
+    return patch(
+        "airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter.ab_datetime_now",
+        return_value=CURSOR_NOW,
+    )
 
 
 def _register_token(requests_mock):
@@ -53,7 +61,7 @@ def test_applications_cursor_pagination_uses_cursor_only_follow_up(requests_mock
         if len(application_requests) == 1:
             assert request.qs == {
                 "per_page": ["500"],
-                "updated_at": ["gte|1970-01-01t00:00:00.000z"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
             }
             context.status_code = 200
             context.headers["Link"] = '<https://harvest.greenhouse.io/v3/applications?cursor=cursor-2>; rel="next"'
@@ -67,7 +75,8 @@ def test_applications_cursor_pagination_uses_cursor_only_follow_up(requests_mock
 
     source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(application_requests) == 2
@@ -366,14 +375,15 @@ def _read_application_start_date_request(requests_mock, get_source, config):
 
     source = get_source(config)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    read(source, config=config, catalog=catalog)
+    with _freeze_cursor_time():
+        read(source, config=config, catalog=catalog)
     return application_requests[0]
 
 
 def test_start_date_defaults_to_epoch(requests_mock, get_source):
     request = _read_application_start_date_request(requests_mock, get_source, CONFIG)
 
-    assert request.qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
+    assert request.qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]
 
 
 def test_start_date_uses_configured_value(requests_mock, get_source):
@@ -383,7 +393,7 @@ def test_start_date_uses_configured_value(requests_mock, get_source):
         {**CONFIG, "start_date": "2025-01-01T00:00:00Z"},
     )
 
-    assert request.qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z"]
+    assert request.qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]
 
 
 def test_oauth_rotated_refresh_token_is_persisted(requests_mock, get_source):
@@ -432,9 +442,10 @@ def test_manifest_application_state_migration_reaches_request(requests_mock, get
     )
     source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
-    assert application_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
+    assert application_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]
     assert not output.errors
     assert [record.record.data["id"] for record in output.records] == [1]
     assert vars(output.most_recent_state.stream_state) == {"updated_at": "2024-01-01T00:00:00.000Z"}
@@ -449,7 +460,7 @@ def test_top_level_interviews_cursor_pagination_uses_cursor_only_follow_up(reque
         if len(interview_requests) == 1:
             assert request.qs == {
                 "per_page": ["500"],
-                "updated_at": ["gte|1970-01-01t00:00:00.000z"],
+                "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
             }
             context.status_code = 200
             context.headers["Link"] = '<https://harvest.greenhouse.io/v3/interviews?cursor=cursor-2>; rel="next"'
@@ -463,7 +474,8 @@ def test_top_level_interviews_cursor_pagination_uses_cursor_only_follow_up(reque
 
     source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("interviews", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert [record.record.data["id"] for record in output.records] == [1, 2]
     assert len(interview_requests) == 2
@@ -484,13 +496,14 @@ def test_users_include_service_accounts_only_on_first_page(requests_mock, get_so
 
     source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("users", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert not output.errors
     assert len(user_requests) == 2
     assert user_requests[0].qs == {
         "per_page": ["500"],
-        "updated_at": ["gte|1970-01-01t00:00:00.000z"],
+        "updated_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
         "show_service_accounts": ["true"],
     }
     assert user_requests[1].qs == {"cursor": ["cursor-2"]}
@@ -592,17 +605,19 @@ def test_substream_parents_ignore_start_date_while_standalone_parents_use_it(
 
     source = get_source(CONFIG_WITH_LATER_START_DATE)
     catalog = CatalogBuilder().with_stream(substream, SyncMode.full_refresh).build()
-    output = read(source, config=CONFIG_WITH_LATER_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_LATER_START_DATE, catalog=catalog)
 
     assert not output.errors
-    assert parent_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z"]
+    assert parent_requests[0].qs["updated_at"] == ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]
 
     source = get_source(CONFIG_WITH_LATER_START_DATE)
     catalog = CatalogBuilder().with_stream(parent_stream, SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_LATER_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_LATER_START_DATE, catalog=catalog)
 
     assert not output.errors
-    assert parent_requests[1].qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z"]
+    assert parent_requests[1].qs["updated_at"] == ["gte|2025-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"]
 
 
 def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
@@ -727,12 +742,13 @@ def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, 
 
     source = get_source(CONFIG_WITH_EPOCH_START_DATE)
     catalog = CatalogBuilder().with_stream("eeoc", SyncMode.incremental).build()
-    output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert not output.errors
     assert eeoc_requests[0].qs == {
         "per_page": ["500"],
-        "submitted_at": ["gte|1970-01-01t00:00:00.000z"],
+        "submitted_at": ["gte|1970-01-01t00:00:00.000z|lte|2026-08-27t00:00:00.000z"],
     }
     assert parse_qs(eeoc_requests[1].query) == {"cursor": ["cursor-2"]}
     assert [record.record.data["application_id"] for record in output.records] == [1, 2]
@@ -755,16 +771,12 @@ def test_email_templates_incremental_stateful_cursor_pagination(requests_mock, g
     state = StateBuilder().with_stream_state("email_templates", {"updated_at": "2026-08-24T12:00:00.000Z"}).build()
     source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("email_templates", SyncMode.incremental).build()
-    now = datetime.datetime(2026, 8, 27, tzinfo=datetime.timezone.utc)
-    with patch(
-        "airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter.ab_datetime_now",
-        return_value=now,
-    ):
+    with _freeze_cursor_time():
         output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert email_template_requests[0].qs == {
         "per_page": ["500"],
-        "updated_at": ["gte|2026-08-24t11:00:00.000z"],
+        "updated_at": ["gte|2026-08-24t11:00:00.000z|lte|2026-08-27t00:00:00.000z"],
     }
     assert parse_qs(email_template_requests[1].query) == {"cursor": ["cursor-2"]}
     assert [record.record.data["id"] for record in output.records] == [1, 2]
@@ -785,9 +797,10 @@ def test_lookback_window_widens_resume_bound(requests_mock, get_source):
     state = StateBuilder().with_stream_state("candidates", {"updated_at": "2026-08-24T12:00:00.000Z"}).build()
     source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
     catalog = CatalogBuilder().with_stream("candidates", SyncMode.incremental).build()
-    read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+    with _freeze_cursor_time():
+        read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
-    assert candidate_requests[0].qs["updated_at"] == ["gte|2026-08-24t11:00:00.000z"]
+    assert candidate_requests[0].qs["updated_at"] == ["gte|2026-08-24t11:00:00.000z|lte|2026-08-27t00:00:00.000z"]
 
 
 @pytest.mark.parametrize(

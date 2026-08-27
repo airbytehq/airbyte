@@ -61,7 +61,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -107,7 +107,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -290,7 +290,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -566,7 +566,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -661,7 +661,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -707,7 +707,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             active: "{{ stream_partition['active'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -760,7 +760,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -806,7 +806,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -887,7 +887,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -967,7 +967,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
             show_service_accounts: "{{ 'true' if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
@@ -1175,7 +1175,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            submitted_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            submitted_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
@@ -1221,7 +1221,7 @@ definitions:
           http_method: GET
           request_parameters:
             per_page: "{{ 500 if not next_page_token }}"
-            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] if not next_page_token }}"
+            updated_at: "{{ 'gte|' ~ stream_interval['start_time'] ~ '|lte|' ~ stream_interval['end_time'] if not next_page_token }}"
           error_handler:
             $ref: "#/definitions/error_handler"
         record_selector:
