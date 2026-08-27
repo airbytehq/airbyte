@@ -105,7 +105,7 @@ The Greenhouse connector should not run into Greenhouse API limitations under no
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth client credentials for every deployment and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. Create a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade path](./greenhouse-migrations.md#upgrade-path-create-a-new-connection) before upgrading.
+Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth client credentials for every deployment and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
 
 ## IP allow list
 
