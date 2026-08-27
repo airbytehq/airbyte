@@ -18,6 +18,18 @@ v3 invariants a future edit must not break:
 - `job_ids` on `/v3/approval_flows` excludes `offer_candidate` flows.
 - HTTP 401 responses must remain `REFRESH_TOKEN_THEN_RETRY`, and the API budget must model Greenhouse's fixed 30-second window with `X-RateLimit-Reset` and `X-RateLimit-Remaining`; do not switch it back to a moving window.
 
+### Verifying v3 query-parameter behavior
+
+Harvest v3's reference prose does not document the comparison-operator syntax for date filters, so treat the interactive request builder on the reference pages as the authoritative check. The two-sided window this connector sends was confirmed that way on [`GET /v3/user_emails`](https://harvestdocs.greenhouse.io/reference/get_v3-user-emails), which builds:
+
+```
+curl --request GET \
+     --url 'https://harvest.greenhouse.io/v3/user_emails?updated_at=gte|2024-01-01T00%3A00%3A00Z|lte|2024-01-02T00%3A00%3A00Z' \
+     --header 'accept: application/json'
+```
+
+That is, `updated_at=gte|{datetime}|lte|{datetime}`, with `|` separating operator and value, and it is the shape every cursor-field date filter here uses (`submitted_at` for `eeoc`). Do not rewrite it into repeated parameters, `updated_at[gte]`-style brackets, or a lower bound alone because the reference text does not mention it; build the request in the docs page first and match what it produces.
+
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|
 | applications | top-level | updated_at | updated_at | incremental |
