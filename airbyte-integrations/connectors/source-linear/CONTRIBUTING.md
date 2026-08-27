@@ -14,7 +14,7 @@ The reactive `DefaultErrorHandler` remains the safety net because the budget can
 
 ## Incremental Stream Considerations
 
-The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: { gte: ... } }` on most entity types, which the connector uses extensively — 12 streams are already incremental (added in PR airbytehq/airbyte#76429). The remaining 4 FR parent streams are config-style lookups (`customer_statuses`, `customer_tiers`, `project_statuses`) and `issue_relations` which lacks a documented `updatedAt` filter in the GraphQL schema.
+The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: { gte: ... } }` on most entity types, which the connector uses extensively — 14 of the 20 streams are incremental (12 from PR airbytehq/airbyte#76429; `initiatives` and `project_updates` from PR airbytehq/airbyte#85056). The remaining 6 are the config-style lookups (`customer_statuses`, `customer_tiers`, `project_statuses`), `issue_relations` and `initiative_to_projects` which expose no `updatedAt` filter, and the `issue_history` substream child.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
@@ -25,19 +25,27 @@ The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: 
 | customer_tiers | small | top-level parent | none | none | deferred_no_api_support | Config-style enum lookup; no `updatedAt` filter |
 | customers | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | cycles | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| initiatives | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| initiative_to_projects | medium | top-level parent | none | none | deferred_no_api_support | `initiativeToProjects` rejects a `filter` argument; full refresh |
+| issue_history | medium | substream child | none | none | full_refresh_child | Parent `issues`; full parent read on each sync |
 | issue_labels | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | issue_relations | medium | top-level parent | none | none | deferred_no_api_support | No documented `updatedAt` filter in GraphQL schema. Verify via introspection. |
 | issues | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | project_milestones | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | project_statuses | small | top-level parent | none | none | deferred_no_api_support | Config-style enum lookup; no `updatedAt` filter |
 | projects | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
+| project_updates | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | teams | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | users | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 | workflow_states | medium | top-level parent | updatedAt | updated_at | incremental | `filter.updatedAt.gte` via `incremental_sync_updated_at` |
 
 ### Future incremental stream candidates
 
-- **No API date filter (4 streams):** `customer_statuses`, `customer_tiers`, `issue_relations`, `project_statuses` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+- **No API date filter (5 streams):** `customer_statuses`, `customer_tiers`, `initiative_to_projects`, `issue_relations`, `project_statuses` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+
+## Deletions
+
+Linear soft-deletes records by archiving them. The API provides no hard-delete signal or deleted-records endpoint, so the connector uses `archivedAt` on the primary stream as its single canonical deletion flag. Every query must pass `includeArchived: true`; without it, Linear omits archived records entirely and `archivedAt` is always null. Linear can also permanently hard-delete records, which leaves no signal for the connector to detect.
 
 ## Error handling
 

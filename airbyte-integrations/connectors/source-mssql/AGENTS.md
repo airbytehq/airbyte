@@ -147,13 +147,27 @@ with a control version:
 
 ```bash
 cd airbyte-integrations/connectors/source-mssql
+
+# Non-CDC (default). Both images run against one backend and airbyte-ops
+# emits the built-in target-vs-control diff.
 poe e2e-local --test-version=dev --control-version=5.0.0 \
   --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
+
+# CDC. Two single-version sweeps with a fixture reset between them, so
+# the target does not read against the control's warm capture instance.
+poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
+  --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/00-init-cdc.sql \
+  --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
 ```
 
-That sets `CONTROL_VERSION` for `run-protocol-cmd.sh`, which then omits
-`--skip-compare=True` and passes `--control-image`, so the CLI runs both
-images and diffs their protocol output with the existing comparators.
-Both runs must observe identical backend state; for CDC, recreate the
-backend and the capture instance between them, or the diff is
-meaningless while still looking clean.
+Both runs must observe equivalent backend state. Under
+`--reset=none` (the default) the two images share the backend, which is
+safe for a full-refresh read but not for CDC — a shared capture instance
+and an advanced log position make the diff look clean while being
+meaningless. `--reset=fixture` drops every non-system database and
+re-applies the fixtures between the two runs (fast; the log-LSN clock
+still ticks server-wide); `--reset=backend` also recreates the backend
+container (~15s extra, resets the LSN clock). Pick `--reset=fixture` for
+CDC unless the reproduction depends on matching LSN sequences. See
+[`SKILL.md`](.agents/skills/source-mssql-e2e-tests/SKILL.md#comparison-modes-with---control-version)
+for the full breakdown.

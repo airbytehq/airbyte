@@ -191,6 +191,12 @@ Classes
     `bot_profile: Any`
     :   Bot profile information.
 
+    `channel_id: Any`
+    :   Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: Any`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
+
     `is_locked: Any`
     :   Whether the thread is locked.
 
@@ -232,6 +238,9 @@ Classes
 
     `user: Any`
     :   User ID who sent the message.
+
+    `username: Any`
+    :   Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
 
 <a id="ChannelMessagesContainsCondition"></a>
 
@@ -362,6 +371,12 @@ Classes
     `bot_profile: list[dict[str, typing.Any]]`
     :   Bot profile information.
 
+    `channel_id: list[str]`
+    :   Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: list[float]`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
+
     `is_locked: list[bool]`
     :   Whether the thread is locked.
 
@@ -403,6 +418,9 @@ Classes
 
     `user: list[str]`
     :   User ID who sent the message.
+
+    `username: list[str]`
+    :   Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
 
 <a id="ChannelMessagesKeywordCondition"></a>
 
@@ -556,6 +574,12 @@ Classes
     `bot_profile: dict[str, typing.Any] | None`
     :   Bot profile information.
 
+    `channel_id: str | None`
+    :   Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: float | None`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
+
     `is_locked: bool | None`
     :   Whether the thread is locked.
 
@@ -598,6 +622,9 @@ Classes
     `user: str | None`
     :   User ID who sent the message.
 
+    `username: str | None`
+    :   Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
+
 <a id="ChannelMessagesSearchQuery"></a>
 
 `ChannelMessagesSearchQuery(*args, **kwargs)`
@@ -637,6 +664,12 @@ Classes
 
     `bot_profile: Literal['asc', 'desc']`
     :   Bot profile information.
+
+    `channel_id: Literal['asc', 'desc']`
+    :   Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: Literal['asc', 'desc']`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
 
     `is_locked: Literal['asc', 'desc']`
     :   Whether the thread is locked.
@@ -680,6 +713,9 @@ Classes
     `user: Literal['asc', 'desc']`
     :   User ID who sent the message.
 
+    `username: Literal['asc', 'desc']`
+    :   Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
+
 <a id="ChannelMessagesStartswithCondition"></a>
 
 `ChannelMessagesStartswithCondition(*args, **kwargs)`
@@ -716,6 +752,12 @@ Classes
 
     `bot_profile: str`
     :   Bot profile information.
+
+    `channel_id: str`
+    :   Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: str`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
 
     `is_locked: str`
     :   Whether the thread is locked.
@@ -758,6 +800,9 @@ Classes
 
     `user: str`
     :   User ID who sent the message.
+
+    `username: str`
+    :   Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
 
 <a id="ChannelPurposesCreateParams"></a>
 
@@ -1925,6 +1970,12 @@ Classes
     `bot_id: Any`
     :   Bot ID if message was sent by a bot.
 
+    `channel_id: Any`
+    :   Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: Any`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
+
     `is_locked: Any`
     :   Whether the thread is locked.
 
@@ -2089,6 +2140,12 @@ Classes
 
     `bot_id: list[str]`
     :   Bot ID if message was sent by a bot.
+
+    `channel_id: list[str]`
+    :   Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: list[float]`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
 
     `is_locked: list[bool]`
     :   Whether the thread is locked.
@@ -2281,6 +2338,12 @@ Classes
     `bot_id: str | None`
     :   Bot ID if message was sent by a bot.
 
+    `channel_id: str | None`
+    :   Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: float | None`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
+
     `is_locked: bool | None`
     :   Whether the thread is locked.
 
@@ -2357,6 +2420,12 @@ Classes
     `bot_id: Literal['asc', 'desc']`
     :   Bot ID if message was sent by a bot.
 
+    `channel_id: Literal['asc', 'desc']`
+    :   Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: Literal['asc', 'desc']`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
+
     `is_locked: Literal['asc', 'desc']`
     :   Whether the thread is locked.
 
@@ -2429,6 +2498,12 @@ Classes
 
     `bot_id: str`
     :   Bot ID if message was sent by a bot.
+
+    `channel_id: str`
+    :   Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: str`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
 
     `is_locked: str`
     :   Whether the thread is locked.

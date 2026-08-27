@@ -74,4 +74,7 @@ data:
     - title: SQL commands
       url: https://www.postgresql.org/docs/current/sql-commands.html
       type: sql_reference
+    - title: PostgreSQL server source code
+      url: https://github.com/postgres/postgres
+      type: code_repository
 metadataSpecVersion: "1.0"
