@@ -212,7 +212,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.0.0 | 2026-08-27 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Type all date and datetime fields and remove deprecated Linear fields from the `users`, `teams` and `customer_statuses` queries. See the [migration guide](./linear-migrations.md#upgrading-to-100). |
+| 1.0.0 | 2026-08-27 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Type all date and datetime fields and remove deprecated Linear fields from the `users`, `teams` and `customer_statuses` queries. |
 | 0.4.0 | 2026-08-27 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
 | 0.3.0 | 2026-08-26 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Sync archived records in every stream and declare `archivedAt` (plus `trashed` on `issues` and `projects`) in the stream schemas |
