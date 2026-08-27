@@ -238,6 +238,17 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: "{{ stream_partition.object_id[0] }}"
         request_parameters: {}
+        # Narrower than base_requester on purpose: a reread of a deleted object 404s and must be skipped,
+        # but 400/403 on a reread means a bad path or a permission problem and must not be swallowed.
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+              error_message: >-
+                Object no longer exists; skipping hydration. {{ response['error']['message'] }}
       record_selector:
         type: RecordSelector
         extractor:
@@ -246,6 +257,9 @@ definitions:
         transform_before_filtering: true
         schema_normalization: Default
       partition_router:
+        # `deduplicate` relies on the CDK's global `seen_keys` set: grouping_partition_router deduplicates
+        # across the whole stream, not per group, despite what its docstring suggests. So group_size 1 plus
+        # deduplicate true means exactly one hydration request per unique object id in the sync.
         type: GroupingPartitionRouter
         group_size: 1
         deduplicate: true
@@ -288,6 +302,16 @@ definitions:
         $ref: "#/definitions/base_requester"
         path: "{{ stream_partition.object_id[0] }}"
         request_parameters: {}
+        # See hydrated_events_based_stream: only 404 is ignorable on a reread, 400/403 must surface.
+        error_handler:
+          type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              http_codes:
+                - 404
+              error_message: >-
+                Object no longer exists; skipping hydration. {{ response['error']['message'] }}
       partition_router:
         type: GroupingPartitionRouter
         group_size: 1
@@ -1982,7 +2006,8 @@ dynamic_streams:
                 requester:
                   $ref: "#/definitions/hydrated_events_based_stream/retriever/requester"
                   request_parameters:
-                    expand[]: '{{["data.refunds"]}}'
+                    # Retrieve endpoints take bare expansion paths; the `data.` prefix is list-only.
+                    expand[]: '{{["refunds"]}}'
             hydrated_parent_stream:
               $ref: "#/definitions/streams/charges/incremental_stream"
             hydrated_path: 'charges/{{ stream_partition.object_id[0] }}'
@@ -2028,7 +2053,8 @@ dynamic_streams:
                 requester:
                   $ref: "#/definitions/hydrated_events_based_stream/retriever/requester"
                   request_parameters:
-                    expand[]: '{{["data.discounts", "data.total_tax_amounts.tax_rate"]}}'
+                    # Retrieve endpoints take bare expansion paths; the `data.` prefix is list-only.
+                    expand[]: '{{["discounts", "total_tax_amounts.tax_rate"]}}'
             hydrated_parent_stream:
               $ref: "#/definitions/streams/invoices/incremental_stream"
             hydrated_path: 'invoices/{{ stream_partition.object_id[0] }}'
@@ -2058,7 +2084,8 @@ dynamic_streams:
                 requester:
                   $ref: "#/definitions/hydrated_events_based_stream/retriever/requester"
                   request_parameters:
-                    expand[]: '{{["data.tiers"]}}'
+                    # Retrieve endpoints take bare expansion paths; the `data.` prefix is list-only.
+                    expand[]: '{{["tiers"]}}'
             hydrated_parent_stream:
               $ref: "#/definitions/streams/plans/incremental_stream"
             hydrated_path: 'plans/{{ stream_partition.object_id[0] }}'
@@ -2213,7 +2240,11 @@ dynamic_streams:
               $ref: "#/definitions/hydrated_events_based_stream"
             hydrated_parent_stream:
               $ref: "#/definitions/streams/persons/incremental_stream"
-            hydrated_path: 'accounts/{{ config["account_id"] }}/persons/{{ stream_partition.object_id[0] }}'
+            hydrated_path: 'accounts/{{ stream_slice.extra_fields["account"][0] }}/persons/{{ stream_partition.object_id[0] }}'
+            hydrated_extra_fields:
+              - [updated]
+              - [is_deleted]
+              - [account]
           - name: application_fees_refunds
             stream:
               $ref: "#/definitions/streams/application_fees_refunds"
@@ -2358,6 +2389,11 @@ dynamic_streams:
             - retriever
             - requester
             - path
+          # The escaped quotes are load-bearing. The resolver runs yaml.safe_load on the rendered value, and
+          # the requester later runs ast.literal_eval on the rendered path. Exactly one of those two strips
+          # the quotes: yaml.safe_load for plain paths, literal_eval for paths that embed double quotes such
+          # as extra_fields["fee"] (invalid YAML, so they pass through quoted). Dropping the quotes lets
+          # yaml.safe_load reinterpret a path as something other than a string.
           value: "\"{{ components_values['hydrated_path'] if config.get('event_based_incremental_sync_mode', 'events') == 'hydrated_events' else components_values['stream']['incremental_stream']['retriever']['requester']['path'] }}\""
         - type: ComponentMappingDefinition
           field_path:
@@ -2470,6 +2506,9 @@ spec:
           The legacy events mode emits the object embedded in the Stripe event payload. The hydrated
           events mode uses the Stripe event only to identify changed records, then rereads each
           changed record from the stream's resource endpoint before emitting it.
+          In events mode, fields removed or relocated in Stripe API versions newer than the connector's
+          pinned 2022-11-15 are silently absent from incremental records. Choose hydrated_events to avoid
+          that, at the cost of one extra API call per changed object.
         enum:
           - events
           - hydrated_events

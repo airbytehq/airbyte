@@ -282,6 +282,8 @@ class IncrementalTest(TestCase):
         state_datetime = _NOW - timedelta(days=5)
         cursor_value = int(state_datetime.timestamp()) + 1
         payment_method = _a_payment_method().with_id("pm_hydrated").build()
+        # Only the detail endpoint returns this marker, so the assertions below fail if hydration never happens.
+        hydrated_payment_method = {**payment_method, "metadata": {"hydration_source": "detail-endpoint"}}
 
         http_mocker.get(
             _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
@@ -289,7 +291,7 @@ class IncrementalTest(TestCase):
         )
         http_mocker.get(
             _payment_method_request("pm_hydrated").build(),
-            HttpResponse(json.dumps(payment_method), 200),
+            HttpResponse(json.dumps(hydrated_payment_method), 200),
         )
 
         output = self._read(
@@ -300,6 +302,31 @@ class IncrementalTest(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "pm_hydrated"
         assert output.records[0].record.data["updated"] == cursor_value
+        assert output.records[0].record.data["metadata"] == {"hydration_source": "detail-endpoint"}
+
+    @HttpMocker()
+    def test_given_hydrated_mode_and_two_events_for_same_object_when_read_then_hydrate_once(self, http_mocker: HttpMocker) -> None:
+        state_datetime = _NOW - timedelta(days=5)
+        cursor_value = int(state_datetime.timestamp()) + 1
+        payment_method = _a_payment_method().with_id("pm_hydrated").build()
+        detail_request = _payment_method_request("pm_hydrated").build()
+
+        http_mocker.get(
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_response()
+            .with_record(_an_event().with_id("evt_first").with_cursor(cursor_value).with_field(_DATA_FIELD, payment_method))
+            .with_record(_an_event().with_id("evt_second").with_cursor(cursor_value + 1).with_field(_DATA_FIELD, payment_method))
+            .build(),
+        )
+        http_mocker.get(detail_request, HttpResponse(json.dumps(payment_method), 200))
+
+        output = self._read(
+            _config().with_event_based_incremental_sync_mode("hydrated_events"),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+        )
+
+        http_mocker.assert_number_of_calls(detail_request, 1)
+        assert len(output.records) == 1
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:

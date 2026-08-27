@@ -17,13 +17,15 @@ Stripe's Events API only retains events for 30 days. If the connector's state fa
 
 The base error handler is configured to IGNORE (not fail) responses with HTTP status 403 (permission denied), 400 (bad request), and 404 (not found). When the Stripe API returns any of these errors for a specific resource or subresource, the connector silently skips that record and continues syncing.
 
+The hydrated retrievers are the exception: they override the error handler to ignore only 404 (the object was deleted between the event and the reread), so 400 and 403 on a reread surface instead of being swallowed.
+
 **Why this matters:** If an API key loses access to a specific Stripe resource (e.g., Issuing endpoints require special permissions), those records will silently disappear from incremental syncs without any error or warning in the sync logs. A user may not notice they are missing data until they check record counts against the Stripe dashboard.
 
 ## 3. Hydrated Mode Exists to Compensate for Events API Payload Limits
 
 As of April 2024, the Stripe API does not support retrieving [expandable fields](https://docs.stripe.com/api/expanding_objects) from the Events API. That limitation is exactly why the connector now exposes both `events` and `hydrated_events` modes.
 
-**Why this matters:** In `events` mode, incremental syncs still emit the non-expanded object snapshot from the event payload, so fields that require expansion may be missing or reduced to IDs. In `hydrated_events` mode, the connector uses the event only as the change signal and fetches the emitted record from the object endpoint instead, reapplying any stream-specific `expand[]` parameters configured in the connector. This is the core functional difference between the new hydrated stream and the original event stream.
+**Why this matters:** In `events` mode, incremental syncs still emit the non-expanded object snapshot from the event payload, so fields that require expansion may be missing or reduced to IDs. In `hydrated_events` mode, the connector uses the event only as the change signal and fetches the emitted record from the object endpoint instead, carrying the `expand[]` parameters declared for that stream's hydrated request. Those hydrated `expand[]` values are declared separately from the list ones, without the `data.` prefix, because expansion paths on a retrieve are bare while list requests prefix them with the `data` property. This is the core functional difference between the new hydrated stream and the original event stream.
 
 ## 4. Populating Data for Sandbox Accounts
 

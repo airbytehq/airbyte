@@ -399,6 +399,8 @@ class IncrementalTest(TestCase):
         state_datetime = _NOW - timedelta(days=5)
         cursor_value = int(state_datetime.timestamp()) + 1
         refund = _a_refund().with_id("fr_hydrated").build()
+        # Only the detail endpoint returns this marker, so the assertions below fail if hydration never happens.
+        hydrated_refund = {**refund, "balance_transaction": "txn_from_detail_endpoint"}
 
         http_mocker.get(
             _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
@@ -408,7 +410,7 @@ class IncrementalTest(TestCase):
             StripeRequestBuilder._for_endpoint(
                 f"application_fees/{refund['fee']}/refunds/fr_hydrated", _ACCOUNT_ID, _CLIENT_SECRET
             ).build(),
-            HttpResponse(json.dumps(refund), 200),
+            HttpResponse(json.dumps(hydrated_refund), 200),
         )
 
         output = self._read(
@@ -419,6 +421,7 @@ class IncrementalTest(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "fr_hydrated"
         assert output.records[0].record.data["updated"] == cursor_value
+        assert output.records[0].record.data["balance_transaction"] == "txn_from_detail_endpoint"
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:

@@ -132,6 +132,8 @@ class AccountsTest(TestCase):
         state_datetime = _NOW - timedelta(days=5)
         cursor_value = int(state_datetime.timestamp()) + 1
         account = _create_record().with_id("acct_hydrated").build()
+        # Only the detail endpoint returns this marker, so the assertions below fail if hydration never happens.
+        hydrated_account = {**account, "metadata": {"hydration_source": "detail-endpoint"}}
 
         http_mocker.get(
             _create_events_request()
@@ -146,7 +148,7 @@ class AccountsTest(TestCase):
         )
         http_mocker.get(
             _create_account_request("acct_hydrated").build(),
-            HttpResponse(json.dumps(account), 200),
+            HttpResponse(json.dumps(hydrated_account), 200),
         )
 
         config = (
@@ -159,3 +161,4 @@ class AccountsTest(TestCase):
         assert len(actual_messages.records) == 1
         assert actual_messages.records[0].record.data["id"] == "acct_hydrated"
         assert actual_messages.records[0].record.data["updated"] == cursor_value
+        assert actual_messages.records[0].record.data["metadata"] == {"hydration_source": "detail-endpoint"}

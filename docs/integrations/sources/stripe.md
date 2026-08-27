@@ -61,9 +61,9 @@ For more information on Stripe API Keys, see the [Stripe documentation](https://
 9. (Optional) For **Event-based Incremental Sync Mode**, choose how Airbyte should process streams that support event-based incremental syncs after the stream already has state.
 
    - `events` (default): Airbyte reads the changed object directly from `event.data.object` in the Stripe Events API response. Stripe renders that embedded object using the API version captured on the event when it was created, which can differ from the connector's pinned API version.
-   - `hydrated_events`: Airbyte still uses the Stripe Events API to discover which records changed, but then rereads each changed record from that stream's resource endpoint before emitting it. The emitted record therefore comes from the stream endpoint rather than from the event payload, and any stream-specific `expand[]` parameters configured in the connector are applied again during that reread. If multiple events for the same object are observed in the same sync window, the connector deduplicates by object ID before hydration and performs one hydration call per unique object.
+   - `hydrated_events`: Airbyte still uses the Stripe Events API to discover which records changed, but then rereads each changed record from that stream's resource endpoint before emitting it. The emitted record therefore comes from the stream endpoint rather than from the event payload, and the reread carries the `expand[]` parameters the connector declares for that stream's hydrated request. If multiple events for the same object are observed in the same sync window, the connector deduplicates by object ID before hydration and performs one hydration call per unique object.
 
-   Use `hydrated_events` when you want incremental syncs to prefer the latest record from the object endpoint over the object snapshot embedded in the Stripe event, or when you need the emitted object reread in the connector's pinned `2022-11-15` API shape.
+   Use `hydrated_events` when you want incremental syncs to prefer the latest record from the object endpoint over the object snapshot embedded in the Stripe event, or when you need the emitted object reread in the connector's pinned `2022-11-15` API shape. It costs one extra API call per changed object and it degrades deletes - see [Troubleshooting](#troubleshooting) for the trade-offs.
 
 </FieldAnchor>
 
@@ -163,9 +163,15 @@ The [Stripe API](https://stripe.com/docs/api) uses the same [JSON Schema](https:
 
 This connector sends Stripe API version `2022-11-15` on its direct resource requests. That pin applies to full-refresh reads and to object rereads in `hydrated_events` mode.
 
-It does not control the object embedded in Stripe events when event-based incremental streams run in the default `events` mode. In that mode, Airbyte emits `event.data.object`, and Stripe documents that an event's `api_version` is the version used to render `data` when the event was created. If your account API version is newer than `2022-11-15`, `events` mode can therefore return records in a newer shape than the connector pin. Fields removed or relocated in newer Stripe API versions may be absent and arrive as `null`.
+:::warning
+The pin does **not** govern event-based incremental syncs in the default `events` mode. In that mode Airbyte emits `event.data.object`, and Stripe renders an event's `data.object` at your account's own API version at the time the event was created - the `Stripe-Version` header sent when retrieving events does not re-render the embedded object. You can confirm which version your events use via the `api_version` field on the `events` stream.
 
-Use `hydrated_events` when you need incremental records reread from the resource endpoint in the pinned `2022-11-15` shape. For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
+If your Stripe account's API version is newer than `2022-11-15`, fields that were **removed or relocated** between `2022-11-15` and your account version are silently absent from `events`-mode incremental records and land as `null`. For example, the Stripe [Basil release (2025-03-31)](https://docs.stripe.com/changelog/basil/2025-03-31/add-support-for-multiple-partial-payments-on-invoices) removed top-level `charge`, `payment_intent`, and `discount` from the Invoice object and removed the `invoice` back-pointer from the Charge and PaymentIntent objects. This is distinct from the [expandable-fields limitation](https://github.com/airbytehq/airbyte/issues/38039): there the field is still present as an ID, here it is absent entirely. The sync succeeds and nothing is logged.
+
+To receive incremental records in the pinned `2022-11-15` shape, set **Event-based Incremental Sync Mode** to `hydrated_events` (see step 9 of the [setup guide](#step-2-set-up-the-stripe-connector-in-airbyte)), which rereads each changed object from its resource endpoint with the pinned version.
+:::
+
+For details on Stripe API versioning, see [Stripe API upgrades](https://docs.stripe.com/upgrades).
 
 ## Limitations & Troubleshooting
 
@@ -245,11 +251,17 @@ For streams that support event-based incremental syncs, the connector offers two
 The important difference is the source of truth for the emitted record:
 
 - In `events` mode, the incremental record is whatever Stripe placed inside `event.data.object`. That object keeps the API version captured on the event, so expandable fields may be reduced to IDs and fields removed or relocated in newer Stripe API versions may be absent entirely.
-- In `hydrated_events` mode, the incremental record comes from the stream endpoint, so it reflects the connector's pinned API version and reapplies any stream-specific `expand[]` parameters configured in the connector.
+- In `hydrated_events` mode, the incremental record comes from the stream endpoint, so it reflects the connector's pinned API version and carries the `expand[]` parameters the connector declares for that stream's hydrated request.
 
 Both modes still depend on the Stripe Events API to discover which records changed, so both are subject to the same 30-day event retention limit.
 
 Hydrated mode also changes the API-call pattern: `events` emits directly from the event payload, while `hydrated_events` performs additional object-endpoint requests after event detection. Duplicate events for the same object in one sync window are deduplicated before hydration, so only one hydration request is made per unique object.
+
+Three further trade-offs are specific to `hydrated_events`:
+
+- **Deletes are degraded.** `events` mode emits the pre-delete snapshot Stripe captured on the delete event. `hydrated_events` rereads the object instead, so objects whose retrieve still returns `200` with `deleted: true` emit only a thin tombstone, and objects whose retrieve returns `404` emit nothing at all. The pre-delete snapshot is not reproduced.
+- **Call volume grows.** Hydrated mode issues one extra API call per unique changed object, which for a busy account can mean roughly 100x more requests than `events` mode. Those calls share your account's rate-limit budget, so the practical effect is longer syncs rather than `429` errors.
+- **The first hydrated sync is the most expensive one.** Switching modes leaves the hydrated stream with no parent events state, so the first sync rehydrates every object changed in the last 30 days.
 
 Since the Stripe API does not allow querying objects which were updated since the last sync, the Stripe connector uses the Events API under the hood to implement incremental syncs and export data based on its update date.
 However, not all the entities are supported by the Events API, so the Stripe connector uses the `created` field or its analogue to query for new data in your Stripe account. These are the entities synced based on the date of creation:
@@ -346,7 +358,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.2.0 | 2026-08-27 | [77625](https://github.com/airbytehq/airbyte/pull/77625) | Add configurable `event_based_incremental_sync_mode` with new `hydrated_events` behavior for event-based incremental streams. |
+| 6.2.0-rc.1 | 2026-08-27 | [77625](https://github.com/airbytehq/airbyte/pull/77625) | Add opt-in `hydrated_events` value for `event_based_incremental_sync_mode`, which rereads each changed object from its resource endpoint at the pinned `2022-11-15` API version instead of emitting the event payload; correct the `lookback_window_days` description to state that it also applies to event-based streams. |
 | 6.0.15 | 2026-08-18 | [84768](https://github.com/airbytehq/airbyte/pull/84768) | Update dependencies |
 | 6.0.14 | 2026-08-17 | [84355](https://github.com/airbytehq/airbyte/pull/84355) | Update events now win same-second cursor ties with creation events so the newer payload is kept at the destination. |
 | 6.0.13 | 2026-08-11 | [84134](https://github.com/airbytehq/airbyte/pull/84134) | Update dependencies |
