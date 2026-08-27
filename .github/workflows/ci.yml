@@ -25,11 +25,12 @@ jobs:
   bump-version:
     name: Bump Version
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     outputs:
       app-version: ${{ steps.bump-version.outputs.app-version }}
       tag: ${{ steps.bump-version.outputs.tag }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@v6.0.2
       with:
         repository: outrauk/shared-github-actions-workflows
         token: ${{ secrets.SHARED_GITHUB_ACTIONS_WORKFLOWS_GITHUB_TOKEN }}
@@ -39,9 +40,9 @@ jobs:
       uses: ./shared-github-actions-workflows/.github/actions/bump-version
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        release-branches: ${{ inputs.release-branches }}
-        tag-prefix: ${{ inputs.tag-prefix }}
-        pep440-compliant: ${{ inputs.pep440-compliant }}
+        release-branches: "master"
+        tag-prefix: "v"
+        pep440-compliant: "false"
 
   has-connector-changed:
     name: Has a maintained connector changed
