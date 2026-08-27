@@ -208,7 +208,9 @@ still present. Investigation lives at
    `${VERSION:-…}` override; invoke `run.sh` with the right
    `--command`, `--fixture=`, `--config-template=`, `--catalog=`, and
    `--expect-*` flags. Pass `--keep-backend` so the shared-session
-   Usage flow works.
+   Usage flow works. For check-time or discover-time signatures, use
+   `--expect-match=check:stderr:…` / `--expect-match=discover:stderr:…`
+   (the `<command>:` prefix defaults to `read` when omitted).
 4. Verify locally:
    ```bash
    "$GENERIC/scripts/start-backend.sh"
@@ -218,3 +220,32 @@ still present. Investigation lives at
 5. Note the worked example in this `SKILL.md`'s "Worked examples"
    section with: customer-symptom one-liner, `--expect-*` assertions
    the case gates on, root-cause one-liner.
+
+### Multi-phase repros
+
+When the reproduction is single-phase (one `run.sh` invocation is
+enough to trigger the bug), follow the recipe above. Reach for a
+multi-phase shape only when the bug needs an intermediate mutation
+that depends on state from a first read — the canonical example is
+read → extract STATE → mutate the server based on that STATE → replay
+with the stale STATE. Model on [`cases/11451.sh`](cases/11451.sh) —
+the three primitives it composes are:
+
+- **`--step-name=<bug>/<phase>`** — per-phase artifact dirs under
+  `$REPRO_OUT/<bug>/`. `cases/11451.sh` uses `11451/baseline` and
+  `11451/stale`; a new case would use its own bug number and phase
+  names.
+- **`extract-state.py`** (in the generic skill) — reads a phase's
+  `read/stdout.txt` and emits a JSON array of AirbyteStateMessage
+  objects, which is what `run.sh --state=PATH` expects.
+- **`--skip-fixtures`** on the second/later `run.sh` invocation —
+  opts out of the initial-fixture reapply so the intermediate state
+  the previous phase established survives. Otherwise `run.sh`'s
+  default fixture-application would re-run `00-init-cdc.sql`, which
+  drops and recreates `CdcTest` and wipes the mutation. Rejects
+  `--fixture=` in the same invocation (either apply fixtures or skip
+  them).
+
+The between-phase mutation itself is a plain `apply-sql.sh` call
+against a fixture in `fixtures/sql/`. Nothing about the mutation is
+special-cased in `run.sh` — the case script drives the sequencing.
