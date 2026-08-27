@@ -20,7 +20,7 @@ Each connection reads a single Shiftbase account. To sync several accounts, crea
 3. Enter a name for the token. Shiftbase then shows the token overview, where you can add more tokens with **+ Add App Token**.
 4. Copy the token. You need it to configure the source.
 
-The token inherits the permissions of the account that created it. If a stream returns no data or fails with an authorization error, check that the account can see the same departments, employees, and reports in the Shiftbase UI.
+If a stream returns no data or fails with an authorization error, check that the Shiftbase user who created the token can see the same departments, employees, and reports in the Shiftbase UI.
 
 ## Setup guide
 
@@ -37,7 +37,7 @@ The token inherits the permissions of the account that created it. If a stream r
 
 **Start Date** does more than bound historical data, and its effect differs by stream:
 
-- `departments`, `employees`, and `shifts` send it as the `min_date` request parameter, so records that Shiftbase considers older than this date are excluded.
+- `departments`, `employees`, and `shifts` send it as the `min_date` request parameter on every request.
 - `absentees` and `availabilities` use it as the initial cursor value and send it as `min_date`.
 - `employee_time_distribution` uses the year of this date as the first year it requests.
 - `employees_report` sends it as the report's `from` date.
