@@ -92,6 +92,9 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [User Conversations](https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations) | Full refresh |
 | [Users](https://www.twilio.com/docs/conversations/api/user-resource) | Full refresh |
 | [Verify Services](https://www.twilio.com/docs/verify/api/service#maincontent) | Full refresh |
+| [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing) | Full refresh |
+| [Messaging Pricing Countries](https://www.twilio.com/docs/messaging/api/pricing) | Full refresh |
+| [Phone Number Pricing Countries](https://www.twilio.com/docs/phone-numbers/pricing) | Full refresh |
 
 ## Upgrading to 1.0.0
 
@@ -160,6 +163,9 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.0-rc.1 | 2026-08-11 | [84203](https://github.com/airbytehq/airbyte/pull/84203) | Add voice, messaging, and phone number pricing country streams |
+| 1.0.13 | 2026-08-11 | [84128](https://github.com/airbytehq/airbyte/pull/84128) | Update dependencies |
+| 1.0.12 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 1.0.11 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.0.9 — 1.0.10 is built on SDM 7.23.7, which breaks bundled custom components |
 | 1.0.10 | 2026-07-28 | [83134](https://github.com/airbytehq/airbyte/pull/83134) | Update dependencies |
 | 1.0.9 | 2026-07-21 | [82618](https://github.com/airbytehq/airbyte/pull/82618) | Update dependencies |

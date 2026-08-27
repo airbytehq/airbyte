@@ -6,11 +6,11 @@ data:
     hosts:
       - "*.chargebee.com"
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7@sha256:c8318a72046a68ab48bd5bd57adb459d5a69dead827356f19c2ef78fbecfe0c9
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: 686473f1-76d9-4994-9cc7-9b13da46147c
-  dockerImageTag: 0.10.42
+  dockerImageTag: 0.10.45
   dockerRepository: airbyte/source-chargebee
   documentationUrl: https://docs.airbyte.com/integrations/sources/chargebee
   externalDocumentationUrls:
@@ -32,13 +32,17 @@ data:
   registryOverrides:
     cloud:
       enabled: true
-      dockerImageTag: 0.10.40 # last version built on SDM 7.23.6
     oss:
       enabled: true
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - subscription

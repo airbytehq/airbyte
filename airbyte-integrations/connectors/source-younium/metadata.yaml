@@ -8,16 +8,15 @@ data:
       enabled: true
     cloud:
       enabled: true
-      dockerImageTag: 0.4.54 # last version built on SDM 7.23.6
   connectorBuildOptions:
     # Please update to the latest version of the connector base image.
     # https://hub.docker.com/r/airbyte/python-connector-base
     # Please use the full address with sha256 hash to guarantee build reproducibility.
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.7@sha256:c8318a72046a68ab48bd5bd57adb459d5a69dead827356f19c2ef78fbecfe0c9
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: 9c74c2d7-531a-4ebf-b6d8-6181f805ecdc
-  dockerImageTag: 0.4.56
+  dockerImageTag: 0.4.59
   dockerRepository: airbyte/source-younium
   githubIssueLabel: source-younium
   icon: younium.svg
