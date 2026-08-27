@@ -42,7 +42,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: created
@@ -92,7 +92,7 @@ definitions:
             type: CursorPagination
             page_size: 10
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -145,7 +145,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -202,7 +202,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -233,7 +233,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -264,7 +264,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -321,7 +321,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -360,7 +360,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -400,7 +400,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -445,7 +445,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -510,7 +510,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -549,7 +549,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -588,7 +588,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: '{{ response.get("pagination", {}).get("continuation", {}) }}'
-            stop_condition: '{{ not response.get("pagination", {}).get("continuation", {}) }}'
+            stop_condition: '{{ not (response.get("pagination") or {}).get("has_more_items") }}'
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
