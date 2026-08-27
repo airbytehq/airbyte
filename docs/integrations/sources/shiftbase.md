@@ -43,7 +43,7 @@ If a stream returns no data or fails with an authorization error, check that the
 - `employees_report` sends it as the report's `from` date.
 - `timesheet_detail_report` and `schedule_detail_report` use it as the first day of their day-by-day window.
 
-An early Start Date increases sync time significantly, because the report streams request one day at a time. For example, a Start Date two years in the past means roughly 730 requests per report stream on the first sync.
+An early Start Date increases sync time significantly, because `timesheet_detail_report` and `schedule_detail_report` request one day at a time. For example, a Start Date two years in the past means roughly 730 requests per detail report stream on the first sync. `employees_report` is a single request regardless of the date.
 
 ## Supported sync modes
 
@@ -54,7 +54,7 @@ The Shiftbase source connector supports the following [sync modes](https://docs.
 - [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append) (for supported streams)
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped) (for supported streams)
 
-`employees_report` has no primary key, so it can't use **Incremental - Append + Deduped** or **Full Refresh - Overwrite + Deduped**.
+`employees_report` has no primary key, so it can't use **Incremental - Append + Deduped**.
 
 ## Supported streams
 
