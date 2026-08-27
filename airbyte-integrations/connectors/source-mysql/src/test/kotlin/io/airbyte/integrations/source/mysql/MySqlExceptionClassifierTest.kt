@@ -50,24 +50,21 @@ class MySqlExceptionClassifierTest {
     }
 
     @Test
-    fun testChangeEventProducerIsTransient() {
+    fun testChangeEventProducerWithoutKnownCauseStaysConfig() {
         val exception =
             RuntimeException(
                 "java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: " +
                     "An exception occurred in the change event producer. This connector will be stopped."
             )
         val result = classifier.classify(exception)
-        Assertions.assertInstanceOf(TransientError::class.java, result)
-        val transient = result as TransientError
-        Assertions.assertTrue(
-            transient.displayMessage.contains("will retry"),
-            "Expected message about retry, got: ${transient.displayMessage}"
-        )
+        Assertions.assertInstanceOf(ConfigError::class.java, result)
     }
 
     @Test
     fun testChangeEventProducerWrappingEofClassifiesAsTransient() {
-        // Simulates the real exception chain: ConnectException wrapping an EOFException
+        // Simulates the real exception chain: ConnectException wrapping an EOFException.
+        // The EOF rule precedes the generic change event producer rule, so the nested cause
+        // is matched first and the failure is retried instead of surfacing as a config error.
         val eofException = java.io.EOFException("Failed to read next byte from position 9093464")
         val debeziumException = RuntimeException("Failed to deserialize data", eofException)
         val connectException =

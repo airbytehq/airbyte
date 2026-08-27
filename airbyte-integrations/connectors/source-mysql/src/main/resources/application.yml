@@ -117,9 +117,10 @@ airbyte:
             input-example: >-
               java.lang.RuntimeException: org.apache.kafka.connect.errors.ConnectException: 
               An exception occurred in the change event producer. This connector will be stopped.
-            error: transient
+            error: config
             group: MySQL Connector Error
-            output: The sync encountered an unexpected error in the change event producer, will retry.
+            output: >-
+              The sync encountered an unexpected error in the change event producer and has stopped. Please check the logs for details and troubleshoot accordingly.
             reference-links: https://docs.oracle.com/javase/9/docs/api/java/lang/RuntimeException.html
       jdbc:
         # The following rules are for the JdbcExceptionClassifier [0] which are applied on a
