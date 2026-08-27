@@ -49,6 +49,10 @@ List of available streams:
 - Templates
 - Snippets
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -56,6 +60,20 @@ List of available streams:
 
 | Version | Date       | Pull Request | Subject |
 | :------ |:-----------| :----- | :------ |
+| 1.1.42 | 2026-08-18 | [84700](https://github.com/airbytehq/airbyte/pull/84700) | Update dependencies |
+| 1.1.41 | 2026-08-11 | [84057](https://github.com/airbytehq/airbyte/pull/84057) | Update dependencies |
+| 1.1.40 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 1.1.39 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.1.37 — 1.1.38 is built on SDM 7.23.7, which breaks bundled custom components |
+| 1.1.38 | 2026-07-28 | [83024](https://github.com/airbytehq/airbyte/pull/83024) | Update dependencies |
+| 1.1.37 | 2026-07-21 | [82528](https://github.com/airbytehq/airbyte/pull/82528) | Update dependencies |
+| 1.1.36 | 2026-07-14 | [81970](https://github.com/airbytehq/airbyte/pull/81970) | Update dependencies |
+| 1.1.35 | 2026-06-30 | [81199](https://github.com/airbytehq/airbyte/pull/81199) | Update dependencies |
+| 1.1.34 | 2026-06-23 | [80582](https://github.com/airbytehq/airbyte/pull/80582) | Update dependencies |
+| 1.1.33 | 2026-06-16 | [79977](https://github.com/airbytehq/airbyte/pull/79977) | Update dependencies |
+| 1.1.32 | 2026-06-09 | [79467](https://github.com/airbytehq/airbyte/pull/79467) | Update dependencies |
+| 1.1.31 | 2026-06-02 | [78890](https://github.com/airbytehq/airbyte/pull/78890) | Update dependencies |
+| 1.1.30 | 2026-04-28 | [77375](https://github.com/airbytehq/airbyte/pull/77375) | Update dependencies |
+| 1.1.29 | 2026-04-21 | [75661](https://github.com/airbytehq/airbyte/pull/75661) | Update dependencies |
 | 1.1.28 | 2026-03-24 | [74990](https://github.com/airbytehq/airbyte/pull/74990) | Update dependencies |
 | 1.1.27 | 2026-03-10 | [74654](https://github.com/airbytehq/airbyte/pull/74654) | Update dependencies |
 | 1.1.26 | 2026-03-03 | [74222](https://github.com/airbytehq/airbyte/pull/74222) | Update dependencies |

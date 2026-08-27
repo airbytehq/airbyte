@@ -8,22 +8,33 @@ The Freshdesk connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Tickets | [List](#tickets-list), [Get](#tickets-get), [Search](#tickets-search) |
-| Contacts | [List](#contacts-list), [Get](#contacts-get) |
-| Agents | [List](#agents-list), [Get](#agents-get), [Search](#agents-search) |
-| Groups | [List](#groups-list), [Get](#groups-get), [Search](#groups-search) |
-| Companies | [List](#companies-list), [Get](#companies-get) |
-| Roles | [List](#roles-list), [Get](#roles-get) |
-| Satisfaction Ratings | [List](#satisfaction-ratings-list) |
-| Surveys | [List](#surveys-list) |
-| Time Entries | [List](#time-entries-list) |
-| Ticket Fields | [List](#ticket-fields-list) |
+| Tickets | [List](#tickets-list), [Get](#tickets-get), [Context Store Search](#tickets-context-store-search), [Semantic Search](#tickets-semantic-search) |
+| Contacts | [List](#contacts-list), [Get](#contacts-get), [Context Store Search](#contacts-context-store-search), [Semantic Search](#contacts-semantic-search) |
+| Agents | [List](#agents-list), [Get](#agents-get), [Context Store Search](#agents-context-store-search) |
+| Groups | [List](#groups-list), [Get](#groups-get), [Context Store Search](#groups-context-store-search) |
+| Companies | [List](#companies-list), [Get](#companies-get), [Context Store Search](#companies-context-store-search), [Semantic Search](#companies-semantic-search) |
+| Roles | [List](#roles-list), [Get](#roles-get), [Context Store Search](#roles-context-store-search) |
+| Satisfaction Ratings | [List](#satisfaction-ratings-list), [Context Store Search](#satisfaction-ratings-context-store-search), [Semantic Search](#satisfaction-ratings-semantic-search) |
+| Surveys | [List](#surveys-list), [Context Store Search](#surveys-context-store-search) |
+| Time Entries | [List](#time-entries-list), [Context Store Search](#time-entries-context-store-search), [Semantic Search](#time-entries-semantic-search) |
+| Ticket Fields | [List](#ticket-fields-list), [Context Store Search](#ticket-fields-context-store-search) |
 
 ## Tickets
 
 ### Tickets List
 
 Returns a paginated list of tickets. By default returns tickets created in the past 30 days. Use updated_since to get older tickets.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "tickets",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -103,11 +114,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `nr_escalated` | `null \| boolean` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Tickets Get
 
 Get a single ticket by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "tickets",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -190,14 +221,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Tickets Search
+### Tickets Context Store Search
 
 Search and filter tickets records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "tickets",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await freshdesk.tickets.search(
+await freshdesk.tickets.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -210,7 +261,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "tickets",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -221,7 +272,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -314,11 +365,117 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Tickets Semantic Search
+
+Search tickets records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "tickets",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "description_text", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `tickets.context_store_search` helper only accepts `query`.
+
+```python
+await freshdesk.execute(
+    "tickets",
+    "context_store_search",
+    {"semantic": {"field": "description_text", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "tickets",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "description_text", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `description_text` | 2048 | Plain text content of the ticket |
+
+Each result is also enriched with the following related fields (returned only; not filterable): `requesterName`, `requesterEmail`.
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.subject` | `string` | Source record field |
+| `data[].entity.status` | `string` | Source record field |
+| `data[].entity.priority` | `string` | Source record field |
+| `data[].entity.type` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.requester_id` | `string` | Source record field |
+| `data[].entity.responder_id` | `string` | Source record field |
+| `data[].entity.group_id` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `data[].metadata.requesterName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.requesterEmail` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Contacts
 
 ### Contacts List
 
 Returns a paginated list of contacts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "contacts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -389,11 +546,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Contacts Get
 
 Get a single contact by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "contacts",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -469,11 +646,227 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Contacts Context Store Search
+
+Search and filter contacts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await freshdesk.contacts.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique contact ID |
+| `name` | `string` | Name of the contact |
+| `email` | `string` | Primary email address |
+| `phone` | `string` | Phone number |
+| `mobile` | `string` | Mobile number |
+| `active` | `boolean` | Whether the contact has been verified |
+| `address` | `string` | Address of the contact |
+| `company_id` | `integer` | ID of the primary company |
+| `custom_fields` | `object` | Custom fields associated with the contact |
+| `description` | `string` | Description of the contact |
+| `job_title` | `string` | Job title of the contact |
+| `language` | `string` | Language of the contact |
+| `twitter_id` | `string` | Twitter ID |
+| `unique_external_id` | `string` | External ID of the contact |
+| `time_zone` | `string` | Time zone of the contact |
+| `facebook_id` | `string` | Facebook ID of the contact |
+| `csat_rating` | `integer` | CSAT rating of the contact |
+| `preferred_source` | `string` | Preferred contact source |
+| `created_at` | `string` | Contact creation timestamp |
+| `updated_at` | `string` | Contact last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique contact ID |
+| `data[].name` | `string` | Name of the contact |
+| `data[].email` | `string` | Primary email address |
+| `data[].phone` | `string` | Phone number |
+| `data[].mobile` | `string` | Mobile number |
+| `data[].active` | `boolean` | Whether the contact has been verified |
+| `data[].address` | `string` | Address of the contact |
+| `data[].company_id` | `integer` | ID of the primary company |
+| `data[].custom_fields` | `object` | Custom fields associated with the contact |
+| `data[].description` | `string` | Description of the contact |
+| `data[].job_title` | `string` | Job title of the contact |
+| `data[].language` | `string` | Language of the contact |
+| `data[].twitter_id` | `string` | Twitter ID |
+| `data[].unique_external_id` | `string` | External ID of the contact |
+| `data[].time_zone` | `string` | Time zone of the contact |
+| `data[].facebook_id` | `string` | Facebook ID of the contact |
+| `data[].csat_rating` | `integer` | CSAT rating of the contact |
+| `data[].preferred_source` | `string` | Preferred contact source |
+| `data[].created_at` | `string` | Contact creation timestamp |
+| `data[].updated_at` | `string` | Contact last update timestamp |
+
+</details>
+
+### Contacts Semantic Search
+
+Search contacts records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "contacts",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `contacts.context_store_search` helper only accepts `query`.
+
+```python
+await freshdesk.execute(
+    "contacts",
+    "context_store_search",
+    {"semantic": {"field": "description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "contacts",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `description` | 2048 | Description of the contact |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.name` | `string` | Source record field |
+| `data[].entity.email` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.company_id` | `string` | Source record field |
+| `data[].entity.job_title` | `string` | Source record field |
+| `data[].entity.active` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Agents
 
 ### Agents List
 
 Returns a paginated list of agents
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "agents",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -534,11 +927,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Agents Get
 
 Get a single agent by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "agents",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -605,14 +1018,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Agents Search
+### Agents Context Store Search
 
 Search and filter agents records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "agents",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await freshdesk.agents.search(
+await freshdesk.agents.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -625,7 +1058,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "agents",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -636,7 +1069,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -689,6 +1122,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of groups
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "groups",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -738,11 +1182,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Groups Get
 
 Get a single group by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "groups",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -799,14 +1263,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Groups Search
+### Groups Context Store Search
 
 Search and filter groups records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "groups",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await freshdesk.groups.search(
+await freshdesk.groups.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -819,7 +1303,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "groups",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -830,7 +1314,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -880,6 +1364,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Companies List
 
 Returns a paginated list of companies
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "companies",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -931,11 +1426,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Companies Get
 
 Get a single company by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "companies",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -993,11 +1508,211 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Companies Context Store Search
+
+Search and filter companies records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "companies",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await freshdesk.companies.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique company ID |
+| `name` | `string` | Name of the company |
+| `description` | `string` | Description of the company |
+| `domains` | `array` | Email domains associated with the company |
+| `note` | `string` | Notes about the company |
+| `health_score` | `string` | Health score of the company |
+| `account_tier` | `string` | Account tier of the company |
+| `renewal_date` | `string` | Renewal date |
+| `industry` | `string` | Industry of the company |
+| `custom_fields` | `object` | Custom fields associated with the company |
+| `created_at` | `string` | Company creation timestamp |
+| `updated_at` | `string` | Company last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique company ID |
+| `data[].name` | `string` | Name of the company |
+| `data[].description` | `string` | Description of the company |
+| `data[].domains` | `array` | Email domains associated with the company |
+| `data[].note` | `string` | Notes about the company |
+| `data[].health_score` | `string` | Health score of the company |
+| `data[].account_tier` | `string` | Account tier of the company |
+| `data[].renewal_date` | `string` | Renewal date |
+| `data[].industry` | `string` | Industry of the company |
+| `data[].custom_fields` | `object` | Custom fields associated with the company |
+| `data[].created_at` | `string` | Company creation timestamp |
+| `data[].updated_at` | `string` | Company last update timestamp |
+
+</details>
+
+### Companies Semantic Search
+
+Search companies records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "companies",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `companies.context_store_search` helper only accepts `query`.
+
+```python
+await freshdesk.execute(
+    "companies",
+    "context_store_search",
+    {"semantic": {"field": "description", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "companies",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "description", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `description` | 2048 | Description of the company |
+| `note` | 2048 | Notes about the company |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.name` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.industry` | `string` | Source record field |
+| `data[].entity.account_tier` | `string` | Source record field |
+| `data[].entity.health_score` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Roles
 
 ### Roles List
 
 Returns a paginated list of roles
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "roles",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1042,11 +1757,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Roles Get
 
 Get a single role by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "roles",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1097,11 +1832,110 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Roles Context Store Search
+
+Search and filter roles records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "roles",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await freshdesk.roles.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "roles",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique role ID |
+| `name` | `string` | Name of the role |
+| `description` | `string` | Description of the role |
+| `default` | `boolean` | Whether this is a default role |
+| `created_at` | `string` | Role creation timestamp |
+| `updated_at` | `string` | Role last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique role ID |
+| `data[].name` | `string` | Name of the role |
+| `data[].description` | `string` | Description of the role |
+| `data[].default` | `boolean` | Whether this is a default role |
+| `data[].created_at` | `string` | Role creation timestamp |
+| `data[].updated_at` | `string` | Role last update timestamp |
+
+</details>
+
 ## Satisfaction Ratings
 
 ### Satisfaction Ratings List
 
 Returns a paginated list of satisfaction ratings
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "satisfaction_ratings",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1150,6 +1984,198 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
+</details>
+
+### Satisfaction Ratings Context Store Search
+
+Search and filter satisfaction ratings records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "satisfaction_ratings",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await freshdesk.satisfaction_ratings.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "satisfaction_ratings",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique satisfaction rating ID |
+| `survey_id` | `integer` | ID of the survey |
+| `user_id` | `integer` | ID of the user (requester) |
+| `agent_id` | `integer` | ID of the agent |
+| `group_id` | `integer` | ID of the group |
+| `ticket_id` | `integer` | ID of the ticket |
+| `feedback` | `string` | Feedback text |
+| `ratings` | `object` | Rating values (question_id to rating mapping) |
+| `created_at` | `string` | Rating creation timestamp |
+| `updated_at` | `string` | Rating last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique satisfaction rating ID |
+| `data[].survey_id` | `integer` | ID of the survey |
+| `data[].user_id` | `integer` | ID of the user (requester) |
+| `data[].agent_id` | `integer` | ID of the agent |
+| `data[].group_id` | `integer` | ID of the group |
+| `data[].ticket_id` | `integer` | ID of the ticket |
+| `data[].feedback` | `string` | Feedback text |
+| `data[].ratings` | `object` | Rating values (question_id to rating mapping) |
+| `data[].created_at` | `string` | Rating creation timestamp |
+| `data[].updated_at` | `string` | Rating last update timestamp |
+
+</details>
+
+### Satisfaction Ratings Semantic Search
+
+Search satisfaction ratings records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "satisfaction_ratings",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "feedback", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `satisfaction_ratings.context_store_search` helper only accepts `query`.
+
+```python
+await freshdesk.execute(
+    "satisfaction_ratings",
+    "context_store_search",
+    {"semantic": {"field": "feedback", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "satisfaction_ratings",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "feedback", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `feedback` | 2048 | Feedback text |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.ticket_id` | `string` | Source record field |
+| `data[].entity.survey_id` | `string` | Source record field |
+| `data[].entity.agent_id` | `string` | Source record field |
+| `data[].entity.group_id` | `string` | Source record field |
+| `data[].entity.user_id` | `string` | Source record field |
+| `data[].entity.ratings` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
 </details>
 
 ## Surveys
@@ -1157,6 +2183,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Surveys List
 
 Returns a paginated list of surveys
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "surveys",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1200,6 +2237,100 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
+</details>
+
+### Surveys Context Store Search
+
+Search and filter surveys records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "surveys",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await freshdesk.surveys.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "surveys",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique survey ID |
+| `title` | `string` | Title of the survey |
+| `active` | `boolean` | Whether the survey is active |
+| `questions` | `array` | Survey questions |
+| `created_at` | `string` | Survey creation timestamp |
+| `updated_at` | `string` | Survey last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique survey ID |
+| `data[].title` | `string` | Title of the survey |
+| `data[].active` | `boolean` | Whether the survey is active |
+| `data[].questions` | `array` | Survey questions |
+| `data[].created_at` | `string` | Survey creation timestamp |
+| `data[].updated_at` | `string` | Survey last update timestamp |
+
 </details>
 
 ## Time Entries
@@ -1207,6 +2338,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Time Entries List
 
 Returns a paginated list of time entries
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "time_entries",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1257,6 +2399,202 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `updated_at` | `null \| string` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
+</details>
+
+### Time Entries Context Store Search
+
+Search and filter time entries records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "time_entries",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await freshdesk.time_entries.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "time_entries",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique time entry ID |
+| `agent_id` | `integer` | ID of the agent |
+| `ticket_id` | `integer` | ID of the associated ticket |
+| `company_id` | `integer` | ID of the associated company |
+| `billable` | `boolean` | Whether the time entry is billable |
+| `note` | `string` | Description of the time entry |
+| `time_spent` | `string` | Time spent in hh:mm format |
+| `timer_running` | `boolean` | Whether the timer is running |
+| `executed_at` | `string` | Execution timestamp |
+| `start_time` | `string` | Start time of the timer |
+| `created_at` | `string` | Time entry creation timestamp |
+| `updated_at` | `string` | Time entry last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique time entry ID |
+| `data[].agent_id` | `integer` | ID of the agent |
+| `data[].ticket_id` | `integer` | ID of the associated ticket |
+| `data[].company_id` | `integer` | ID of the associated company |
+| `data[].billable` | `boolean` | Whether the time entry is billable |
+| `data[].note` | `string` | Description of the time entry |
+| `data[].time_spent` | `string` | Time spent in hh:mm format |
+| `data[].timer_running` | `boolean` | Whether the timer is running |
+| `data[].executed_at` | `string` | Execution timestamp |
+| `data[].start_time` | `string` | Start time of the timer |
+| `data[].created_at` | `string` | Time entry creation timestamp |
+| `data[].updated_at` | `string` | Time entry last update timestamp |
+
+</details>
+
+### Time Entries Semantic Search
+
+Search time entries records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "time_entries",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "note", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `time_entries.context_store_search` helper only accepts `query`.
+
+```python
+await freshdesk.execute(
+    "time_entries",
+    "context_store_search",
+    {"semantic": {"field": "note", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "time_entries",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "note", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `note` | 2048 | Description of the time entry |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].entity.ticket_id` | `string` | Source record field |
+| `data[].entity.agent_id` | `string` | Source record field |
+| `data[].entity.company_id` | `string` | Source record field |
+| `data[].entity.billable` | `string` | Source record field |
+| `data[].entity.time_spent` | `string` | Source record field |
+| `data[].entity.executed_at` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
 </details>
 
 ## Ticket Fields
@@ -1264,6 +2602,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Ticket Fields List
 
 Returns a list of all ticket fields
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "ticket_fields",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1319,6 +2668,124 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `created_at` | `null \| string` |  |
 | `updated_at` | `null \| string` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
+</details>
+
+### Ticket Fields Context Store Search
+
+Search and filter ticket fields records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "freshdesk",
+  "entity": "ticket_fields",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
+
+#### Python SDK
+
+```python
+await freshdesk.ticket_fields.context_store_search(
+    query={"filter": {"eq": {"id": 0}}}
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "ticket_fields",
+    "action": "context_store_search",
+    "params": {
+        "query": {"filter": {"eq": {"id": 0}}}
+    }
+}'
+```
+
+#### Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
+| `query.filter` | `object` | No | Filter conditions |
+| `query.sort` | `array` | No | Sort conditions |
+| `limit` | `integer` | No | Maximum results to return (default 1000) |
+| `cursor` | `string` | No | Pagination cursor from previous response's `meta.cursor` |
+| `fields` | `array` | No | Field paths to include in results |
+
+#### Searchable Fields
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `id` | `integer` | Unique ticket field ID |
+| `name` | `string` | Name of the field |
+| `label` | `string` | Display label for agents |
+| `label_for_customers` | `string` | Display label in the customer portal |
+| `description` | `string` | Description of the field |
+| `position` | `integer` | Position of the field in the form |
+| `type` | `string` | Field type (e.g., custom_dropdown, custom_text) |
+| `default` | `boolean` | Whether this is a default (non-custom) field |
+| `required_for_closure` | `boolean` | Whether the field is required for ticket closure |
+| `required_for_agents` | `boolean` | Whether the field is required for agents |
+| `required_for_customers` | `boolean` | Whether the field is required for customers |
+| `customers_can_edit` | `boolean` | Whether customers can edit this field |
+| `displayed_to_customers` | `boolean` | Whether the field is displayed to customers |
+| `portal_cc` | `boolean` | Whether CC is enabled in the portal |
+| `portal_cc_to` | `string` | CC recipients scope (all or company) |
+| `choices` | `object` | Available choices for dropdown fields |
+| `created_at` | `string` | Field creation timestamp |
+| `updated_at` | `string` | Field last update timestamp |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching records |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+| `data[].id` | `integer` | Unique ticket field ID |
+| `data[].name` | `string` | Name of the field |
+| `data[].label` | `string` | Display label for agents |
+| `data[].label_for_customers` | `string` | Display label in the customer portal |
+| `data[].description` | `string` | Description of the field |
+| `data[].position` | `integer` | Position of the field in the form |
+| `data[].type` | `string` | Field type (e.g., custom_dropdown, custom_text) |
+| `data[].default` | `boolean` | Whether this is a default (non-custom) field |
+| `data[].required_for_closure` | `boolean` | Whether the field is required for ticket closure |
+| `data[].required_for_agents` | `boolean` | Whether the field is required for agents |
+| `data[].required_for_customers` | `boolean` | Whether the field is required for customers |
+| `data[].customers_can_edit` | `boolean` | Whether customers can edit this field |
+| `data[].displayed_to_customers` | `boolean` | Whether the field is displayed to customers |
+| `data[].portal_cc` | `boolean` | Whether CC is enabled in the portal |
+| `data[].portal_cc_to` | `string` | CC recipients scope (all or company) |
+| `data[].choices` | `object` | Available choices for dropdown fields |
+| `data[].created_at` | `string` | Field creation timestamp |
+| `data[].updated_at` | `string` | Field last update timestamp |
 
 </details>
 

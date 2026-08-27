@@ -59,6 +59,10 @@ Generate a API key using the [Recurly documentation](https://docs.recurly.com/do
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -66,6 +70,21 @@ We recommend creating a restricted, read-only key specifically for Airbyte acces
 
 | Version | Date       | Pull Request                                             | Subject                                                                              |
 | :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 1.3.61 | 2026-08-18 | [84729](https://github.com/airbytehq/airbyte/pull/84729) | Update dependencies |
+| 1.3.60 | 2026-08-11 | [84098](https://github.com/airbytehq/airbyte/pull/84098) | Update dependencies |
+| 1.3.59 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 1.3.58 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.3.56 — 1.3.57 is built on SDM 7.23.7, which breaks bundled custom components |
+| 1.3.57 | 2026-07-28 | [83069](https://github.com/airbytehq/airbyte/pull/83069) | Update dependencies |
+| 1.3.56 | 2026-07-21 | [82560](https://github.com/airbytehq/airbyte/pull/82560) | Update dependencies |
+| 1.3.55 | 2026-07-14 | [81973](https://github.com/airbytehq/airbyte/pull/81973) | Update dependencies |
+| 1.3.54 | 2026-06-30 | [81209](https://github.com/airbytehq/airbyte/pull/81209) | Update dependencies |
+| 1.3.53 | 2026-06-23 | [80563](https://github.com/airbytehq/airbyte/pull/80563) | Update dependencies |
+| 1.3.52 | 2026-06-16 | [80005](https://github.com/airbytehq/airbyte/pull/80005) | Update dependencies |
+| 1.3.51 | 2026-06-09 | [79468](https://github.com/airbytehq/airbyte/pull/79468) | Update dependencies |
+| 1.3.50 | 2026-06-02 | [78924](https://github.com/airbytehq/airbyte/pull/78924) | Update dependencies |
+| 1.3.49 | 2026-04-28 | [77376](https://github.com/airbytehq/airbyte/pull/77376) | Update dependencies |
+| 1.3.48 | 2026-04-21 | [76720](https://github.com/airbytehq/airbyte/pull/76720) | Update dependencies |
+| 1.3.47 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
 | 1.3.46 | 2026-03-24 | [75379](https://github.com/airbytehq/airbyte/pull/75379) | Update dependencies |
 | 1.3.45 | 2026-03-10 | [74639](https://github.com/airbytehq/airbyte/pull/74639) | Update dependencies |
 | 1.3.44 | 2026-03-03 | [73886](https://github.com/airbytehq/airbyte/pull/73886) | Update dependencies |

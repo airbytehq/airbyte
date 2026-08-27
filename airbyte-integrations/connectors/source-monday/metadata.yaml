@@ -6,14 +6,19 @@ data:
     hosts:
       - api.monday.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
-  dockerImageTag: 2.5.5
+  dockerImageTag: 2.5.19
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       2.0.0:
         message: "Source Monday has deprecated API version 2023-07. We have upgraded the connector to the latest API version 2024-01. In this new version, the Id field has changed from an integer to a string in the streams Boards, Items, Tags, Teams, Updates, Users and Workspaces. Please reset affected streams."
@@ -86,6 +91,15 @@ data:
     - title: monday.com API reference
       url: https://developer.monday.com/api-reference/docs
       type: api_reference
+    - title: monday.com API release notes
+      url: https://developer.monday.com/api-reference/docs/release-notes
+      type: api_release_history
+    - title: monday.com API changelog
+      url: https://developer.monday.com/api-reference/changelog
+      type: api_release_history
+    - title: monday.com API versioning and deprecation policy
+      url: https://developer.monday.com/api-reference/docs/api-versioning
+      type: api_deprecations
     - title: monday.com authentication
       url: https://developer.monday.com/api-reference/docs/authentication
       type: authentication_guide
@@ -95,4 +109,7 @@ data:
     - title: monday.com Status
       url: https://status.monday.com/
       type: status_page
+    - title: monday.com GraphQL API schema repository
+      url: https://github.com/mondaycom/monday-graphql-api
+      type: spec_repository
 metadataSpecVersion: "1.0"

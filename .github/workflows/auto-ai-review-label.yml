@@ -12,7 +12,10 @@ on:
 
 run-name: "Auto AI Review for PR #${{ github.event.pull_request.number }}"
 
-permissions: {}
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 
 jobs:
   dispatch-ai-review:

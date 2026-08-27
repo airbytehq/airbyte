@@ -8,22 +8,38 @@ The Sentry connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Projects | [List](#projects-list), [Get](#projects-get), [Search](#projects-search) |
-| Issues | [List](#issues-list), [Get](#issues-get), [Search](#issues-search) |
-| Events | [List](#events-list), [Get](#events-get), [Search](#events-search) |
-| Releases | [List](#releases-list), [Get](#releases-get), [Search](#releases-search) |
+| Projects | [List](#projects-list), [Get](#projects-get), [Context Store Search](#projects-context-store-search) |
+| Issues | [List](#issues-list), [Get](#issues-get), [Context Store Search](#issues-context-store-search), [Semantic Search](#issues-semantic-search) |
+| Events | [List](#events-list), [Get](#events-get), [Context Store Search](#events-context-store-search) |
+| Releases | [List](#releases-list), [Get](#releases-get), [Context Store Search](#releases-context-store-search) |
 | Project Detail | [Get](#project-detail-get) |
 
 ## Projects
 
 ### Projects List
 
-Return a list of projects available to the authenticated user.
+Return a list of projects the authenticated user has access to within the given organization. Requires the token to have the `org:read` scope. Note: unlike the deprecated `/projects/` endpoint, this only returns projects belonging to the configured organization and omits the `avatar`, `color`, `isInternal`, `isPublic`, `organization`, and `status` fields (use the project_detail action to retrieve those).
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "projects",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await sentry.projects.list()
+await sentry.projects.list(
+    organization_slug="<str>"
+)
 ```
 
 #### API
@@ -34,7 +50,10 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "projects",
-    "action": "list"
+    "action": "list",
+    "params": {
+        "organization_slug": "<str>"
+    }
 }'
 ```
 
@@ -43,6 +62,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
+| `organization_slug` | `string` | Yes | The slug of the organization to list projects for. |
 | `cursor` | `string` | No | Pagination cursor for next page of results. |
 
 
@@ -91,13 +111,41 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `hasTraceMetrics` | `boolean \| null` |  |
 | `avatar` | `object \| null` |  |
 | `organization` | `object \| null` |  |
+| `team` | `object \| null` |  |
+| `teams` | `array \| null` |  |
+| `environments` | `array \| null` |  |
+| `platforms` | `array \| null` |  |
+| `hasUserReports` | `boolean \| null` |  |
+| `latestRelease` | `object \| null` |  |
+| `latestDeploys` | `object \| null` |  |
 
+
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
 
 </details>
 
 ### Projects Get
 
 Return details on an individual project.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "projects",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -223,14 +271,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Projects Search
+### Projects Context Store Search
 
 Search and filter projects records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "projects",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "access": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await sentry.projects.search(
+await sentry.projects.context_store_search(
     query={"filter": {"eq": {"access": []}}}
 )
 ```
@@ -243,7 +311,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "projects",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"access": []}}}
     }
@@ -254,7 +322,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -337,6 +405,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return a list of issues (groups) bound to a project. A default query of is:unresolved is applied. To return results with other statuses send a new query value (i.e. ?query= for all results).
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "issues",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -414,11 +497,32 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `subscriptionDetails` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Issues Get
 
 Return details on an individual issue. This returns the basic stats for the issue (title, last seen, first seen), some overall numbers (number of comments, user reports) as well as the summarized event data.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "issues",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "issue_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -496,14 +600,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Issues Search
+### Issues Context Store Search
 
 Search and filter issues records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "annotations": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await sentry.issues.search(
+await sentry.issues.context_store_search(
     query={"filter": {"eq": {"annotations": []}}}
 )
 ```
@@ -516,7 +640,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "issues",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"annotations": []}}}
     }
@@ -527,7 +651,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -614,11 +738,122 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Issues Semantic Search
+
+Search issues records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "issues",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "title", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `issues.context_store_search` helper only accepts `query`.
+
+```python
+await sentry.execute(
+    "issues",
+    "context_store_search",
+    {"semantic": {"field": "title", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "issues",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "title", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `title` | 2048 | Issue title. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.lastSeen` | `string` | Source record field |
+| `data[].entity.shortId` | `string` | Source record field |
+| `data[].entity.title` | `string` | Source record field |
+| `data[].entity.culprit` | `string` | Source record field |
+| `data[].entity.level` | `string` | Source record field |
+| `data[].entity.status` | `string` | Source record field |
+| `data[].entity.substatus` | `string` | Source record field |
+| `data[].entity.issueCategory` | `string` | Source record field |
+| `data[].entity.platform` | `string` | Source record field |
+| `data[].entity.isUnhandled` | `string` | Source record field |
+| `data[].entity.firstSeen` | `string` | Source record field |
+| `data[].entity.count` | `string` | Source record field |
+| `data[].entity.userCount` | `string` | Source record field |
+| `data[].entity.permalink` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Events
 
 ### Events List
 
 Return a list of events bound to a project.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "events",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -693,11 +928,33 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `_meta` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Events Get
 
 Return details on an individual event.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "events",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>",
+    "event_id": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -775,14 +1032,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Events Search
+### Events Context Store Search
 
 Search and filter events records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "events",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "_meta": {}
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await sentry.events.search(
+await sentry.events.context_store_search(
     query={"filter": {"eq": {"_meta": {}}}}
 )
 ```
@@ -795,7 +1072,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "events",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"_meta": {}}}}
     }
@@ -806,7 +1083,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -895,6 +1172,20 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Return a list of releases for a given organization.
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "releases",
+  "action": "list",
+  "params": {
+    "organization_slug": "<str>"
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -959,11 +1250,32 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `currentProjectMeta` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Releases Get
 
 Return a release for a given organization.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "releases",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "version": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1032,14 +1344,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Releases Search
+### Releases Context Store Search
 
 Search and filter releases records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "releases",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "authors": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await sentry.releases.search(
+await sentry.releases.context_store_search(
     query={"filter": {"eq": {"authors": []}}}
 )
 ```
@@ -1052,7 +1384,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "releases",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"authors": []}}}
     }
@@ -1063,7 +1395,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1137,6 +1469,21 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Project Detail Get
 
 Return detailed information about a specific project.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "sentry",
+  "entity": "project_detail",
+  "action": "get",
+  "params": {
+    "organization_slug": "<str>",
+    "project_slug": "<str>"
+  }
+}'
+```
 
 #### Python SDK
 

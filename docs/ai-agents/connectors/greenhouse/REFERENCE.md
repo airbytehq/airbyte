@@ -8,15 +8,15 @@ The Greenhouse connector supports the following entities and actions.
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](#candidates-list), [Get](#candidates-get), [Search](#candidates-search) |
-| Applications | [List](#applications-list), [Get](#applications-get), [Search](#applications-search) |
-| Jobs | [List](#jobs-list), [Get](#jobs-get), [Search](#jobs-search) |
-| Offers | [List](#offers-list), [Get](#offers-get), [Search](#offers-search) |
-| Users | [List](#users-list), [Get](#users-get), [Search](#users-search) |
-| Departments | [List](#departments-list), [Get](#departments-get), [Search](#departments-search) |
-| Offices | [List](#offices-list), [Get](#offices-get), [Search](#offices-search) |
-| Job Posts | [List](#job-posts-list), [Get](#job-posts-get), [Search](#job-posts-search) |
-| Sources | [List](#sources-list), [Search](#sources-search) |
+| Candidates | [List](#candidates-list), [Get](#candidates-get), [Context Store Search](#candidates-context-store-search) |
+| Applications | [List](#applications-list), [Get](#applications-get), [Context Store Search](#applications-context-store-search) |
+| Jobs | [List](#jobs-list), [Get](#jobs-get), [Context Store Search](#jobs-context-store-search), [Semantic Search](#jobs-semantic-search) |
+| Offers | [List](#offers-list), [Get](#offers-get), [Context Store Search](#offers-context-store-search) |
+| Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
+| Departments | [List](#departments-list), [Get](#departments-get), [Context Store Search](#departments-context-store-search) |
+| Offices | [List](#offices-list), [Get](#offices-get), [Context Store Search](#offices-context-store-search) |
+| Job Posts | [List](#job-posts-list), [Get](#job-posts-get), [Context Store Search](#job-posts-context-store-search), [Semantic Search](#job-posts-semantic-search) |
+| Sources | [List](#sources-list), [Context Store Search](#sources-context-store-search) |
 | Scheduled Interviews | [List](#scheduled-interviews-list), [Get](#scheduled-interviews-get) |
 | Application Attachment | [Download](#application-attachment-download) |
 | Candidate Attachment | [Download](#candidate-attachment-download) |
@@ -26,6 +26,17 @@ The Greenhouse connector supports the following entities and actions.
 ### Candidates List
 
 Returns a paginated list of all candidates in the organization
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidates",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -89,11 +100,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `custom_fields` | `object` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Candidates Get
 
 Get a single candidate by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidates",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -163,14 +194,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Candidates Search
+### Candidates Context Store Search
 
 Search and filter candidates records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidates",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "addresses": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.candidates.search(
+await greenhouse.candidates.context_store_search(
     query={"filter": {"eq": {"addresses": []}}}
 )
 ```
@@ -183,7 +234,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "candidates",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"addresses": []}}}
     }
@@ -194,7 +245,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -277,6 +328,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all applications
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "applications",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -343,11 +405,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `custom_fields` | `object` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Applications Get
 
 Get a single application by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "applications",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -416,14 +498,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Applications Search
+### Applications Context Store Search
 
 Search and filter applications records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "applications",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "answers": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.applications.search(
+await greenhouse.applications.context_store_search(
     query={"filter": {"eq": {"answers": []}}}
 )
 ```
@@ -436,7 +538,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "applications",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"answers": []}}}
     }
@@ -447,7 +549,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -518,6 +620,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all jobs in the organization
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "jobs",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -569,11 +682,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `openings` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Jobs Get
 
 Get a single job by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "jobs",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -632,14 +765,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Jobs Search
+### Jobs Context Store Search
 
 Search and filter jobs records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "jobs",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "closed_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.jobs.search(
+await greenhouse.jobs.context_store_search(
     query={"filter": {"eq": {"closed_at": "<str>"}}}
 )
 ```
@@ -652,7 +805,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "jobs",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"closed_at": "<str>"}}}
     }
@@ -663,7 +816,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -724,11 +877,112 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Jobs Semantic Search
+
+Search jobs records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "jobs",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "notes", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `jobs.context_store_search` helper only accepts `query`.
+
+```python
+await greenhouse.execute(
+    "jobs",
+    "context_store_search",
+    {"semantic": {"field": "notes", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "jobs",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "notes", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `notes` | 2048 | Additional notes or comments about the job |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.name` | `string` | Source record field |
+| `data[].entity.status` | `string` | Source record field |
+| `data[].entity.requisition_id` | `string` | Source record field |
+| `data[].entity.confidential` | `string` | Source record field |
+| `data[].entity.opened_at` | `string` | Source record field |
+| `data[].entity.closed_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Offers
 
 ### Offers List
 
 Returns a paginated list of all offers
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offers",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -782,11 +1036,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `custom_fields` | `object` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Offers Get
 
 Get a single offer by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offers",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -843,14 +1117,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Offers Search
+### Offers Context Store Search
 
 Search and filter offers records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offers",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "application_id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.offers.search(
+await greenhouse.offers.context_store_search(
     query={"filter": {"eq": {"application_id": 0}}}
 )
 ```
@@ -863,7 +1157,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "offers",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"application_id": 0}}}
     }
@@ -874,7 +1168,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -933,6 +1227,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all users
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "users",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -987,11 +1292,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `departments` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Users Get
 
 Get a single user by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "users",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1049,14 +1374,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Users Search
+### Users Context Store Search
 
 Search and filter users records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "users",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "created_at": "<str>"
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.users.search(
+await greenhouse.users.context_store_search(
     query={"filter": {"eq": {"created_at": "<str>"}}}
 )
 ```
@@ -1069,7 +1414,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "users",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"created_at": "<str>"}}}
     }
@@ -1080,7 +1425,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1139,6 +1484,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 Returns a paginated list of all departments
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "departments",
+  "action": "list"
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1182,11 +1538,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `external_id` | `string \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Departments Get
 
 Get a single department by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "departments",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1237,14 +1613,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Departments Search
+### Departments Context Store Search
 
 Search and filter departments records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "departments",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "child_department_external_ids": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.departments.search(
+await greenhouse.departments.context_store_search(
     query={"filter": {"eq": {"child_department_external_ids": []}}}
 )
 ```
@@ -1257,7 +1653,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "departments",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"child_department_external_ids": []}}}
     }
@@ -1268,7 +1664,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1312,6 +1708,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Offices List
 
 Returns a paginated list of all offices
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offices",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1358,11 +1765,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `external_id` | `string \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Offices Get
 
 Get a single office by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offices",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1415,14 +1842,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Offices Search
+### Offices Context Store Search
 
 Search and filter offices records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "offices",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "child_ids": []
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.offices.search(
+await greenhouse.offices.context_store_search(
     query={"filter": {"eq": {"child_ids": []}}}
 )
 ```
@@ -1435,7 +1882,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "offices",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"child_ids": []}}}
     }
@@ -1446,7 +1893,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1494,6 +1941,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Job Posts List
 
 Returns a paginated list of all job posts
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "job_posts",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1548,11 +2006,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `questions` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Job Posts Get
 
 Get a single job post by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "job_posts",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1611,14 +2089,34 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
-### Job Posts Search
+### Job Posts Context Store Search
 
 Search and filter job posts records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "job_posts",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "active": true
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.job_posts.search(
+await greenhouse.job_posts.context_store_search(
     query={"filter": {"eq": {"active": True}}}
 )
 ```
@@ -1631,7 +2129,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "job_posts",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"active": True}}}
     }
@@ -1642,7 +2140,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1661,7 +2159,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `first_published_at` | `string` | Date and time when the job post was first published. |
 | `id` | `integer` | Unique identifier of the job post. |
 | `internal` | `boolean` | Flag indicating if the job post is internal or not. |
-| `internal_content` | `string` | Internal content or description of the job post. |
+| `internal_content` | `string` | The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`. |
 | `job_id` | `integer` | ID of the job associated with the job post. |
 | `live` | `boolean` | Flag indicating if the job post is live or not. |
 | `location` | `object` | Details about the job post location. |
@@ -1687,7 +2185,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].first_published_at` | `string` | Date and time when the job post was first published. |
 | `data[].id` | `integer` | Unique identifier of the job post. |
 | `data[].internal` | `boolean` | Flag indicating if the job post is internal or not. |
-| `data[].internal_content` | `string` | Internal content or description of the job post. |
+| `data[].internal_content` | `string` | The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`. |
 | `data[].job_id` | `integer` | ID of the job associated with the job post. |
 | `data[].live` | `boolean` | Flag indicating if the job post is live or not. |
 | `data[].location` | `object` | Details about the job post location. |
@@ -1697,11 +2195,113 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 </details>
 
+### Job Posts Semantic Search
+
+Search job posts records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "job_posts",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "content", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `job_posts.context_store_search` helper only accepts `query`.
+
+```python
+await greenhouse.execute(
+    "job_posts",
+    "context_store_search",
+    {"semantic": {"field": "content", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "job_posts",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "content", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `content` | 2048 | Content or description of the job post. |
+| `internal_content` | 2048 | The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`. |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated_at` | `string` | Source record field |
+| `data[].entity.title` | `string` | Source record field |
+| `data[].entity.job_id` | `string` | Source record field |
+| `data[].entity.live` | `string` | Source record field |
+| `data[].entity.internal` | `string` | Source record field |
+| `data[].entity.location` | `string` | Source record field |
+| `data[].entity.first_published_at` | `string` | Source record field |
+| `data[].entity.created_at` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
+
+</details>
+
 ## Sources
 
 ### Sources List
 
 Returns a paginated list of all sources
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "sources",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1742,16 +2342,42 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `type` | `object \| null` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
-### Sources Search
+### Sources Context Store Search
 
 Search and filter sources records powered by Airbyte's data sync. This often provides additional fields and operators beyond what the API natively supports, making it easier to narrow down results before performing further operations. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "sources",
+  "action": "context_store_search",
+  "params": {
+    "query": {
+      "filter": {
+        "eq": {
+          "id": 0
+        }
+      }
+    }
+  }
+}'
+```
 
 #### Python SDK
 
 ```python
-await greenhouse.sources.search(
+await greenhouse.sources.context_store_search(
     query={"filter": {"eq": {"id": 0}}}
 )
 ```
@@ -1764,7 +2390,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 --header 'Authorization: Bearer {your_auth_token}' \
 --data '{
     "entity": "sources",
-    "action": "search",
+    "action": "context_store_search",
     "params": {
         "query": {"filter": {"eq": {"id": 0}}}
     }
@@ -1775,7 +2401,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1811,6 +2437,17 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 ### Scheduled Interviews List
 
 Returns a paginated list of all scheduled interviews
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "scheduled_interviews",
+  "action": "list"
+}'
+```
 
 #### Python SDK
 
@@ -1867,11 +2504,31 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `interviewers` | `array<object>` |  |
 
 
+#### Meta
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `next` | `string` |  |
+
 </details>
 
 ### Scheduled Interviews Get
 
 Get a single scheduled interview by ID
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "scheduled_interviews",
+  "action": "get",
+  "params": {
+    "id": 0
+  }
+}'
+```
 
 #### Python SDK
 
@@ -1937,6 +2594,21 @@ The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
 Files should be downloaded immediately after retrieval.
 
 
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "application_attachment",
+  "action": "download",
+  "params": {
+    "id": 0,
+    "attachment_index": 0
+  }
+}'
+```
+
 #### Python SDK
 
 ```python
@@ -1980,6 +2652,21 @@ Downloads an attachment (resume, cover letter, etc.) for a candidate by index.
 The attachment URL is a temporary signed AWS S3 URL that expires within 7 days.
 Files should be downloaded immediately after retrieval.
 
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse",
+  "entity": "candidate_attachment",
+  "action": "download",
+  "params": {
+    "id": 0,
+    "attachment_index": 0
+  }
+}'
+```
 
 #### Python SDK
 

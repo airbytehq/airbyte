@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [Zendesk Su
 
 ## Prerequisites
 
-- A Zendesk account with an Administrator role.
+- A Zendesk account. An Administrator role is recommended for full access to all streams. Non-admin accounts can still sync, but streams that require admin permissions are automatically skipped.
 - The unique Zendesk subdomain associated with the account.
 
 ## Setup guide
@@ -22,7 +22,7 @@ The Zendesk Support source connector supports three authentication methods:
 - OAuth 2.0 Legacy (for existing OAuth connections that haven't migrated to the refresh token flow)
 
 :::note
-Zendesk is [enforcing OAuth token expiration](https://support.zendesk.com/hc/en-us/articles/9182123625370) and requiring the refresh token flow. If you use the legacy OAuth method, plan to migrate to OAuth 2.0 with refresh token before Zendesk's deadline.
+Zendesk [requires the refresh token flow](https://support.zendesk.com/hc/en-us/articles/9182123625370) for all customers as of April 30, 2026. Legacy OAuth access tokens don't expire and can't be refreshed, so migrate existing connections to **OAuth 2.0 with Refresh Token**.
 :::
 
 <!-- env:cloud -->
@@ -40,7 +40,7 @@ We highly recommend using OAuth to authenticate your Zendesk Support account, as
 We recommend using an API token to authenticate your Zendesk Support account. Please follow the steps below to generate this key.
 
 :::note
-If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can follow the steps laid out in [this Zendesk article](https://support.zendesk.com/hc/en-us/articles/4408845965210) to obtain your client ID, client secret and access token. Please ensure you set the scope to `read` when generating the access token.
+If you prefer to authenticate with OAuth, see [Generate OAuth credentials](#generate-oauth-credentials).
 :::
 
 ### Generate an API token
@@ -56,6 +56,20 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
    :::
 
 6. Click **Save**.
+
+### Generate OAuth credentials
+
+Airbyte Cloud runs the OAuth flow for you. On self-managed Airbyte, you create the credentials yourself and enter a client ID, client secret, and refresh token.
+
+1. Register an OAuth client in Admin Center. See [Registering your application with Zendesk](https://support.zendesk.com/hc/en-us/articles/4408845965210). Note the client's unique identifier and secret.
+2. Complete Zendesk's [authorization code flow](https://developer.zendesk.com/documentation/ticketing/working-with-oauth/creating-and-using-oauth-tokens-with-the-api/) with the `read` scope, and include `expires_in` in the token request. Zendesk only issues a refresh token when the access token expires, and clients created before April 30, 2026 have no default expiration, so a request without `expires_in` returns a token you can't refresh. The maximum value is `172800` (48 hours), which is what the connector requests in Airbyte Cloud.
+3. Save the `refresh_token` from the response.
+
+When you configure the source, select **OAuth2.0 with Refresh Token** and enter the client ID, client secret, and refresh token. Leave **Access Token** and **Token Expiry Date** empty. The connector exchanges the refresh token for an access token on its first request, then writes the new access token, refresh token, and expiry back to the source configuration.
+
+:::caution
+Zendesk refresh tokens are single-use. Every refresh returns a new refresh token and invalidates the previous one, so a refresh token can only be used by one source. Don't copy the same value into a second source or a second Airbyte deployment.
+:::
 <!-- /env:oss -->
 
 ### Set up the Zendesk Support connector in Airbyte
@@ -84,14 +98,15 @@ If you prefer to authenticate with OAuth for **Airbyte Open Source**, you can fo
 - **For Airbyte Cloud**: To authenticate using OAuth, select **OAuth 2.0 with Refresh Token** from the Authentication dropdown, then click **Authenticate your Zendesk Support account** to sign in with Zendesk Support and authorize your account.
   <!-- /env:cloud -->
   <!-- env:oss -->
-- **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account.
+- **For Airbyte Open Source**: To authenticate using an API key, select **API Token** from the Authentication dropdown and enter the API token you generated, as well as the email address associated with your Zendesk Support account. To authenticate using OAuth instead, select **OAuth2.0 with Refresh Token** and enter the client ID, client secret, and refresh token you generated.
 <!-- /env:oss -->
 
 6. For **Subdomain**, enter your Zendesk subdomain. This is the subdomain found in your account URL. For example, if your account URL is `https://MY_SUBDOMAIN.zendesk.com/`, then `MY_SUBDOMAIN` is your subdomain.
 7. (Optional) For **Start Date**, use the provided datepicker or enter a UTC date and time programmatically in the format `YYYY-MM-DDTHH:mm:ssZ`. The data added on and after this date will be replicated. If this field is left blank, Airbyte will replicate the data for the last two years by default.
-8. (Optional) For **Number of concurrent workers**, enter the number of parallel threads to use for the sync. The default is 3. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
+8. (Optional) For **Number of concurrent threads**, enter the number of parallel threads to use for the sync. The default is 4. Increase this value if your Zendesk plan supports higher rate limits. See [Rate limiting](#rate-limiting) for details.
 9. (Optional) For **Page Size (ticket_comments)**, enter the number of records per page for the `ticket_comments` stream. The default is 100 and the maximum is 1000. Lower values may help prevent timeouts on large Zendesk instances.
-10. Click **Set up source** and wait for the tests to complete.
+10. (Optional) For **Tickets Search Lookback Window (days)**, enter the number of days the `tickets_search` stream re-scans on each sync. The default is 0. This setting only affects the opt-in `tickets_search` stream. See [Tickets stream: change tracking](#tickets-stream-change-tracking).
+11. Click **Set up source** and wait for the tests to complete.
 <!-- /env:oss -->
 
 <HideInUI>
@@ -126,33 +141,36 @@ The Zendesk Support source connector supports the following streams:
 - [Audit Logs](https://developer.zendesk.com/api-reference/ticketing/account-configuration/audit_logs/#list-audit-logs) \(Incremental\) \(Enterprise only\)
 - [Automations](https://developer.zendesk.com/api-reference/ticketing/business-rules/automations/#list-automations)
 - [Brands](https://developer.zendesk.com/api-reference/ticketing/account-configuration/brands/#list-brands)
-- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Incremental\)
-- [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Incremental\)
-- [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Incremental\)
+- [Custom Roles](https://developer.zendesk.com/api-reference/ticketing/account-configuration/custom_roles/#list-custom-roles) \(Client-Side Incremental\)
+- [Groups](https://developer.zendesk.com/rest_api/docs/support/groups) \(Client-Side Incremental\)
+- [Group Memberships](https://developer.zendesk.com/rest_api/docs/support/group_memberships) \(Client-Side Incremental\)
 - [Macros](https://developer.zendesk.com/rest_api/docs/support/macros) \(Incremental\)
 - [Organizations](https://developer.zendesk.com/rest_api/docs/support/organizations) \(Incremental\)
-- [Organization Fields](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields) \(Incremental\)
-- [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Incremental\)
+- [Organization Fields](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_fields/#list-organization-fields) \(Client-Side Incremental\)
+- [Organization Memberships](https://developer.zendesk.com/api-reference/ticketing/organizations/organization_memberships/) \(Client-Side Incremental\)
 - [Posts](https://developer.zendesk.com/api-reference/help_center/help-center-api/posts/#list-posts) \(Incremental\)
 - [Post Comments](https://developer.zendesk.com/api-reference/help_center/help-center-api/post_comments/#list-comments) \(Incremental\)
 - [Post Comment Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Post Votes](https://developer.zendesk.com/api-reference/help_center/help-center-api/votes/#list-votes) \(Incremental\)
 - [Satisfaction Ratings](https://developer.zendesk.com/rest_api/docs/support/satisfaction_ratings) \(Incremental\)
-- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Incremental\)
-- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Incremental\)
+- [Schedules](https://developer.zendesk.com/api-reference/ticketing/ticket-management/schedules/#list-schedules) \(Client-Side Incremental\)
+- [Side Conversations](https://developer.zendesk.com/api-reference/ticketing/side_conversations/side_conversation/) \(Client-Side Incremental\) \(Requires a plan that includes side conversations\)
+- [SLA Policies](https://developer.zendesk.com/rest_api/docs/support/sla_policies) \(Client-Side Incremental\)
 - [Tags](https://developer.zendesk.com/rest_api/docs/support/tags)
-- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) \(Incremental\)
+- [Tickets](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) \(Incremental\)
+- [Tickets Search](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) \(Incremental\) \(Opt-in\)
 - [Deleted Tickets](https://developer.zendesk.com/api-reference/ticketing/tickets/deleted_tickets/#list-deleted-tickets) \(Full Refresh\)
-- [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Incremental\)
+- [Ticket Activities](https://developer.zendesk.com/api-reference/ticketing/tickets/activity_stream/#list-activities) \(Client-Side Incremental\)
 - [Ticket Audits](https://developer.zendesk.com/rest_api/docs/support/ticket_audits) \(Client-Side Incremental\)
 - [Ticket Comments](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
-- [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Incremental\)
-- [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Incremental\) \(Enterprise only\)
+- [Ticket Fields](https://developer.zendesk.com/rest_api/docs/support/ticket_fields) \(Client-Side Incremental\)
+- [Ticket Forms](https://developer.zendesk.com/rest_api/docs/support/ticket_forms) \(Client-Side Incremental\) \(Enterprise only\)
 - [Ticket Metrics](https://developer.zendesk.com/rest_api/docs/support/ticket_metrics) \(Incremental\)
+- [Ticket Events](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-event-export) \(Incremental\)
 - [Ticket Metric Events](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_metric_events/) \(Incremental\)
-- [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Incremental\)
-- [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Incremental\)
-- [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Incremental\)
+- [Topics](https://developer.zendesk.com/api-reference/help_center/help-center-api/topics/#list-topics) \(Client-Side Incremental\)
+- [Triggers](https://developer.zendesk.com/api-reference/ticketing/business-rules/triggers/#list-ticket-triggers) \(Client-Side Incremental\)
+- [Ticket Skips](https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_skips/) \(Client-Side Incremental\)
 - [Users](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-user-export) \(Incremental\)
 - [User Identities](https://developer.zendesk.com/api-reference/ticketing/users/user_identities/) \(Incremental\)
 - [User Fields](https://developer.zendesk.com/api-reference/ticketing/users/user_fields/#list-user-fields)
@@ -172,8 +190,20 @@ The Zendesk Support connector fetches deleted records in the following streams:
 | **Ticket Metric Events** | `deleted`                |
 
 :::note
-As of version 5.2.0, the `tickets` stream no longer includes deleted tickets. Use the `deleted_tickets` stream instead. See the [migration guide](zendesk-support-migrations.md#upgrading-to-520) for details.
+Between versions 5.2.0 and 5.4.x, the `tickets` stream did not include deleted tickets. As of version 5.5.0 the `tickets` stream again includes deleted tickets (see below). The `deleted_tickets` stream remains available and should be paired with the opt-in `tickets_search` stream, which does not return deleted tickets.
 :::
+
+### Tickets stream: change tracking
+
+The `tickets` stream uses Zendesk's [Incremental Ticket Export](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#incremental-ticket-export-time-based) endpoint, which tracks changes by `generated_timestamp`. Zendesk bumps `generated_timestamp` on **every** ticket change, including automation-, macro-, and system-driven updates (e.g. auto-solve batches), so the stream reliably re-syncs every update.
+
+:::warning
+Versions 5.2.0–5.4.x used the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint and tracked changes by `updated_at`. Because Zendesk only updates `updated_at` (and re-indexes the ticket for search) when a change generates a ticket event, automation/macro/system-driven updates were both silently dropped from incremental syncs **and** returned with stale field values (e.g. `status`) on historical reads, since `search/export` is served from Zendesk's [search index rather than the live record](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/). This was fixed in 5.5.0 by reverting the `tickets` stream to `generated_timestamp`. On upgrade, a one-time state migration automatically backfills records missed or left stale since 2026-03-01 — no manual reset is required. See the [migration guide](zendesk-support-migrations.md#upgrading-to-550).
+:::
+
+The former Export Search Results behavior is preserved as the **`tickets_search`** stream. It offers higher throughput (100 req/min vs the incremental endpoint's 10 req/min, plus 30-day time-range partitions that sync concurrently) and a configurable **Tickets Search Lookback Window (days)** setting, but it shares the 5.2.0–5.4.x limitations: it can miss automation/macro/system-driven updates in incremental mode and can return stale statuses on historical reads. Use `tickets_search` only when throughput matters more than completeness, and pair it with the `deleted_tickets` stream (Export Search excludes deleted tickets).
+
+`tickets_search` isn't enabled by default. To use it, enable it on your connection's **Schema** tab. Enabling both `tickets` and `tickets_search` syncs the same tickets twice, so most people should enable only one of them.
 
 ## Limitations & Troubleshooting
 
@@ -188,30 +218,64 @@ Expand to see details about Zendesk Support connector limitations and troublesho
 
 Zendesk applies [rate limits](https://developer.zendesk.com/api-reference/introduction/rate-limits/) based on your plan tier:
 
-| Plan | Requests per minute |
-| :--- | :--- |
-| Team | 200 |
-| Growth / Professional | 400 |
-| Enterprise | 700 |
-| Enterprise Plus / High Volume API add-on | 2500 |
+| Plan                                     | Requests per minute |
+| :--------------------------------------- | :------------------ |
+| Team                                     | 200                 |
+| Growth / Professional                    | 400                 |
+| Enterprise                               | 700                 |
+| Enterprise Plus / High Volume API add-on | 2500                |
 
-The connector's **Number of concurrent workers** setting (default: 3) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
+The connector's **Number of concurrent threads** setting (default: 4) controls how many streams sync in parallel. If your plan supports higher rate limits, increase this value for faster syncs. The maximum is 40.
 
-Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `ticket_comments`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The `tickets` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
+Zendesk's [incremental export endpoints](https://developer.zendesk.com/api-reference/ticketing/ticket-management/incremental_exports/#rate-limits) have a stricter rate limit of 10 requests per minute, regardless of plan tier. This applies to the `tickets`, `ticket_comments`, `ticket_events`, `ticket_metric_events`, `users`, and `organizations` streams that use incremental exports. The opt-in `tickets_search` stream uses the [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint, which has a separate rate limit of 100 requests per minute. The `deleted_tickets` stream has a rate limit of 10 requests per minute. The connector includes a built-in API budget that automatically throttles requests to stay within these limits.
 
 If the connector receives a 429 (Too Many Requests) response, it respects the `Retry-After` header and waits before retrying. The `ticket_comments` stream also retries on 504 (Gateway Timeout) errors with exponential backoff, which can occur on large Zendesk instances.
 
 The connector should not run into Zendesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-#### Search index delay
+#### Permissions and stream skipping
 
-The `tickets` stream uses Zendesk's [Export Search Results](https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/#export-search-results) endpoint. Zendesk's search index can take up to a few minutes to reflect newly created or updated tickets. During incremental syncs, this delay does not cause data loss because the connector's cursor ensures that records are picked up on the next sync.
+Some streams require administrator-level permissions in Zendesk (for example, `account_attributes`, `attribute_definitions`, `audit_logs`, and `ticket_forms`). If the authenticated user does not have access to a stream's endpoint, the connector skips that stream and continues syncing the remaining streams. Skipped streams are logged with a message indicating the permission issue.
+
+To sync all available streams, authenticate with a Zendesk account that has an Administrator role.
+
+#### Side conversations access
+
+Side conversations are included in Zendesk Suite Professional and above, and are available to Support Professional and above through the [Collaboration add-on](https://support.zendesk.com/hc/en-us/articles/4408834152730-About-Zendesk-product-add-ons). You also have to [activate side conversations](https://support.zendesk.com/hc/en-us/articles/4408832279962-Activating-and-configuring-side-conversations) in Admin Center, and on Enterprise plans a custom role can restrict which agents may use them.
+
+Zendesk grants access to side conversations per ticket, so this stream can read some tickets and be refused on others. As of version 5.5.2, the connector logs a message for the ticket, skips it, and keeps syncing the rest of the stream when Zendesk returns:
+
+- `403`, when Zendesk denies access to that ticket's side conversations.
+- `404`, when the ticket no longer exists. The `tickets` stream returns deleted tickets, so this is expected.
+- `422`, when the ticket type doesn't support side conversations.
+
+If your account doesn't have side conversations at all, Zendesk refuses every ticket this way, so the stream ends up empty rather than failing.
+
+Versions before 5.5.2 failed the whole sync on a `403` or `404` (the `422` case has been skipped since 5.4.1). Because `side_conversations` reads its parent tickets incrementally, that failure also stopped the parent cursor from advancing, so every following sync restarted from the same ticket and failed again. Upgrade to 5.5.2 or later if your syncs fail this way.
+
+#### Search index delay in the `tickets_search` stream
+
+The opt-in `tickets_search` stream reads from Zendesk's search index, which can take a few minutes to reflect newly created or updated tickets. Tickets indexed after a sync's cursor has moved past their `updated_at` value aren't picked up on the next sync. Set **Tickets Search Lookback Window (days)** to at least 1 to re-scan a trailing window on every sync. The lookback window doesn't recover automation-, macro-, or system-driven updates, because those never change `updated_at`. The default `tickets` stream isn't affected: it reads the live ticket record instead of the search index.
 
 ### Troubleshooting
+
+#### OAuth authentication fails with `invalid_grant`
+
+Zendesk invalidates a refresh token as soon as it's used, so authentication fails with `invalid_grant` whenever the connector holds a token Zendesk has already rotated. Common causes:
+
+- The same refresh token is configured in more than one source, or in more than one Airbyte deployment. Generate separate OAuth credentials for each source.
+- The source was configured manually with a refresh token that had already been used.
+- The source was set up on a connector version earlier than 5.5.1. Those versions didn't record the access token's expiry when you authorized the source, so the connector treated the token as expired and refreshed it during the initial connection test, consuming the refresh token that was saved in the configuration.
+
+To recover, upgrade to version 5.5.1 or later, then re-authenticate the source in Airbyte Cloud or replace the refresh token on self-managed Airbyte.
 
 - Check out common troubleshooting issues for the Zendesk Support source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
 </details>
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
@@ -220,6 +284,33 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                            |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.5.2 | 2026-08-26 | [84353](https://github.com/airbytehq/airbyte/pull/84353) | Skip individual tickets that Zendesk refuses on the `side_conversations` stream instead of failing the whole sync. Access to side conversations is granted per ticket, and the refusal arrives as a `403` with an empty body that the previous filter could not match |
+| 5.5.1 | 2026-08-11 | [82679](https://github.com/airbytehq/airbyte/pull/82679) | Request an explicit 48h access-token lifetime and persist OAuth token expiry on initial authentication, so the first `check` no longer prematurely refreshes and rotates the single-use refresh token |
+| 5.5.0 | 2026-08-10 | [83812](https://github.com/airbytehq/airbyte/pull/83812) | Promoted release candidate to GA |
+| 5.5.0-rc.1 | 2026-08-03 | [81640](https://github.com/airbytehq/airbyte/pull/81640) | Revert `tickets` stream to the Incremental Ticket Export endpoint (cursor back to `generated_timestamp`) to fix silent data loss on system-driven updates introduced in 5.2.0; add the opt-in `tickets_search` stream. See the migration guide. |
+| 5.4.6 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 5.4.5 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 5.4.3 — 5.4.4 is built on SDM 7.23.7, which breaks bundled custom components |
+| 5.4.4 | 2026-07-28 | [83159](https://github.com/airbytehq/airbyte/pull/83159) | Update dependencies |
+| 5.4.3 | 2026-07-21 | [82661](https://github.com/airbytehq/airbyte/pull/82661) | Update dependencies |
+| 5.4.2 | 2026-07-14 | [82080](https://github.com/airbytehq/airbyte/pull/82080) | Update dependencies |
+| 5.4.1 | 2026-07-06 | [81210](https://github.com/airbytehq/airbyte/pull/81210) | Fixed `side_conversations` stream: added millisecond-precision timestamp parsing for cursor field and added error handler to skip tickets returning HTTP 422 |
+| 5.4.0 | 2026-07-02 | [81403](https://github.com/airbytehq/airbyte/pull/81403) | Added `ticket_events` stream for Zendesk Incremental Ticket Event Export API |
+| 5.3.1 | 2026-06-30 | [81305](https://github.com/airbytehq/airbyte/pull/81305) | Update dependencies |
+| 5.3.0 | 2026-06-27 | [79640](https://github.com/airbytehq/airbyte/pull/79640) | Added `side_conversations` stream to retrieve Side Conversations from tickets |
+| 5.2.12 | 2026-06-23 | [80725](https://github.com/airbytehq/airbyte/pull/80725) | Update dependencies |
+| 5.2.11 | 2026-06-16 | [80108](https://github.com/airbytehq/airbyte/pull/80108) | Update dependencies |
+| 5.2.10 | 2026-06-12 | [79668](https://github.com/airbytehq/airbyte/pull/79668) | Gracefully skip streams when Zendesk returns permission-denied error instead of failing the entire sync |
+| 5.2.9 | 2026-06-09 | [79583](https://github.com/airbytehq/airbyte/pull/79583) | Update dependencies |
+| 5.2.8 | 2026-06-02 | [77507](https://github.com/airbytehq/airbyte/pull/77507) | Update dependencies |
+| 5.2.7 | 2026-05-15 | [78120](https://github.com/airbytehq/airbyte/pull/78120) | Promoted release candidate to GA |
+| 5.2.7-rc.4 | 2026-05-07 | [77857](https://github.com/airbytehq/airbyte/pull/77857) | Step default concurrency back from 5 to 4 while keeping the endpoint-specific HTTP API budget LIVE (incremental 10/min, search/export 100/min, deleted_tickets 10/min) |
+| 5.2.7-rc.3 | 2026-05-05 | [77784](https://github.com/airbytehq/airbyte/pull/77784) | Restore the endpoint-specific HTTP API budget from 5.2.6 (incremental 10/min, search/export 100/min, deleted_tickets 10/min) and remove the `subscription_tier` config field; keep default concurrency at 5 |
+| 5.2.7-rc.2 | 2026-04-28 | [77548](https://github.com/airbytehq/airbyte/pull/77548) | Activate the tier-aware HTTP API budget driven by `subscription_tier` and raise default concurrency from 4 to 5 |
+| 5.2.7-rc.1 | 2026-04-23 | [76953](https://github.com/airbytehq/airbyte/pull/76953) | Add `subscription_tier` config field, comment out the existing HTTP API budget for concurrency tuning, raise default concurrency from 3 to 4, and enable progressive rollout |
+| 5.2.6 | 2026-04-22 | [76153](https://github.com/airbytehq/airbyte/pull/76153) | Fix sync crash when the Zendesk API returns responses without cursor pagination keys (for example, on single-page results) |
+| 5.2.5 | 2026-04-21 | [74696](https://github.com/airbytehq/airbyte/pull/74696) | Update dependencies |
+| 5.2.4 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
+| 5.2.3 | 2026-04-07 | [76105](https://github.com/airbytehq/airbyte/pull/76105) | Add `token_expiry_date` to `complete_oauth_output_specification` so it is hidden from the UI as an OAuth-managed field |
 | 5.2.2 | 2026-03-23 | [74993](https://github.com/airbytehq/airbyte/pull/74993) | Switch ticket_metric_events to time-based pagination to prevent heartbeat timeout on large datasets |
 | 5.2.1 | 2026-03-17 | [74394](https://github.com/airbytehq/airbyte/pull/74394) | Migrate to scopes object array format |
 | 5.2.0 | 2026-03-12 | [74258](https://github.com/airbytehq/airbyte/pull/74258) | Switch `tickets` stream to Export Search Results endpoint for concurrency and performance. **Behavior change**: deleted tickets are no longer returned in the `tickets` stream — use the new `deleted_tickets` stream instead. Added `deleted_tickets` as a suggested stream for auto-enablement on Cloud. |
@@ -256,150 +347,150 @@ The `tickets` stream uses Zendesk's [Export Search Results](https://developer.ze
 | 4.10.2 | 2025-07-05 | [62691](https://github.com/airbytehq/airbyte/pull/62691) | Update dependencies |
 | 4.10.1 | 2025-06-28 | [60736](https://github.com/airbytehq/airbyte/pull/60736) | Update dependencies |
 | 4.10.0 | 2025-06-26 | [62099](https://github.com/airbytehq/airbyte/pull/62099) | Promoting release candidate 4.10.0-rc.1 to a main version. |
-| 4.10.0-rc.1 | 2025-06-17 | [61599](https://github.com/airbytehq/airbyte/pull/61599)     | Migrate to manifest-only format.                                                                                                                                                                                                   |
-| 4.9.1       | 2025-05-10 | [60014](https://github.com/airbytehq/airbyte/pull/60014) | Update dependencies                                                                                                                                                                                                                |
-| 4.9.0       | 2025-05-05 | [56419](https://github.com/airbytehq/airbyte/pull/56419) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0                                                                                                                                |
-| 4.8.7       | 2025-05-04 | [59531](https://github.com/airbytehq/airbyte/pull/59531) | Update dependencies                                                                                                                                                                                                                |
-| 4.8.6       | 2025-04-26 | [58917](https://github.com/airbytehq/airbyte/pull/58917) | Update dependencies                                                                                                                                                                                                                |
-| 4.8.5       | 2025-04-19 | [58547](https://github.com/airbytehq/airbyte/pull/58547) | Update dependencies                                                                                                                                                                                                                |
-| 4.8.4       | 2025-04-13 | [58042](https://github.com/airbytehq/airbyte/pull/58042) | Update dependencies                                                                                                                                                                                                                |
-| 4.8.3       | 2025-04-05 | [57389](https://github.com/airbytehq/airbyte/pull/57389) | Update dependencies                                                                                                                                                                                                                |
-| 4.8.2       | 2025-03-29 | [55157](https://github.com/airbytehq/airbyte/pull/55157) | Update dependencies                                                                                                                                                                                                                |
-| 4.8.1       | 2025-03-25 | [56405](https://github.com/airbytehq/airbyte/pull/56405) | Fix empty child state migration issue                                                                                                                                                                                              |
-| 4.8.0       | 2025-03-25 | [56354](https://github.com/airbytehq/airbyte/pull/56354) | Migrate posts to low-code                                                                                                                                                                                                          |
-| 4.7.2       | 2025-03-11 | [55676](https://github.com/airbytehq/airbyte/pull/55676) | Prepare posts stream for low-code migration                                                                                                                                                                                        |
-| 4.7.1       | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb                                                                                                                                                                                           |
-| 4.7.0       | 2025-02-24 | [54656](https://github.com/airbytehq/airbyte/pull/54656) | Promoting release candidate 4.7.0-rc.1 to a main version.                                                                                                                                                                          |
-| 4.7.0-rc.1  | 2025-02-13 | [53620](https://github.com/airbytehq/airbyte/pull/53620) | Replace ZendeskSupportAuditLogsIncrementalSync with low-code DatetimeBasedCursor                                                                                                                                                   |
-| 4.6.0       | 2024-12-09 | [47939](https://github.com/airbytehq/airbyte/pull/47939) | Add `User Identities` stream                                                                                                                                                                                                       |
-| 4.5.0       | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream                                                                                                                                                                                             |
-| 4.4.4       | 2025-02-08 | [51943](https://github.com/airbytehq/airbyte/pull/51943) | Update dependencies                                                                                                                                                                                                                |
-| 4.4.3       | 2025-02-03 | [52625](https://github.com/airbytehq/airbyte/pull/52625) | Update error message during check for `organization_access_enabled`                                                                                                                                                                |
-| 4.4.2       | 2025-01-11 | [48309](https://github.com/airbytehq/airbyte/pull/48309) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64                                                             |
-| 4.4.1       | 2024-12-13 | [48889](https://github.com/airbytehq/airbyte/pull/48889) | Check if `start_date` exist in check operation                                                                                                                                                                                     |
-| 4.4.0       | 2024-11-11 | [48379](https://github.com/airbytehq/airbyte/pull/48379) | Make DatetimeBasedCursor syncs concurrent                                                                                                                                                                                          |
-| 4.3.3       | 2024-10-28 | [47663](https://github.com/airbytehq/airbyte/pull/47663) | Update dependencies                                                                                                                                                                                                                |
-| 4.3.2       | 2024-10-21 | [47202](https://github.com/airbytehq/airbyte/pull/47202) | Update dependencies and expected records                                                                                                                                                                                           |
-| 4.3.1       | 2024-10-12 | [46794](https://github.com/airbytehq/airbyte/pull/46794) | Update dependencies                                                                                                                                                                                                                |
-| 4.3.0       | 2024-10-09 | [46096](https://github.com/airbytehq/airbyte/pull/46096) | Updates `TicketMetrics` stream for improved reliability for long syncs, updates state cursor field to `_ab_updated_at`, automatically migrates legacy state                                                                        |
-| 4.2.3       | 2024-10-05 | [46408](https://github.com/airbytehq/airbyte/pull/46408) | Update dependencies                                                                                                                                                                                                                |
-| 4.2.2       | 2024-09-28 | [45784](https://github.com/airbytehq/airbyte/pull/45784) | Update dependencies                                                                                                                                                                                                                |
-| 4.2.1       | 2024-09-14 | [45561](https://github.com/airbytehq/airbyte/pull/45561) | Update dependencies                                                                                                                                                                                                                |
-| 4.2.0       | 2024-09-10 | [44610](https://github.com/airbytehq/airbyte/pull/44610) | Add `Automations` and `Triggers` stream                                                                                                                                                                                            |
-| 4.1.1       | 2024-09-07 | [45215](https://github.com/airbytehq/airbyte/pull/45215) | Update dependencies                                                                                                                                                                                                                |
-| 4.1.0       | 2024-09-06 | [45187](https://github.com/airbytehq/airbyte/pull/45187) | Migrate to CDK v5                                                                                                                                                                                                                  |
-| 4.0.2       | 2024-08-31 | [44965](https://github.com/airbytehq/airbyte/pull/44965) | Update dependencies                                                                                                                                                                                                                |
-| 4.0.1       | 2024-08-24 | [44692](https://github.com/airbytehq/airbyte/pull/44692) | Update dependencies                                                                                                                                                                                                                |
-| 4.0.0       | 2024-08-19 | [44096](https://github.com/airbytehq/airbyte/pull/44096) | Stream `Tags`: use cursor based pagination                                                                                                                                                                                         |
-| 3.0.1       | 2024-08-17 | [44324](https://github.com/airbytehq/airbyte/pull/44324) | Update dependencies                                                                                                                                                                                                                |
-| 3.0.0       | 2024-08-13 | [43446](https://github.com/airbytehq/airbyte/pull/43446) | `TicketMetrics` stream: updates cursor field to `generated_timestamp`                                                                                                                                                              |
-| 2.7.3       | 2024-08-12 | [43900](https://github.com/airbytehq/airbyte/pull/43900) | Update dependencies                                                                                                                                                                                                                |
-| 2.7.2       | 2024-08-10 | [43614](https://github.com/airbytehq/airbyte/pull/43614) | Update dependencies                                                                                                                                                                                                                |
-| 2.7.1       | 2024-08-03 | [41799](https://github.com/airbytehq/airbyte/pull/41799) | Update dependencies                                                                                                                                                                                                                |
-| 2.7.0       | 2024-08-02 | [42975](https://github.com/airbytehq/airbyte/pull/42975) | Migrate to CDK v4.3.0                                                                                                                                                                                                              |
-| 2.6.13      | 2024-07-31 | [42892](https://github.com/airbytehq/airbyte/pull/42892) | Update BackoffStrategy interface to be up-to-date with latest parent interface.                                                                                                                                                    |
-| 2.6.12      | 2024-07-25 | [42519](https://github.com/airbytehq/airbyte/pull/42519) | Update error message for permission issue.                                                                                                                                                                                         |
-| 2.6.11      | 2024-07-18 | [42100](https://github.com/airbytehq/airbyte/pull/42100) | Raise config error on 403/404 status code.                                                                                                                                                                                         |
-| 2.6.10      | 2024-07-10 | [41436](https://github.com/airbytehq/airbyte/pull/41436) | Fix unit test                                                                                                                                                                                                                      |
-| 2.6.9       | 2024-07-10 | [41390](https://github.com/airbytehq/airbyte/pull/41390) | Update dependencies                                                                                                                                                                                                                |
-| 2.6.8       | 2024-07-09 | [40025](https://github.com/airbytehq/airbyte/pull/40025) | Update dependencies                                                                                                                                                                                                                |
-| 2.6.7       | 2024-07-09 | [41032](https://github.com/airbytehq/airbyte/pull/41032) | Use latest `CDK`: 3.0.0                                                                                                                                                                                                            |
-| 2.6.6       | 2024-06-27 | [40592](https://github.com/airbytehq/airbyte/pull/40592) | Updated to use latest `CDK` version, fixed `cursor pagination` logic                                                                                                                                                               |
-| 2.6.5       | 2024-05-23 | [38607](https://github.com/airbytehq/airbyte/pull/38607) | Migrate to cursor based pagination in stream `Organization memberships`                                                                                                                                                            |
-| 2.6.4       | 2024-05-20 | [38310](https://github.com/airbytehq/airbyte/pull/38310) | Fix record filter for `Ticket Metrics` stream                                                                                                                                                                                      |
-| 2.6.3       | 2024-05-02 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | Schema descriptions                                                                                                                                                                                                                |
-| 2.6.2       | 2024-02-05 | [37761](https://github.com/airbytehq/airbyte/pull/37761) | Add stop condition for `Ticket Audits` when recieved old records; Ignore 403 and 404 status codes.                                                                                                                                 |
-| 2.6.1       | 2024-04-30 | [37723](https://github.com/airbytehq/airbyte/pull/37723) | Add %Y-%m-%dT%H:%M:%S%z to cursor_datetime_formats                                                                                                                                                                                 |
-| 2.6.0       | 2024-04-29 | [36823](https://github.com/airbytehq/airbyte/pull/36823) | Migrate to low code; Add new stream `Ticket Activities`                                                                                                                                                                            |
-| 2.5.0       | 2024-04-25 | [36388](https://github.com/airbytehq/airbyte/pull/36388) | Fix data type of field in `Tickets` stream schema stream.                                                                                                                                                                          |
-| 2.4.1       | 2024-04-20 | [37450](https://github.com/airbytehq/airbyte/pull/37450) | Fix parsing response for `Ticket Metrics` stream.                                                                                                                                                                                  |
-| 2.4.0       | 2024-04-09 | [36897](https://github.com/airbytehq/airbyte/pull/36897) | Fix long-running syncs for `Ticket Metrics`, `Ticket Audits` and `Satisfaction Ratings` streams.                                                                                                                                   |
-| 2.3.0       | 2024-03-26 | [36403](https://github.com/airbytehq/airbyte/pull/36403) | Unpin CDK version, add record counts to state messages                                                                                                                                                                             |
-| 2.2.8       | 2024-02-09 | [35083](https://github.com/airbytehq/airbyte/pull/35083) | Manage dependencies with Poetry.                                                                                                                                                                                                   |
-| 2.2.7       | 2024-02-05 | [34840](https://github.com/airbytehq/airbyte/pull/34840) | Fix missing fields in schema                                                                                                                                                                                                       |
-| 2.2.6       | 2024-01-11 | [34064](https://github.com/airbytehq/airbyte/pull/34064) | Skip 504 Error for stream `Ticket Audits`                                                                                                                                                                                          |
-| 2.2.5       | 2024-01-08 | [34010](https://github.com/airbytehq/airbyte/pull/34010) | Prepare for airbyte-lib                                                                                                                                                                                                            |
-| 2.2.4       | 2023-12-20 | [33680](https://github.com/airbytehq/airbyte/pull/33680) | Fix pagination issue for streams related to incremental export sync                                                                                                                                                                |
-| 2.2.3       | 2023-12-14 | [33435](https://github.com/airbytehq/airbyte/pull/33435) | Fix 504 Error for stream Ticket Audits                                                                                                                                                                                             |
-| 2.2.2       | 2023-12-01 | [33012](https://github.com/airbytehq/airbyte/pull/33012) | Increase number of retries for backoff policy to 10                                                                                                                                                                                |
-| 2.2.1       | 2023-11-10 | [32440](https://github.com/airbytehq/airbyte/pull/32440) | Made refactoring to improve code maintainability                                                                                                                                                                                   |
-| 2.2.0       | 2023-10-31 | [31999](https://github.com/airbytehq/airbyte/pull/31999) | Extended the `CustomRoles` stream schema                                                                                                                                                                                           |
-| 2.1.1       | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702) | Base image migration: remove Dockerfile and use the python-connector-base image                                                                                                                                                    |
-| 2.1.0       | 2023-10-19 | [31606](https://github.com/airbytehq/airbyte/pull/31606) | Added new field `reply_time_in_seconds` to the `Ticket Metrics` stream schema                                                                                                                                                      |
-| 2.0.0       | 2023-09-15 | [30440](https://github.com/airbytehq/airbyte/pull/30440) | Remove stream `Deleted Tickets`                                                                                                                                                                                                    |
-| 1.7.0       | 2023-09-11 | [30259](https://github.com/airbytehq/airbyte/pull/30259) | Add stream `Deleted Tickets`                                                                                                                                                                                                       |
-| 1.6.0       | 2023-09-09 | [30168](https://github.com/airbytehq/airbyte/pull/30168) | Make `start_date` field optional                                                                                                                                                                                                   |
-| 1.5.1       | 2023-09-05 | [30142](https://github.com/airbytehq/airbyte/pull/30142) | Handle non-JSON Response                                                                                                                                                                                                           |
-| 1.5.0       | 2023-09-04 | [30138](https://github.com/airbytehq/airbyte/pull/30138) | Add new Streams: `Article Votes`, `Article Comments`, `Article Comment Votes`                                                                                                                                                      |
-| 1.4.0       | 2023-09-04 | [30134](https://github.com/airbytehq/airbyte/pull/30134) | Add incremental support for streams: `custom Roles`, `Schedules`, `SLA Policies`                                                                                                                                                   |
-| 1.3.0       | 2023-08-30 | [30031](https://github.com/airbytehq/airbyte/pull/30031) | Add new streams: `Articles`, `Organization Fields`                                                                                                                                                                                 |
-| 1.2.2       | 2023-08-30 | [29998](https://github.com/airbytehq/airbyte/pull/29998) | Fix typo in stream `AttributeDefinitions`: field condition                                                                                                                                                                         |
-| 1.2.1       | 2023-08-30 | [29991](https://github.com/airbytehq/airbyte/pull/29991) | Remove Custom availability strategy                                                                                                                                                                                                |
-| 1.2.0       | 2023-08-29 | [29940](https://github.com/airbytehq/airbyte/pull/29940) | Add undeclared fields to schemas                                                                                                                                                                                                   |
-| 1.1.1       | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | Make `Organizations` stream incremental                                                                                                                                                                                            |
-| 1.1.0       | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields`                                                                                                                                                                                                            |
-| 1.0.0       | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | Fix retry logic & update cursor for `Tickets` stream                                                                                                                                                                               |
-| 0.11.0      | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics`                                                                                                                                                                                                                |
-| 0.10.7      | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec                                                                                                                                                                                                |
-| 0.10.6      | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes                                                                                                                                                                                               |
-| 0.10.5      | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references                                                                                                                                                                                           |
-| 0.10.4      | 2023-07-25 | [28397](https://github.com/airbytehq/airbyte/pull/28397) | Handle 404 Error                                                                                                                                                                                                                   |
-| 0.10.3      | 2023-07-24 | [28612](https://github.com/airbytehq/airbyte/pull/28612) | Fix pagination for stream `TicketMetricEvents`                                                                                                                                                                                     |
-| 0.10.2      | 2023-07-19 | [28487](https://github.com/airbytehq/airbyte/pull/28487) | Remove extra page from params                                                                                                                                                                                                      |
-| 0.10.1      | 2023-07-10 | [28096](https://github.com/airbytehq/airbyte/pull/28096) | Replace `offset` pagination with `cursor` pagination                                                                                                                                                                               |
-| 0.10.0      | 2023-07-06 | [27991](https://github.com/airbytehq/airbyte/pull/27991) | Add streams: `PostVotes`, `PostCommentVotes`                                                                                                                                                                                       |
-| 0.9.0       | 2023-07-05 | [27961](https://github.com/airbytehq/airbyte/pull/27961) | Add stream: `Post Comments`                                                                                                                                                                                                        |
-| 0.8.1       | 2023-06-27 | [27765](https://github.com/airbytehq/airbyte/pull/27765) | Bugfix: Nonetype error while syncing more then 100000 organizations                                                                                                                                                                |
-| 0.8.0       | 2023-06-09 | [27156](https://github.com/airbytehq/airbyte/pull/27156) | Add stream `Posts`                                                                                                                                                                                                                 |
-| 0.7.0       | 2023-06-27 | [27436](https://github.com/airbytehq/airbyte/pull/27436) | Add Ticket Skips stream                                                                                                                                                                                                            |
-| 0.6.0       | 2023-06-27 | [27450](https://github.com/airbytehq/airbyte/pull/27450) | Add Skill Based Routing streams                                                                                                                                                                                                    |
-| 0.5.0       | 2023-06-26 | [27735](https://github.com/airbytehq/airbyte/pull/27735) | License Update: Elv2 stream stream                                                                                                                                                                                                 |
-| 0.4.0       | 2023-06-16 | [27431](https://github.com/airbytehq/airbyte/pull/27431) | Add Organization Memberships stream                                                                                                                                                                                                |
-| 0.3.1       | 2023-06-02 | [26945](https://github.com/airbytehq/airbyte/pull/26945) | Make `Ticket Metrics` stream to use cursor pagination                                                                                                                                                                              |
-| 0.3.0       | 2023-05-23 | [26347](https://github.com/airbytehq/airbyte/pull/26347) | Add stream `Audit Logs` logs`                                                                                                                                                                                                      |
-| 0.2.30      | 2023-05-23 | [26414](https://github.com/airbytehq/airbyte/pull/26414) | Added missing handlers when `empty json` or `JSONDecodeError` is received                                                                                                                                                          |
-| 0.2.29      | 2023-04-18 | [25214](https://github.com/airbytehq/airbyte/pull/25214) | Add missing fields to `Tickets` stream                                                                                                                                                                                             |
-| 0.2.28      | 2023-03-21 | [24053](https://github.com/airbytehq/airbyte/pull/24053) | Fix stream `sla_policies` schema data type error (events.value)                                                                                                                                                                    |
-| 0.2.27      | 2023-03-22 | [22817](https://github.com/airbytehq/airbyte/pull/22817) | Specified date formatting in specification                                                                                                                                                                                         |
-| 0.2.26      | 2023-03-20 | [24252](https://github.com/airbytehq/airbyte/pull/24252) | Handle invalid `start_date` when checking connection                                                                                                                                                                               |
-| 0.2.25      | 2023-02-28 | [22308](https://github.com/airbytehq/airbyte/pull/22308) | Add `AvailabilityStrategy` for all streams                                                                                                                                                                                         |
-| 0.2.24      | 2023-02-17 | [23246](https://github.com/airbytehq/airbyte/pull/23246) | Handle `StartTimeTooRecent` error for Tickets stream                                                                                                                                                                               |
-| 0.2.23      | 2023-02-15 | [23035](https://github.com/airbytehq/airbyte/pull/23035) | Handle 403 Error                                                                                                                                                                                                                   |
-| 0.2.22      | 2023-02-14 | [22483](https://github.com/airbytehq/airbyte/pull/22483) | Fix test; handle 400 error                                                                                                                                                                                                         |
-| 0.2.21      | 2023-01-27 | [22027](https://github.com/airbytehq/airbyte/pull/22027) | Set `AvailabilityStrategy` for streams explicitly to `None`                                                                                                                                                                        |
-| 0.2.20      | 2022-12-28 | [20900](https://github.com/airbytehq/airbyte/pull/20900) | Remove synchronous time.sleep, add logging, reduce backoff time                                                                                                                                                                    |
-| 0.2.19      | 2022-12-09 | [19967](https://github.com/airbytehq/airbyte/pull/19967) | Fix reading response for more than 100k records                                                                                                                                                                                    |
-| 0.2.18      | 2022-11-29 | [19432](https://github.com/airbytehq/airbyte/pull/19432) | Revert changes from version 0.2.15, use a test read instead                                                                                                                                                                        |
-| 0.2.17      | 2022-11-24 | [19792](https://github.com/airbytehq/airbyte/pull/19792) | Transform `ticket_comments.via` "-" to null                                                                                                                                                                                        |
-| 0.2.16      | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                                                                                                                                                      |
-| 0.2.15      | 2022-08-03 | [15233](https://github.com/airbytehq/airbyte/pull/15233) | Added `subscription plan` check on `streams discovery` step to remove streams that are not accessible for fetch due to subscription plan restrictions                                                                              |
-| 0.2.14      | 2022-07-27 | [15036](https://github.com/airbytehq/airbyte/pull/15036) | Convert `ticket_audits.previous_value` values to string                                                                                                                                                                            |
-| 0.2.13      | 2022-07-21 | [14829](https://github.com/airbytehq/airbyte/pull/14829) | Convert `tickets.custom_fields` values to string                                                                                                                                                                                   |
-| 0.2.12      | 2022-06-30 | [14304](https://github.com/airbytehq/airbyte/pull/14304) | Fixed Pagination for Group Membership stream                                                                                                                                                                                       |
-| 0.2.11      | 2022-06-24 | [14112](https://github.com/airbytehq/airbyte/pull/14112) | Fixed "Retry-After" non integer value                                                                                                                                                                                              |
-| 0.2.10      | 2022-06-14 | [13757](https://github.com/airbytehq/airbyte/pull/13757) | Fixed the bug with `TicketMetrics` stream, HTTP Error 429, caused by lots of API requests                                                                                                                                          |
-| 0.2.9       | 2022-05-27 | [13261](https://github.com/airbytehq/airbyte/pull/13261) | Bugfix for the unhandled [ChunkedEncodingError](https://github.com/airbytehq/airbyte/issues/12591) and [ConnectionError](https://github.com/airbytehq/airbyte/issues/12155)                                                        |
-| 0.2.8       | 2022-05-20 | [13055](https://github.com/airbytehq/airbyte/pull/13055) | Fixed minor issue for stream `ticket_audits` schema                                                                                                                                                                                |
-| 0.2.7       | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep                                                                                                                                                            |
-| 0.2.6       | 2022-04-19 | [12122](https://github.com/airbytehq/airbyte/pull/12122) | Fixed the bug when only 100,000 Users are synced [11895](https://github.com/airbytehq/airbyte/issues/11895) and fixed bug when `start_date` is not used on user stream [12059](https://github.com/airbytehq/airbyte/issues/12059). |
-| 0.2.5       | 2022-04-05 | [11727](https://github.com/airbytehq/airbyte/pull/11727) | Fixed the bug when state was not parsed correctly                                                                                                                                                                                  |
-| 0.2.4       | 2022-04-04 | [11688](https://github.com/airbytehq/airbyte/pull/11688) | Small documentation corrections                                                                                                                                                                                                    |
-| 0.2.3       | 2022-03-23 | [11349](https://github.com/airbytehq/airbyte/pull/11349) | Fixed the bug when Tickets stream didn't return deleted records                                                                                                                                                                    |
-| 0.2.2       | 2022-03-17 | [11237](https://github.com/airbytehq/airbyte/pull/11237) | Fixed the bug when TicketComments stream didn't return all records                                                                                                                                                                 |
-| 0.2.1       | 2022-03-15 | [11162](https://github.com/airbytehq/airbyte/pull/11162) | Added support of OAuth2.0 authentication method                                                                                                                                                                                    |
-| 0.2.0       | 2022-03-01 | [9456](https://github.com/airbytehq/airbyte/pull/9456)   | Update source to use future requests                                                                                                                                                                                               |
-| 0.1.12      | 2022-01-25 | [9785](https://github.com/airbytehq/airbyte/pull/9785)   | Add additional log messages                                                                                                                                                                                                        |
-| 0.1.11      | 2021-12-21 | [8987](https://github.com/airbytehq/airbyte/pull/8987)   | Update connector fields title/description                                                                                                                                                                                          |
-| 0.1.9       | 2021-12-16 | [8616](https://github.com/airbytehq/airbyte/pull/8616)   | Adds Brands, CustomRoles and Schedules streams                                                                                                                                                                                     |
-| 0.1.8       | 2021-11-23 | [8168](https://github.com/airbytehq/airbyte/pull/8168)   | Adds TicketMetricEvents stream                                                                                                                                                                                                     |
-| 0.1.7       | 2021-11-23 | [8058](https://github.com/airbytehq/airbyte/pull/8058)   | Added support of AccessToken authentication                                                                                                                                                                                        |
-| 0.1.6       | 2021-11-18 | [8050](https://github.com/airbytehq/airbyte/pull/8050)   | Fix wrong types for schemas, add TypeTransformer                                                                                                                                                                                   |
-| 0.1.5       | 2021-10-26 | [7679](https://github.com/airbytehq/airbyte/pull/7679)   | Add ticket_id and ticket_comments                                                                                                                                                                                                  |
-| 0.1.4       | 2021-10-26 | [7377](https://github.com/airbytehq/airbyte/pull/7377)   | Fix initially_assigned_at type in ticket metrics                                                                                                                                                                                   |
-| 0.1.3       | 2021-10-17 | [7097](https://github.com/airbytehq/airbyte/pull/7097)   | Corrected the connector's specification                                                                                                                                                                                            |
-| 0.1.2       | 2021-10-16 | [6513](https://github.com/airbytehq/airbyte/pull/6513)   | Fixed TicketComments stream                                                                                                                                                                                                        |
-| 0.1.1       | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787)   | Fixed incremental logic for the ticket_comments stream                                                                                                                                                                             |
-| 0.1.0       | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861)   | Created CDK native zendesk connector                                                                                                                                                                                               |
+| 4.10.0-rc.1 | 2025-06-17 | [61599](https://github.com/airbytehq/airbyte/pull/61599) | Migrate to manifest-only format. |
+| 4.9.1 | 2025-05-10 | [60014](https://github.com/airbytehq/airbyte/pull/60014) | Update dependencies |
+| 4.9.0 | 2025-05-05 | [56419](https://github.com/airbytehq/airbyte/pull/56419) | Adapt file-transfer records to latest protocol, requires platform >= 1.7.0, destination-s3 >= 1.8.0 |
+| 4.8.7 | 2025-05-04 | [59531](https://github.com/airbytehq/airbyte/pull/59531) | Update dependencies |
+| 4.8.6 | 2025-04-26 | [58917](https://github.com/airbytehq/airbyte/pull/58917) | Update dependencies |
+| 4.8.5 | 2025-04-19 | [58547](https://github.com/airbytehq/airbyte/pull/58547) | Update dependencies |
+| 4.8.4 | 2025-04-13 | [58042](https://github.com/airbytehq/airbyte/pull/58042) | Update dependencies |
+| 4.8.3 | 2025-04-05 | [57389](https://github.com/airbytehq/airbyte/pull/57389) | Update dependencies |
+| 4.8.2 | 2025-03-29 | [55157](https://github.com/airbytehq/airbyte/pull/55157) | Update dependencies |
+| 4.8.1 | 2025-03-25 | [56405](https://github.com/airbytehq/airbyte/pull/56405) | Fix empty child state migration issue |
+| 4.8.0 | 2025-03-25 | [56354](https://github.com/airbytehq/airbyte/pull/56354) | Migrate posts to low-code |
+| 4.7.2 | 2025-03-11 | [55676](https://github.com/airbytehq/airbyte/pull/55676) | Prepare posts stream for low-code migration |
+| 4.7.1 | 2025-02-26 | [54696](https://github.com/airbytehq/airbyte/pull/54696) | Update requests-mock dependency versionb |
+| 4.7.0 | 2025-02-24 | [54656](https://github.com/airbytehq/airbyte/pull/54656) | Promoting release candidate 4.7.0-rc.1 to a main version. |
+| 4.7.0-rc.1 | 2025-02-13 | [53620](https://github.com/airbytehq/airbyte/pull/53620) | Replace ZendeskSupportAuditLogsIncrementalSync with low-code DatetimeBasedCursor |
+| 4.6.0 | 2024-12-09 | [47939](https://github.com/airbytehq/airbyte/pull/47939) | Add `User Identities` stream |
+| 4.5.0 | 2024-12-02 | [48761](https://github.com/airbytehq/airbyte/pull/48761) | Add `Categories` and `Sections` stream |
+| 4.4.4 | 2025-02-08 | [51943](https://github.com/airbytehq/airbyte/pull/51943) | Update dependencies |
+| 4.4.3 | 2025-02-03 | [52625](https://github.com/airbytehq/airbyte/pull/52625) | Update error message during check for `organization_access_enabled` |
+| 4.4.2 | 2025-01-11 | [48309](https://github.com/airbytehq/airbyte/pull/48309) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.4.1 | 2024-12-13 | [48889](https://github.com/airbytehq/airbyte/pull/48889) | Check if `start_date` exist in check operation |
+| 4.4.0 | 2024-11-11 | [48379](https://github.com/airbytehq/airbyte/pull/48379) | Make DatetimeBasedCursor syncs concurrent |
+| 4.3.3 | 2024-10-28 | [47663](https://github.com/airbytehq/airbyte/pull/47663) | Update dependencies |
+| 4.3.2 | 2024-10-21 | [47202](https://github.com/airbytehq/airbyte/pull/47202) | Update dependencies and expected records |
+| 4.3.1 | 2024-10-12 | [46794](https://github.com/airbytehq/airbyte/pull/46794) | Update dependencies |
+| 4.3.0 | 2024-10-09 | [46096](https://github.com/airbytehq/airbyte/pull/46096) | Updates `TicketMetrics` stream for improved reliability for long syncs, updates state cursor field to `_ab_updated_at`, automatically migrates legacy state |
+| 4.2.3 | 2024-10-05 | [46408](https://github.com/airbytehq/airbyte/pull/46408) | Update dependencies |
+| 4.2.2 | 2024-09-28 | [45784](https://github.com/airbytehq/airbyte/pull/45784) | Update dependencies |
+| 4.2.1 | 2024-09-14 | [45561](https://github.com/airbytehq/airbyte/pull/45561) | Update dependencies |
+| 4.2.0 | 2024-09-10 | [44610](https://github.com/airbytehq/airbyte/pull/44610) | Add `Automations` and `Triggers` stream |
+| 4.1.1 | 2024-09-07 | [45215](https://github.com/airbytehq/airbyte/pull/45215) | Update dependencies |
+| 4.1.0 | 2024-09-06 | [45187](https://github.com/airbytehq/airbyte/pull/45187) | Migrate to CDK v5 |
+| 4.0.2 | 2024-08-31 | [44965](https://github.com/airbytehq/airbyte/pull/44965) | Update dependencies |
+| 4.0.1 | 2024-08-24 | [44692](https://github.com/airbytehq/airbyte/pull/44692) | Update dependencies |
+| 4.0.0 | 2024-08-19 | [44096](https://github.com/airbytehq/airbyte/pull/44096) | Stream `Tags`: use cursor based pagination |
+| 3.0.1 | 2024-08-17 | [44324](https://github.com/airbytehq/airbyte/pull/44324) | Update dependencies |
+| 3.0.0 | 2024-08-13 | [43446](https://github.com/airbytehq/airbyte/pull/43446) | `TicketMetrics` stream: updates cursor field to `generated_timestamp` |
+| 2.7.3 | 2024-08-12 | [43900](https://github.com/airbytehq/airbyte/pull/43900) | Update dependencies |
+| 2.7.2 | 2024-08-10 | [43614](https://github.com/airbytehq/airbyte/pull/43614) | Update dependencies |
+| 2.7.1 | 2024-08-03 | [41799](https://github.com/airbytehq/airbyte/pull/41799) | Update dependencies |
+| 2.7.0 | 2024-08-02 | [42975](https://github.com/airbytehq/airbyte/pull/42975) | Migrate to CDK v4.3.0 |
+| 2.6.13 | 2024-07-31 | [42892](https://github.com/airbytehq/airbyte/pull/42892) | Update BackoffStrategy interface to be up-to-date with latest parent interface. |
+| 2.6.12 | 2024-07-25 | [42519](https://github.com/airbytehq/airbyte/pull/42519) | Update error message for permission issue. |
+| 2.6.11 | 2024-07-18 | [42100](https://github.com/airbytehq/airbyte/pull/42100) | Raise config error on 403/404 status code. |
+| 2.6.10 | 2024-07-10 | [41436](https://github.com/airbytehq/airbyte/pull/41436) | Fix unit test |
+| 2.6.9 | 2024-07-10 | [41390](https://github.com/airbytehq/airbyte/pull/41390) | Update dependencies |
+| 2.6.8 | 2024-07-09 | [40025](https://github.com/airbytehq/airbyte/pull/40025) | Update dependencies |
+| 2.6.7 | 2024-07-09 | [41032](https://github.com/airbytehq/airbyte/pull/41032) | Use latest `CDK`: 3.0.0 |
+| 2.6.6 | 2024-06-27 | [40592](https://github.com/airbytehq/airbyte/pull/40592) | Updated to use latest `CDK` version, fixed `cursor pagination` logic |
+| 2.6.5 | 2024-05-23 | [38607](https://github.com/airbytehq/airbyte/pull/38607) | Migrate to cursor based pagination in stream `Organization memberships` |
+| 2.6.4 | 2024-05-20 | [38310](https://github.com/airbytehq/airbyte/pull/38310) | Fix record filter for `Ticket Metrics` stream |
+| 2.6.3 | 2024-05-02 | [36669](https://github.com/airbytehq/airbyte/pull/36669) | Schema descriptions |
+| 2.6.2 | 2024-02-05 | [37761](https://github.com/airbytehq/airbyte/pull/37761) | Add stop condition for `Ticket Audits` when recieved old records; Ignore 403 and 404 status codes. |
+| 2.6.1 | 2024-04-30 | [37723](https://github.com/airbytehq/airbyte/pull/37723) | Add %Y-%m-%dT%H:%M:%S%z to cursor_datetime_formats |
+| 2.6.0 | 2024-04-29 | [36823](https://github.com/airbytehq/airbyte/pull/36823) | Migrate to low code; Add new stream `Ticket Activities` |
+| 2.5.0 | 2024-04-25 | [36388](https://github.com/airbytehq/airbyte/pull/36388) | Fix data type of field in `Tickets` stream schema stream. |
+| 2.4.1 | 2024-04-20 | [37450](https://github.com/airbytehq/airbyte/pull/37450) | Fix parsing response for `Ticket Metrics` stream. |
+| 2.4.0 | 2024-04-09 | [36897](https://github.com/airbytehq/airbyte/pull/36897) | Fix long-running syncs for `Ticket Metrics`, `Ticket Audits` and `Satisfaction Ratings` streams. |
+| 2.3.0 | 2024-03-26 | [36403](https://github.com/airbytehq/airbyte/pull/36403) | Unpin CDK version, add record counts to state messages |
+| 2.2.8 | 2024-02-09 | [35083](https://github.com/airbytehq/airbyte/pull/35083) | Manage dependencies with Poetry. |
+| 2.2.7 | 2024-02-05 | [34840](https://github.com/airbytehq/airbyte/pull/34840) | Fix missing fields in schema |
+| 2.2.6 | 2024-01-11 | [34064](https://github.com/airbytehq/airbyte/pull/34064) | Skip 504 Error for stream `Ticket Audits` |
+| 2.2.5 | 2024-01-08 | [34010](https://github.com/airbytehq/airbyte/pull/34010) | Prepare for airbyte-lib |
+| 2.2.4 | 2023-12-20 | [33680](https://github.com/airbytehq/airbyte/pull/33680) | Fix pagination issue for streams related to incremental export sync |
+| 2.2.3 | 2023-12-14 | [33435](https://github.com/airbytehq/airbyte/pull/33435) | Fix 504 Error for stream Ticket Audits |
+| 2.2.2 | 2023-12-01 | [33012](https://github.com/airbytehq/airbyte/pull/33012) | Increase number of retries for backoff policy to 10 |
+| 2.2.1 | 2023-11-10 | [32440](https://github.com/airbytehq/airbyte/pull/32440) | Made refactoring to improve code maintainability |
+| 2.2.0 | 2023-10-31 | [31999](https://github.com/airbytehq/airbyte/pull/31999) | Extended the `CustomRoles` stream schema |
+| 2.1.1 | 2023-10-23 | [31702](https://github.com/airbytehq/airbyte/pull/31702) | Base image migration: remove Dockerfile and use the python-connector-base image |
+| 2.1.0 | 2023-10-19 | [31606](https://github.com/airbytehq/airbyte/pull/31606) | Added new field `reply_time_in_seconds` to the `Ticket Metrics` stream schema |
+| 2.0.0 | 2023-09-15 | [30440](https://github.com/airbytehq/airbyte/pull/30440) | Remove stream `Deleted Tickets` |
+| 1.7.0 | 2023-09-11 | [30259](https://github.com/airbytehq/airbyte/pull/30259) | Add stream `Deleted Tickets` |
+| 1.6.0 | 2023-09-09 | [30168](https://github.com/airbytehq/airbyte/pull/30168) | Make `start_date` field optional |
+| 1.5.1 | 2023-09-05 | [30142](https://github.com/airbytehq/airbyte/pull/30142) | Handle non-JSON Response |
+| 1.5.0 | 2023-09-04 | [30138](https://github.com/airbytehq/airbyte/pull/30138) | Add new Streams: `Article Votes`, `Article Comments`, `Article Comment Votes` |
+| 1.4.0 | 2023-09-04 | [30134](https://github.com/airbytehq/airbyte/pull/30134) | Add incremental support for streams: `custom Roles`, `Schedules`, `SLA Policies` |
+| 1.3.0 | 2023-08-30 | [30031](https://github.com/airbytehq/airbyte/pull/30031) | Add new streams: `Articles`, `Organization Fields` |
+| 1.2.2 | 2023-08-30 | [29998](https://github.com/airbytehq/airbyte/pull/29998) | Fix typo in stream `AttributeDefinitions`: field condition |
+| 1.2.1 | 2023-08-30 | [29991](https://github.com/airbytehq/airbyte/pull/29991) | Remove Custom availability strategy |
+| 1.2.0 | 2023-08-29 | [29940](https://github.com/airbytehq/airbyte/pull/29940) | Add undeclared fields to schemas |
+| 1.1.1 | 2023-08-29 | [29904](https://github.com/airbytehq/airbyte/pull/29904) | Make `Organizations` stream incremental |
+| 1.1.0 | 2023-08-28 | [29891](https://github.com/airbytehq/airbyte/pull/29891) | Add stream `UserFields` |
+| 1.0.0 | 2023-07-27 | [28774](https://github.com/airbytehq/airbyte/pull/28774) | Fix retry logic & update cursor for `Tickets` stream |
+| 0.11.0 | 2023-08-10 | [27208](https://github.com/airbytehq/airbyte/pull/27208) | Add stream `Topics` |
+| 0.10.7 | 2023-08-09 | [29256](https://github.com/airbytehq/airbyte/pull/29256) | Update tooltip descriptions in spec |
+| 0.10.6 | 2023-08-04 | [29031](https://github.com/airbytehq/airbyte/pull/29031) | Reverted `advancedAuth` spec changes |
+| 0.10.5 | 2023-08-01 | [28910](https://github.com/airbytehq/airbyte/pull/28910) | Updated `advancedAuth` broken references |
+| 0.10.4 | 2023-07-25 | [28397](https://github.com/airbytehq/airbyte/pull/28397) | Handle 404 Error |
+| 0.10.3 | 2023-07-24 | [28612](https://github.com/airbytehq/airbyte/pull/28612) | Fix pagination for stream `TicketMetricEvents` |
+| 0.10.2 | 2023-07-19 | [28487](https://github.com/airbytehq/airbyte/pull/28487) | Remove extra page from params |
+| 0.10.1 | 2023-07-10 | [28096](https://github.com/airbytehq/airbyte/pull/28096) | Replace `offset` pagination with `cursor` pagination |
+| 0.10.0 | 2023-07-06 | [27991](https://github.com/airbytehq/airbyte/pull/27991) | Add streams: `PostVotes`, `PostCommentVotes` |
+| 0.9.0 | 2023-07-05 | [27961](https://github.com/airbytehq/airbyte/pull/27961) | Add stream: `Post Comments` |
+| 0.8.1 | 2023-06-27 | [27765](https://github.com/airbytehq/airbyte/pull/27765) | Bugfix: Nonetype error while syncing more then 100000 organizations |
+| 0.8.0 | 2023-06-09 | [27156](https://github.com/airbytehq/airbyte/pull/27156) | Add stream `Posts` |
+| 0.7.0 | 2023-06-27 | [27436](https://github.com/airbytehq/airbyte/pull/27436) | Add Ticket Skips stream |
+| 0.6.0 | 2023-06-27 | [27450](https://github.com/airbytehq/airbyte/pull/27450) | Add Skill Based Routing streams |
+| 0.5.0 | 2023-06-26 | [27735](https://github.com/airbytehq/airbyte/pull/27735) | License Update: Elv2 stream stream |
+| 0.4.0 | 2023-06-16 | [27431](https://github.com/airbytehq/airbyte/pull/27431) | Add Organization Memberships stream |
+| 0.3.1 | 2023-06-02 | [26945](https://github.com/airbytehq/airbyte/pull/26945) | Make `Ticket Metrics` stream to use cursor pagination |
+| 0.3.0 | 2023-05-23 | [26347](https://github.com/airbytehq/airbyte/pull/26347) | Add stream `Audit Logs` logs` |
+| 0.2.30 | 2023-05-23 | [26414](https://github.com/airbytehq/airbyte/pull/26414) | Added missing handlers when `empty json` or `JSONDecodeError` is received |
+| 0.2.29 | 2023-04-18 | [25214](https://github.com/airbytehq/airbyte/pull/25214) | Add missing fields to `Tickets` stream |
+| 0.2.28 | 2023-03-21 | [24053](https://github.com/airbytehq/airbyte/pull/24053) | Fix stream `sla_policies` schema data type error (events.value) |
+| 0.2.27 | 2023-03-22 | [22817](https://github.com/airbytehq/airbyte/pull/22817) | Specified date formatting in specification |
+| 0.2.26 | 2023-03-20 | [24252](https://github.com/airbytehq/airbyte/pull/24252) | Handle invalid `start_date` when checking connection |
+| 0.2.25 | 2023-02-28 | [22308](https://github.com/airbytehq/airbyte/pull/22308) | Add `AvailabilityStrategy` for all streams |
+| 0.2.24 | 2023-02-17 | [23246](https://github.com/airbytehq/airbyte/pull/23246) | Handle `StartTimeTooRecent` error for Tickets stream |
+| 0.2.23 | 2023-02-15 | [23035](https://github.com/airbytehq/airbyte/pull/23035) | Handle 403 Error |
+| 0.2.22 | 2023-02-14 | [22483](https://github.com/airbytehq/airbyte/pull/22483) | Fix test; handle 400 error |
+| 0.2.21 | 2023-01-27 | [22027](https://github.com/airbytehq/airbyte/pull/22027) | Set `AvailabilityStrategy` for streams explicitly to `None` |
+| 0.2.20 | 2022-12-28 | [20900](https://github.com/airbytehq/airbyte/pull/20900) | Remove synchronous time.sleep, add logging, reduce backoff time |
+| 0.2.19 | 2022-12-09 | [19967](https://github.com/airbytehq/airbyte/pull/19967) | Fix reading response for more than 100k records |
+| 0.2.18 | 2022-11-29 | [19432](https://github.com/airbytehq/airbyte/pull/19432) | Revert changes from version 0.2.15, use a test read instead |
+| 0.2.17 | 2022-11-24 | [19792](https://github.com/airbytehq/airbyte/pull/19792) | Transform `ticket_comments.via` "-" to null |
+| 0.2.16 | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states. |
+| 0.2.15 | 2022-08-03 | [15233](https://github.com/airbytehq/airbyte/pull/15233) | Added `subscription plan` check on `streams discovery` step to remove streams that are not accessible for fetch due to subscription plan restrictions |
+| 0.2.14 | 2022-07-27 | [15036](https://github.com/airbytehq/airbyte/pull/15036) | Convert `ticket_audits.previous_value` values to string |
+| 0.2.13 | 2022-07-21 | [14829](https://github.com/airbytehq/airbyte/pull/14829) | Convert `tickets.custom_fields` values to string |
+| 0.2.12 | 2022-06-30 | [14304](https://github.com/airbytehq/airbyte/pull/14304) | Fixed Pagination for Group Membership stream |
+| 0.2.11 | 2022-06-24 | [14112](https://github.com/airbytehq/airbyte/pull/14112) | Fixed "Retry-After" non integer value |
+| 0.2.10 | 2022-06-14 | [13757](https://github.com/airbytehq/airbyte/pull/13757) | Fixed the bug with `TicketMetrics` stream, HTTP Error 429, caused by lots of API requests |
+| 0.2.9 | 2022-05-27 | [13261](https://github.com/airbytehq/airbyte/pull/13261) | Bugfix for the unhandled [ChunkedEncodingError](https://github.com/airbytehq/airbyte/issues/12591) and [ConnectionError](https://github.com/airbytehq/airbyte/issues/12155) |
+| 0.2.8 | 2022-05-20 | [13055](https://github.com/airbytehq/airbyte/pull/13055) | Fixed minor issue for stream `ticket_audits` schema |
+| 0.2.7 | 2022-04-27 | [12335](https://github.com/airbytehq/airbyte/pull/12335) | Adding fixtures to mock time.sleep for connectors that explicitly sleep |
+| 0.2.6 | 2022-04-19 | [12122](https://github.com/airbytehq/airbyte/pull/12122) | Fixed the bug when only 100,000 Users are synced [11895](https://github.com/airbytehq/airbyte/issues/11895) and fixed bug when `start_date` is not used on user stream [12059](https://github.com/airbytehq/airbyte/issues/12059). |
+| 0.2.5 | 2022-04-05 | [11727](https://github.com/airbytehq/airbyte/pull/11727) | Fixed the bug when state was not parsed correctly |
+| 0.2.4 | 2022-04-04 | [11688](https://github.com/airbytehq/airbyte/pull/11688) | Small documentation corrections |
+| 0.2.3 | 2022-03-23 | [11349](https://github.com/airbytehq/airbyte/pull/11349) | Fixed the bug when Tickets stream didn't return deleted records |
+| 0.2.2 | 2022-03-17 | [11237](https://github.com/airbytehq/airbyte/pull/11237) | Fixed the bug when TicketComments stream didn't return all records |
+| 0.2.1 | 2022-03-15 | [11162](https://github.com/airbytehq/airbyte/pull/11162) | Added support of OAuth2.0 authentication method |
+| 0.2.0 | 2022-03-01 | [9456](https://github.com/airbytehq/airbyte/pull/9456) | Update source to use future requests |
+| 0.1.12 | 2022-01-25 | [9785](https://github.com/airbytehq/airbyte/pull/9785) | Add additional log messages |
+| 0.1.11 | 2021-12-21 | [8987](https://github.com/airbytehq/airbyte/pull/8987) | Update connector fields title/description |
+| 0.1.9 | 2021-12-16 | [8616](https://github.com/airbytehq/airbyte/pull/8616) | Adds Brands, CustomRoles and Schedules streams |
+| 0.1.8 | 2021-11-23 | [8168](https://github.com/airbytehq/airbyte/pull/8168) | Adds TicketMetricEvents stream |
+| 0.1.7 | 2021-11-23 | [8058](https://github.com/airbytehq/airbyte/pull/8058) | Added support of AccessToken authentication |
+| 0.1.6 | 2021-11-18 | [8050](https://github.com/airbytehq/airbyte/pull/8050) | Fix wrong types for schemas, add TypeTransformer |
+| 0.1.5 | 2021-10-26 | [7679](https://github.com/airbytehq/airbyte/pull/7679) | Add ticket_id and ticket_comments |
+| 0.1.4 | 2021-10-26 | [7377](https://github.com/airbytehq/airbyte/pull/7377) | Fix initially_assigned_at type in ticket metrics |
+| 0.1.3 | 2021-10-17 | [7097](https://github.com/airbytehq/airbyte/pull/7097) | Corrected the connector's specification |
+| 0.1.2 | 2021-10-16 | [6513](https://github.com/airbytehq/airbyte/pull/6513) | Fixed TicketComments stream |
+| 0.1.1 | 2021-09-02 | [5787](https://github.com/airbytehq/airbyte/pull/5787) | Fixed incremental logic for the ticket_comments stream |
+| 0.1.0 | 2021-07-21 | [4861](https://github.com/airbytehq/airbyte/pull/4861) | Created CDK native zendesk connector |
 
 </details>
 

@@ -10,6 +10,7 @@ from requests import Response
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.error_handlers.http_response_filter import HttpResponseFilter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.streams.http.error_handlers.response_models import ResponseAction
@@ -118,6 +119,39 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
 
     if actual_should_migrate:
         assert state_migration.migrate(stream_state=state) == expected_state
+
+
+@pytest.mark.parametrize(
+    "raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema",
+    [
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            True,
+            {"type": ["null", "string"]},
+            {"type": ["null", "string"]},
+            id="custom_objects_toggle_on",
+        ),
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            False,
+            {"type": ["null", "number"]},
+            {"type": ["null", "boolean"]},
+            id="custom_objects_toggle_off",
+        ),
+    ],
+)
+def test_hubspot_custom_objects_schema_loader_respects_toggle(
+    components_module, raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema
+):
+    config = {"treat_numbers_and_booleans_as_strings": treat_as_string}
+    loader = components_module.HubspotCustomObjectsSchemaLoader(
+        config=config,
+        parameters={"schema_properties": raw_fields},
+    )
+    schema = loader.get_json_schema()
+    properties = schema["properties"]["properties"]["properties"]
+    assert properties["num_field"] == expected_number_schema
+    assert properties["bool_field"] == expected_boolean_schema
 
 
 def test_hubspot_rename_properties_transformation(components_module):
@@ -695,6 +729,35 @@ def test_crm_search_pagination_strategy(
     assert actual_next_page_token == expected_next_page_token
 
 
+def test_build_associations_retriever_uses_rate_limited_for_429():
+    """Verify that the associations retriever maps HTTP 429 to RATE_LIMITED, not RETRY."""
+    components_module = __import__("components")
+
+    config = {
+        "start_date": "2021-01-10T00:00:00Z",
+        "credentials": {"credentials_title": "Private App Credentials", "access_token": "test_access_token"},
+    }
+
+    parent_entity = InterpolatedString.create("deals", parameters={})
+
+    retriever = components_module.build_associations_retriever(
+        associations_list=["companies", "contacts"],
+        parent_entity=parent_entity,
+        config=config,
+    )
+
+    error_handler = retriever.requester.error_handler
+    # Find the response filter for 429 and verify it uses RATE_LIMITED
+    found_429_filter = False
+    for response_filter in error_handler.response_filters:
+        if 429 in response_filter.http_codes:
+            found_429_filter = True
+            assert (
+                response_filter.action == ResponseAction.RATE_LIMITED
+            ), f"Expected RATE_LIMITED for HTTP 429 in associations retriever, got {response_filter.action}"
+    assert found_429_filter, "No response filter found for HTTP 429 in associations retriever"
+
+
 @pytest.mark.parametrize(
     "credentials_title, status_code, expected_action, expected_failure_type, expected_error_message",
     [
@@ -717,10 +780,10 @@ def test_crm_search_pagination_strategy(
         pytest.param(
             "Private App Credentials",
             429,
-            ResponseAction.RETRY,
+            ResponseAction.RATE_LIMITED,
             None,
             None,
-            id="pat_429_retries_normally",
+            id="pat_429_rate_limited",
         ),
         pytest.param(
             "Private App Credentials",
@@ -748,7 +811,7 @@ def test_hubspot_error_handler_401_by_auth_type(
         backoff_strategies=[],
         response_filters=[
             HttpResponseFilter(
-                action="RETRY",
+                action="RATE_LIMITED",
                 http_codes={429},
                 error_message="Rate limited.",
                 config=config,

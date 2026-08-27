@@ -83,6 +83,10 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 </details>
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -90,6 +94,19 @@ The Exchange Rates API has rate limits that vary per pricing plan. The free plan
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                             |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| 1.4.60 | 2026-08-18 | [84576](https://github.com/airbytehq/airbyte/pull/84576) | Update dependencies |
+| 1.4.59 | 2026-08-11 | [83928](https://github.com/airbytehq/airbyte/pull/83928) | Update dependencies |
+| 1.4.58 | 2026-08-04 | [83460](https://github.com/airbytehq/airbyte/pull/83460) | Update dependencies |
+| 1.4.57 | 2026-07-28 | [82913](https://github.com/airbytehq/airbyte/pull/82913) | Update dependencies |
+| 1.4.56 | 2026-07-21 | [82423](https://github.com/airbytehq/airbyte/pull/82423) | Update dependencies |
+| 1.4.55 | 2026-07-14 | [81798](https://github.com/airbytehq/airbyte/pull/81798) | Update dependencies |
+| 1.4.54 | 2026-06-30 | [81061](https://github.com/airbytehq/airbyte/pull/81061) | Update dependencies |
+| 1.4.53 | 2026-06-23 | [80461](https://github.com/airbytehq/airbyte/pull/80461) | Update dependencies |
+| 1.4.52 | 2026-06-16 | [79856](https://github.com/airbytehq/airbyte/pull/79856) | Update dependencies |
+| 1.4.51 | 2026-06-09 | [79311](https://github.com/airbytehq/airbyte/pull/79311) | Update dependencies |
+| 1.4.50 | 2026-06-02 | [78690](https://github.com/airbytehq/airbyte/pull/78690) | Update dependencies |
+| 1.4.49 | 2026-04-28 | [77227](https://github.com/airbytehq/airbyte/pull/77227) | Update dependencies |
+| 1.4.48 | 2026-04-21 | [75777](https://github.com/airbytehq/airbyte/pull/75777) | Update dependencies |
 | 1.4.47 | 2026-03-24 | [75035](https://github.com/airbytehq/airbyte/pull/75035) | Update dependencies |
 | 1.4.46 | 2026-03-10 | [74462](https://github.com/airbytehq/airbyte/pull/74462) | Update dependencies |
 | 1.4.45 | 2026-02-24 | [73899](https://github.com/airbytehq/airbyte/pull/73899) | Update dependencies |

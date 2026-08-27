@@ -65,7 +65,7 @@
         "type": "string",
         "title": "View Attribution Window",
         "description": "Attribution window for views.",
-        "enum": ["1_HOUR", "3_HOUR", "6_HOUR", "1_DAY", "7_DAY"],
+        "enum": ["none", "1_HOUR", "3_HOUR", "6_HOUR", "1_DAY", "7_DAY"],
         "default": "1_DAY",
         "order": 7
       }
