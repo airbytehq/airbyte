@@ -27,7 +27,7 @@ data:
       enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
-        message: "Date and datetime fields are now typed as `date` and `date-time` instead of strings, and the deprecated Linear fields `users.inviteHash`, `teams.inviteHash` and `teams.private` have been removed (`teams.visibility` replaces `private`). Affected columns change type in your destination, so you must refresh the source schema and clear affected streams after upgrading."
+        message: "Date and datetime fields are now typed as `date` and `date-time` instead of strings, and the deprecated Linear fields `users.inviteHash`, `teams.inviteHash`, `teams.private` and `customer_statuses.type` have been removed (`teams.visibility` replaces `private`). Affected columns change type in your destination, so you must refresh the source schema and clear affected streams after upgrading."
         upgradeDeadline: "2026-09-10"
         scopedImpact:
           - scopeType: stream

@@ -2,6 +2,7 @@
 
 """Unit tests for the declared date/datetime types and deprecated-field removals."""
 
+import re
 from pathlib import Path
 
 import pytest
@@ -199,7 +200,8 @@ def test_deprecated_fields_are_removed_and_visibility_is_added(manifest: dict) -
     assert "inviteHash" not in users_query
     assert "inviteHash" not in teams_query
     assert "private" not in teams_query
-    assert " type " not in customer_statuses_query
+    customer_statuses_fields = set(re.split(r"[^A-Za-z0-9_]+", customer_statuses_query))
+    assert "type" not in customer_statuses_fields
     assert "visibility" in teams_query
     assert "inviteHash" not in manifest["schemas"]["users"]["properties"]
     assert "inviteHash" not in manifest["schemas"]["teams"]["properties"]
