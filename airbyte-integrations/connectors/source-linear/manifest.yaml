@@ -33,9 +33,6 @@ definitions:
         - filter
         - updatedAt
         - gte
-  # The issues stream is incremental, but issue_history must enumerate every issue on
-  # every sync; a start_date-bounded parent would silently shrink its full-refresh output.
-  # Since $ref can override keys but cannot remove inherited ones, this shared base has no cursor.
   base_issues_stream:
     type: DeclarativeStream
     name: issues
