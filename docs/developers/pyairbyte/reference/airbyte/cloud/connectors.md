@@ -2,6 +2,7 @@
 id: airbyte-cloud-connectors
 title: "airbyte.cloud.connectors Module"
 sidebar_label: "airbyte.cloud.connectors"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.connectors` Module
@@ -61,7 +62,7 @@ class CheckResult(
 
 A cloud check result object.
 
-#### Attributes {#airbyte.cloud.connectors.CheckResult--attributes}
+#### Instance Variables {#airbyte.cloud.connectors.CheckResult--instance-variables}
 
 - **`error_message`**&nbsp;(`str | None`)
 
@@ -95,15 +96,19 @@ You can use a connector object to manage the connector.
 
 Initialize a cloud connector object.
 
-**Bases:** `abc.ABC`
+#### Bases {#airbyte.cloud.connectors.CloudConnector--bases}
 
-**Subclasses:** `airbyte.cloud.connectors.CloudDestination`, `airbyte.cloud.connectors.CloudSource`
+`abc.ABC`
+#### Descendants {#airbyte.cloud.connectors.CloudConnector--descendants}
 
-#### Attributes {#airbyte.cloud.connectors.CloudConnector--attributes}
+`airbyte.cloud.connectors.CloudDestination`, `airbyte.cloud.connectors.CloudSource`
+#### Class Variables {#airbyte.cloud.connectors.CloudConnector--class-variables}
 
 - **`connector_type`**&nbsp;(`ClassVar[Literal['source', 'destination']]`)
 
   The type of the connector.
+
+#### Instance Variables {#airbyte.cloud.connectors.CloudConnector--instance-variables}
 
 - **`connector_id`**
 
@@ -128,6 +133,8 @@ Initialize a cloud connector object.
 - **`workspace`**
 
   The workspace that the connector belongs to.
+
+#### Methods {#airbyte.cloud.connectors.CloudConnector--methods}
 
 #### `check` {#airbyte.cloud.connectors.CloudConnector.check}
 
@@ -189,15 +196,18 @@ A cloud destination is a destination that is deployed on Airbyte Cloud.
 
 Initialize a cloud connector object.
 
-**Bases:** `airbyte.cloud.connectors.CloudConnector`, `abc.ABC`
+#### Bases {#airbyte.cloud.connectors.CloudDestination--bases}
 
-#### Attributes {#airbyte.cloud.connectors.CloudDestination--attributes}
+`airbyte.cloud.connectors.CloudConnector`
+#### Instance Variables {#airbyte.cloud.connectors.CloudDestination--instance-variables}
 
 - **`destination_id`**&nbsp;(`str`)
 
   Get the ID of the destination.
 
   This is an alias for `connector_id`.
+
+#### Methods {#airbyte.cloud.connectors.CloudDestination--methods}
 
 #### `rename` {#airbyte.cloud.connectors.CloudDestination.rename}
 
@@ -271,15 +281,18 @@ A cloud source is a source that is deployed on Airbyte Cloud.
 
 Initialize a cloud connector object.
 
-**Bases:** `airbyte.cloud.connectors.CloudConnector`, `abc.ABC`
+#### Bases {#airbyte.cloud.connectors.CloudSource--bases}
 
-#### Attributes {#airbyte.cloud.connectors.CloudSource--attributes}
+`airbyte.cloud.connectors.CloudConnector`
+#### Instance Variables {#airbyte.cloud.connectors.CloudSource--instance-variables}
 
 - **`source_id`**&nbsp;(`str`)
 
   Get the ID of the source.
 
   This is an alias for `connector_id`.
+
+#### Methods {#airbyte.cloud.connectors.CloudSource--methods}
 
 #### `rename` {#airbyte.cloud.connectors.CloudSource.rename}
 
@@ -362,11 +375,13 @@ Initialize a custom source definition object.
 Note: Only YAML connectors are currently supported. Docker connectors
 will raise NotImplementedError.
 
-#### Attributes {#airbyte.cloud.connectors.CustomCloudSourceDefinition--attributes}
+#### Class Variables {#airbyte.cloud.connectors.CustomCloudSourceDefinition--class-variables}
 
 - **`connector_type`**&nbsp;(`ClassVar[Literal['source', 'destination']]`)
 
   The type of the connector: 'source' or 'destination'.
+
+#### Instance Variables {#airbyte.cloud.connectors.CustomCloudSourceDefinition--instance-variables}
 
 - **`connector_builder_project_id`**&nbsp;(`str | None`)
 
@@ -433,6 +448,8 @@ will raise NotImplementedError.
 - **`version`**&nbsp;(`str | None`)
 
   Get the manifest version. Only present for YAML connectors.
+
+#### Methods {#airbyte.cloud.connectors.CustomCloudSourceDefinition--methods}
 
 #### `deploy_source` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.deploy_source}
 

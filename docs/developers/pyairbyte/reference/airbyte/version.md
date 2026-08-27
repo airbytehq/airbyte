@@ -2,6 +2,7 @@
 id: airbyte-version
 title: "airbyte.version Module"
 sidebar_label: "airbyte.version"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.version` Module

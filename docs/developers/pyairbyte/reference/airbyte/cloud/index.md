@@ -2,6 +2,7 @@
 id: airbyte-cloud-index
 title: "airbyte.cloud Module"
 sidebar_label: "airbyte.cloud"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud` Module
@@ -121,7 +122,7 @@ Authenticated client for Airbyte Cloud and self-managed Airbyte APIs.
 
 Initialize a `CloudClient` from explicit auth values.
 
-#### Attributes {#airbyte.cloud.CloudClient--attributes}
+#### Instance Variables {#airbyte.cloud.CloudClient--instance-variables}
 
 - **`bearer_token`**&nbsp;(`SecretString | None`)
 
@@ -146,6 +147,8 @@ Initialize a `CloudClient` from explicit auth values.
 - **`public_api_root`**&nbsp;(`str`)
 
   Airbyte Public API root.
+
+#### Static Methods {#airbyte.cloud.CloudClient--static-methods}
 
 #### `from_auth` {#airbyte.cloud.CloudClient.from_auth}
 
@@ -174,6 +177,8 @@ When `env_vars` is True, environment variables are checked as a fallback
 after any explicitly provided values.
 
 </ApiMember>
+
+#### Methods {#airbyte.cloud.CloudClient--methods}
 
 #### `create_workspace` {#airbyte.cloud.CloudClient.create_workspace}
 
@@ -366,7 +371,7 @@ will raise a validation error.
 - **`api_root`**: The API root URL. Defaults to Airbyte Cloud API.
 - **`config_api_root`**: The Config API root URL.
 
-#### Attributes {#airbyte.cloud.CloudClientConfig--attributes}
+#### Instance Variables {#airbyte.cloud.CloudClientConfig--instance-variables}
 
 - **`api_root`**&nbsp;(`str`)
 
@@ -395,6 +400,8 @@ will raise a validation error.
 - **`uses_client_credentials`**&nbsp;(`bool`)
 
   Return True if using client credentials authentication.
+
+#### Static Methods {#airbyte.cloud.CloudClientConfig--static-methods}
 
 #### `from_env` {#airbyte.cloud.CloudClientConfig.from_env}
 
@@ -470,7 +477,7 @@ It is not recommended to create a `CloudConnection` object directly.
 
 Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 
-#### Attributes {#airbyte.cloud.CloudConnection--attributes}
+#### Instance Variables {#airbyte.cloud.CloudConnection--instance-variables}
 
 - **`connection_id`**
 
@@ -528,6 +535,8 @@ Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 - **`workspace`**
 
   The workspace that the connection belongs to.
+
+#### Methods {#airbyte.cloud.CloudConnection--methods}
 
 #### `cancel_sync` {#airbyte.cloud.CloudConnection.cancel_sync}
 
@@ -1141,7 +1150,7 @@ It is typically created via `CloudWorkspace.get_organization()`.
 
 Initialize a `CloudOrganization`.
 
-#### Attributes {#airbyte.cloud.CloudOrganization--attributes}
+#### Instance Variables {#airbyte.cloud.CloudOrganization--instance-variables}
 
 - **`email`**&nbsp;(`str | None`)
 
@@ -1217,7 +1226,7 @@ Example with bearer token:
 
 Validate and initialize credentials.
 
-#### Attributes {#airbyte.cloud.CloudWorkspace--attributes}
+#### Instance Variables {#airbyte.cloud.CloudWorkspace--instance-variables}
 
 - **`api_root`**&nbsp;(`str`)
 
@@ -1236,6 +1245,8 @@ Validate and initialize credentials.
 - **`workspace_url`**&nbsp;(`str | None`)
 
   The web URL of the workspace.
+
+#### Static Methods {#airbyte.cloud.CloudWorkspace--static-methods}
 
 #### `from_env` {#airbyte.cloud.CloudWorkspace.from_env}
 
@@ -1297,6 +1308,8 @@ workspace = CloudWorkspace.from_env(workspace_id="your-workspace-id")
 ```
 
 </ApiMember>
+
+#### Methods {#airbyte.cloud.CloudWorkspace--methods}
 
 #### `connect` {#airbyte.cloud.CloudWorkspace.connect}
 
@@ -1857,7 +1870,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.cloud.CloudWorkspaceInfo--attributes}
+#### Class Variables {#airbyte.cloud.CloudWorkspaceInfo--class-variables}
 
 - **`data_residency`**&nbsp;(`str | None`)
 
@@ -1878,6 +1891,8 @@ validated to form a valid model.
 - **`workspace_id`**&nbsp;(`str`)
 
   The workspace ID.
+
+#### Static Methods {#airbyte.cloud.CloudWorkspaceInfo--static-methods}
 
 #### `from_api_response` {#airbyte.cloud.CloudWorkspaceInfo.from_api_response}
 
@@ -1914,6 +1929,8 @@ def from_mapping(
 Create a public model from a workspace mapping.
 
 </ApiMember>
+
+#### Methods {#airbyte.cloud.CloudWorkspaceInfo--methods}
 
 #### `to_dict` {#airbyte.cloud.CloudWorkspaceInfo.to_dict}
 
@@ -1955,9 +1972,10 @@ class JobStatusEnum(
 
 Status values for an Airbyte Cloud job.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.cloud.JobStatusEnum--bases}
 
-#### Attributes {#airbyte.cloud.JobStatusEnum--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.cloud.JobStatusEnum--class-variables}
 
 - **`CANCELLED`**
 
@@ -1995,9 +2013,10 @@ class JobTypeEnum(
 
 Job type values for Airbyte Cloud jobs.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.cloud.JobTypeEnum--bases}
 
-#### Attributes {#airbyte.cloud.JobTypeEnum--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.cloud.JobTypeEnum--class-variables}
 
 - **`CLEAR`**
 
@@ -2032,7 +2051,7 @@ The result of a sync operation.
 **This class is not meant to be instantiated directly.** Instead, obtain a `SyncResult` by
 interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 
-#### Attributes {#airbyte.cloud.SyncResult--attributes}
+#### Instance Variables {#airbyte.cloud.SyncResult--instance-variables}
 
 - **`bytes_synced`**&nbsp;(`int`)
 
@@ -2076,6 +2095,8 @@ interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 - **`table_name_suffix`**&nbsp;(`str`)
 
 - **`workspace`**&nbsp;(`CloudWorkspace`)
+
+#### Methods {#airbyte.cloud.SyncResult--methods}
 
 #### `get_attempts` {#airbyte.cloud.SyncResult.get_attempts}
 

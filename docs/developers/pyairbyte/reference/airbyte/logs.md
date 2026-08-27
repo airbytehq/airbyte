@@ -2,6 +2,7 @@
 id: airbyte-logs
 title: "airbyte.logs Module"
 sidebar_label: "airbyte.logs"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.logs` Module

@@ -2,6 +2,7 @@
 id: airbyte-shared-state_writers
 title: "airbyte.shared.state_writers Module"
 sidebar_label: "airbyte.shared.state_writers"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.shared.state_writers` Module
@@ -28,7 +29,9 @@ from the `StateProviderBase` class
 
 Initialize the state writer.
 
-**Bases:** `airbyte.shared.state_writers.StateWriterBase`, `airbyte.shared.state_providers.StateProviderBase`, `abc.ABC`
+#### Bases {#airbyte.shared.state_writers.NoOpStateWriter--bases}
+
+`airbyte.shared.state_writers.StateWriterBase`
 
 </ApiMember>
 
@@ -51,9 +54,13 @@ of cached state artifacts.
 
 Initialize the state writer.
 
-**Bases:** `airbyte.shared.state_providers.StateProviderBase`, `abc.ABC`
+#### Bases {#airbyte.shared.state_writers.StateWriterBase--bases}
 
-**Subclasses:** `airbyte.caches._state_backend.SqlStateWriter`, `airbyte.shared.state_writers.NoOpStateWriter`, `airbyte.shared.state_writers.StdOutStateWriter`
+`airbyte.shared.state_providers.StateProviderBase`, `abc.ABC`
+#### Descendants {#airbyte.shared.state_writers.StateWriterBase--descendants}
+
+`airbyte.caches._state_backend.SqlStateWriter`, `airbyte.shared.state_writers.NoOpStateWriter`, `airbyte.shared.state_writers.StdOutStateWriter`
+#### Methods {#airbyte.shared.state_writers.StateWriterBase--methods}
 
 #### `write_state` {#airbyte.shared.state_writers.StateWriterBase.write_state}
 
@@ -94,6 +101,8 @@ This is useful when we want PyAirbyte to behave like a "Destination" in the Airb
 
 Initialize the state writer.
 
-**Bases:** `airbyte.shared.state_writers.StateWriterBase`, `airbyte.shared.state_providers.StateProviderBase`, `abc.ABC`
+#### Bases {#airbyte.shared.state_writers.StdOutStateWriter--bases}
+
+`airbyte.shared.state_writers.StateWriterBase`
 
 </ApiMember>

@@ -2,6 +2,7 @@
 id: airbyte-destinations-index
 title: "airbyte.destinations Module"
 sidebar_label: "airbyte.destinations"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.destinations` Module
@@ -175,11 +176,14 @@ Initialize the source.
 
 If config is provided, it will be validated against the spec if validate is True.
 
-**Bases:** `airbyte._connector_base.ConnectorBase`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.destinations.Destination--bases}
 
-#### Attributes {#airbyte.destinations.Destination--attributes}
+`airbyte._connector_base.ConnectorBase`, `airbyte._writers.base.AirbyteWriterInterface`
+#### Class Variables {#airbyte.destinations.Destination--class-variables}
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
+
+#### Instance Variables {#airbyte.destinations.Destination--instance-variables}
 
 - **`is_cache_supported`**&nbsp;(`bool`)
 
@@ -187,6 +191,8 @@ If config is provided, it will be validated against the spec if validate is True
 
   Returns `True` when `get_sql_cache()` is expected to succeed for
   the destination's connector type.
+
+#### Methods {#airbyte.destinations.Destination--methods}
 
 #### `get_sql_cache` {#airbyte.destinations.Destination.get_sql_cache}
 

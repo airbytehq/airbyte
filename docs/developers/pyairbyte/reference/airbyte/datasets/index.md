@@ -2,6 +2,7 @@
 id: airbyte-datasets-index
 title: "airbyte.datasets Module"
 sidebar_label: "airbyte.datasets"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.datasets` Module
@@ -39,7 +40,10 @@ which already has the stream configuration.
 
 If stream_configuration is set to False, we skip the stream configuration retrieval.
 
-**Bases:** `airbyte.datasets._sql.SQLDataset`, `airbyte.datasets._base.DatasetBase`, `abc.ABC`
+#### Bases {#airbyte.datasets.CachedDataset--bases}
+
+`airbyte.datasets._sql.SQLDataset`
+#### Methods {#airbyte.datasets.CachedDataset--methods}
 
 #### `to_arrow` {#airbyte.datasets.CachedDataset.to_arrow}
 
@@ -114,15 +118,19 @@ class DatasetBase(stream_metadata: ConfiguredAirbyteStream)
 
 Base implementation for all datasets.
 
-**Bases:** `abc.ABC`
+#### Bases {#airbyte.datasets.DatasetBase--bases}
 
-**Subclasses:** `airbyte.datasets._inmemory.InMemoryDataset`, `airbyte.datasets._lazy.LazyDataset`, `airbyte.datasets._sql.SQLDataset`
+`abc.ABC`
+#### Descendants {#airbyte.datasets.DatasetBase--descendants}
 
-#### Attributes {#airbyte.datasets.DatasetBase--attributes}
+`airbyte.datasets._inmemory.InMemoryDataset`, `airbyte.datasets._lazy.LazyDataset`, `airbyte.datasets._sql.SQLDataset`
+#### Instance Variables {#airbyte.datasets.DatasetBase--instance-variables}
 
 - **`column_names`**&nbsp;(`list[str]`)
 
   Return the list of top-level column names.
+
+#### Methods {#airbyte.datasets.DatasetBase--methods}
 
 #### `to_arrow` {#airbyte.datasets.DatasetBase.to_arrow}
 
@@ -205,7 +213,9 @@ class DatasetMap()
 
 A generic interface for a set of streams or datasets.
 
-**Bases:** `collections.abc.Mapping`, `collections.abc.Collection`, `collections.abc.Sized`, `collections.abc.Iterable`, `collections.abc.Container`
+#### Bases {#airbyte.datasets.DatasetMap--bases}
+
+`collections.abc.Mapping`
 
 </ApiMember>
 
@@ -229,7 +239,10 @@ class LazyDataset(
 
 A dataset that is loaded incrementally from a source or a SQL query.
 
-**Bases:** `airbyte.datasets._base.DatasetBase`, `abc.ABC`
+#### Bases {#airbyte.datasets.LazyDataset--bases}
+
+`airbyte.datasets._base.DatasetBase`
+#### Methods {#airbyte.datasets.LazyDataset--methods}
 
 #### `close` {#airbyte.datasets.LazyDataset.close}
 
@@ -305,17 +318,21 @@ object, which already has the stream configuration.
 
 If stream_configuration is set to False, we skip the stream configuration retrieval.
 
-**Bases:** `airbyte.datasets._base.DatasetBase`, `abc.ABC`
+#### Bases {#airbyte.datasets.SQLDataset--bases}
 
-**Subclasses:** `airbyte.datasets._sql.CachedDataset`
+`airbyte.datasets._base.DatasetBase`
+#### Descendants {#airbyte.datasets.SQLDataset--descendants}
 
-#### Attributes {#airbyte.datasets.SQLDataset--attributes}
+`airbyte.datasets._sql.CachedDataset`
+#### Instance Variables {#airbyte.datasets.SQLDataset--instance-variables}
 
 - **`column_names`**&nbsp;(`list[str]`)
 
   Return the list of top-level column names, including internal Airbyte columns.
 
 - **`stream_name`**&nbsp;(`str`)
+
+#### Methods {#airbyte.datasets.SQLDataset--methods}
 
 #### `to_arrow` {#airbyte.datasets.SQLDataset.to_arrow}
 

@@ -2,6 +2,7 @@
 id: airbyte-exceptions
 title: "airbyte.exceptions Module"
 sidebar_label: "airbyte.exceptions"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.exceptions` Module
@@ -68,11 +69,13 @@ class AirbyteConnectionError(
 
 An connection error occurred while communicating with the hosted Airbyte instance.
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectionError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectionSyncActiveError`, `airbyte.exceptions.AirbyteConnectionSyncError`
+`airbyte.exceptions.AirbyteError`
+#### Descendants {#airbyte.exceptions.AirbyteConnectionError--descendants}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectionError--attributes}
+`airbyte.exceptions.AirbyteConnectionSyncActiveError`, `airbyte.exceptions.AirbyteConnectionSyncError`
+#### Instance Variables {#airbyte.exceptions.AirbyteConnectionError--instance-variables}
 
 - **`connection_id`**&nbsp;(`str | None`)
 
@@ -128,7 +131,9 @@ class AirbyteConnectionSyncActiveError(
 
 State update rejected because a sync is currently running (HTTP 423).
 
-**Bases:** `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectionSyncActiveError--bases}
+
+`airbyte.exceptions.AirbyteConnectionError`
 
 </ApiMember>
 
@@ -160,9 +165,12 @@ class AirbyteConnectionSyncError(
 
 An error occurred while executing the remote Airbyte job.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectionSyncError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectionSyncTimeoutError`
+`airbyte.exceptions.AirbyteConnectionError`
+#### Descendants {#airbyte.exceptions.AirbyteConnectionSyncError--descendants}
+
+`airbyte.exceptions.AirbyteConnectionSyncTimeoutError`
 
 </ApiMember>
 
@@ -195,9 +203,10 @@ class AirbyteConnectionSyncTimeoutError(
 
 An timeout occurred while waiting for the remote Airbyte job to complete.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectionSyncError`, `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectionSyncTimeoutError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectionSyncTimeoutError--attributes}
+`airbyte.exceptions.AirbyteConnectionSyncError`
+#### Instance Variables {#airbyte.exceptions.AirbyteConnectionSyncTimeoutError--instance-variables}
 
 - **`timeout`**&nbsp;(`int | None`)
 
@@ -229,9 +238,10 @@ class AirbyteConnectorCheckFailedError(
 
 Connector check failed.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorCheckFailedError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorCheckFailedError--attributes}
+`airbyte.exceptions.AirbyteConnectorError`
+#### Class Variables {#airbyte.exceptions.AirbyteConnectorCheckFailedError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
@@ -261,9 +271,10 @@ class AirbyteConnectorConfigurationMissingError(
 
 Connector is missing configuration.
 
-**Bases:** `airbyte.exceptions.PyAirbyteCacheError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorConfigurationMissingError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorConfigurationMissingError--attributes}
+`airbyte.exceptions.PyAirbyteCacheError`
+#### Instance Variables {#airbyte.exceptions.AirbyteConnectorConfigurationMissingError--instance-variables}
 
 - **`connector_name`**&nbsp;(`str | None`)
 
@@ -293,7 +304,9 @@ class AirbyteConnectorDiscoverFailedError(
 
 Error when running discovery on the connector.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorDiscoverFailedError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -321,11 +334,13 @@ class AirbyteConnectorError(
 
 Error when running the connector.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorCheckFailedError`, `airbyte.exceptions.AirbyteConnectorDiscoverFailedError`, `airbyte.exceptions.AirbyteConnectorExecutableNotFoundError`, `airbyte.exceptions.AirbyteConnectorFailedError`, `airbyte.exceptions.AirbyteConnectorInstallationError`, `airbyte.exceptions.AirbyteConnectorMissingCatalogError`, `airbyte.exceptions.AirbyteConnectorMissingSpecError`, `airbyte.exceptions.AirbyteConnectorReadError`, `airbyte.exceptions.AirbyteConnectorSpecFailedError`, `airbyte.exceptions.AirbyteConnectorValidationFailedError`, `airbyte.exceptions.AirbyteConnectorWriteError`, `airbyte.exceptions.AirbyteNoDataFromConnectorError`, `airbyte.exceptions.AirbyteStateNotFoundError`, `airbyte.exceptions.AirbyteStreamNotFoundError`
+`airbyte.exceptions.PyAirbyteError`
+#### Descendants {#airbyte.exceptions.AirbyteConnectorError--descendants}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorError--attributes}
+`airbyte.exceptions.AirbyteConnectorCheckFailedError`, `airbyte.exceptions.AirbyteConnectorDiscoverFailedError`, `airbyte.exceptions.AirbyteConnectorExecutableNotFoundError`, `airbyte.exceptions.AirbyteConnectorFailedError`, `airbyte.exceptions.AirbyteConnectorInstallationError`, `airbyte.exceptions.AirbyteConnectorMissingCatalogError`, `airbyte.exceptions.AirbyteConnectorMissingSpecError`, `airbyte.exceptions.AirbyteConnectorReadError`, `airbyte.exceptions.AirbyteConnectorSpecFailedError`, `airbyte.exceptions.AirbyteConnectorValidationFailedError`, `airbyte.exceptions.AirbyteConnectorWriteError`, `airbyte.exceptions.AirbyteNoDataFromConnectorError`, `airbyte.exceptions.AirbyteStateNotFoundError`, `airbyte.exceptions.AirbyteStreamNotFoundError`
+#### Instance Variables {#airbyte.exceptions.AirbyteConnectorError--instance-variables}
 
 - **`connector_name`**&nbsp;(`str | None`)
 
@@ -355,7 +370,9 @@ class AirbyteConnectorExecutableNotFoundError(
 
 Connector executable not found.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorExecutableNotFoundError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -384,9 +401,10 @@ class AirbyteConnectorFailedError(
 
 Connector failed.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorFailedError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorFailedError--attributes}
+`airbyte.exceptions.AirbyteConnectorError`
+#### Instance Variables {#airbyte.exceptions.AirbyteConnectorFailedError--instance-variables}
 
 - **`exit_code`**&nbsp;(`int | None`)
 
@@ -416,7 +434,9 @@ class AirbyteConnectorInstallationError(
 
 Error when installing the connector.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorInstallationError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -444,7 +464,9 @@ class AirbyteConnectorMissingCatalogError(
 
 Connector did not return a catalog.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorMissingCatalogError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -472,7 +494,9 @@ class AirbyteConnectorMissingSpecError(
 
 Connector did not return a spec.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorMissingSpecError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -500,11 +524,14 @@ class AirbyteConnectorNotPyPiPublishedError(
 
 Connector found, but not published to PyPI.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorRegistryError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError--attributes}
+`airbyte.exceptions.AirbyteConnectorRegistryError`
+#### Class Variables {#airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
+
+#### Instance Variables {#airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError--instance-variables}
 
 - **`connector_name`**&nbsp;(`str | None`)
 
@@ -534,13 +561,16 @@ class AirbyteConnectorNotRegisteredError(
 
 Connector not found in registry.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorRegistryError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorNotRegisteredError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorNotRegisteredError--attributes}
+`airbyte.exceptions.AirbyteConnectorRegistryError`
+#### Class Variables {#airbyte.exceptions.AirbyteConnectorNotRegisteredError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
 - **`help_url`**&nbsp;(`str | None`)
+
+#### Instance Variables {#airbyte.exceptions.AirbyteConnectorNotRegisteredError--instance-variables}
 
 - **`connector_name`**&nbsp;(`str | None`)
 
@@ -570,7 +600,9 @@ class AirbyteConnectorReadError(
 
 Error when reading from the connector.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorReadError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -597,9 +629,12 @@ class AirbyteConnectorRegistryError(
 
 Error when accessing the connector registry.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorRegistryError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError`, `airbyte.exceptions.AirbyteConnectorNotRegisteredError`
+`airbyte.exceptions.PyAirbyteError`
+#### Descendants {#airbyte.exceptions.AirbyteConnectorRegistryError--descendants}
+
+`airbyte.exceptions.AirbyteConnectorNotPyPiPublishedError`, `airbyte.exceptions.AirbyteConnectorNotRegisteredError`
 
 </ApiMember>
 
@@ -627,7 +662,9 @@ class AirbyteConnectorSpecFailedError(
 
 Error when getting spec from the connector.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorSpecFailedError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -655,9 +692,10 @@ class AirbyteConnectorValidationFailedError(
 
 Connector config validation failed.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorValidationFailedError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteConnectorValidationFailedError--attributes}
+`airbyte.exceptions.AirbyteConnectorError`
+#### Class Variables {#airbyte.exceptions.AirbyteConnectorValidationFailedError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
@@ -687,7 +725,9 @@ class AirbyteConnectorWriteError(
 
 Error when writing to the connector.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteConnectorWriteError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -718,9 +758,10 @@ class AirbyteDuplicateResourcesError(
 
 Process failed because resource name was not unique.
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteDuplicateResourcesError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteDuplicateResourcesError--attributes}
+`airbyte.exceptions.AirbyteError`
+#### Instance Variables {#airbyte.exceptions.AirbyteDuplicateResourcesError--instance-variables}
 
 - **`resource_name`**&nbsp;(`str | None`)
 
@@ -753,11 +794,13 @@ class AirbyteError(
 
 An error occurred while communicating with the hosted Airbyte instance.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteDuplicateResourcesError`, `airbyte.exceptions.AirbyteMissingResourceError`, `airbyte.exceptions.AirbyteMultipleResourcesError`, `airbyte.exceptions.AirbyteWorkspaceMismatchError`, `airbyte.exceptions.AirbyteWorkspaceNotEmptyError`
+`airbyte.exceptions.PyAirbyteError`
+#### Descendants {#airbyte.exceptions.AirbyteError--descendants}
 
-#### Attributes {#airbyte.exceptions.AirbyteError--attributes}
+`airbyte.exceptions.AirbyteConnectionError`, `airbyte.exceptions.AirbyteDuplicateResourcesError`, `airbyte.exceptions.AirbyteMissingResourceError`, `airbyte.exceptions.AirbyteMultipleResourcesError`, `airbyte.exceptions.AirbyteWorkspaceMismatchError`, `airbyte.exceptions.AirbyteWorkspaceNotEmptyError`
+#### Instance Variables {#airbyte.exceptions.AirbyteError--instance-variables}
 
 - **`response`**&nbsp;(`AirbyteApiResponseDuckType | None`)
 
@@ -787,7 +830,9 @@ class AirbyteExperimentalFeatureWarning(*args, **kwargs)
 
 Warning whenever using experimental features in PyAirbyte.
 
-**Bases:** `builtins.FutureWarning`, `builtins.Warning`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteExperimentalFeatureWarning--bases}
+
+`builtins.FutureWarning`
 
 </ApiMember>
 
@@ -814,9 +859,12 @@ class AirbyteMCPError(
 
 An error occurred in the Airbyte MCP server.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteMCPError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteTrustedExecutionRequiredError`
+`airbyte.exceptions.PyAirbyteError`
+#### Descendants {#airbyte.exceptions.AirbyteMCPError--descendants}
+
+`airbyte.exceptions.AirbyteTrustedExecutionRequiredError`
 
 </ApiMember>
 
@@ -847,9 +895,10 @@ class AirbyteMissingResourceError(
 
 Remote Airbyte resources does not exist.
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteMissingResourceError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteMissingResourceError--attributes}
+`airbyte.exceptions.AirbyteError`
+#### Instance Variables {#airbyte.exceptions.AirbyteMissingResourceError--instance-variables}
 
 - **`resource_name_or_id`**&nbsp;(`str | None`)
 
@@ -881,9 +930,10 @@ class AirbyteMissingWorkspaceContextError(
 
 Workspace ID is required but not provided.
 
-**Bases:** `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteMissingWorkspaceContextError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteMissingWorkspaceContextError--attributes}
+`airbyte.exceptions.PyAirbyteInputError`
+#### Instance Variables {#airbyte.exceptions.AirbyteMissingWorkspaceContextError--instance-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
@@ -916,9 +966,10 @@ class AirbyteMultipleResourcesError(
 
 Could not locate the resource because multiple matching resources were found.
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteMultipleResourcesError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteMultipleResourcesError--attributes}
+`airbyte.exceptions.AirbyteError`
+#### Instance Variables {#airbyte.exceptions.AirbyteMultipleResourcesError--instance-variables}
 
 - **`resource_name_or_id`**&nbsp;(`str | None`)
 
@@ -950,9 +1001,10 @@ class AirbyteNoCloudCredentialsError(
 
 No Airbyte credentials found.
 
-**Bases:** `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteNoCloudCredentialsError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteNoCloudCredentialsError--attributes}
+`airbyte.exceptions.PyAirbyteInputError`
+#### Instance Variables {#airbyte.exceptions.AirbyteNoCloudCredentialsError--instance-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
@@ -982,7 +1034,9 @@ class AirbyteNoDataFromConnectorError(
 
 No data was provided from the connector.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteNoDataFromConnectorError--bases}
+
+`airbyte.exceptions.AirbyteConnectorError`
 
 </ApiMember>
 
@@ -1012,9 +1066,10 @@ class AirbyteStateNotFoundError(
 
 State entry not found.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.KeyError`, `builtins.LookupError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteStateNotFoundError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteStateNotFoundError--attributes}
+`airbyte.exceptions.AirbyteConnectorError`, `builtins.KeyError`
+#### Instance Variables {#airbyte.exceptions.AirbyteStateNotFoundError--instance-variables}
 
 - **`available_streams`**&nbsp;(`list[str] | None`)
 
@@ -1048,9 +1103,10 @@ class AirbyteStreamNotFoundError(
 
 Connector stream not found.
 
-**Bases:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteStreamNotFoundError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteStreamNotFoundError--attributes}
+`airbyte.exceptions.AirbyteConnectorError`
+#### Instance Variables {#airbyte.exceptions.AirbyteStreamNotFoundError--instance-variables}
 
 - **`available_streams`**&nbsp;(`list[str] | None`)
 
@@ -1082,11 +1138,13 @@ class AirbyteSubprocessError(
 
 Error when running subprocess.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteSubprocessError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteSubprocessFailedError`
+`airbyte.exceptions.PyAirbyteError`
+#### Descendants {#airbyte.exceptions.AirbyteSubprocessError--descendants}
 
-#### Attributes {#airbyte.exceptions.AirbyteSubprocessError--attributes}
+`airbyte.exceptions.AirbyteSubprocessFailedError`
+#### Instance Variables {#airbyte.exceptions.AirbyteSubprocessError--instance-variables}
 
 - **`run_args`**&nbsp;(`list[str] | None`)
 
@@ -1117,9 +1175,10 @@ class AirbyteSubprocessFailedError(
 
 Subprocess failed.
 
-**Bases:** `airbyte.exceptions.AirbyteSubprocessError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteSubprocessFailedError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteSubprocessFailedError--attributes}
+`airbyte.exceptions.AirbyteSubprocessError`
+#### Instance Variables {#airbyte.exceptions.AirbyteSubprocessFailedError--instance-variables}
 
 - **`exit_code`**&nbsp;(`int | None`)
 
@@ -1156,11 +1215,14 @@ over the HTTP transport, so a backend helper that exposes one of those capabilit
 hard-fails when the gate is disabled -- independently of whether the corresponding
 tool was hidden from the tool listing.
 
-**Bases:** `airbyte.exceptions.AirbyteMCPError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteTrustedExecutionRequiredError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteTrustedExecutionRequiredError--attributes}
+`airbyte.exceptions.AirbyteMCPError`
+#### Class Variables {#airbyte.exceptions.AirbyteTrustedExecutionRequiredError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
+
+#### Instance Variables {#airbyte.exceptions.AirbyteTrustedExecutionRequiredError--instance-variables}
 
 - **`feature`**&nbsp;(`str | None`)
 
@@ -1198,9 +1260,10 @@ Resource does not belong to the expected workspace.
 This error is raised when a resource (connection, source, or destination) is fetched
 from the API and the workspace ID in the response does not match the expected workspace.
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteWorkspaceMismatchError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteWorkspaceMismatchError--attributes}
+`airbyte.exceptions.AirbyteError`
+#### Instance Variables {#airbyte.exceptions.AirbyteWorkspaceMismatchError--instance-variables}
 
 - **`actual_workspace_id`**&nbsp;(`str | None`)
 
@@ -1247,9 +1310,10 @@ class AirbyteWorkspaceNotEmptyError(
 
 Workspace cannot be deleted because it contains connections.
 
-**Bases:** `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.AirbyteWorkspaceNotEmptyError--bases}
 
-#### Attributes {#airbyte.exceptions.AirbyteWorkspaceNotEmptyError--attributes}
+`airbyte.exceptions.AirbyteError`
+#### Instance Variables {#airbyte.exceptions.AirbyteWorkspaceNotEmptyError--instance-variables}
 
 - **`connection_ids`**&nbsp;(`list[str] | None`)
 
@@ -1284,9 +1348,12 @@ class PyAirbyteCacheError(
 
 Error occurred while accessing the cache.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteCacheError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorConfigurationMissingError`, `airbyte.exceptions.PyAirbyteCacheTableValidationError`
+`airbyte.exceptions.PyAirbyteError`
+#### Descendants {#airbyte.exceptions.PyAirbyteCacheError--descendants}
+
+`airbyte.exceptions.AirbyteConnectorConfigurationMissingError`, `airbyte.exceptions.PyAirbyteCacheTableValidationError`
 
 </ApiMember>
 
@@ -1314,9 +1381,10 @@ class PyAirbyteCacheTableValidationError(
 
 Cache table validation failed.
 
-**Bases:** `airbyte.exceptions.PyAirbyteCacheError`, `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteCacheTableValidationError--bases}
 
-#### Attributes {#airbyte.exceptions.PyAirbyteCacheTableValidationError--attributes}
+`airbyte.exceptions.PyAirbyteCacheError`
+#### Instance Variables {#airbyte.exceptions.PyAirbyteCacheTableValidationError--instance-variables}
 
 - **`violation`**&nbsp;(`str | None`)
 
@@ -1339,7 +1407,9 @@ Warning for potential data loss.
 Users can ignore this warning by running:
 > warnings.filterwarnings("ignore", category="airbyte.exceptions.PyAirbyteDataLossWarning")
 
-**Bases:** `airbyte.exceptions.PyAirbyteWarning`, `builtins.Warning`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteDataLossWarning--bases}
+
+`airbyte.exceptions.PyAirbyteWarning`
 
 </ApiMember>
 
@@ -1366,11 +1436,13 @@ class PyAirbyteError(
 
 Base class for exceptions in Airbyte.
 
-**Bases:** `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.AirbyteConnectorRegistryError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.AirbyteMCPError`, `airbyte.exceptions.AirbyteSubprocessError`, `airbyte.exceptions.PyAirbyteCacheError`, `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteInternalError`, `airbyte.exceptions.PyAirbyteNameNormalizationError`, `airbyte.exceptions.PyAirbyteSecretNotFoundError`
+`builtins.Exception`
+#### Descendants {#airbyte.exceptions.PyAirbyteError--descendants}
 
-#### Attributes {#airbyte.exceptions.PyAirbyteError--attributes}
+`airbyte.exceptions.AirbyteConnectorError`, `airbyte.exceptions.AirbyteConnectorRegistryError`, `airbyte.exceptions.AirbyteError`, `airbyte.exceptions.AirbyteMCPError`, `airbyte.exceptions.AirbyteSubprocessError`, `airbyte.exceptions.PyAirbyteCacheError`, `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteInternalError`, `airbyte.exceptions.PyAirbyteNameNormalizationError`, `airbyte.exceptions.PyAirbyteSecretNotFoundError`
+#### Instance Variables {#airbyte.exceptions.PyAirbyteError--instance-variables}
 
 - **`context`**&nbsp;(`dict[str, typing.Any] | None`)
 
@@ -1387,6 +1459,8 @@ Base class for exceptions in Airbyte.
 - **`original_exception`**&nbsp;(`Exception | None`)
 
 - **`print_full_log`**&nbsp;(`bool`)
+
+#### Methods {#airbyte.exceptions.PyAirbyteError--methods}
 
 #### `get_message` {#airbyte.exceptions.PyAirbyteError.get_message}
 
@@ -1455,15 +1529,19 @@ The input provided to PyAirbyte did not match expected validation rules.
 This inherits from ValueError so that it can be used as a drop-in replacement for
 ValueError in the PyAirbyte API.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteInputError--bases}
 
-**Subclasses:** `airbyte.exceptions.AirbyteMissingWorkspaceContextError`, `airbyte.exceptions.AirbyteNoCloudCredentialsError`, `airbyte.exceptions.PyAirbyteNoStreamsSelectedError`
+`airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`
+#### Descendants {#airbyte.exceptions.PyAirbyteInputError--descendants}
 
-#### Attributes {#airbyte.exceptions.PyAirbyteInputError--attributes}
+`airbyte.exceptions.AirbyteMissingWorkspaceContextError`, `airbyte.exceptions.AirbyteNoCloudCredentialsError`, `airbyte.exceptions.PyAirbyteNoStreamsSelectedError`
+#### Class Variables {#airbyte.exceptions.PyAirbyteInputError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
 - **`help_url`**&nbsp;(`str | None`)
+
+#### Instance Variables {#airbyte.exceptions.PyAirbyteInputError--instance-variables}
 
 - **`input_value`**&nbsp;(`str | None`)
 
@@ -1492,9 +1570,10 @@ class PyAirbyteInternalError(
 
 An internal error occurred in PyAirbyte.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteInternalError--bases}
 
-#### Attributes {#airbyte.exceptions.PyAirbyteInternalError--attributes}
+`airbyte.exceptions.PyAirbyteError`
+#### Class Variables {#airbyte.exceptions.PyAirbyteInternalError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
@@ -1527,13 +1606,16 @@ class PyAirbyteNameNormalizationError(
 
 Error occurred while normalizing a table or column name.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteNameNormalizationError--bases}
 
-#### Attributes {#airbyte.exceptions.PyAirbyteNameNormalizationError--attributes}
+`airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`
+#### Class Variables {#airbyte.exceptions.PyAirbyteNameNormalizationError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
 - **`help_url`**&nbsp;(`str | None`)
+
+#### Instance Variables {#airbyte.exceptions.PyAirbyteNameNormalizationError--instance-variables}
 
 - **`normalization_result`**&nbsp;(`str | None`)
 
@@ -1567,11 +1649,14 @@ class PyAirbyteNoStreamsSelectedError(
 
 No streams were selected for the source.
 
-**Bases:** `airbyte.exceptions.PyAirbyteInputError`, `airbyte.exceptions.PyAirbyteError`, `builtins.ValueError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteNoStreamsSelectedError--bases}
 
-#### Attributes {#airbyte.exceptions.PyAirbyteNoStreamsSelectedError--attributes}
+`airbyte.exceptions.PyAirbyteInputError`
+#### Class Variables {#airbyte.exceptions.PyAirbyteNoStreamsSelectedError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
+
+#### Instance Variables {#airbyte.exceptions.PyAirbyteNoStreamsSelectedError--instance-variables}
 
 - **`available_streams`**&nbsp;(`list[str] | None`)
 
@@ -1604,13 +1689,16 @@ class PyAirbyteSecretNotFoundError(
 
 Secret not found.
 
-**Bases:** `airbyte.exceptions.PyAirbyteError`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteSecretNotFoundError--bases}
 
-#### Attributes {#airbyte.exceptions.PyAirbyteSecretNotFoundError--attributes}
+`airbyte.exceptions.PyAirbyteError`
+#### Class Variables {#airbyte.exceptions.PyAirbyteSecretNotFoundError--class-variables}
 
 - **`guidance`**&nbsp;(`str | None`)
 
 - **`help_url`**&nbsp;(`str | None`)
+
+#### Instance Variables {#airbyte.exceptions.PyAirbyteSecretNotFoundError--instance-variables}
 
 - **`secret_name`**&nbsp;(`str | None`)
 
@@ -1632,8 +1720,11 @@ class PyAirbyteWarning(*args, **kwargs)
 
 General warnings from PyAirbyte.
 
-**Bases:** `builtins.Warning`, `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.exceptions.PyAirbyteWarning--bases}
 
-**Subclasses:** `airbyte.exceptions.PyAirbyteDataLossWarning`
+`builtins.Warning`
+#### Descendants {#airbyte.exceptions.PyAirbyteWarning--descendants}
+
+`airbyte.exceptions.PyAirbyteDataLossWarning`
 
 </ApiMember>

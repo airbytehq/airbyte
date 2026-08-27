@@ -2,6 +2,7 @@
 id: airbyte-destinations-util
 title: "airbyte.destinations.util Module"
 sidebar_label: "airbyte.destinations.util"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.destinations.util` Module

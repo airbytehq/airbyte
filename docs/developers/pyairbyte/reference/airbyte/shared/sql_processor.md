@@ -2,6 +2,7 @@
 id: airbyte-shared-sql_processor
 title: "airbyte.shared.sql_processor Module"
 sidebar_label: "airbyte.shared.sql_processor"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.shared.sql_processor` Module
@@ -27,7 +28,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.shared.sql_processor.ColumnStatistics--attributes}
+#### Class Variables {#airbyte.shared.sql_processor.ColumnStatistics--class-variables}
 
 - **`column_name`**&nbsp;(`str`)
 
@@ -73,9 +74,10 @@ class RecordDedupeMode(
 
 The deduplication mode to use when writing records.
 
-**Bases:** `enum.Enum`
+#### Bases {#airbyte.shared.sql_processor.RecordDedupeMode--bases}
 
-#### Attributes {#airbyte.shared.sql_processor.RecordDedupeMode--attributes}
+`enum.Enum`
+#### Class Variables {#airbyte.shared.sql_processor.RecordDedupeMode--class-variables}
 
 - **`APPEND`**
 
@@ -97,7 +99,9 @@ class SQLRuntimeError(*args, **kwargs)
 
 Raised when an SQL operation fails.
 
-**Bases:** `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.shared.sql_processor.SQLRuntimeError--bases}
+
+`builtins.Exception`
 
 </ApiMember>
 
@@ -120,11 +124,13 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-**Bases:** `abc.ABC`
+#### Bases {#airbyte.shared.sql_processor.SqlConfig--bases}
 
-**Subclasses:** `airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte._processors.sql.postgres.PostgresConfig`, `airbyte._processors.sql.snowflake.SnowflakeConfig`, `airbyte.caches.base.CacheBase`
+`abc.ABC`
+#### Descendants {#airbyte.shared.sql_processor.SqlConfig--descendants}
 
-#### Attributes {#airbyte.shared.sql_processor.SqlConfig--attributes}
+`airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte._processors.sql.postgres.PostgresConfig`, `airbyte._processors.sql.snowflake.SnowflakeConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.shared.sql_processor.SqlConfig--class-variables}
 
 - **`schema_name`**&nbsp;(`str`)
 
@@ -133,6 +139,8 @@ validated to form a valid model.
 - **`table_prefix`**&nbsp;(`str | None`)
 
   A prefix to add to created table names.
+
+#### Instance Variables {#airbyte.shared.sql_processor.SqlConfig--instance-variables}
 
 - **`config_hash`**&nbsp;(`str | None`)
 
@@ -143,6 +151,8 @@ validated to form a valid model.
   uniqueness.
 
   In most cases, subclasses do not need to override this method.
+
+#### Methods {#airbyte.shared.sql_processor.SqlConfig--methods}
 
 #### `dispose_engine` {#airbyte.shared.sql_processor.SqlConfig.dispose_engine}
 
@@ -286,11 +296,13 @@ A base class to be used for SQL Caches.
 
 Create a new SQL processor.
 
-**Bases:** `abc.ABC`
+#### Bases {#airbyte.shared.sql_processor.SqlProcessorBase--bases}
 
-**Subclasses:** `airbyte._processors.sql.bigquery.BigQuerySqlProcessor`, `airbyte._processors.sql.duckdb.DuckDBSqlProcessor`, `airbyte._processors.sql.postgres.PostgresSqlProcessor`, `airbyte._processors.sql.snowflake.SnowflakeSqlProcessor`
+`abc.ABC`
+#### Descendants {#airbyte.shared.sql_processor.SqlProcessorBase--descendants}
 
-#### Attributes {#airbyte.shared.sql_processor.SqlProcessorBase--attributes}
+`airbyte._processors.sql.bigquery.BigQuerySqlProcessor`, `airbyte._processors.sql.duckdb.DuckDBSqlProcessor`, `airbyte._processors.sql.postgres.PostgresSqlProcessor`, `airbyte._processors.sql.snowflake.SnowflakeSqlProcessor`
+#### Class Variables {#airbyte.shared.sql_processor.SqlProcessorBase--class-variables}
 
 - **`file_writer_class`**&nbsp;(`type[FileWriterBase]`)
 
@@ -307,6 +319,8 @@ Create a new SQL processor.
 - **`type_converter_class`**&nbsp;(`type[SQLTypeConverter]`)
 
   The type converter class to use for converting JSON schema types to SQL types.
+
+#### Instance Variables {#airbyte.shared.sql_processor.SqlProcessorBase--instance-variables}
 
 - **`catalog_provider`**&nbsp;(`CatalogProvider`)
 
@@ -337,6 +351,8 @@ Create a new SQL processor.
   **Raises:**
 
   - **`PyAirbyteInternalError`**: If the state manager is not set.
+
+#### Methods {#airbyte.shared.sql_processor.SqlProcessorBase--methods}
 
 #### `cleanup_all` {#airbyte.shared.sql_processor.SqlProcessorBase.cleanup_all}
 
@@ -645,7 +661,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.shared.sql_processor.TableStatistics--attributes}
+#### Class Variables {#airbyte.shared.sql_processor.TableStatistics--class-variables}
 
 - **`column_statistics`**&nbsp;(`list[airbyte.shared.sql_processor.ColumnStatistics]`)
 

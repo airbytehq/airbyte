@@ -2,6 +2,7 @@
 id: airbyte-results
 title: "airbyte.results Module"
 sidebar_label: "airbyte.results"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.results` Module
@@ -41,9 +42,10 @@ Initialize a read result.
 This class should not be created directly. Instead, it should be returned by the `read`
 method of the `Source` class.
 
-**Bases:** `collections.abc.Mapping`, `collections.abc.Collection`, `collections.abc.Sized`, `collections.abc.Iterable`, `collections.abc.Container`
+#### Bases {#airbyte.results.ReadResult--bases}
 
-#### Attributes {#airbyte.results.ReadResult--attributes}
+`collections.abc.Mapping`
+#### Instance Variables {#airbyte.results.ReadResult--instance-variables}
 
 - **`cache`**&nbsp;(`CacheBase`)
 
@@ -56,6 +58,8 @@ method of the `Source` class.
 - **`streams`**&nbsp;(`Mapping[str, CachedDataset]`)
 
   Return a mapping of stream names to cached datasets.
+
+#### Methods {#airbyte.results.ReadResult--methods}
 
 #### `get_sql_engine` {#airbyte.results.ReadResult.get_sql_engine}
 
@@ -105,11 +109,13 @@ Initialize a write result.
 This class should not be created directly. Instead, it should be returned by the `write`
 method of the `Destination` class.
 
-#### Attributes {#airbyte.results.WriteResult--attributes}
+#### Instance Variables {#airbyte.results.WriteResult--instance-variables}
 
 - **`processed_records`**&nbsp;(`int`)
 
   The total number of records written to the destination.
+
+#### Methods {#airbyte.results.WriteResult--methods}
 
 #### `get_state_provider` {#airbyte.results.WriteResult.get_state_provider}
 

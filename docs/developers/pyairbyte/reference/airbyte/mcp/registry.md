@@ -2,6 +2,7 @@
 id: airbyte-mcp-registry
 title: "airbyte.mcp.registry Module"
 sidebar_label: "airbyte.mcp.registry"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp.registry` Module

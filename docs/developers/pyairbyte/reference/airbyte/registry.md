@@ -2,6 +2,7 @@
 id: airbyte-registry
 title: "airbyte.registry Module"
 sidebar_label: "airbyte.registry"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.registry` Module
@@ -154,7 +155,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.registry.ApiDocsUrl--attributes}
+#### Class Variables {#airbyte.registry.ApiDocsUrl--class-variables}
 
 - **`doc_type`**&nbsp;(`str`)
 
@@ -165,6 +166,8 @@ validated to form a valid model.
 - **`title`**&nbsp;(`str`)
 
 - **`url`**&nbsp;(`str`)
+
+#### Static Methods {#airbyte.registry.ApiDocsUrl--static-methods}
 
 #### `from_manifest_dict` {#airbyte.registry.ApiDocsUrl.from_manifest_dict}
 
@@ -213,7 +216,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.registry.ConnectorMetadata--attributes}
+#### Class Variables {#airbyte.registry.ConnectorMetadata--class-variables}
 
 - **`connector_type`**&nbsp;(`str | None`)
 
@@ -279,6 +282,8 @@ validated to form a valid model.
 
   Connector support level.
 
+#### Instance Variables {#airbyte.registry.ConnectorMetadata--instance-variables}
+
 - **`default_install_type`**&nbsp;(`InstallType`)
 
   Return the default install type for the connector.
@@ -304,7 +309,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.registry.ConnectorVersionInfo--attributes}
+#### Class Variables {#airbyte.registry.ConnectorVersionInfo--class-variables}
 
 - **`changelog_url`**&nbsp;(`str`)
 
@@ -344,9 +349,10 @@ class InstallType(
 
 The type of installation for a connector.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.registry.InstallType--bases}
 
-#### Attributes {#airbyte.registry.InstallType--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.registry.InstallType--class-variables}
 
 - **`ANY`**
 
@@ -398,9 +404,10 @@ class Language(
 
 The language of a connector.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.registry.Language--bases}
 
-#### Attributes {#airbyte.registry.Language--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.registry.Language--class-variables}
 
 - **`JAVA`**
 

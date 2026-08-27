@@ -2,6 +2,7 @@
 id: airbyte-caches-base
 title: "airbyte.caches.base Module"
 sidebar_label: "airbyte.caches.base"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.caches.base` Module
@@ -31,11 +32,13 @@ to the SQL backend specified in the `SqlConfig` class.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.base.CacheBase--bases}
 
-**Subclasses:** `airbyte.caches.bigquery.BigQueryCache`, `airbyte.caches.duckdb.DuckDBCache`, `airbyte.caches.generic.GenericSQLCacheConfig`, `airbyte.caches.postgres.PostgresCache`, `airbyte.caches.snowflake.SnowflakeCache`
+`airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`
+#### Descendants {#airbyte.caches.base.CacheBase--descendants}
 
-#### Attributes {#airbyte.caches.base.CacheBase--attributes}
+`airbyte.caches.bigquery.BigQueryCache`, `airbyte.caches.duckdb.DuckDBCache`, `airbyte.caches.generic.GenericSQLCacheConfig`, `airbyte.caches.postgres.PostgresCache`, `airbyte.caches.snowflake.SnowflakeCache`
+#### Class Variables {#airbyte.caches.base.CacheBase--class-variables}
 
 - **`cache_dir`**&nbsp;(`Path`)
 
@@ -48,6 +51,8 @@ Initialize the cache and backends.
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+
+#### Instance Variables {#airbyte.caches.base.CacheBase--instance-variables}
 
 - **`config_hash`**&nbsp;(`str | None`)
 
@@ -66,6 +71,8 @@ Initialize the cache and backends.
 - **`streams`**&nbsp;(`dict[str, CachedDataset]`)
 
   Return a temporary table name.
+
+#### Methods {#airbyte.caches.base.CacheBase--methods}
 
 #### `close` {#airbyte.caches.base.CacheBase.close}
 

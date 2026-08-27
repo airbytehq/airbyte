@@ -2,6 +2,7 @@
 id: airbyte-index
 title: "airbyte Module"
 sidebar_label: "airbyte"
+toc_max_heading_level: 5
 ---
 
 # `airbyte` Module
@@ -443,15 +444,18 @@ The BigQuery cache implementation.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.BigQueryCache--bases}
 
-#### Attributes {#airbyte.BigQueryCache--attributes}
+`airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.BigQueryCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
   DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+
+#### Methods {#airbyte.BigQueryCache--methods}
 
 #### `get_arrow_dataset` {#airbyte.BigQueryCache.get_arrow_dataset}
 
@@ -509,7 +513,10 @@ which already has the stream configuration.
 
 If stream_configuration is set to False, we skip the stream configuration retrieval.
 
-**Bases:** `airbyte.datasets._sql.SQLDataset`, `airbyte.datasets._base.DatasetBase`, `abc.ABC`
+#### Bases {#airbyte.CachedDataset--bases}
+
+`airbyte.datasets._sql.SQLDataset`
+#### Methods {#airbyte.CachedDataset--methods}
 
 #### `to_arrow` {#airbyte.CachedDataset.to_arrow}
 
@@ -595,11 +602,14 @@ Initialize the source.
 
 If config is provided, it will be validated against the spec if validate is True.
 
-**Bases:** `airbyte._connector_base.ConnectorBase`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.Destination--bases}
 
-#### Attributes {#airbyte.Destination--attributes}
+`airbyte._connector_base.ConnectorBase`, `airbyte._writers.base.AirbyteWriterInterface`
+#### Class Variables {#airbyte.Destination--class-variables}
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
+
+#### Instance Variables {#airbyte.Destination--instance-variables}
 
 - **`is_cache_supported`**&nbsp;(`bool`)
 
@@ -607,6 +617,8 @@ If config is provided, it will be validated against the spec if validate is True
 
   Returns `True` when `get_sql_cache()` is expected to succeed for
   the destination's connector type.
+
+#### Methods {#airbyte.Destination--methods}
 
 #### `get_sql_cache` {#airbyte.Destination.get_sql_cache}
 
@@ -696,11 +708,13 @@ A DuckDB cache.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.DuckDBCache--bases}
 
-**Subclasses:** `airbyte.caches.motherduck.MotherDuckCache`
+`airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`
+#### Descendants {#airbyte.DuckDBCache--descendants}
 
-#### Attributes {#airbyte.DuckDBCache--attributes}
+`airbyte.caches.motherduck.MotherDuckCache`
+#### Class Variables {#airbyte.DuckDBCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
@@ -739,9 +753,10 @@ Initialize a read result.
 This class should not be created directly. Instead, it should be returned by the `read`
 method of the `Source` class.
 
-**Bases:** `collections.abc.Mapping`, `collections.abc.Collection`, `collections.abc.Sized`, `collections.abc.Iterable`, `collections.abc.Container`
+#### Bases {#airbyte.ReadResult--bases}
 
-#### Attributes {#airbyte.ReadResult--attributes}
+`collections.abc.Mapping`
+#### Instance Variables {#airbyte.ReadResult--instance-variables}
 
 - **`cache`**&nbsp;(`CacheBase`)
 
@@ -754,6 +769,8 @@ method of the `Source` class.
 - **`streams`**&nbsp;(`Mapping[str, CachedDataset]`)
 
   Return a mapping of stream names to cached datasets.
+
+#### Methods {#airbyte.ReadResult--methods}
 
 #### `get_sql_engine` {#airbyte.ReadResult.get_sql_engine}
 
@@ -795,9 +812,10 @@ class SecretSourceEnum(
 
 Enumeration of secret sources supported by PyAirbyte.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.SecretSourceEnum--bases}
 
-#### Attributes {#airbyte.SecretSourceEnum--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.SecretSourceEnum--class-variables}
 
 - **`DOTENV`**
 
@@ -839,11 +857,14 @@ Initialize the source.
 
 If config is provided, it will be validated against the spec if validate is True.
 
-**Bases:** `airbyte._connector_base.ConnectorBase`, `abc.ABC`
+#### Bases {#airbyte.Source--bases}
 
-#### Attributes {#airbyte.Source--attributes}
+`airbyte._connector_base.ConnectorBase`
+#### Class Variables {#airbyte.Source--class-variables}
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
+
+#### Instance Variables {#airbyte.Source--instance-variables}
 
 - **`config_spec`**&nbsp;(`dict[str, Any]`)
 
@@ -877,6 +898,8 @@ If config is provided, it will be validated against the spec if validate is True
 - **`docs_url`**&nbsp;(`str`)
 
   Get the URL to the connector's documentation.
+
+#### Methods {#airbyte.Source--methods}
 
 #### `get_available_streams` {#airbyte.Source.get_available_streams}
 
@@ -1360,7 +1383,10 @@ Initialize the dictionary with the given data.
 - **`with_internal_columns`**: If `True`, the internal columns will be added to the record.
 - **`extracted_at`**: The time the record was extracted. If not provided, the current time will be used.
 
-**Bases:** `builtins.dict`
+#### Bases {#airbyte.StreamRecord--bases}
+
+`builtins.dict`
+#### Static Methods {#airbyte.StreamRecord--static-methods}
 
 #### `from_record_message` {#airbyte.StreamRecord.from_record_message}
 
@@ -1414,11 +1440,13 @@ Initialize a write result.
 This class should not be created directly. Instead, it should be returned by the `write`
 method of the `Destination` class.
 
-#### Attributes {#airbyte.WriteResult--attributes}
+#### Instance Variables {#airbyte.WriteResult--instance-variables}
 
 - **`processed_records`**&nbsp;(`int`)
 
   The total number of records written to the destination.
+
+#### Methods {#airbyte.WriteResult--methods}
 
 #### `get_state_provider` {#airbyte.WriteResult.get_state_provider}
 

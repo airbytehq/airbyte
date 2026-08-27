@@ -2,6 +2,7 @@
 id: airbyte-sources-registry
 title: "airbyte.sources.registry Module"
 sidebar_label: "airbyte.sources.registry"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.sources.registry` Module
@@ -74,7 +75,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.sources.registry.ConnectorMetadata--attributes}
+#### Class Variables {#airbyte.sources.registry.ConnectorMetadata--class-variables}
 
 - **`connector_type`**&nbsp;(`str | None`)
 
@@ -140,6 +141,8 @@ validated to form a valid model.
 
   Connector support level.
 
+#### Instance Variables {#airbyte.sources.registry.ConnectorMetadata--instance-variables}
+
 - **`default_install_type`**&nbsp;(`InstallType`)
 
   Return the default install type for the connector.
@@ -168,9 +171,10 @@ class InstallType(
 
 The type of installation for a connector.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.sources.registry.InstallType--bases}
 
-#### Attributes {#airbyte.sources.registry.InstallType--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.sources.registry.InstallType--class-variables}
 
 - **`ANY`**
 
@@ -222,9 +226,10 @@ class Language(
 
 The language of a connector.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.sources.registry.Language--bases}
 
-#### Attributes {#airbyte.sources.registry.Language--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.sources.registry.Language--class-variables}
 
 - **`JAVA`**
 

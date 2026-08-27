@@ -2,6 +2,7 @@
 id: airbyte-mcp-cloud
 title: "airbyte.mcp.cloud Module"
 sidebar_label: "airbyte.mcp.cloud"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp.cloud` Module

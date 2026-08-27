@@ -2,6 +2,7 @@
 id: airbyte-cloud-connections
 title: "airbyte.cloud.connections Module"
 sidebar_label: "airbyte.cloud.connections"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.connections` Module
@@ -33,7 +34,7 @@ It is not recommended to create a `CloudConnection` object directly.
 
 Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 
-#### Attributes {#airbyte.cloud.connections.CloudConnection--attributes}
+#### Instance Variables {#airbyte.cloud.connections.CloudConnection--instance-variables}
 
 - **`connection_id`**
 
@@ -91,6 +92,8 @@ Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 - **`workspace`**
 
   The workspace that the connection belongs to.
+
+#### Methods {#airbyte.cloud.connections.CloudConnection--methods}
 
 #### `cancel_sync` {#airbyte.cloud.connections.CloudConnection.cancel_sync}
 

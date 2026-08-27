@@ -2,6 +2,7 @@
 id: airbyte-types
 title: "airbyte.types Module"
 sidebar_label: "airbyte.types"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.types` Module
@@ -22,7 +23,9 @@ class SQLTypeConversionError(*args, **kwargs)
 
 An exception to be raised when a type conversion fails.
 
-**Bases:** `builtins.Exception`, `builtins.BaseException`
+#### Bases {#airbyte.types.SQLTypeConversionError--bases}
+
+`builtins.Exception`
 
 </ApiMember>
 
@@ -42,7 +45,10 @@ A base class to perform type conversions.
 
 Initialize the type converter.
 
-**Subclasses:** `airbyte._processors.sql.bigquery.BigQueryTypeConverter`, `airbyte._processors.sql.snowflake.SnowflakeTypeConverter`
+#### Descendants {#airbyte.types.SQLTypeConverter--descendants}
+
+`airbyte._processors.sql.bigquery.BigQueryTypeConverter`, `airbyte._processors.sql.snowflake.SnowflakeTypeConverter`
+#### Static Methods {#airbyte.types.SQLTypeConverter--static-methods}
 
 #### `get_failover_type` {#airbyte.types.SQLTypeConverter.get_failover_type}
 
@@ -91,6 +97,8 @@ def get_string_type() -> sqlalchemy.sql.type_api.TypeEngine
 Get the type to use for string data.
 
 </ApiMember>
+
+#### Methods {#airbyte.types.SQLTypeConverter--methods}
 
 #### `to_sql_type` {#airbyte.types.SQLTypeConverter.to_sql_type}
 

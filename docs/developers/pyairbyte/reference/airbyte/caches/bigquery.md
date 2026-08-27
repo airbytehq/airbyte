@@ -2,6 +2,7 @@
 id: airbyte-caches-bigquery
 title: "airbyte.caches.bigquery Module"
 sidebar_label: "airbyte.caches.bigquery"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.caches.bigquery` Module
@@ -37,15 +38,18 @@ The BigQuery cache implementation.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.bigquery.BigQueryCache--bases}
 
-#### Attributes {#airbyte.caches.bigquery.BigQueryCache--attributes}
+`airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.caches.bigquery.BigQueryCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
   DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+
+#### Methods {#airbyte.caches.bigquery.BigQueryCache--methods}
 
 #### `get_arrow_dataset` {#airbyte.caches.bigquery.BigQueryCache.get_arrow_dataset}
 
@@ -91,11 +95,13 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
+#### Bases {#airbyte.caches.bigquery.BigQueryConfig--bases}
 
-**Subclasses:** `airbyte.caches.bigquery.BigQueryCache`
+`airbyte.shared.sql_processor.SqlConfig`
+#### Descendants {#airbyte.caches.bigquery.BigQueryConfig--descendants}
 
-#### Attributes {#airbyte.caches.bigquery.BigQueryConfig--attributes}
+`airbyte.caches.bigquery.BigQueryCache`
+#### Class Variables {#airbyte.caches.bigquery.BigQueryConfig--class-variables}
 
 - **`credentials_path`**&nbsp;(`str | None`)
 
@@ -111,6 +117,8 @@ validated to form a valid model.
   The geographic location of the BigQuery dataset (e.g., 'US', 'EU', etc.).
   Defaults to 'US'. See: https://cloud.google.com/bigquery/docs/locations
 
+#### Instance Variables {#airbyte.caches.bigquery.BigQueryConfig--instance-variables}
+
 - **`dataset_name`**&nbsp;(`str`)
 
   Return the dataset name (alias of self.schema_name).
@@ -118,6 +126,8 @@ validated to form a valid model.
 - **`project_name`**&nbsp;(`str`)
 
   Return the project name (alias of self.database_name).
+
+#### Methods {#airbyte.caches.bigquery.BigQueryConfig--methods}
 
 #### `get_database_name` {#airbyte.caches.bigquery.BigQueryConfig.get_database_name}
 

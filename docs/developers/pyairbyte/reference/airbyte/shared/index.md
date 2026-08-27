@@ -2,6 +2,7 @@
 id: airbyte-shared-index
 title: "airbyte.shared Module"
 sidebar_label: "airbyte.shared"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.shared` Module
@@ -41,11 +42,13 @@ A base class to be used for SQL Caches.
 
 Create a new SQL processor.
 
-**Bases:** `abc.ABC`
+#### Bases {#airbyte.shared.SqlProcessorBase--bases}
 
-**Subclasses:** `airbyte._processors.sql.bigquery.BigQuerySqlProcessor`, `airbyte._processors.sql.duckdb.DuckDBSqlProcessor`, `airbyte._processors.sql.postgres.PostgresSqlProcessor`, `airbyte._processors.sql.snowflake.SnowflakeSqlProcessor`
+`abc.ABC`
+#### Descendants {#airbyte.shared.SqlProcessorBase--descendants}
 
-#### Attributes {#airbyte.shared.SqlProcessorBase--attributes}
+`airbyte._processors.sql.bigquery.BigQuerySqlProcessor`, `airbyte._processors.sql.duckdb.DuckDBSqlProcessor`, `airbyte._processors.sql.postgres.PostgresSqlProcessor`, `airbyte._processors.sql.snowflake.SnowflakeSqlProcessor`
+#### Class Variables {#airbyte.shared.SqlProcessorBase--class-variables}
 
 - **`file_writer_class`**&nbsp;(`type[FileWriterBase]`)
 
@@ -62,6 +65,8 @@ Create a new SQL processor.
 - **`type_converter_class`**&nbsp;(`type[SQLTypeConverter]`)
 
   The type converter class to use for converting JSON schema types to SQL types.
+
+#### Instance Variables {#airbyte.shared.SqlProcessorBase--instance-variables}
 
 - **`catalog_provider`**&nbsp;(`CatalogProvider`)
 
@@ -92,6 +97,8 @@ Create a new SQL processor.
   **Raises:**
 
   - **`PyAirbyteInternalError`**: If the state manager is not set.
+
+#### Methods {#airbyte.shared.SqlProcessorBase--methods}
 
 #### `cleanup_all` {#airbyte.shared.SqlProcessorBase.cleanup_all}
 

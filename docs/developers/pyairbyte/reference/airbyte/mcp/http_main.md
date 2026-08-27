@@ -2,6 +2,7 @@
 id: airbyte-mcp-http_main
 title: "airbyte.mcp.http_main Module"
 sidebar_label: "airbyte.mcp.http_main"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp.http_main` Module

@@ -2,6 +2,7 @@
 id: airbyte-documents
 title: "airbyte.documents Module"
 sidebar_label: "airbyte.documents"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.documents` Module
@@ -41,7 +42,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.documents.Document--attributes}
+#### Class Variables {#airbyte.documents.Document--class-variables}
 
 - **`content`**&nbsp;(`str`)
 
@@ -50,6 +51,8 @@ validated to form a valid model.
 - **`last_modified`**&nbsp;(`datetime.datetime | None`)
 
 - **`metadata`**&nbsp;(`dict[str, Any]`)
+
+#### Instance Variables {#airbyte.documents.Document--instance-variables}
 
 - **`page_content`**&nbsp;(`str`)
 

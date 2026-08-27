@@ -2,6 +2,7 @@
 id: airbyte-cloud-workspaces
 title: "airbyte.cloud.workspaces Module"
 sidebar_label: "airbyte.cloud.workspaces"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.workspaces` Module
@@ -87,7 +88,7 @@ Example with bearer token:
 
 Validate and initialize credentials.
 
-#### Attributes {#airbyte.cloud.workspaces.CloudWorkspace--attributes}
+#### Instance Variables {#airbyte.cloud.workspaces.CloudWorkspace--instance-variables}
 
 - **`api_root`**&nbsp;(`str`)
 
@@ -106,6 +107,8 @@ Validate and initialize credentials.
 - **`workspace_url`**&nbsp;(`str | None`)
 
   The web URL of the workspace.
+
+#### Static Methods {#airbyte.cloud.workspaces.CloudWorkspace--static-methods}
 
 #### `from_env` {#airbyte.cloud.workspaces.CloudWorkspace.from_env}
 
@@ -167,6 +170,8 @@ workspace = CloudWorkspace.from_env(workspace_id="your-workspace-id")
 ```
 
 </ApiMember>
+
+#### Methods {#airbyte.cloud.workspaces.CloudWorkspace--methods}
 
 #### `connect` {#airbyte.cloud.workspaces.CloudWorkspace.connect}
 

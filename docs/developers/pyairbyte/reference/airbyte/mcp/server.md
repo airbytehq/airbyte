@@ -2,6 +2,7 @@
 id: airbyte-mcp-server
 title: "airbyte.mcp.server Module"
 sidebar_label: "airbyte.mcp.server"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp.server` Module

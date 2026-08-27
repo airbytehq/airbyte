@@ -2,6 +2,7 @@
 id: airbyte-mcp-prompts
 title: "airbyte.mcp.prompts Module"
 sidebar_label: "airbyte.mcp.prompts"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp.prompts` Module

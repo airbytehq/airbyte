@@ -2,6 +2,7 @@
 id: airbyte-caches-duckdb
 title: "airbyte.caches.duckdb Module"
 sidebar_label: "airbyte.caches.duckdb"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.caches.duckdb` Module
@@ -36,11 +37,13 @@ A DuckDB cache.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.duckdb.DuckDBCache--bases}
 
-**Subclasses:** `airbyte.caches.motherduck.MotherDuckCache`
+`airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`
+#### Descendants {#airbyte.caches.duckdb.DuckDBCache--descendants}
 
-#### Attributes {#airbyte.caches.duckdb.DuckDBCache--attributes}
+`airbyte.caches.motherduck.MotherDuckCache`
+#### Class Variables {#airbyte.caches.duckdb.DuckDBCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
@@ -69,11 +72,13 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
+#### Bases {#airbyte.caches.duckdb.DuckDBConfig--bases}
 
-**Subclasses:** `airbyte.caches.duckdb.DuckDBCache`, `airbyte.caches.motherduck.MotherDuckConfig`
+`airbyte.shared.sql_processor.SqlConfig`
+#### Descendants {#airbyte.caches.duckdb.DuckDBConfig--descendants}
 
-#### Attributes {#airbyte.caches.duckdb.DuckDBConfig--attributes}
+`airbyte.caches.duckdb.DuckDBCache`, `airbyte.caches.motherduck.MotherDuckConfig`
+#### Class Variables {#airbyte.caches.duckdb.DuckDBConfig--class-variables}
 
 - **`db_path`**&nbsp;(`Path | str`)
 
@@ -81,6 +86,8 @@ validated to form a valid model.
 
   The database name will be inferred from the file name. For example, given a `db_path` of
   `/path/to/my/duckdb-file`, the database name is `my_db`.
+
+#### Methods {#airbyte.caches.duckdb.DuckDBConfig--methods}
 
 #### `get_sql_alchemy_url` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_alchemy_url}
 

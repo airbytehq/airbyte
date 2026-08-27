@@ -2,6 +2,7 @@
 id: airbyte-cli-smoke_test_source-index
 title: "airbyte.cli.smoke_test_source Module"
 sidebar_label: "airbyte.cli.smoke_test_source"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cli.smoke_test_source` Module
@@ -37,7 +38,10 @@ Generates synthetic data across predefined scenarios that cover
 common destination failure patterns. Supports dynamic injection
 of additional scenarios via the ``custom_scenarios`` config field.
 
-**Bases:** `airbyte_cdk.sources.source.Source`, `airbyte_cdk.connector.DefaultConnectorMixin`, `airbyte_cdk.sources.source.BaseSource`, `airbyte_cdk.connector.BaseConnector`, `abc.ABC`, `typing.Generic`
+#### Bases {#airbyte.cli.smoke_test_source.SourceSmokeTest--bases}
+
+`airbyte_cdk.sources.source.Source`
+#### Methods {#airbyte.cli.smoke_test_source.SourceSmokeTest--methods}
 
 #### `check` {#airbyte.cli.smoke_test_source.SourceSmokeTest.check}
 

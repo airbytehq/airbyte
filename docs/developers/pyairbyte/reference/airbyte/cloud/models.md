@@ -2,6 +2,7 @@
 id: airbyte-cloud-models
 title: "airbyte.cloud.models Module"
 sidebar_label: "airbyte.cloud.models"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.models` Module
@@ -27,7 +28,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.cloud.models.CloudConnectionInfo--attributes}
+#### Class Variables {#airbyte.cloud.models.CloudConnectionInfo--class-variables}
 
 - **`configurations`**&nbsp;(`Any`)
 
@@ -60,6 +61,8 @@ validated to form a valid model.
 - **`workspace_id`**&nbsp;(`str`)
 
   The workspace ID.
+
+#### Static Methods {#airbyte.cloud.models.CloudConnectionInfo--static-methods}
 
 #### `from_api_response` {#airbyte.cloud.models.CloudConnectionInfo.from_api_response}
 
@@ -100,7 +103,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo--attributes}
+#### Class Variables {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo--class-variables}
 
 - **`definition_id`**&nbsp;(`str`)
 
@@ -117,6 +120,8 @@ validated to form a valid model.
 - **`version`**&nbsp;(`str`)
 
   The source definition version.
+
+#### Static Methods {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo--static-methods}
 
 #### `from_api_response` {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo.from_api_response}
 
@@ -157,7 +162,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.cloud.models.CloudDestinationInfo--attributes}
+#### Class Variables {#airbyte.cloud.models.CloudDestinationInfo--class-variables}
 
 - **`definition_id`**&nbsp;(`str`)
 
@@ -170,6 +175,8 @@ validated to form a valid model.
 - **`name`**&nbsp;(`str`)
 
   The destination name.
+
+#### Static Methods {#airbyte.cloud.models.CloudDestinationInfo--static-methods}
 
 #### `from_api_response` {#airbyte.cloud.models.CloudDestinationInfo.from_api_response}
 
@@ -210,7 +217,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.cloud.models.CloudJobInfo--attributes}
+#### Class Variables {#airbyte.cloud.models.CloudJobInfo--class-variables}
 
 - **`bytes_synced`**&nbsp;(`int | None`)
 
@@ -231,6 +238,8 @@ validated to form a valid model.
 - **`status`**&nbsp;(`airbyte.cloud.models.JobStatusEnum`)
 
   The job status.
+
+#### Static Methods {#airbyte.cloud.models.CloudJobInfo--static-methods}
 
 #### `from_api_response` {#airbyte.cloud.models.CloudJobInfo.from_api_response}
 
@@ -271,7 +280,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.cloud.models.CloudSourceInfo--attributes}
+#### Class Variables {#airbyte.cloud.models.CloudSourceInfo--class-variables}
 
 - **`definition_id`**&nbsp;(`str`)
 
@@ -284,6 +293,8 @@ validated to form a valid model.
 - **`source_id`**&nbsp;(`str`)
 
   The source ID.
+
+#### Static Methods {#airbyte.cloud.models.CloudSourceInfo--static-methods}
 
 #### `from_api_response` {#airbyte.cloud.models.CloudSourceInfo.from_api_response}
 
@@ -324,7 +335,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.cloud.models.CloudWorkspaceInfo--attributes}
+#### Class Variables {#airbyte.cloud.models.CloudWorkspaceInfo--class-variables}
 
 - **`data_residency`**&nbsp;(`str | None`)
 
@@ -345,6 +356,8 @@ validated to form a valid model.
 - **`workspace_id`**&nbsp;(`str`)
 
   The workspace ID.
+
+#### Static Methods {#airbyte.cloud.models.CloudWorkspaceInfo--static-methods}
 
 #### `from_api_response` {#airbyte.cloud.models.CloudWorkspaceInfo.from_api_response}
 
@@ -381,6 +394,8 @@ def from_mapping(
 Create a public model from a workspace mapping.
 
 </ApiMember>
+
+#### Methods {#airbyte.cloud.models.CloudWorkspaceInfo--methods}
 
 #### `to_dict` {#airbyte.cloud.models.CloudWorkspaceInfo.to_dict}
 
@@ -422,9 +437,10 @@ class JobStatusEnum(
 
 Status values for an Airbyte Cloud job.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.cloud.models.JobStatusEnum--bases}
 
-#### Attributes {#airbyte.cloud.models.JobStatusEnum--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.cloud.models.JobStatusEnum--class-variables}
 
 - **`CANCELLED`**
 
@@ -462,9 +478,10 @@ class JobTypeEnum(
 
 Job type values for Airbyte Cloud jobs.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.cloud.models.JobTypeEnum--bases}
 
-#### Attributes {#airbyte.cloud.models.JobTypeEnum--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.cloud.models.JobTypeEnum--class-variables}
 
 - **`CLEAR`**
 

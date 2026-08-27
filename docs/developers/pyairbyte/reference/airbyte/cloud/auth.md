@@ -2,6 +2,7 @@
 id: airbyte-cloud-auth
 title: "airbyte.cloud.auth Module"
 sidebar_label: "airbyte.cloud.auth"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.auth` Module

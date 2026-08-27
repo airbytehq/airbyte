@@ -2,6 +2,7 @@
 id: airbyte-mcp-local
 title: "airbyte.mcp.local Module"
 sidebar_label: "airbyte.mcp.local"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp.local` Module

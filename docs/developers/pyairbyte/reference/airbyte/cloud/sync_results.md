@@ -2,6 +2,7 @@
 id: airbyte-cloud-sync_results
 title: "airbyte.cloud.sync_results Module"
 sidebar_label: "airbyte.cloud.sync_results"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.sync_results` Module
@@ -125,7 +126,7 @@ Represents a single attempt of a sync job.
 **This class is not meant to be instantiated directly.** Instead, obtain a `SyncAttempt` by
 calling `.SyncResult.get_attempts()`.
 
-#### Attributes {#airbyte.cloud.sync_results.SyncAttempt--attributes}
+#### Instance Variables {#airbyte.cloud.sync_results.SyncAttempt--instance-variables}
 
 - **`attempt_id`**&nbsp;(`int`)
 
@@ -154,6 +155,8 @@ calling `.SyncResult.get_attempts()`.
   Return the attempt status.
 
 - **`workspace`**&nbsp;(`CloudWorkspace`)
+
+#### Methods {#airbyte.cloud.sync_results.SyncAttempt--methods}
 
 #### `get_full_log_text` {#airbyte.cloud.sync_results.SyncAttempt.get_full_log_text}
 
@@ -200,7 +203,7 @@ The result of a sync operation.
 **This class is not meant to be instantiated directly.** Instead, obtain a `SyncResult` by
 interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 
-#### Attributes {#airbyte.cloud.sync_results.SyncResult--attributes}
+#### Instance Variables {#airbyte.cloud.sync_results.SyncResult--instance-variables}
 
 - **`bytes_synced`**&nbsp;(`int`)
 
@@ -244,6 +247,8 @@ interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 - **`table_name_suffix`**&nbsp;(`str`)
 
 - **`workspace`**&nbsp;(`CloudWorkspace`)
+
+#### Methods {#airbyte.cloud.sync_results.SyncResult--methods}
 
 #### `get_attempts` {#airbyte.cloud.sync_results.SyncResult.get_attempts}
 

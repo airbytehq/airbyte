@@ -2,6 +2,7 @@
 id: airbyte-caches-index
 title: "airbyte.caches Module"
 sidebar_label: "airbyte.caches"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.caches` Module
@@ -82,15 +83,18 @@ The BigQuery cache implementation.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.BigQueryCache--bases}
 
-#### Attributes {#airbyte.caches.BigQueryCache--attributes}
+`airbyte._processors.sql.bigquery.BigQueryConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.caches.BigQueryCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
   DestinationBigquery(dataset_id: 'str', dataset_location: 'DatasetLocation', project_id: 'str', cdc_deletion_mode: 'Optional[CDCDeletionMode]' = &lt;CDCDeletionMode.HARD_DELETE: 'Hard delete'&gt;, credentials_json: 'Optional[str]' = None, DESTINATION_TYPE: 'Final[Bigquery]' = &lt;Bigquery.BIGQUERY: 'bigquery'&gt;, disable_type_dedupe: 'Optional[bool]' = False, loading_method: 'Optional[LoadingMethod]' = None, raw_data_dataset: 'Optional[str]' = None)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+
+#### Methods {#airbyte.caches.BigQueryCache--methods}
 
 #### `get_arrow_dataset` {#airbyte.caches.BigQueryCache.get_arrow_dataset}
 
@@ -140,11 +144,13 @@ to the SQL backend specified in the `SqlConfig` class.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.CacheBase--bases}
 
-**Subclasses:** `airbyte.caches.bigquery.BigQueryCache`, `airbyte.caches.duckdb.DuckDBCache`, `airbyte.caches.generic.GenericSQLCacheConfig`, `airbyte.caches.postgres.PostgresCache`, `airbyte.caches.snowflake.SnowflakeCache`
+`airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`
+#### Descendants {#airbyte.caches.CacheBase--descendants}
 
-#### Attributes {#airbyte.caches.CacheBase--attributes}
+`airbyte.caches.bigquery.BigQueryCache`, `airbyte.caches.duckdb.DuckDBCache`, `airbyte.caches.generic.GenericSQLCacheConfig`, `airbyte.caches.postgres.PostgresCache`, `airbyte.caches.snowflake.SnowflakeCache`
+#### Class Variables {#airbyte.caches.CacheBase--class-variables}
 
 - **`cache_dir`**&nbsp;(`Path`)
 
@@ -157,6 +163,8 @@ Initialize the cache and backends.
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+
+#### Instance Variables {#airbyte.caches.CacheBase--instance-variables}
 
 - **`config_hash`**&nbsp;(`str | None`)
 
@@ -175,6 +183,8 @@ Initialize the cache and backends.
 - **`streams`**&nbsp;(`dict[str, CachedDataset]`)
 
   Return a temporary table name.
+
+#### Methods {#airbyte.caches.CacheBase--methods}
 
 #### `close` {#airbyte.caches.CacheBase.close}
 
@@ -484,11 +494,13 @@ A DuckDB cache.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.DuckDBCache--bases}
 
-**Subclasses:** `airbyte.caches.motherduck.MotherDuckCache`
+`airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`
+#### Descendants {#airbyte.caches.DuckDBCache--descendants}
 
-#### Attributes {#airbyte.caches.DuckDBCache--attributes}
+`airbyte.caches.motherduck.MotherDuckCache`
+#### Class Variables {#airbyte.caches.DuckDBCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
@@ -514,9 +526,10 @@ Cache that uses MotherDuck for external persistent storage.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte.caches.motherduck.MotherDuckConfig`, `airbyte.caches.duckdb.DuckDBCache`, `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.MotherDuckCache--bases}
 
-#### Attributes {#airbyte.caches.MotherDuckCache--attributes}
+`airbyte.caches.motherduck.MotherDuckConfig`, `airbyte.caches.duckdb.DuckDBCache`
+#### Class Variables {#airbyte.caches.MotherDuckCache--class-variables}
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -540,15 +553,18 @@ Also inherits config from the JsonlWriter, which is responsible for writing file
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.postgres.PostgresConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.PostgresCache--bases}
 
-#### Attributes {#airbyte.caches.PostgresCache--attributes}
+`airbyte._processors.sql.postgres.PostgresConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.caches.PostgresCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
   DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+
+#### Methods {#airbyte.caches.PostgresCache--methods}
 
 #### `clone_as_cloud_destination_config` {#airbyte.caches.PostgresCache.clone_as_cloud_destination_config}
 
@@ -586,9 +602,10 @@ Configuration for the Snowflake cache.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.snowflake.SnowflakeConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.SnowflakeCache--bases}
 
-#### Attributes {#airbyte.caches.SnowflakeCache--attributes}
+`airbyte._processors.sql.snowflake.SnowflakeConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.caches.SnowflakeCache--class-variables}
 
 - **`dedupe_mode`**&nbsp;(`RecordDedupeMode`)
 

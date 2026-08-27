@@ -2,6 +2,7 @@
 id: airbyte-progress
 title: "airbyte.progress Module"
 sidebar_label: "airbyte.progress"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.progress` Module
@@ -57,9 +58,10 @@ class ProgressStyle(
 
 An enum of progress bar styles.
 
-**Bases:** `enum.Enum`
+#### Bases {#airbyte.progress.ProgressStyle--bases}
 
-#### Attributes {#airbyte.progress.ProgressStyle--attributes}
+`enum.Enum`
+#### Class Variables {#airbyte.progress.ProgressStyle--class-variables}
 
 - **`AUTO`**
 
@@ -106,7 +108,7 @@ A simple progress bar for the command line and IPython notebooks.
 
 Initialize the progress tracker.
 
-#### Attributes {#airbyte.progress.ProgressTracker--attributes}
+#### Instance Variables {#airbyte.progress.ProgressTracker--instance-variables}
 
 - **`bytes_tracking_enabled`**&nbsp;(`bool`)
 
@@ -183,6 +185,8 @@ Initialize the progress tracker.
 - **`total_time_elapsed_str`**&nbsp;(`str`)
 
   Return the total time elapsed as a string.
+
+#### Methods {#airbyte.progress.ProgressTracker--methods}
 
 #### `log_batch_written` {#airbyte.progress.ProgressTracker.log_batch_written}
 

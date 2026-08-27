@@ -2,6 +2,7 @@
 id: airbyte-caches-postgres
 title: "airbyte.caches.postgres Module"
 sidebar_label: "airbyte.caches.postgres"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.caches.postgres` Module
@@ -41,15 +42,18 @@ Also inherits config from the JsonlWriter, which is responsible for writing file
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.postgres.PostgresConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.postgres.PostgresCache--bases}
 
-#### Attributes {#airbyte.caches.postgres.PostgresCache--attributes}
+`airbyte._processors.sql.postgres.PostgresConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.caches.postgres.PostgresCache--class-variables}
 
 - **`paired_destination_config_class`**&nbsp;(`ClassVar[type | None]`)
 
   DestinationPostgres(database: 'str', host: 'str', username: 'str', DESTINATION_TYPE: 'Final[Postgres]' = &lt;Postgres.POSTGRES: 'postgres'&gt;, disable_type_dedupe: 'Optional[bool]' = False, drop_cascade: 'Optional[bool]' = False, jdbc_url_params: 'Optional[str]' = None, password: 'Optional[str]' = None, port: 'Optional[int]' = 5432, raw_data_schema: 'Optional[str]' = None, schema: 'Optional[str]' = 'public', ssl: 'Optional[bool]' = False, ssl_mode: 'Optional[SSLModes]' = None, tunnel_method: 'Optional[DestinationPostgresSSHTunnelMethod]' = None, unconstrained_number: 'Optional[bool]' = False)
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
+
+#### Methods {#airbyte.caches.postgres.PostgresCache--methods}
 
 #### `clone_as_cloud_destination_config` {#airbyte.caches.postgres.PostgresCache.clone_as_cloud_destination_config}
 
@@ -92,11 +96,13 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
+#### Bases {#airbyte.caches.postgres.PostgresConfig--bases}
 
-**Subclasses:** `airbyte.caches.postgres.PostgresCache`
+`airbyte.shared.sql_processor.SqlConfig`
+#### Descendants {#airbyte.caches.postgres.PostgresConfig--descendants}
 
-#### Attributes {#airbyte.caches.postgres.PostgresConfig--attributes}
+`airbyte.caches.postgres.PostgresCache`
+#### Class Variables {#airbyte.caches.postgres.PostgresConfig--class-variables}
 
 - **`database`**&nbsp;(`str`)
 
@@ -107,6 +113,8 @@ validated to form a valid model.
 - **`port`**&nbsp;(`int`)
 
 - **`username`**&nbsp;(`str`)
+
+#### Methods {#airbyte.caches.postgres.PostgresConfig--methods}
 
 #### `get_sql_alchemy_url` {#airbyte.caches.postgres.PostgresConfig.get_sql_alchemy_url}
 

@@ -2,6 +2,7 @@
 id: airbyte-shared-catalog_providers
 title: "airbyte.shared.catalog_providers Module"
 sidebar_label: "airbyte.shared.catalog_providers"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.shared.catalog_providers` Module
@@ -38,7 +39,7 @@ Initialize the catalog manager with a catalog object reference.
 Since the catalog is passed by reference, the catalog manager may be updated with new
 streams as they are discovered.
 
-#### Attributes {#airbyte.shared.catalog_providers.CatalogProvider--attributes}
+#### Instance Variables {#airbyte.shared.catalog_providers.CatalogProvider--instance-variables}
 
 - **`configured_catalog`**&nbsp;(`ConfiguredAirbyteCatalog`)
 
@@ -47,6 +48,8 @@ streams as they are discovered.
 - **`stream_names`**&nbsp;(`list[str]`)
 
   Return the names of the streams in the catalog.
+
+#### Static Methods {#airbyte.shared.catalog_providers.CatalogProvider--static-methods}
 
 #### `from_read_result` {#airbyte.shared.catalog_providers.CatalogProvider.from_read_result}
 
@@ -82,6 +85,8 @@ This requires ensuring that `generationId` and `minGenerationId` are both set. I
 not, both values will be set to `1`.
 
 </ApiMember>
+
+#### Methods {#airbyte.shared.catalog_providers.CatalogProvider--methods}
 
 #### `get_configured_stream_info` {#airbyte.shared.catalog_providers.CatalogProvider.get_configured_stream_info}
 

@@ -2,6 +2,7 @@
 id: airbyte-cloud-organizations
 title: "airbyte.cloud.organizations Module"
 sidebar_label: "airbyte.cloud.organizations"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.organizations` Module
@@ -37,7 +38,7 @@ It is typically created via `CloudWorkspace.get_organization()`.
 
 Initialize a `CloudOrganization`.
 
-#### Attributes {#airbyte.cloud.organizations.CloudOrganization--attributes}
+#### Instance Variables {#airbyte.cloud.organizations.CloudOrganization--instance-variables}
 
 - **`email`**&nbsp;(`str | None`)
 

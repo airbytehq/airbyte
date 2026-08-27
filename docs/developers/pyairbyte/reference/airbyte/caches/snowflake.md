@@ -2,6 +2,7 @@
 id: airbyte-caches-snowflake
 title: "airbyte.caches.snowflake Module"
 sidebar_label: "airbyte.caches.snowflake"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.caches.snowflake` Module
@@ -79,9 +80,10 @@ Configuration for the Snowflake cache.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte._processors.sql.snowflake.SnowflakeConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.snowflake.SnowflakeCache--bases}
 
-#### Attributes {#airbyte.caches.snowflake.SnowflakeCache--attributes}
+`airbyte._processors.sql.snowflake.SnowflakeConfig`, `airbyte.caches.base.CacheBase`
+#### Class Variables {#airbyte.caches.snowflake.SnowflakeCache--class-variables}
 
 - **`dedupe_mode`**&nbsp;(`RecordDedupeMode`)
 
@@ -112,11 +114,13 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-**Bases:** `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
+#### Bases {#airbyte.caches.snowflake.SnowflakeConfig--bases}
 
-**Subclasses:** `airbyte.caches.snowflake.SnowflakeCache`
+`airbyte.shared.sql_processor.SqlConfig`
+#### Descendants {#airbyte.caches.snowflake.SnowflakeConfig--descendants}
 
-#### Attributes {#airbyte.caches.snowflake.SnowflakeConfig--attributes}
+`airbyte.caches.snowflake.SnowflakeCache`
+#### Class Variables {#airbyte.caches.snowflake.SnowflakeConfig--class-variables}
 
 - **`account`**&nbsp;(`str`)
 
@@ -137,6 +141,8 @@ validated to form a valid model.
 - **`username`**&nbsp;(`str`)
 
 - **`warehouse`**&nbsp;(`str`)
+
+#### Methods {#airbyte.caches.snowflake.SnowflakeConfig--methods}
 
 #### `get_sql_alchemy_url` {#airbyte.caches.snowflake.SnowflakeConfig.get_sql_alchemy_url}
 

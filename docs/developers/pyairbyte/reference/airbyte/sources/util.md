@@ -2,6 +2,7 @@
 id: airbyte-sources-util
 title: "airbyte.sources.util Module"
 sidebar_label: "airbyte.sources.util"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.sources.util` Module

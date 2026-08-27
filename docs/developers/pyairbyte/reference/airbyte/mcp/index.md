@@ -2,6 +2,7 @@
 id: airbyte-mcp-index
 title: "airbyte.mcp Module"
 sidebar_label: "airbyte.mcp"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp` Module

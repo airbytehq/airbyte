@@ -2,6 +2,7 @@
 id: airbyte-strategies
 title: "airbyte.strategies Module"
 sidebar_label: "airbyte.strategies"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.strategies` Module
@@ -35,9 +36,10 @@ additional logic to determine the best method to use.
 
 If a destination does not support the declared method, it will raise an exception.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.strategies.WriteMethod--bases}
 
-#### Attributes {#airbyte.strategies.WriteMethod--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.strategies.WriteMethod--class-variables}
 
 - **`APPEND`**
 
@@ -56,6 +58,8 @@ If a destination does not support the declared method, it will raise an exceptio
 - **`REPLACE`**
 
   Replace existing records with new records.
+
+#### Instance Variables {#airbyte.strategies.WriteMethod--instance-variables}
 
 - **`destination_sync_mode`**&nbsp;(`DestinationSyncMode`)
 
@@ -91,9 +95,10 @@ may differ based on the capabilities of the destination.
 If a destination does not support the preferred method, it will fall back to the next best
 method.
 
-**Bases:** `builtins.str`, `enum.Enum`
+#### Bases {#airbyte.strategies.WriteStrategy--bases}
 
-#### Attributes {#airbyte.strategies.WriteStrategy--attributes}
+`builtins.str`, `enum.Enum`
+#### Class Variables {#airbyte.strategies.WriteStrategy--class-variables}
 
 - **`APPEND`**
 

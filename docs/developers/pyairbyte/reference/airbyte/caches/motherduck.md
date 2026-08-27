@@ -2,6 +2,7 @@
 id: airbyte-caches-motherduck
 title: "airbyte.caches.motherduck Module"
 sidebar_label: "airbyte.caches.motherduck"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.caches.motherduck` Module
@@ -37,9 +38,10 @@ Cache that uses MotherDuck for external persistent storage.
 
 Initialize the cache and backends.
 
-**Bases:** `airbyte.caches.motherduck.MotherDuckConfig`, `airbyte.caches.duckdb.DuckDBCache`, `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.caches.base.CacheBase`, `airbyte.shared.sql_processor.SqlConfig`, `airbyte._writers.base.AirbyteWriterInterface`, `abc.ABC`
+#### Bases {#airbyte.caches.motherduck.MotherDuckCache--bases}
 
-#### Attributes {#airbyte.caches.motherduck.MotherDuckCache--attributes}
+`airbyte.caches.motherduck.MotherDuckConfig`, `airbyte.caches.duckdb.DuckDBCache`
+#### Class Variables {#airbyte.caches.motherduck.MotherDuckCache--class-variables}
 
 - **`paired_destination_name`**&nbsp;(`ClassVar[str | None]`)
 
@@ -64,17 +66,21 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-**Bases:** `airbyte._processors.sql.duckdb.DuckDBConfig`, `airbyte.shared.sql_processor.SqlConfig`, `abc.ABC`
+#### Bases {#airbyte.caches.motherduck.MotherDuckConfig--bases}
 
-**Subclasses:** `airbyte.caches.motherduck.MotherDuckCache`
+`airbyte._processors.sql.duckdb.DuckDBConfig`
+#### Descendants {#airbyte.caches.motherduck.MotherDuckConfig--descendants}
 
-#### Attributes {#airbyte.caches.motherduck.MotherDuckConfig--attributes}
+`airbyte.caches.motherduck.MotherDuckCache`
+#### Class Variables {#airbyte.caches.motherduck.MotherDuckConfig--class-variables}
 
 - **`api_key`**&nbsp;(`SecretString`)
 
 - **`database`**&nbsp;(`str`)
 
 - **`db_path`**&nbsp;(`str`)
+
+#### Methods {#airbyte.caches.motherduck.MotherDuckConfig--methods}
 
 #### `get_sql_alchemy_url` {#airbyte.caches.motherduck.MotherDuckConfig.get_sql_alchemy_url}
 

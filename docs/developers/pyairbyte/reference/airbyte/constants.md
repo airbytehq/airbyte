@@ -2,6 +2,7 @@
 id: airbyte-constants
 title: "airbyte.constants Module"
 sidebar_label: "airbyte.constants"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.constants` Module

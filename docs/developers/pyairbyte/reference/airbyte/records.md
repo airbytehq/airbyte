@@ -2,6 +2,7 @@
 id: airbyte-records
 title: "airbyte.records Module"
 sidebar_label: "airbyte.records"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.records` Module
@@ -122,7 +123,10 @@ Initialize the dictionary with the given data.
 - **`with_internal_columns`**: If `True`, the internal columns will be added to the record.
 - **`extracted_at`**: The time the record was extracted. If not provided, the current time will be used.
 
-**Bases:** `builtins.dict`
+#### Bases {#airbyte.records.StreamRecord--bases}
+
+`builtins.dict`
+#### Static Methods {#airbyte.records.StreamRecord--static-methods}
 
 #### `from_record_message` {#airbyte.records.StreamRecord.from_record_message}
 
@@ -177,6 +181,8 @@ Initialize the dictionary with the given data.
 - **`normalizer`**: The normalizer to use when normalizing keys. If not provided, the LowerCaseNormalizer will be used.
 - **`normalize_keys`**: If `True`, the keys will be normalized using the given normalizer.
 - **`prune_extra_fields`**: If `True`, unexpected fields will be removed.
+
+#### Methods {#airbyte.records.StreamRecordHandler--methods}
 
 #### `to_display_case` {#airbyte.records.StreamRecordHandler.to_display_case}
 

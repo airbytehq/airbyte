@@ -2,6 +2,7 @@
 id: airbyte-cloud-client
 title: "airbyte.cloud.client Module"
 sidebar_label: "airbyte.cloud.client"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.client` Module
@@ -33,7 +34,7 @@ Authenticated client for Airbyte Cloud and self-managed Airbyte APIs.
 
 Initialize a `CloudClient` from explicit auth values.
 
-#### Attributes {#airbyte.cloud.client.CloudClient--attributes}
+#### Instance Variables {#airbyte.cloud.client.CloudClient--instance-variables}
 
 - **`bearer_token`**&nbsp;(`SecretString | None`)
 
@@ -58,6 +59,8 @@ Initialize a `CloudClient` from explicit auth values.
 - **`public_api_root`**&nbsp;(`str`)
 
   Airbyte Public API root.
+
+#### Static Methods {#airbyte.cloud.client.CloudClient--static-methods}
 
 #### `from_auth` {#airbyte.cloud.client.CloudClient.from_auth}
 
@@ -86,6 +89,8 @@ When `env_vars` is True, environment variables are checked as a fallback
 after any explicitly provided values.
 
 </ApiMember>
+
+#### Methods {#airbyte.cloud.client.CloudClient--methods}
 
 #### `create_workspace` {#airbyte.cloud.client.CloudClient.create_workspace}
 

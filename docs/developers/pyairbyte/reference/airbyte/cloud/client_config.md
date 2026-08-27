@@ -2,6 +2,7 @@
 id: airbyte-cloud-client_config
 title: "airbyte.cloud.client_config Module"
 sidebar_label: "airbyte.cloud.client_config"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.cloud.client_config` Module
@@ -83,7 +84,7 @@ will raise a validation error.
 - **`api_root`**: The API root URL. Defaults to Airbyte Cloud API.
 - **`config_api_root`**: The Config API root URL.
 
-#### Attributes {#airbyte.cloud.client_config.CloudClientConfig--attributes}
+#### Instance Variables {#airbyte.cloud.client_config.CloudClientConfig--instance-variables}
 
 - **`api_root`**&nbsp;(`str`)
 
@@ -112,6 +113,8 @@ will raise a validation error.
 - **`uses_client_credentials`**&nbsp;(`bool`)
 
   Return True if using client credentials authentication.
+
+#### Static Methods {#airbyte.cloud.client_config.CloudClientConfig--static-methods}
 
 #### `from_env` {#airbyte.cloud.client_config.CloudClientConfig.from_env}
 

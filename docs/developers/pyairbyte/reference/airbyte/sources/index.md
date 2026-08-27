@@ -2,6 +2,7 @@
 id: airbyte-sources-index
 title: "airbyte.sources Module"
 sidebar_label: "airbyte.sources"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.sources` Module
@@ -169,7 +170,7 @@ validated to form a valid model.
 
 `self` is explicitly positional-only to allow `self` as a field name.
 
-#### Attributes {#airbyte.sources.ConnectorMetadata--attributes}
+#### Class Variables {#airbyte.sources.ConnectorMetadata--class-variables}
 
 - **`connector_type`**&nbsp;(`str | None`)
 
@@ -235,6 +236,8 @@ validated to form a valid model.
 
   Connector support level.
 
+#### Instance Variables {#airbyte.sources.ConnectorMetadata--instance-variables}
+
 - **`default_install_type`**&nbsp;(`InstallType`)
 
   Return the default install type for the connector.
@@ -269,11 +272,14 @@ Initialize the source.
 
 If config is provided, it will be validated against the spec if validate is True.
 
-**Bases:** `airbyte._connector_base.ConnectorBase`, `abc.ABC`
+#### Bases {#airbyte.sources.Source--bases}
 
-#### Attributes {#airbyte.sources.Source--attributes}
+`airbyte._connector_base.ConnectorBase`
+#### Class Variables {#airbyte.sources.Source--class-variables}
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
+
+#### Instance Variables {#airbyte.sources.Source--instance-variables}
 
 - **`config_spec`**&nbsp;(`dict[str, Any]`)
 
@@ -307,6 +313,8 @@ If config is provided, it will be validated against the spec if validate is True
 - **`docs_url`**&nbsp;(`str`)
 
   Get the URL to the connector's documentation.
+
+#### Methods {#airbyte.sources.Source--methods}
 
 #### `get_available_streams` {#airbyte.sources.Source.get_available_streams}
 

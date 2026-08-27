@@ -2,6 +2,7 @@
 id: airbyte-sources-base
 title: "airbyte.sources.base Module"
 sidebar_label: "airbyte.sources.base"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.sources.base` Module
@@ -36,11 +37,14 @@ Initialize the source.
 
 If config is provided, it will be validated against the spec if validate is True.
 
-**Bases:** `airbyte._connector_base.ConnectorBase`, `abc.ABC`
+#### Bases {#airbyte.sources.base.Source--bases}
 
-#### Attributes {#airbyte.sources.base.Source--attributes}
+`airbyte._connector_base.ConnectorBase`
+#### Class Variables {#airbyte.sources.base.Source--class-variables}
 
 - **`connector_type`**&nbsp;(`Literal['destination', 'source']`)
+
+#### Instance Variables {#airbyte.sources.base.Source--instance-variables}
 
 - **`config_spec`**&nbsp;(`dict[str, Any]`)
 
@@ -74,6 +78,8 @@ If config is provided, it will be validated against the spec if validate is True
 - **`docs_url`**&nbsp;(`str`)
 
   Get the URL to the connector's documentation.
+
+#### Methods {#airbyte.sources.base.Source--methods}
 
 #### `get_available_streams` {#airbyte.sources.base.Source.get_available_streams}
 

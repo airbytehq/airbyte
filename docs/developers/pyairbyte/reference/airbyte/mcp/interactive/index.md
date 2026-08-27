@@ -2,6 +2,7 @@
 id: airbyte-mcp-interactive-index
 title: "airbyte.mcp.interactive Module"
 sidebar_label: "airbyte.mcp.interactive"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.mcp.interactive` Module

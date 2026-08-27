@@ -2,6 +2,7 @@
 id: airbyte-shared-state_providers
 title: "airbyte.shared.state_providers Module"
 sidebar_label: "airbyte.shared.state_providers"
+toc_max_heading_level: 5
 ---
 
 # `airbyte.shared.state_providers` Module
@@ -27,7 +28,9 @@ A state provider that joins two state providers.
 
 Initialize the state provider with two state providers.
 
-**Bases:** `airbyte.shared.state_providers.StateProviderBase`, `abc.ABC`
+#### Bases {#airbyte.shared.state_providers.JoinedStateProvider--bases}
+
+`airbyte.shared.state_providers.StateProviderBase`
 
 </ApiMember>
 
@@ -45,11 +48,13 @@ class StateProviderBase()
 
 A class to provide state artifacts.
 
-**Bases:** `abc.ABC`
+#### Bases {#airbyte.shared.state_providers.StateProviderBase--bases}
 
-**Subclasses:** `airbyte.shared.state_providers.JoinedStateProvider`, `airbyte.shared.state_providers.StaticInputState`, `airbyte.shared.state_writers.StateWriterBase`
+`abc.ABC`
+#### Descendants {#airbyte.shared.state_providers.StateProviderBase--descendants}
 
-#### Attributes {#airbyte.shared.state_providers.StateProviderBase--attributes}
+`airbyte.shared.state_providers.JoinedStateProvider`, `airbyte.shared.state_providers.StaticInputState`, `airbyte.shared.state_writers.StateWriterBase`
+#### Instance Variables {#airbyte.shared.state_providers.StateProviderBase--instance-variables}
 
 - **`known_stream_names`**&nbsp;(`set[str]`)
 
@@ -67,6 +72,8 @@ A class to provide state artifacts.
 
   This is just a type guard around the private variable `_stream_state_artifacts` and the
   cast to `AirbyteStreamState` objects.
+
+#### Methods {#airbyte.shared.state_providers.StateProviderBase--methods}
 
 #### `get_stream_state` {#airbyte.shared.state_providers.StateProviderBase.get_stream_state}
 
@@ -125,6 +132,8 @@ A state manager that uses a static catalog state as input.
 
 Initialize the state manager with a static catalog state.
 
-**Bases:** `airbyte.shared.state_providers.StateProviderBase`, `abc.ABC`
+#### Bases {#airbyte.shared.state_providers.StaticInputState--bases}
+
+`airbyte.shared.state_providers.StateProviderBase`
 
 </ApiMember>
