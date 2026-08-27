@@ -316,7 +316,7 @@ definitions:
             query: >-
               query Users($after: String, $filter: UserFilter, $orderBy: PaginationOrderBy) { users(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) {
               nodes { active admin archivedAt avatarBackgroundColor avatarUrl
-              calendarHash createdAt createdIssueCount description disableReason
+              createdAt createdIssueCount description disableReason
               displayName email guest id initials isMe lastSeen name
               statusEmoji statusLabel statusUntilAt teams { nodes { id } }
               timezone updatedAt url } pageInfo { hasNextPage endCursor } } }
@@ -1065,7 +1065,7 @@ definitions:
               description groupIssueHistory icon id issueCount
               issueEstimationAllowZero issueEstimationExtended
               issueEstimationType joinByDefault key
-              markedAsDuplicateWorkflowState { id } name parent { id }
+              name parent { id }
               requirePriorityToLeaveTriage scimGroupName scimManaged
               setIssueSortOrderOnStateChange timezone triageEnabled updatedAt
               upcomingCycleCount triageIssueState { id } visibility } pageInfo { endCursor
@@ -1117,16 +1117,6 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - defaultIssueState
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - markedAsDuplicateWorkflowStateId
-              value: "{{ record.markedAsDuplicateWorkflowState.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - markedAsDuplicateWorkflowState
               - id
         - type: AddFields
           fields:
@@ -3423,14 +3413,6 @@ schemas:
           - string
           - "null"
       key:
-        type:
-          - string
-          - "null"
-      markedAsDuplicateWorkflowState:
-        type:
-          - object
-          - "null"
-      markedAsDuplicateWorkflowStateId:
         type:
           - string
           - "null"
