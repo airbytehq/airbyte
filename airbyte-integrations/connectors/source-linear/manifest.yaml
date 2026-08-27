@@ -3470,15 +3470,15 @@ schemas:
         type:
           - number
           - "null"
-      visibility:
-        type:
-          - string
-          - "null"
       updatedAt:
         type:
           - string
           - "null"
         format: date-time
+      visibility:
+        type:
+          - string
+          - "null"
     required:
       - id
   attachments:

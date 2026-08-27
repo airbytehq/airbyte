@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
+"""Unit tests for the declared date/datetime types and deprecated-field removals."""
+
 from pathlib import Path
 
 import pytest
