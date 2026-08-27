@@ -41,7 +41,7 @@ What to expect if you take this path:
 
 ### Authentication
 
-Harvest v3 uses OAuth client credentials instead of Harvest API keys. In Greenhouse, create a **Harvest V3 (OAuth)** API credential under **Dev Center → API Credentials**, configure the Harvest v3 scopes listed in the [Greenhouse connector setup](./greenhouse.md#prerequisites), and enter its client ID and client secret in the source. Optionally provide a numeric authorizing user ID (`sub`). The authorizing user, or the integration service user Greenhouse uses when `sub` is omitted, must be a Site Admin because every v3 list endpoint requires Site Admin authorization. This is the most likely first-sync failure: where 0.8.1 ignored `403` responses and produced an empty stream, 1.0.0 fails the sync with a configuration error, so a non-Site-Admin authorizing user or a grant missing scopes stops the sync instead of silently yielding no records. Users who previously used an API key must create the Harvest V3 (OAuth) credential before setting up the new connection.
+Harvest v3 uses OAuth 2.0 Authorization Code authentication instead of Harvest API keys. Enter the OAuth client ID and client secret in the source, click **Authenticate**, and complete the Greenhouse consent flow; Airbyte stores and rotates the resulting refresh token. Users who previously used an API key must obtain OAuth credentials and complete consent before setting up the new connection. After upgrading to 1.0.0, every existing connection must be authenticated again. If consent does not include the scopes required by an enabled stream, Greenhouse returns `403` and 1.0.0 fails the sync with a configuration error instead of silently yielding an empty stream.
 
 Version 1.0.0 introduces a new optional `start_date` configuration value for incremental streams. When it is omitted, the connector preserves the previous full-history behavior.
 
@@ -85,7 +85,7 @@ Version 1.0.0 removes the redundant `applications_demographics_answers`, `applic
 
 Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string. This is another reason to give 1.0.0 its own tables: the v1 tables type those columns as string, and destinations do not change a column's type on a schema refresh.
 
-Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and will require adding the corresponding scopes to your Harvest V3 (OAuth) credential in Greenhouse. Until then, Harvest v3 still serves this data at:
+Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and will require adding the corresponding scopes to your Greenhouse OAuth application and re-running consent. Until then, Harvest v3 still serves this data at:
 
 | Dropped v1 field | Harvest v3 endpoint |
 |---|---|
@@ -120,6 +120,8 @@ The deleted child streams were redundant in v3: `demographics_answers`, `intervi
 ### Rate limits
 
 The connector uses Greenhouse's v3 rate-limit headers and a fixed 30-second window. Existing connections may take longer or process fewer concurrent requests while the connector uses its own conservative default request budget.
+
+Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set each connection to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
 
 ## Connector upgrade guide
 

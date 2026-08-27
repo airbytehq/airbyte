@@ -10,7 +10,7 @@ import pytest
 import yaml
 from jsonschema import validate
 
-from airbyte_cdk.models import FailureType, SyncMode
+from airbyte_cdk.models import FailureType, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
@@ -18,9 +18,10 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 CONFIG = {
     "credentials": {
-        "auth_type": "ClientCredentials",
+        "auth_type": "Client",
         "client_id": "test-client",
         "client_secret": "test-secret",
+        "refresh_token": "test-refresh-token",
     }
 }
 CONFIG_WITH_EPOCH_START_DATE = {**CONFIG, "start_date": "1970-01-01T00:00:00Z"}
@@ -43,7 +44,8 @@ def _register_token(requests_mock):
         context.status_code = 200
         return {
             "access_token": "access-token",
-            "expires_in": 3600,
+            "expires_at": "2030-01-01T00:00:00+0000",
+            "refresh_token": "rotated-refresh-token",
         }
 
     requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
@@ -181,13 +183,17 @@ def test_applications_429_waits_for_retry_after(requests_mock, get_source, monke
     assert waits[0] == pytest.approx(2)
 
 
-def test_applications_refreshes_client_credentials_token_on_401(requests_mock, get_source):
+def test_applications_refreshes_token_on_401(requests_mock, get_source):
     token_requests = []
 
     def token_callback(request, context):
         token_requests.append(request)
         context.status_code = 200
-        return {"access_token": f"token-{len(token_requests)}", "expires_in": 3600}
+        return {
+            "access_token": f"token-{len(token_requests)}",
+            "expires_at": "2030-01-01T00:00:00+0000",
+            "refresh_token": f"refresh-token-{len(token_requests)}",
+        }
 
     application_requests = []
 
@@ -202,16 +208,9 @@ def test_applications_refreshes_client_credentials_token_on_401(requests_mock, g
     requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
     requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
 
-    config = {
-        "credentials": {
-            "auth_type": "ClientCredentials",
-            "client_id": "test-client",
-            "client_secret": "test-secret",
-        }
-    }
-    source = get_source(config)
+    source = get_source(CONFIG)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=config, catalog=catalog)
+    output = read(source, config=CONFIG, catalog=catalog)
 
     assert len(token_requests) == 2
     assert len(application_requests) == 2
@@ -298,81 +297,44 @@ def test_custom_field_option_streams_filter_on_first_page_only(requests_mock, ge
     assert len(option_requests) == 2
 
 
-def test_oauth_client_credentials_request_shape(requests_mock, get_source):
-    token_requests = []
-
-    def token_callback(request, context):
-        token_requests.append(request)
-        context.status_code = 200
-        return {"access_token": "access-token", "expires_in": 3600}
-
-    requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
+def test_oauth_refresh_token_request_shape(requests_mock, get_source):
+    token_requests = _register_token(requests_mock)
     requests_mock.get(
         "https://harvest.greenhouse.io/v3/applications",
         json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
     )
 
-    config = {
-        "credentials": {
-            "auth_type": "ClientCredentials",
-            "client_id": "test-client",
-            "client_secret": "test-secret",
-        }
-    }
-    source = get_source(config)
+    source = get_source(CONFIG)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=config, catalog=catalog)
+    read(source, config=CONFIG, catalog=catalog)
 
-    assert not output.errors
-    assert len(token_requests) == 1
     request = token_requests[0]
     assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"test-client:test-secret").decode()
     assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
-    assert request.query == ""
-    assert parse_qs(request.text, keep_blank_values=True) == {"grant_type": ["client_credentials"]}
+    assert request.query == "", "Refresh args must not be on the query string because Greenhouse reads them from the body"
+    token_params = parse_qs(request.text)
+    assert token_params["grant_type"] == ["refresh_token"]
+    assert token_params["refresh_token"] == ["test-refresh-token"]
+    assert "sub" not in token_params
 
 
-@pytest.mark.parametrize(
-    "sub, expected_body",
-    [
-        pytest.param(None, {"grant_type": ["client_credentials"]}, id="without_sub"),
-        pytest.param("4000234567", {"grant_type": ["client_credentials"], "sub": ["4000234567"]}, id="with_sub"),
-    ],
-)
-def test_oauth_client_credentials_sub_is_optional(requests_mock, get_source, sub, expected_body):
-    token_requests = []
-
-    def token_callback(request, context):
-        token_requests.append(request)
-        context.status_code = 200
-        return {"access_token": "access-token", "expires_in": 3600}
-
-    requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
+def test_oauth_rotated_refresh_token_is_persisted(requests_mock, get_source):
+    _register_token(requests_mock)
     requests_mock.get(
         "https://harvest.greenhouse.io/v3/applications",
         json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
     )
 
-    credentials = {
-        "auth_type": "ClientCredentials",
-        "client_id": "test-client",
-        "client_secret": "test-secret",
-    }
-    if sub is not None:
-        credentials["sub"] = sub
-    config = {"credentials": credentials}
-    source = get_source(config)
+    source = get_source(CONFIG)
     catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
-    output = read(source, config=config, catalog=catalog)
+    output = read(source, config=CONFIG, catalog=catalog)
 
-    assert not output.errors
-    request = token_requests[0]
-    assert parse_qs(request.text, keep_blank_values=True) == expected_body
-    assert "refresh_token" not in request.text
-    assert "client_id" not in request.text
-    assert "client_secret" not in request.text
-    assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"test-client:test-secret").decode()
-    assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
+    control_messages = output.get_message_by_types([Type.CONTROL])
+    assert control_messages, "expected a CONNECTOR_CONFIG control message persisting the rotated refresh token"
+    updated_credentials = control_messages[-1].control.connectorConfig.config["credentials"]
+    assert updated_credentials["refresh_token"] == "rotated-refresh-token"
+    assert updated_credentials["access_token"] == "access-token"
+    assert updated_credentials["token_expiry_date"]
 
 
 def _read_application_start_date_request(requests_mock, get_source, config):
@@ -710,15 +672,17 @@ def test_manifest_uses_greenhouse_fixed_window_api_budget(connector_path):
     manifest = yaml.safe_load((connector_path / "manifest.yaml").read_text())
 
     assert "SelectiveAuthenticator" not in yaml.safe_dump(manifest)
-    assert "advanced_auth" not in manifest
+    assert manifest["spec"]["advanced_auth"]["predicate_value"] == "Client"
     authenticator = manifest["definitions"]["base_requester"]["authenticator"]
     assert authenticator["type"] == "OAuthAuthenticator"
-    assert authenticator["grant_type"] == "client_credentials"
+    assert authenticator["grant_type"] == "refresh_token"
+    assert "refresh_token_updater" in authenticator
     credentials = manifest["spec"]["connection_specification"]["properties"]["credentials"]
     assert len(credentials["oneOf"]) == 1
     credentials_option = credentials["oneOf"][0]
-    assert credentials_option["properties"]["auth_type"]["const"] == "ClientCredentials"
-    assert not {"refresh_token", "access_token", "token_expiry_date"} & set(credentials_option["properties"])
+    assert credentials_option["properties"]["auth_type"]["const"] == "Client"
+    assert "ClientCredentials" not in yaml.safe_dump(credentials)
+    assert "sub" not in yaml.safe_dump(credentials)
     assert manifest["api_budget"]["ratelimit_reset_header"] == "X-RateLimit-Reset"
     assert manifest["api_budget"]["policies"] == [
         {
@@ -805,3 +769,31 @@ def test_lookback_window_widens_resume_bound(requests_mock, get_source):
         read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
 
     assert candidate_requests[0].qs["updated_at"] == ["gte|2026-08-24t11:00:00.000z|lte|2026-08-27t00:00:00.000z"]
+
+
+@pytest.mark.parametrize(
+    "status_code, message",
+    [
+        (400, "Bad Request Params"),
+        (401, "Unauthorized"),
+    ],
+)
+def test_oauth_refresh_failure_surfaces_reauthenticate_config_error(status_code, message, requests_mock, get_source):
+    def token_callback(request, context):
+        context.status_code = status_code
+        return {
+            "message": message,
+            "errors": ["Refresh token expired at 2026-01-01T00:00:00Z. The user must re-authorize consent"],
+        }
+
+    requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
+
+    source = get_source(CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CONFIG, catalog=catalog, expecting_exception=True)
+
+    messages = [trace.trace.error.message for trace in output.errors]
+    assert any("Please re-authenticate" in text for text in messages), messages
+    assert all(trace.trace.error.failure_type == FailureType.config_error for trace in output.errors), [
+        (trace.trace.error.failure_type, trace.trace.error.message) for trace in output.errors
+    ]

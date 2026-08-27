@@ -1,8 +1,9 @@
 {
   "credentials": {
-    "auth_type": "ClientCredentials",
+    "auth_type": "Client",
     "client_id": "1234567890abcdefghijk",
-    "client_secret": "secret"
+    "client_secret": "secret",
+    "refresh_token": "refresh-token"
   },
   "num_workers": 2
 }
