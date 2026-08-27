@@ -54,7 +54,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- |:-----------------------------------------------------------------------|
-| 0.3.66 | 2026-08-28 | [PENDING](https://github.com/airbytehq/airbyte/pull/PENDING) | Default Wrike instance to `www.wrike.com` (spec default `app-us2.wrike.com` returned HTTP 300 for some US accounts) |
+| 0.3.66 | 2026-08-28 | [85113](https://github.com/airbytehq/airbyte/pull/85113) | Default Wrike instance to `www.wrike.com` (spec default `app-us2.wrike.com` returned HTTP 300 for some US accounts) |
 | 0.3.65 | 2026-08-18 | [84809](https://github.com/airbytehq/airbyte/pull/84809) | Update dependencies |
 | 0.3.64 | 2026-08-11 | [84190](https://github.com/airbytehq/airbyte/pull/84190) | Update dependencies |
 | 0.3.63 | 2026-08-04 | [83689](https://github.com/airbytehq/airbyte/pull/83689) | Update dependencies |
