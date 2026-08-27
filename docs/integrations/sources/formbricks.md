@@ -28,6 +28,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.60 | 2026-08-28 | [PENDING](https://github.com/airbytehq/airbyte/pull/PENDING) | Point `attribute_classes` and `identified_peoples` at current Cloud paths (`/management/contact-attribute-keys`, `/management/contacts`); old `/attribute-classes` and `/people` 404 |
 | 0.0.59 | 2026-08-18 | [84587](https://github.com/airbytehq/airbyte/pull/84587) | Update dependencies |
 | 0.0.58 | 2026-08-11 | [83914](https://github.com/airbytehq/airbyte/pull/83914) | Update dependencies |
 | 0.0.57 | 2026-08-04 | [83449](https://github.com/airbytehq/airbyte/pull/83449) | Update dependencies |
