@@ -210,7 +210,7 @@ properties:
     DELETED_DRAFT. When more than six values are selected, the connector automatically splits them
     across multiple Pinterest report requests.
 12. **Ad Statuses (Optional)**: Filters custom report results by ad status. Select values from:
-    APPROVED, PAUSED, 85106, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and DELETED_DRAFT.
+    APPROVED, PAUSED, PENDING, REJECTED, ADVERTISER_DISABLED, ARCHIVED, DRAFT, and DELETED_DRAFT.
     When more than six values are selected, the connector automatically splits them across multiple
     Pinterest report requests. This filter is not supported for Product Item level reports.
 13. **Start Date (Optional)**: The start date for the report in YYYY-MM-DD format, defaulting to the
