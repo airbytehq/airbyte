@@ -595,7 +595,7 @@ def test_daily_stream_schema_has_date_in_properties(stream_name: str) -> None:
 
 # Bump deliberately when adding or removing a report stream. A silent drop here would empty the
 # guard tests below, and pytest reports an empty parameter set as SKIPPED rather than FAILED.
-_EXPECTED_REPORT_STREAM_COUNT = 32
+_EXPECTED_REPORT_STREAM_COUNT = 34
 
 
 def _report_stream_configurations() -> list:

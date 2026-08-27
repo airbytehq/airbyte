@@ -3399,6 +3399,26 @@ definitions:
                   "unitsSoldSameSku7d",
                   "unitsSoldSameSku14d",
                   "unitsSoldSameSku30d",
+                  "portfolioId",
+                  "campaignStatus",
+                  "campaignBudgetType",
+                  "campaignBudgetAmount",
+                  "campaignBudgetCurrencyCode",
+                  "keywordBid",
+                  "adKeywordStatus",
+                  "costPerClick",
+                  "clickThroughRate",
+                  "acosClicks7d",
+                  "acosClicks14d",
+                  "roasClicks7d",
+                  "roasClicks14d",
+                  "salesOtherSku7d",
+                  "unitsSoldOtherSku7d",
+                  "addToList",
+                  "qualifiedBorrows",
+                  "royaltyQualifiedBorrows",
+                  "kindleEditionNormalizedPagesRead14d",
+                  "kindleEditionNormalizedPagesRoyalties14d",
                 ]
               reportTypeId: spSearchTerm
               filters:
@@ -3480,6 +3500,26 @@ definitions:
                 - "unitsSoldSameSku7d"
                 - "unitsSoldSameSku14d"
                 - "unitsSoldSameSku30d"
+                - "portfolioId"
+                - "campaignStatus"
+                - "campaignBudgetType"
+                - "campaignBudgetAmount"
+                - "campaignBudgetCurrencyCode"
+                - "keywordBid"
+                - "adKeywordStatus"
+                - "costPerClick"
+                - "clickThroughRate"
+                - "acosClicks7d"
+                - "acosClicks14d"
+                - "roasClicks7d"
+                - "roasClicks14d"
+                - "salesOtherSku7d"
+                - "unitsSoldOtherSku7d"
+                - "addToList"
+                - "qualifiedBorrows"
+                - "royaltyQualifiedBorrows"
+                - "kindleEditionNormalizedPagesRead14d"
+                - "kindleEditionNormalizedPagesRoyalties14d"
               reportTypeId: spSearchTerm
               filters:
                 - field: "keywordType"
@@ -11898,6 +11938,86 @@ schemas:
         type:
           - "null"
           - integer
+      portfolioId:
+        type:
+          - "null"
+          - integer
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      keywordBid:
+        type:
+          - "null"
+          - number
+      adKeywordStatus:
+        type:
+          - "null"
+          - string
+      costPerClick:
+        type:
+          - "null"
+          - number
+      clickThroughRate:
+        type:
+          - "null"
+          - number
+      acosClicks7d:
+        type:
+          - "null"
+          - number
+      acosClicks14d:
+        type:
+          - "null"
+          - number
+      roasClicks7d:
+        type:
+          - "null"
+          - number
+      roasClicks14d:
+        type:
+          - "null"
+          - number
+      salesOtherSku7d:
+        type:
+          - "null"
+          - number
+      unitsSoldOtherSku7d:
+        type:
+          - "null"
+          - integer
+      addToList:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
     title: sponsored_products_search_terms_report_stream
     type:
       - "null"
@@ -12065,6 +12185,86 @@ schemas:
         type:
           - "null"
           - integer
+      portfolioId:
+        type:
+          - "null"
+          - integer
+      campaignStatus:
+        type:
+          - "null"
+          - string
+      campaignBudgetType:
+        type:
+          - "null"
+          - string
+      campaignBudgetAmount:
+        type:
+          - "null"
+          - number
+      campaignBudgetCurrencyCode:
+        type:
+          - "null"
+          - string
+      keywordBid:
+        type:
+          - "null"
+          - number
+      adKeywordStatus:
+        type:
+          - "null"
+          - string
+      costPerClick:
+        type:
+          - "null"
+          - number
+      clickThroughRate:
+        type:
+          - "null"
+          - number
+      acosClicks7d:
+        type:
+          - "null"
+          - number
+      acosClicks14d:
+        type:
+          - "null"
+          - number
+      roasClicks7d:
+        type:
+          - "null"
+          - number
+      roasClicks14d:
+        type:
+          - "null"
+          - number
+      salesOtherSku7d:
+        type:
+          - "null"
+          - number
+      unitsSoldOtherSku7d:
+        type:
+          - "null"
+          - integer
+      addToList:
+        type:
+          - "null"
+          - integer
+      qualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      royaltyQualifiedBorrows:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRead14d:
+        type:
+          - "null"
+          - integer
+      kindleEditionNormalizedPagesRoyalties14d:
+        type:
+          - "null"
+          - number
     title: sponsored_products_search_terms_report_stream_daily
     type:
       - "null"
