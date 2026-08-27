@@ -24,8 +24,24 @@ permissions:
 jobs:
   bump-version:
     name: Bump Version
-    uses: outrauk/shared-github-actions-workflows/.github/workflows/bump-version.yaml@main
-    secrets: inherit
+    runs-on: ubuntu-latest
+    outputs:
+      app-version: ${{ steps.bump-version.outputs.app-version }}
+      tag: ${{ steps.bump-version.outputs.tag }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        repository: outrauk/shared-github-actions-workflows
+        token: ${{ secrets.SHARED_GITHUB_ACTIONS_WORKFLOWS_GITHUB_TOKEN }}
+        path: shared-github-actions-workflows
+    - name: Bump version
+      id: bump-version
+      uses: ./shared-github-actions-workflows/.github/actions/bump-version
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        release-branches: ${{ inputs.release-branches }}
+        tag-prefix: ${{ inputs.tag-prefix }}
+        pep440-compliant: ${{ inputs.pep440-compliant }}
 
   has-connector-changed:
     name: Has a maintained connector changed
@@ -93,8 +109,19 @@ jobs:
       - bump-version
       - has-connector-changed
       - test-connectors
-    uses: outrauk/shared-github-actions-workflows/.github/workflows/tag-and-release.yaml@main
-    secrets: inherit
-    with:
-      create-release: true
-      tag: ${{ needs.bump-version.outputs.app-version }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: outrauk/shared-github-actions-workflows
+          token: ${{ secrets.SHARED_GITHUB_ACTIONS_WORKFLOWS_GITHUB_TOKEN }}
+          path: shared-github-actions-workflows
+
+      - name: Tag And release
+        uses: ./shared-github-actions-workflows/.github/actions/tag-and-release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          release-branches: main
+          create-release: true
+          tag: ${{ needs.bump-version.outputs.app-version }}
+          tag-prefix: "v"
