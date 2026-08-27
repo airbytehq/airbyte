@@ -357,6 +357,10 @@ definitions:
         type: RequestOption
         inject_into: header
         field_name: x-api-key
+    request_headers:
+      X-USER-ID: \"{{ config.get('user_id', '') }}\"
+      X-User-Email: \"{{ config.get('user_email', '') }}\"
+      X-TEAM-ID: \"{{ config.get('team_id', '') }}\"
 streams:
   - type: DeclarativeStream
     name: campaigns
@@ -374,6 +378,10 @@ streams:
             type: RequestOption
             inject_into: header
             field_name: x-api-key
+        request_headers:
+          X-USER-ID: "{{ config.get('user_id', '') }}"
+          X-User-Email: "{{ config.get('user_email', '') }}"
+          X-TEAM-ID: "{{ config.get('team_id', '') }}"
         path: /campaigns
         http_method: GET
         error_handler:
@@ -473,6 +481,10 @@ streams:
             type: RequestOption
             inject_into: header
             field_name: x-api-key
+        request_headers:
+          X-USER-ID: "{{ config.get('user_id', '') }}"
+          X-User-Email: "{{ config.get('user_email', '') }}"
+          X-TEAM-ID: "{{ config.get('team_id', '') }}"
         path: /emailAccounts
         http_method: GET
         error_handler:
@@ -531,6 +543,10 @@ streams:
             type: RequestOption
             inject_into: header
             field_name: x-api-key
+        request_headers:
+          X-USER-ID: "{{ config.get('user_id', '') }}"
+          X-User-Email: "{{ config.get('user_email', '') }}"
+          X-TEAM-ID: "{{ config.get('team_id', '') }}"
         path: /people
         http_method: GET
         error_handler:
@@ -648,6 +664,10 @@ streams:
             type: RequestOption
             inject_into: header
             field_name: x-api-key
+        request_headers:
+          X-USER-ID: "{{ config.get('user_id', '') }}"
+          X-User-Email: "{{ config.get('user_email', '') }}"
+          X-TEAM-ID: "{{ config.get('team_id', '') }}"
         path: /templates
         http_method: GET
         error_handler:
@@ -707,8 +727,30 @@ spec:
         type: string
         title: API Token
         airbyte_secret: true
-        description: The API Token for Reply
+        description: >-
+          The API Token for Reply. A user API key is enough by itself. Organization
+          (`org_…`) and some team keys require acting-user headers or the vendor
+          returns 403 USER_REQUIRED.
         order: 0
+      user_id:
+        type: string
+        title: Acting User ID
+        description: >-
+          Optional. Sent as `X-USER-ID`. Required for Organization API keys if
+          email+team are not set.
+        order: 1
+      user_email:
+        type: string
+        title: Acting User Email
+        description: >-
+          Optional. Sent as `X-User-Email`. Use with Team ID for Organization keys.
+        order: 2
+      team_id:
+        type: string
+        title: Team ID
+        description: >-
+          Optional. Sent as `X-TEAM-ID`. Use with Acting User Email for Organization keys.
+        order: 3
     additionalProperties: true
 metadata:
   autoImportSchema:
