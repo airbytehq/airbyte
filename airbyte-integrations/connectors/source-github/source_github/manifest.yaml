@@ -152,9 +152,10 @@ definitions:
   # mapping, so a repository that keeps returning 502/504 is retried and then fails the stream.
   # Legacy retried the same way but `GithubStreamABC.read_records` caught the exhausted-retries
   # `AirbyteTracedException` for 502/504, logged a warning and moved on to the next repository
-  # (streams.py:196-207), i.e. it reported a COMPLETE sync with that repository's records
-  # silently missing. Failing the stream is the better contract, and
-  # `SourceGithub.continue_sync_on_stream_failure` keeps the other streams going. Parity is not
+  # (the `BAD_GATEWAY` and `GATEWAY_TIMEOUT` branches of that method), i.e. it reported a
+  # COMPLETE sync with that repository's records silently missing. Failing the stream is the
+  # better contract, and `SourceGithub.continue_sync_on_stream_failure` keeps the other streams
+  # going. Parity is not
   # reachable declaratively anyway: `DefaultErrorHandler` has no "retry N times, then ignore",
   # and a `502/504 -> IGNORE` filter would drop the repository on the *first* blip instead of
   # retrying it. Pinned by `test_repeated_502_fails_the_stream`.
@@ -354,9 +355,9 @@ definitions:
     action: IGNORE
     error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
 
-  # Legacy re-raised 403 for `Repositories` (streams.py:162), so the repo listing and the
-  # resolver streams fail with an actionable scopes/SSO message. That is what lets `check`
-  # catch a token with bad scopes.
+  # Legacy re-raised 403 for `Repositories` (the `Organizations` branch of
+  # `GithubStreamABC.read_records`), so the repo listing and the resolver streams fail with an
+  # actionable scopes/SSO message. That is what lets `check` catch a token with bad scopes.
   forbidden_fail_filter:
     type: HttpResponseFilter
     http_codes: [403]
@@ -368,10 +369,10 @@ definitions:
       or this organization may require SAML SSO authorization.
       See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
 
-  # Legacy skipped 403 with a warning for the repo-scoped streams (streams.py:172-179):
-  # one repository the token cannot read must not fail the other partitions. This filter
-  # runs after the rate-limit filters above, so a secondary-limit 403 is still retried
-  # rather than silently dropping the repository.
+  # Legacy skipped 403 with a warning for the repo-scoped streams (the non-`Organizations`
+  # branch of `GithubStreamABC.read_records`): one repository the token cannot read must not
+  # fail the other partitions. This filter runs after the rate-limit filters above, so a
+  # secondary-limit 403 is still retried rather than silently dropping the repository.
   forbidden_skip_filter:
     type: HttpResponseFilter
     http_codes: [403]
@@ -435,9 +436,9 @@ definitions:
     pagination_strategy:
       # GitHub's documented end-of-data signal is the absence of a `rel="next"` link
       # header — a short page is not guaranteed to be the last page. This mirrors the
-      # legacy GithubStreamABC.next_page_token (streams.py:79-85), which parsed `page`
-      # out of that same link. Inferring the end from `last_page_size < 100` instead
-      # would silently truncate the org repo list that drives every downstream partition.
+      # legacy `GithubStreamABC.next_page_token`, which parsed `page` out of that same link.
+      # Inferring the end from `last_page_size < 100` instead would silently truncate the org
+      # repo list that drives every downstream partition.
       # CursorPaginationStrategy replaces `headers["link"]` with `response.links`, so this
       # walks that dict. Chained `.get(...)` with defaults is required rather than
       # `headers.link.next.url`: on the last page there is no `next` link, and attribute
@@ -1274,7 +1275,7 @@ definitions:
     partition_router:
       $ref: "#/definitions/repository_partition_router"
 
-  # Replaces the legacy `GithubStream.transform` (streams.py:250), which stamped the
+  # Replaces the legacy `GithubStream.transform`, which stamped the
   # partition's repository onto every record. None of these streams carries `reactions`,
   # so the `+1`/`-1` renaming that transform also did is not needed here.
   add_repository_transformation:
