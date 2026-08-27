@@ -72,7 +72,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ApplicationsAnyCondition"></a>
@@ -171,7 +171,7 @@ Classes
 <a id="ApplicationsContainsCondition"></a>
 
 `ApplicationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -180,6 +180,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ApplicationsEndswithCondition"></a>
+
+`ApplicationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
     :   The type of the None singleton.
 
 <a id="ApplicationsEqCondition"></a>
@@ -359,20 +373,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
     :   The type of the None singleton.
 
-<a id="ApplicationsLikeCondition"></a>
-
-`ApplicationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ApplicationsListParams"></a>
 
 `ApplicationsListParams(*args, **kwargs)`
@@ -466,7 +466,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ApplicationsOrCondition"></a>
@@ -488,7 +488,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ApplicationsSearchFilter"></a>
@@ -573,7 +573,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSortFilter]`
@@ -650,10 +650,24 @@ Classes
     `status: Literal['asc', 'desc']`
     :   Status of the application.
 
+<a id="ApplicationsStartswithCondition"></a>
+
+`ApplicationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ApplicationsStringFilter"></a>
 
 `ApplicationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -760,7 +774,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CandidatesAnyCondition"></a>
@@ -877,7 +891,7 @@ Classes
 <a id="CandidatesContainsCondition"></a>
 
 `CandidatesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -886,6 +900,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CandidatesEndswithCondition"></a>
+
+`CandidatesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
     :   The type of the None singleton.
 
 <a id="CandidatesEqCondition"></a>
@@ -1083,20 +1111,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
     :   The type of the None singleton.
 
-<a id="CandidatesLikeCondition"></a>
-
-`CandidatesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CandidatesListParams"></a>
 
 `CandidatesListParams(*args, **kwargs)`
@@ -1175,7 +1189,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CandidatesOrCondition"></a>
@@ -1197,7 +1211,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CandidatesSearchFilter"></a>
@@ -1300,7 +1314,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSortFilter]`
@@ -1395,10 +1409,24 @@ Classes
     `website_addresses: Literal['asc', 'desc']`
     :   List of candidate's website addresses
 
+<a id="CandidatesStartswithCondition"></a>
+
+`CandidatesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
+    :   The type of the None singleton.
+
 <a id="CandidatesStringFilter"></a>
 
 `CandidatesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1503,7 +1531,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DepartmentsAnyCondition"></a>
@@ -1563,7 +1591,7 @@ Classes
 <a id="DepartmentsContainsCondition"></a>
 
 `DepartmentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1572,6 +1600,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DepartmentsEndswithCondition"></a>
+
+`DepartmentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
     :   The type of the None singleton.
 
 <a id="DepartmentsEqCondition"></a>
@@ -1712,20 +1754,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
     :   The type of the None singleton.
 
-<a id="DepartmentsLikeCondition"></a>
-
-`DepartmentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="DepartmentsListParams"></a>
 
 `DepartmentsListParams(*args, **kwargs)`
@@ -1804,7 +1832,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="DepartmentsOrCondition"></a>
@@ -1826,7 +1854,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DepartmentsSearchFilter"></a>
@@ -1872,7 +1900,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSortFilter]`
@@ -1910,10 +1938,24 @@ Classes
     `parent_id: Literal['asc', 'desc']`
     :   Unique ID of the parent department of this department.
 
+<a id="DepartmentsStartswithCondition"></a>
+
+`DepartmentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="DepartmentsStringFilter"></a>
 
 `DepartmentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1961,7 +2003,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobPostsAnyCondition"></a>
@@ -2022,7 +2064,7 @@ Classes
     :   Flag indicating if the job post is internal or not.
 
     `internal_content: Any`
-    :   Internal content or description of the job post.
+    :   The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`.
 
     `job_id: Any`
     :   ID of the job associated with the job post.
@@ -2045,7 +2087,7 @@ Classes
 <a id="JobPostsContainsCondition"></a>
 
 `JobPostsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2054,6 +2096,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="JobPostsEndswithCondition"></a>
+
+`JobPostsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
     :   The type of the None singleton.
 
 <a id="JobPostsEqCondition"></a>
@@ -2184,7 +2240,7 @@ Classes
     :   Flag indicating if the job post is internal or not.
 
     `internal_content: list[str]`
-    :   Internal content or description of the job post.
+    :   The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`.
 
     `job_id: list[int]`
     :   ID of the job associated with the job post.
@@ -2216,20 +2272,6 @@ Classes
     ### Class variables
 
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
-    :   The type of the None singleton.
-
-<a id="JobPostsLikeCondition"></a>
-
-`JobPostsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
     :   The type of the None singleton.
 
 <a id="JobPostsListParams"></a>
@@ -2316,7 +2358,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
     :   The type of the None singleton.
 
 <a id="JobPostsOrCondition"></a>
@@ -2338,7 +2380,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobPostsSearchFilter"></a>
@@ -2377,7 +2419,7 @@ Classes
     :   Flag indicating if the job post is internal or not.
 
     `internal_content: str | None`
-    :   Internal content or description of the job post.
+    :   The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`.
 
     `job_id: int | None`
     :   ID of the job associated with the job post.
@@ -2408,7 +2450,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSortFilter]`
@@ -2450,7 +2492,7 @@ Classes
     :   Flag indicating if the job post is internal or not.
 
     `internal_content: Literal['asc', 'desc']`
-    :   Internal content or description of the job post.
+    :   The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`.
 
     `job_id: Literal['asc', 'desc']`
     :   ID of the job associated with the job post.
@@ -2470,10 +2512,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   Date and time when the job post was last updated.
 
+<a id="JobPostsStartswithCondition"></a>
+
+`JobPostsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
+    :   The type of the None singleton.
+
 <a id="JobPostsStringFilter"></a>
 
 `JobPostsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2506,7 +2562,7 @@ Classes
     :   Flag indicating if the job post is internal or not.
 
     `internal_content: str`
-    :   Internal content or description of the job post.
+    :   The job post as written for the internal job board, present only when it differs from the external one. Semantically searchable; HTML, same as `content`.
 
     `job_id: str`
     :   ID of the job associated with the job post.
@@ -2545,7 +2601,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobsAnyCondition"></a>
@@ -2638,7 +2694,7 @@ Classes
 <a id="JobsContainsCondition"></a>
 
 `JobsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2647,6 +2703,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="JobsEndswithCondition"></a>
+
+`JobsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
     :   The type of the None singleton.
 
 <a id="JobsEqCondition"></a>
@@ -2820,20 +2890,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
     :   The type of the None singleton.
 
-<a id="JobsLikeCondition"></a>
-
-`JobsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
-    :   The type of the None singleton.
-
 <a id="JobsListParams"></a>
 
 `JobsListParams(*args, **kwargs)`
@@ -2912,7 +2968,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
     :   The type of the None singleton.
 
 <a id="JobsOrCondition"></a>
@@ -2934,7 +2990,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobsSearchFilter"></a>
@@ -3013,7 +3069,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsSortFilter]`
@@ -3084,10 +3140,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   The date and time the job was last updated
 
+<a id="JobsStartswithCondition"></a>
+
+`JobsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
+    :   The type of the None singleton.
+
 <a id="JobsStringFilter"></a>
 
 `JobsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3168,7 +3238,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OffersAnyCondition"></a>
@@ -3249,7 +3319,7 @@ Classes
 <a id="OffersContainsCondition"></a>
 
 `OffersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3258,6 +3328,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OffersEndswithCondition"></a>
+
+`OffersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
     :   The type of the None singleton.
 
 <a id="OffersEqCondition"></a>
@@ -3419,20 +3503,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
     :   The type of the None singleton.
 
-<a id="OffersLikeCondition"></a>
-
-`OffersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
-    :   The type of the None singleton.
-
 <a id="OffersListParams"></a>
 
 `OffersListParams(*args, **kwargs)`
@@ -3520,7 +3590,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
     :   The type of the None singleton.
 
 <a id="OffersOrCondition"></a>
@@ -3542,7 +3612,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OffersSearchFilter"></a>
@@ -3609,7 +3679,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersSortFilter]`
@@ -3668,10 +3738,24 @@ Classes
     `version: Literal['asc', 'desc']`
     :   Version of the offer data
 
+<a id="OffersStartswithCondition"></a>
+
+`OffersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
+    :   The type of the None singleton.
+
 <a id="OffersStringFilter"></a>
 
 `OffersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3740,7 +3824,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OfficesAnyCondition"></a>
@@ -3806,7 +3890,7 @@ Classes
 <a id="OfficesContainsCondition"></a>
 
 `OfficesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -3815,6 +3899,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OfficesEndswithCondition"></a>
+
+`OfficesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
     :   The type of the None singleton.
 
 <a id="OfficesEqCondition"></a>
@@ -3961,20 +4059,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
     :   The type of the None singleton.
 
-<a id="OfficesLikeCondition"></a>
-
-`OfficesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
-    :   The type of the None singleton.
-
 <a id="OfficesListParams"></a>
 
 `OfficesListParams(*args, **kwargs)`
@@ -4053,7 +4137,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
     :   The type of the None singleton.
 
 <a id="OfficesOrCondition"></a>
@@ -4075,7 +4159,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OfficesSearchFilter"></a>
@@ -4127,7 +4211,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesSortFilter]`
@@ -4171,10 +4255,24 @@ Classes
     `primary_contact_user_id: Literal['asc', 'desc']`
     :   User ID of the primary contact person for this office
 
+<a id="OfficesStartswithCondition"></a>
+
+`OfficesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
+    :   The type of the None singleton.
+
 <a id="OfficesStringFilter"></a>
 
 `OfficesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4277,7 +4375,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SourcesAnyCondition"></a>
@@ -4325,7 +4423,7 @@ Classes
 <a id="SourcesContainsCondition"></a>
 
 `SourcesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4334,6 +4432,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SourcesEndswithCondition"></a>
+
+`SourcesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
     :   The type of the None singleton.
 
 <a id="SourcesEqCondition"></a>
@@ -4448,20 +4560,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
     :   The type of the None singleton.
 
-<a id="SourcesLikeCondition"></a>
-
-`SourcesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SourcesListParams"></a>
 
 `SourcesListParams(*args, **kwargs)`
@@ -4540,7 +4638,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SourcesOrCondition"></a>
@@ -4562,7 +4660,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SourcesSearchFilter"></a>
@@ -4596,7 +4694,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesSortFilter]`
@@ -4622,10 +4720,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of the data source
 
+<a id="SourcesStartswithCondition"></a>
+
+`SourcesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
+    :   The type of the None singleton.
+
 <a id="SourcesStringFilter"></a>
 
 `SourcesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4661,7 +4773,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -4742,7 +4854,7 @@ Classes
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -4751,6 +4863,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -4912,20 +5038,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -5016,7 +5128,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -5038,7 +5150,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -5105,7 +5217,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersSortFilter]`
@@ -5164,10 +5276,24 @@ Classes
     `updated_at: Literal['asc', 'desc']`
     :   The date and time when the user account was last updated.
 
+<a id="UsersStartswithCondition"></a>
+
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

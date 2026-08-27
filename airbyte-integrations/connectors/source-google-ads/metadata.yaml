@@ -11,15 +11,19 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
-  dockerImageTag: 6.0.0
+  dockerImageTag: 6.1.1
   dockerRepository: airbyte/source-google-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   externalDocumentationUrls:
     - title: Release notes
       url: https://developers.google.com/google-ads/api/docs/release-notes
       type: api_release_history
+    - title: Deprecation and sunset dates
+      url: https://developers.google.com/google-ads/api/docs/sunset-dates
+      type: api_deprecations
     - title: Developer blog
       url: https://ads-developers.googleblog.com/
+      type: api_release_history
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2
@@ -37,7 +41,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       1.0.0:
         message: This release introduces fixes to custom query schema creation. Users should refresh the source schema and reset affected streams after upgrading to ensure uninterrupted syncs.

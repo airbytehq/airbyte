@@ -219,7 +219,7 @@ definitions:
               - data
               - object
               - updated
-            value: "{{ record.get('updated', record.get('created', now_utc().timestamp())) | int }}"
+            value: "{{ (record.get('updated', record.get('created', now_utc().timestamp())) | int) - (1 if record.get('type', '').endswith('.created') else 0) }}"
             value_type: integer
         condition: "{{ record.get('data', {}).get('object', False) }}"
       - type: DpathFlattenFields
@@ -1596,7 +1596,7 @@ definitions:
             fields:
               - path:
                   - invoice_updated
-                value: "{{ (record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int }}"
+                value: "{{ ((record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if record['original_record'].get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
               - path:
                   - invoice_id
@@ -1764,7 +1764,7 @@ definitions:
             fields:
               - path:
                   - subscription_updated
-                value: "{{ (record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int }}"
+                value: "{{ ((record['original_record'].get('updated') or record['original_record'].get('created') or record['original_record'].get('data', {}).get('object', {}).get('updated') or record['original_record'].get('data', {}).get('object', {}).get('created') or now_utc().timestamp()) | int) - (1 if record['original_record'].get('type', '').endswith('.created') else 0) }}"
                 value_type: integer
             condition: "{{ record.get('original_record') }}"
           - type: RemoveFields
