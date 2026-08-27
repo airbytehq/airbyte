@@ -90,6 +90,14 @@ quota is fine. Before sleeping on a rate limit, `HttpClient` also asks
 window. Do not reintroduce connector-side rotation — a previous version poked the
 authenticator's private `_tokens_iter`, which this replaced.
 
+The authenticator's `max_wait_time` bounds only the manifest/authenticator path. Python
+`HttpStream` streams carry their own `max_wait_time_seconds`, derived from
+`max_waiting_time` (default 120 minutes), into `GithubStreamABCBackoffStrategy`. The strategy
+returns a rate-limit-derived wait only when `is_rate_limited_response` detects a rate-limit
+signal; other retryable statuses, such as 404, fall through to default backoff. Every GitHub
+response carries `X-RateLimit-Reset`, so using that header alone would make plain 404s wait
+until the reset window.
+
 Not rotated, deliberately: a secondary rate limit, where the token's counters stay positive.
 GitHub scopes secondary limits per account, so another token of the same account gets rejected
 the same way; the reset wait is the correct response there.

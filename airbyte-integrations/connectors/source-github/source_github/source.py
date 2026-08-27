@@ -359,14 +359,13 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         # This parameter is deprecated and in future will be used sane default, page_size: 10
         page_size = config.get("page_size_for_large_streams", constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM)
         access_token_type, _ = self.get_access_token(config)
-        # `max_waiting_time` is deliberately absent from the stream kwargs: the wait bound lives
-        # on the shared authenticator, which reads the same config key through its own
-        # `max_wait_time` field. Passing it here would only be popped and discarded.
+        max_wait_time_seconds = (config["max_waiting_time"] if config.get("max_waiting_time") is not None else 120) * 60
         organization_args = {
             "authenticator": authenticator,
             "organizations": organizations,
             "api_url": config.get("api_url"),
             "access_token_type": access_token_type,
+            "max_wait_time_seconds": max_wait_time_seconds,
         }
         start_date = config.get("start_date")
 
@@ -376,6 +375,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             "repositories": repositories,
             "page_size_for_large_streams": page_size,
             "access_token_type": access_token_type,
+            "max_wait_time_seconds": max_wait_time_seconds,
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
