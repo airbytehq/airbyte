@@ -49,14 +49,22 @@ Things worth knowing before touching either half:
   that word to the pattern; forget it and you get a loud failure from `gone_fail_filter`, not a
   silent skip. Escape the word boundaries as `\\b` — Jinja parses its own string literals, so a
   single `\b` reaches `re` as a backspace and the filter stops matching without erroring.
-- Two known differences from the Python error contract apply to **every** stream migrated from
-  here on. Both are spelled out in the error-handling comment block in `manifest.yaml`; do not
-  re-litigate them per stream.
+- Three known differences from the Python error contract apply to **every** stream migrated
+  from here on. All are spelled out in the error-handling comment block in `manifest.yaml`; do
+  not re-litigate them per stream.
   - **502/504 after retries fails the stream** instead of skipping the repository and finishing
     COMPLETE, because `DefaultErrorHandler` has no "retry N times, then ignore".
-  - **Skips are logged at INFO without slice context.** `HttpResponseFilter.error_message` can
-    only interpolate `response`/`headers`, so a migrated stream cannot say _which_ repository it
-    skipped. Legacy logged `Skipping <stream> for repository <repo>` at WARNING.
+  - **404 and 409 are skipped on the first response.** Legacy mapped both to RETRY
+    (`GITHUB_DEFAULT_ERROR_MAPPING`) and only skipped once the retries were spent, so a
+    transient 404 recovered where a migrated stream now drops that repository from a COMPLETE
+    sync. Same CDK limitation as above; accepted, not fixed.
+  - **Skips are logged at INFO, and cannot name the repository.** Legacy logged
+    `Skipping <stream> for repository <repo>` at WARNING. `stream_partition` is not reachable
+    from `error_message` — referencing it raises rather than rendering blank. The stream name is
+    reachable via `{{ parameters.… }}`, but only with a `$parameters` entry on each stream and a
+    per-stream copy of every skip filter, since a `$ref`d filter sees `parameters == {}`; not
+    worth losing the shared definitions for. The CDK follow-up (slice access in
+    `HttpResponseFilter`) fixes both halves.
 - When migrating a stream, check `unit_tests/integration/test_<stream>.py` for tests that assert
   `SubstreamResumableFullRefreshCursor` state (`__ab_full_refresh_sync_complete`): declarative
   full-refresh streams emit a single terminal state message instead. `test_assignees.py` also

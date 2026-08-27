@@ -392,3 +392,24 @@ def test_repository_404_during_resolution_does_not_fail_the_stream(rate_limit_mo
     assert error is None
     assert statuses[-1] == "COMPLETE"
     assert [record["repository"] for record in records] == ["docker/compose"]
+
+
+def test_repository_403_during_resolution_does_not_fail_the_stream(rate_limit_mock_response, requests_mock):
+    """A SAML-protected repository 403s while partitions are generated. Legacy resolved explicit
+    entries with `RepositoryStats`, a plain `GithubStream`, so it warned and synced the rest; the
+    strict handler on the org listing would instead kill the partition generator and leave the
+    healthy repositories unread. Pins `resolve_explicit_repository_error_handler`."""
+    config = _config("saml/protected-repo", "docker/compose")
+    requests_mock.get(
+        "https://api.github.com/repos/saml/protected-repo",
+        status_code=403,
+        json={"message": "Resource protected by organization SAML enforcement."},
+    )
+    _mock_repository_resolution(requests_mock, "docker/compose")
+    requests_mock.get("https://api.github.com/repos/docker/compose/collaborators", json=[{"id": 1, "login": "octocat"}])
+
+    records, statuses, error = _read(config, "collaborators")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert [record["repository"] for record in records] == ["docker/compose"]

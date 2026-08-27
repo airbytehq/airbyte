@@ -160,12 +160,41 @@ definitions:
   # and a `502/504 -> IGNORE` filter would drop the repository on the *first* blip instead of
   # retrying it. Pinned by `test_repeated_502_fails_the_stream`.
   #
-  # KNOWN GAP — skip logging. The `IGNORE` path logs the filter's `error_message` at INFO with
-  # no slice context, whereas legacy logged `Skipping <stream> for repository <repo>` at
-  # WARNING. `HttpResponseFilter.error_message` only interpolates `response` and `headers`, so
-  # neither the stream name nor `stream_partition` is reachable from here. Follow-up: give
-  # `HttpResponseFilter` access to the stream slice in the CDK (same bucket as the token
-  # rotation follow-up noted below).
+  # DELIBERATE DIVERGENCE — 404 and 409 are skipped on the first response. Legacy overrode the
+  # CDK defaults for both (`errors_handlers.py::GITHUB_DEFAULT_ERROR_MAPPING`, 404 -> RETRY and
+  # 409 -> RETRY), so a repo-scoped stream retried up to `max_retries = 5` and only reached the
+  # warn-and-skip branch of `read_records` once the budget was spent. The filters below are
+  # `IGNORE`, which the CDK applies immediately. For a *persistent* 404/409 the outcome is
+  # identical and arrives faster, which is the point; for a *transient* one — GitHub is
+  # eventually consistent and does answer 404 for a repository that exists — the repository's
+  # records are now dropped from a sync that still reports COMPLETE, where legacy's second
+  # attempt would have served them. Not reachable declaratively for the same reason as 502/504:
+  # `DefaultErrorHandler` has no "retry N times, then ignore". Accepted rather than fixed,
+  # because the blips are rare and the alternative is retrying every genuinely deleted
+  # repository five times; revisit together with the CDK follow-up below.
+  #
+  # Note the two divergences point opposite ways: 502/504 got louder than legacy, 404/409 got
+  # quieter. Both are deliberate.
+  #
+  # KNOWN GAP — skip logging. The `IGNORE` path logs the filter's `error_message` at INFO
+  # (`http_client.py`), whereas legacy logged `Skipping <stream> for repository <repo>` at
+  # WARNING. So a scope-starved token can now produce a zero-record COMPLETE sync whose only
+  # trace is a handful of unattributed INFO lines.
+  #
+  # Be precise about what the CDK does and does not allow here, because this note gets copied
+  # forward by every migration step:
+  #   - `stream_partition` is NOT reachable. `HttpResponseFilter._create_error_message` passes
+  #     only `config`, `response` and `headers`, and referencing the slice does not degrade to
+  #     blank — Jinja raises `undeclared variables` and kills the stream.
+  #   - The stream name IS reachable, but only awkwardly. `InterpolatedString.eval` forwards
+  #     `parameters` into the Jinja context, so `{{ parameters.get('...') }}` renders — except
+  #     that a `$ref`d filter definition carries `parameters == {}`. Recovering the name costs a
+  #     `$parameters` entry on each stream plus a per-stream copy of every skip filter, which
+  #     trades the shared definitions above (and the ordering guarantees they encode) for one
+  #     word in a log line. Not worth it while the repository — the part a user actually needs —
+  #     stays out of reach either way.
+  # Follow-up: give `HttpResponseFilter` access to the stream slice in the CDK, which fixes both
+  # halves at once (same bucket as the token rotation follow-up noted below).
   rate_limit_backoff_strategies:
     # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
     # rate-limit wait rather than only the ones the authenticator decides before sending.
@@ -355,9 +384,13 @@ definitions:
     action: IGNORE
     error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
 
-  # Legacy re-raised 403 for `Repositories` (the `Organizations` branch of
-  # `GithubStreamABC.read_records`), so the repo listing and the resolver streams fail with an
-  # actionable scopes/SSO message. That is what lets `check` catch a token with bad scopes.
+  # Legacy re-raised 403 for the org listing (the `Organizations` branch of
+  # `GithubStreamABC.read_records`), so `repositories_resolver` and the user-facing
+  # `repositories` stream fail with an actionable scopes/SSO message. That is what lets `check`
+  # catch a token with bad scopes. This filter is deliberately NOT on `repository_stats`: legacy
+  # resolved explicit `org/repo` entries with `RepositoryStats`, a plain `GithubStream`, which
+  # took the *other* branch and skipped a 403 with a warning — see
+  # `resolve_explicit_repository_error_handler`.
   forbidden_fail_filter:
     type: HttpResponseFilter
     http_codes: [403]
@@ -427,6 +460,29 @@ definitions:
       - $ref: "#/definitions/empty_repository_skip_filter"
       - $ref: "#/definitions/gone_fail_filter"
 
+  # `repository_stats` resolves the explicit `org/repo` entries the user typed, and a 403 there
+  # is one repository the token cannot see — a SAML-protected org is the common case. It must not
+  # take the other repositories down with it: a 403 raised while partitions are being generated
+  # kills the partition generator, so the stream reads nothing at all rather than skipping one
+  # partition. Legacy skipped it with a warning and synced the rest, and this keeps that.
+  #
+  # `check` still catches a bad token: with every explicit entry skipped the resolved repository
+  # list is empty, and `SourceGithub.check_connection` answers "Some of the provided repositories
+  # couldn't be found..." for that case.
+  resolve_explicit_repository_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      $ref: "#/definitions/rate_limit_backoff_strategies"
+    response_filters:
+      - $ref: "#/definitions/success_filter"
+      - $ref: "#/definitions/retry_after_rate_limit_filter"
+      - $ref: "#/definitions/primary_rate_limit_filter"
+      - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/exhausted_quota_filter"
+      - $ref: "#/definitions/not_found_skip_filter"
+      - $ref: "#/definitions/forbidden_skip_filter"
+      - $ref: "#/definitions/gone_fail_filter"
+
   page_link_paginator:
     type: DefaultPaginator
     page_token_option:
@@ -457,8 +513,9 @@ definitions:
   # each wildcard org's repos and filtering them against the anchored pattern
   # derived inline from config. `repository_stats` resolves explicit `org/repo`
   # entries and exposes the canonical `full_name` and `organization.login`;
-  # entries that 404 are skipped with a warning (see `requester_base`'s
-  # error_handler), matching the legacy warn-and-continue behavior.
+  # entries that 404 or 403 are skipped with a warning (see
+  # `resolve_explicit_repository_error_handler`), matching the legacy warn-and-continue
+  # behavior.
   repositories_resolver_stream:
     type: DeclarativeStream
     name: repositories_resolver
@@ -529,6 +586,8 @@ definitions:
         # per_page on single-repo GETs).
         request_parameters:
           per_page: "100"
+        error_handler:
+          $ref: "#/definitions/resolve_explicit_repository_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
