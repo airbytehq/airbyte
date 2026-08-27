@@ -5,6 +5,7 @@
 
 import io
 import logging
+import zipfile
 from datetime import datetime, timedelta
 from itertools import product
 from typing import Any, Dict, List, Optional, Set
@@ -16,9 +17,10 @@ from moto import mock_sts
 from pydantic.v1 import AnyUrl
 from source_s3.v4.config import Config
 from source_s3.v4.stream_reader import SourceS3StreamReader
+from source_s3.v4.zip_reader import ZipFileHandler
 
 from airbyte_cdk.sources.file_based.config.abstract_file_based_spec import AbstractFileBasedSpec
-from airbyte_cdk.sources.file_based.exceptions import ErrorListingFiles, FileBasedSourceError
+from airbyte_cdk.sources.file_based.exceptions import CustomFileBasedException, ErrorListingFiles, FileBasedSourceError, FileSizeLimitError
 from airbyte_cdk.sources.file_based.file_based_stream_reader import FileReadMode
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 
@@ -250,10 +252,25 @@ def test_open_file_calls_any_open_with_the_right_encoding(smart_open_mock):
     assert smart_open_mock.call_args.kwargs["encoding"] == encoding
 
 
+def _make_file_transfer_config(**overrides: Any) -> Config:
+    defaults: Dict[str, Any] = dict(
+        bucket="test",
+        aws_access_key_id="test",
+        aws_secret_access_key="test",
+        streams=[],
+        endpoint=None,
+        delivery_method={"delivery_type": "use_file_transfer"},
+    )
+    defaults.update(overrides)
+    return Config(**defaults)
+
+
+@patch("source_s3.v4.stream_reader.psutil.disk_usage")
 @patch("source_s3.v4.stream_reader.SourceS3StreamReader.file_size")
 @patch("boto3.client")
-def test_upload(mock_boto_client, s3_reader_file_size_mock):
+def test_upload(mock_boto_client, s3_reader_file_size_mock, mock_disk_usage):
     s3_reader_file_size_mock.return_value = 100
+    mock_disk_usage.return_value = Mock(free=10 * 1024 * 1024 * 1024)  # 10 GB free, plenty for a 100-byte file
 
     mock_s3_client_instance = Mock()
     mock_boto_client.return_value = mock_s3_client_instance
@@ -261,14 +278,7 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
 
     reader = SourceS3StreamReader()
     bucket_name = "test"
-    reader.config = Config(
-        bucket=bucket_name,
-        aws_access_key_id="test",
-        aws_secret_access_key="test",
-        streams=[],
-        endpoint=None,
-        delivery_method={"delivery_type": "use_file_transfer"},
-    )
+    reader.config = _make_file_transfer_config(bucket=bucket_name)
     file_folder = "directory"
     file_name = "file.txt"
     test_file_path = f"{file_folder}/{file_name}"
@@ -282,6 +292,44 @@ def test_upload(mock_boto_client, s3_reader_file_size_mock):
     assert file_reference.file_size_bytes == 100
     assert file_reference.source_file_relative_path == ANY
     assert file_reference.staging_file_url.endswith(test_file_path)
+
+
+@patch("source_s3.v4.stream_reader.psutil.disk_usage")
+@patch("source_s3.v4.stream_reader.SourceS3StreamReader.file_size")
+@patch("boto3.client")
+def test_upload_allows_file_larger_than_old_hardcoded_limit(mock_boto_client, s3_reader_file_size_mock, mock_disk_usage):
+    # 2 GB is bigger than the old hardcoded 1.5GB FILE_SIZE_LIMIT; this now succeeds because there's plenty of disk.
+    file_size = 2_000_000_000
+    s3_reader_file_size_mock.return_value = file_size
+    mock_disk_usage.return_value = Mock(free=file_size * 2)
+
+    mock_s3_client_instance = Mock()
+    mock_boto_client.return_value = mock_s3_client_instance
+    mock_s3_client_instance.download_file.return_value = None
+
+    reader = SourceS3StreamReader()
+    reader.config = _make_file_transfer_config()
+    file_record_data, file_reference = reader.upload(
+        RemoteFile(uri="big_file.csv", last_modified=datetime.now()), "some/local/dir", logger
+    )
+
+    assert file_record_data.bytes == file_size
+    assert file_reference.file_size_bytes == file_size
+
+
+@patch("source_s3.v4.stream_reader.psutil.disk_usage")
+@patch("source_s3.v4.stream_reader.SourceS3StreamReader.file_size")
+def test_upload_raises_when_not_enough_disk_space(s3_reader_file_size_mock, mock_disk_usage):
+    file_size = 2_000_000_000
+    s3_reader_file_size_mock.return_value = file_size
+    # Free space covers the file itself but not the 1.2x safety margin.
+    mock_disk_usage.return_value = Mock(free=int(file_size * 1.1))
+
+    reader = SourceS3StreamReader()
+    reader.config = _make_file_transfer_config()
+
+    with pytest.raises(FileSizeLimitError):
+        reader.upload(RemoteFile(uri="big_file.csv", last_modified=datetime.now()), "some/local/dir", logger)
 
 
 def test_get_s3_client_without_config_raises_exception():
@@ -357,3 +405,51 @@ def test_filter_file_by_start_date(start_date: datetime, last_modified_date: dat
     )
 
     assert expected_result == reader.is_modified_after_start_date(last_modified_date)
+
+
+def _make_zip_info(name: str, flag_bits: int = 0, crc: int = 0) -> zipfile.ZipInfo:
+    info = zipfile.ZipInfo(name, date_time=(2022, 1, 1, 0, 0, 0))
+    info.flag_bits = flag_bits
+    info.CRC = crc
+    info.compress_size = 10
+    info.file_size = 20
+    info.compress_type = zipfile.ZIP_DEFLATED
+    info.header_offset = 0
+    return info
+
+
+def test_handle_zip_file_raises_config_error_when_encrypted_and_no_password():
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+
+    encrypted_member = _make_zip_info("secret.csv", flag_bits=0x1, crc=123)
+    with patch.object(ZipFileHandler, "get_zip_files", return_value=([encrypted_member], 0)):
+        with pytest.raises(CustomFileBasedException) as exc:
+            list(reader._handle_zip_file({"Key": "archive.zip"}))
+
+    assert "password-protected" in str(exc.value)
+
+
+def test_handle_zip_file_succeeds_when_encrypted_and_password_configured():
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[], password="secret")
+
+    encrypted_member = _make_zip_info("secret.csv", flag_bits=0x1, crc=123)
+    with patch.object(ZipFileHandler, "get_zip_files", return_value=([encrypted_member], 0)):
+        files = list(reader._handle_zip_file({"Key": "archive.zip"}))
+
+    assert len(files) == 1
+    assert files[0].is_encrypted is True
+    assert files[0].uri == "archive.zip#secret.csv"
+
+
+def test_handle_zip_file_unencrypted_members_unaffected_without_password():
+    reader = SourceS3StreamReader()
+    reader.config = Config(bucket="test", aws_access_key_id="test", aws_secret_access_key="test", streams=[])
+
+    plain_member = _make_zip_info("plain.csv")
+    with patch.object(ZipFileHandler, "get_zip_files", return_value=([plain_member], 0)):
+        files = list(reader._handle_zip_file({"Key": "archive.zip"}))
+
+    assert len(files) == 1
+    assert files[0].is_encrypted is False

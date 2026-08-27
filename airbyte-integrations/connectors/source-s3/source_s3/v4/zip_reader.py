@@ -1,11 +1,13 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
+import hashlib
 import io
 import struct
 import zipfile
-from typing import IO, List, Optional, Tuple, Union
+from typing import IO, Callable, List, Optional, Tuple, Union
 
 from botocore.client import BaseClient
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from airbyte_cdk.sources.file_based.remote_file import RemoteFile
 from source_s3.v4.config import Config
@@ -14,6 +16,69 @@ from source_s3.v4.config import Config
 # Buffer constants
 BUFFER_SIZE_DEFAULT = 1024 * 1024
 MAX_BUFFER_SIZE_DEFAULT: int = 16 * BUFFER_SIZE_DEFAULT
+
+# WinZip AES ("AE-x") entries store their real compression method inside a 0x9901 extra-field
+# record and mark the central directory's compress_type with this sentinel value instead.
+WINZIP_AES_COMPRESSION_TYPE = 99
+WINZIP_AES_EXTRA_FIELD_ID = 0x9901
+
+# Per the WinZip AES specification: strength byte -> (salt size, key size), both in bytes.
+WINZIP_AES_STRENGTH_TO_SALT_AND_KEY_SIZE = {1: (8, 16), 2: (12, 24), 3: (16, 32)}
+WINZIP_AES_PASSWORD_VERIFICATION_SIZE = 2
+WINZIP_AES_AUTHENTICATION_CODE_SIZE = 10  # Trailing HMAC-SHA1-80; not verified, see plan.md.
+WINZIP_AES_PBKDF2_ITERATIONS = 1000
+
+
+def _parse_winzip_aes_extra_field(extra: bytes) -> Optional[Tuple[int, int]]:
+    """
+    Scan a ZIP entry's raw central-directory extra field for the WinZip AES (0x9901) record.
+
+    :return: (aes_strength, real_compression_method) if present, else None. `real_compression_method`
+             is the entry's actual compression method (e.g. deflate) - the central directory's own
+             `compress_type` is overwritten with the WINZIP_AES_COMPRESSION_TYPE sentinel instead.
+    """
+    offset = 0
+    while offset + 4 <= len(extra):
+        header_id, data_size = struct.unpack_from("<HH", extra, offset)
+        data = extra[offset + 4 : offset + 4 + data_size]
+        if header_id == WINZIP_AES_EXTRA_FIELD_ID and len(data) == 7:
+            _version, _vendor_id, strength, real_compression_method = struct.unpack("<HHBH", data)
+            return strength, real_compression_method
+        offset += 4 + data_size
+    return None
+
+
+class _AesCtrCipher:
+    """
+    Decrypts (or encrypts - CTR is symmetric) a WinZip AES ciphertext stream using AES in CTR mode
+    with WinZip's counter convention: a 16-byte counter starting at 1, incremented as a
+    little-endian integer per 16-byte block. This does NOT match the `cryptography` library's own
+    higher-level CTR mode, which increments its counter as a big-endian integer - so we drive the
+    raw AES-ECB block primitive ourselves and compute each block's counter value by hand instead of
+    relying on any library's built-in "CTR mode".
+
+    Calls are stateful and must be made in order over a contiguous stream, exactly like
+    `zipfile._ZipDecrypter`'s calling convention, which this mirrors.
+    """
+
+    BLOCK_SIZE = 16
+
+    def __init__(self, key: bytes):
+        self._block_encryptor = Cipher(algorithms.AES(key), modes.ECB()).encryptor()
+        self._offset = 0  # Position within the ciphertext stream so far.
+
+    def _keystream(self, offset: int, length: int) -> bytes:
+        first_block, skip = divmod(offset, self.BLOCK_SIZE)
+        blocks_needed = -(-(skip + length) // self.BLOCK_SIZE)  # ceil division
+        counters = b"".join((first_block + i + 1).to_bytes(self.BLOCK_SIZE, "little") for i in range(blocks_needed))
+        return self._block_encryptor.update(counters)[skip : skip + length]
+
+    def __call__(self, data: bytes) -> bytes:
+        if not data:
+            return b""
+        keystream = self._keystream(self._offset, len(data))
+        self._offset += len(data)
+        return (int.from_bytes(data, "big") ^ int.from_bytes(keystream, "big")).to_bytes(len(data), "big")
 
 
 class RemoteFileInsideArchive(RemoteFile):
@@ -25,6 +90,17 @@ class RemoteFileInsideArchive(RemoteFile):
     compressed_size: int
     uncompressed_size: int
     compression_method: int
+    # Raw ZIP "general purpose bit flag" (APPNOTE.TXT section 4.4.4), CRC-32, and extra field bytes
+    # from the central directory. All default to "no encryption" values since the vast majority of
+    # entries are unencrypted; they're only consulted when handling password-protected files.
+    flag_bits: int = 0
+    crc: int = 0
+    extra: bytes = b""
+
+    @property
+    def is_encrypted(self) -> bool:
+        """Bit 0 of the general purpose flag marks an entry as encrypted."""
+        return bool(self.flag_bits & 0x1)
 
 
 class ZipFileHandler:
@@ -149,27 +225,119 @@ class DecompressedStream(io.IOBase):
 
     LOCAL_FILE_HEADER_SIZE: int = 30
     NAME_LENGTH_OFFSET: int = 26
+    ZIP_CRYPTO_HEADER_SIZE: int = 12
 
-    def __init__(self, file_obj: IO[bytes], file_info: RemoteFileInsideArchive, buffer_size: int = BUFFER_SIZE_DEFAULT):
+    def __init__(
+        self,
+        file_obj: IO[bytes],
+        file_info: RemoteFileInsideArchive,
+        password: Optional[str] = None,
+        buffer_size: int = BUFFER_SIZE_DEFAULT,
+    ):
         """
         Initialize a DecompressedStream.
 
         :param file_obj: Underlying file-like object.
         :param file_info: Meta information about the file inside the archive.
+        :param password: Password to decrypt `file_info`, if it is password-protected.
         :param buffer_size: Size of the buffer for reading data.
         """
         self._file = file_obj
-        self.file_start = self._calculate_actual_start(file_info.start_offset)
-        self.compressed_size = file_info.compressed_size
         self.uncompressed_size = file_info.uncompressed_size
         self.compression_method = file_info.compression_method
         self._buffer = bytearray()
         self.buffer_size = buffer_size
+
+        content_start = self._calculate_actual_start(file_info.start_offset)
+        # Set by _init_*_decryption below: a zero-arg factory producing a fresh, correctly-primed
+        # decrypter (None for unencrypted entries). Called once here and again on every seek(),
+        # since a fresh decrypter is needed whenever the stream restarts from `self.file_start`.
+        self._make_decrypter: Optional[Callable[[], Callable[[bytes], bytes]]] = None
+        self.file_start, self.compressed_size = self._init_decryption(file_info, password, content_start)
+
         self._reset_decompressor()
         self.position = 0  # Current position in uncompressed stream
         self._file.seek(self.file_start)
         # Mapping between uncompressed and compressed offsets for quick seeking
         self.offset_map = {0: self.file_start, self.uncompressed_size: self.file_start + self.compressed_size}
+
+    def _init_decryption(self, file_info: RemoteFileInsideArchive, password: Optional[str], content_start: int) -> Tuple[int, int]:
+        """
+        For password-protected entries, validate the password and set up `self._make_decrypter`.
+
+        :return: The (file_start, compressed_size) of the actual compressed payload, i.e. `content_start`
+                 and `file_info.compressed_size` shifted past whatever encryption overhead (header,
+                 salt, etc.) precedes the real compressed data.
+        """
+        if not file_info.is_encrypted:
+            return content_start, file_info.compressed_size
+
+        if file_info.compression_method == WINZIP_AES_COMPRESSION_TYPE:
+            return self._init_aes_decryption(file_info, password, content_start)
+        return self._init_zip_crypto_decryption(file_info, password, content_start)
+
+    def _init_zip_crypto_decryption(
+        self, file_info: RemoteFileInsideArchive, password: Optional[str], content_start: int
+    ) -> Tuple[int, int]:
+        """Validate a traditional ZipCrypto password against its 12-byte encryption header."""
+        if not password:
+            raise ValueError(f"'{file_info.uri}' is password-protected, but no zip password was configured for this source.")
+
+        password_bytes = password.encode("utf-8")
+        self._file.seek(content_start)
+        header = self._file.read(self.ZIP_CRYPTO_HEADER_SIZE)
+
+        decrypted_header = zipfile._ZipDecrypter(password_bytes)(header)
+        expected_check_byte = (file_info.crc >> 24) & 0xFF
+        if decrypted_header[-1] != expected_check_byte:
+            raise ValueError(f"Incorrect zip password for '{file_info.uri}'.")
+
+        def make_decrypter():
+            decrypter = zipfile._ZipDecrypter(password_bytes)
+            # Advance its key state past the header, exactly as it did just above, even though we
+            # don't need that (already-validated) decrypted output again here.
+            decrypter(header)
+            return decrypter
+
+        self._make_decrypter = make_decrypter
+        return content_start + self.ZIP_CRYPTO_HEADER_SIZE, file_info.compressed_size - self.ZIP_CRYPTO_HEADER_SIZE
+
+    def _init_aes_decryption(self, file_info: RemoteFileInsideArchive, password: Optional[str], content_start: int) -> Tuple[int, int]:
+        """Validate a WinZip AES password against its 2-byte password-verification value."""
+        if not password:
+            raise ValueError(f"'{file_info.uri}' is password-protected, but no zip password was configured for this source.")
+
+        parsed_extra = _parse_winzip_aes_extra_field(file_info.extra)
+        if parsed_extra is None:
+            raise ValueError(f"'{file_info.uri}' is AES-encrypted, but its WinZip AES extra field could not be parsed.")
+        strength, real_compression_method = parsed_extra
+        if strength not in WINZIP_AES_STRENGTH_TO_SALT_AND_KEY_SIZE:
+            raise ValueError(f"'{file_info.uri}' uses an unrecognized AES strength ({strength}).")
+        salt_size, key_size = WINZIP_AES_STRENGTH_TO_SALT_AND_KEY_SIZE[strength]
+
+        self._file.seek(content_start)
+        salt = self._file.read(salt_size)
+        password_verification = self._file.read(WINZIP_AES_PASSWORD_VERIFICATION_SIZE)
+
+        derived = hashlib.pbkdf2_hmac(
+            "sha1",
+            password.encode("utf-8"),
+            salt,
+            WINZIP_AES_PBKDF2_ITERATIONS,
+            dklen=2 * key_size + WINZIP_AES_PASSWORD_VERIFICATION_SIZE,
+        )
+        encryption_key, expected_verification = derived[:key_size], derived[2 * key_size :]
+        if password_verification != expected_verification:
+            raise ValueError(f"Incorrect zip password for '{file_info.uri}'.")
+
+        # The central directory's compress_type is the WINZIP_AES_COMPRESSION_TYPE sentinel; swap
+        # in the real one (parsed from the extra field above) so decompression works correctly.
+        self.compression_method = real_compression_method
+        self._make_decrypter = lambda: _AesCtrCipher(encryption_key)
+
+        overhead = salt_size + WINZIP_AES_PASSWORD_VERIFICATION_SIZE + WINZIP_AES_AUTHENTICATION_CODE_SIZE
+        payload_start = content_start + salt_size + WINZIP_AES_PASSWORD_VERIFICATION_SIZE
+        return payload_start, file_info.compressed_size - overhead
 
     def _calculate_actual_start(self, file_start: int) -> int:
         """
@@ -192,14 +360,18 @@ class DecompressedStream(io.IOBase):
 
     def _reset_decompressor(self):
         """
-        Reset the decompressor object.
+        Reset the decompressor and, for password-protected entries, the decrypter. Both are stateful
+        and must restart from scratch whenever the stream restarts reading from `self.file_start`.
         """
         self.decompressor = zipfile._get_decompressor(self.compression_method)
+        self._decrypter = self._make_decrypter() if self._make_decrypter else None
 
     def _decompress_chunk(self, chunk: bytes) -> bytes:
         """
-        Decompress a chunk of data based on the compression method.
+        Decrypt (if applicable) and decompress a chunk of data based on the compression method.
         """
+        if self._decrypter is not None:
+            chunk = self._decrypter(chunk)
         if self.compression_method == zipfile.ZIP_STORED:
             return chunk
         return self.decompressor.decompress(chunk)
@@ -331,27 +503,50 @@ class ZipContentReader:
 
     def readline(self, limit: int = -1) -> Union[str, bytes]:
         """
-        Read a single line from the stream.
+        Read a single line (terminated by "\\n", "\\r\\n", or a lone "\\r") from the stream.
+
+        Scans the raw buffer in bulk with `bytes.find()` rather than pulling and decoding one byte
+        at a time - the previous approach cost a Python-level method call per byte of the entire
+        decompressed file, which dominates runtime on multi-GB CSVs (this is what made zipped
+        streams an order of magnitude slower than reading the same CSV unzipped).
         """
         if limit != -1:
             raise NotImplementedError("Limits other than -1 not implemented yet")
 
-        line = ""
         while True:
-            char = self.read(1)
-            if not char:
-                break
+            line_end = self._find_line_end()
+            if line_end is not None:
+                raw_line, self.buffer = bytes(self.buffer[:line_end]), self.buffer[line_end:]
+                return raw_line.decode(self.encoding) if self.encoding else raw_line
+            if not self._pull_more_into_buffer():
+                raw_line, self.buffer = bytes(self.buffer), bytearray()
+                return raw_line.decode(self.encoding) if self.encoding else raw_line
 
-            line += char
-            if char in ["\n", "\r"]:
-                # Handling different types of newlines
-                next_char = self.read(1)
-                if char == "\r" and next_char == "\n":
-                    line += next_char
-                else:
-                    self.buffer = next_char.encode(self.encoding) + self.buffer
-                break
-        return line
+    def _find_line_end(self) -> Optional[int]:
+        """
+        Return the index just past the first complete line terminator in `self.buffer`, or None if
+        no full terminator is present yet.
+
+        A "\\r" sitting at the very end of the buffer is ambiguous - it might be a lone line ending,
+        or the first half of a "\\r\\n" that was simply split across two underlying reads - so it's
+        treated as "not found yet" until either more data arrives to disambiguate it or the stream
+        reaches EOF (at which point `readline` finalizes on whatever's left, per the loop above).
+        """
+        newline_pos = self.buffer.find(b"\n")
+        cr_pos = self.buffer.find(b"\r")
+        if cr_pos != -1 and (newline_pos == -1 or cr_pos < newline_pos):
+            if cr_pos + 1 == len(self.buffer):
+                return None
+            return cr_pos + 2 if self.buffer[cr_pos + 1] == 0x0A else cr_pos + 1
+        return newline_pos + 1 if newline_pos != -1 else None
+
+    def _pull_more_into_buffer(self) -> bool:
+        """Read another chunk from the underlying stream into `self.buffer`. Returns False at EOF."""
+        chunk = self.raw.read(self.buffer_size)
+        if not chunk:
+            return False
+        self.buffer += chunk
+        return True
 
     def read(self, size: int = -1) -> Union[str, bytes]:
         """

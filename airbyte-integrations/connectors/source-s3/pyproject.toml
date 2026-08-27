@@ -3,7 +3,7 @@ requires = [ "poetry-core>=1.0.0",]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-version = "4.15.14"
+version = "4.19.0"
 name = "source-s3"
 description = "Source implementation for S3."
 authors = [ "Airbyte <contact@airbyte.io>",]
@@ -26,6 +26,9 @@ airbyte-cdk = {extras = ["file-based"], version = "^7.0.0"}
 pendulum = "^3.0.0"
 psutil = "^7.0.0"
 numpy = ">=2.2.6,<3"
+# Already resolved transitively (via google-auth); declared explicitly because zip_reader.py
+# imports it directly for WinZip AES-256 zip decryption.
+cryptography = ">=42.0.0"
 
 [tool.poetry.scripts]
 source-s3 = "source_s3.run:run"
