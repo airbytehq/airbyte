@@ -59,7 +59,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
    <!-- /env:oss -->
 
-6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`. You can also match a subset of an organization's repositories by name pattern, for example `airbytehq/a*` for every repository whose name starts with `a`.
 
    :::caution
    Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
@@ -67,9 +67,9 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `projects_v2`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `repositories`, `review_comments`, `reviews`, `stargazers`, `workflow_jobs`, `workflow_runs`, `workflows`.
 
-   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
+   - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `contributor_activity`, `issue_labels`, `issue_timeline_events`, `organizations`, `pull_request_commits`, `tags`, `team_members`, `team_memberships`, `teams`, `users`
 
 8. **Branch (Optional)** - List of GitHub repository branches to pull commits from, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled. (e.g. `airbytehq/airbyte/master airbytehq/airbyte/my-branch`).
 9. **API URL (Optional)** - If you use a self-hosted GitHub instance, enter its API URL, for example `https://github.company.org`. Leave empty to use `https://api.github.com/`.
@@ -158,12 +158,14 @@ This connector outputs the following incremental streams:
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
-3. Other 19 incremental streams are also incremental but with one difference, they:
+3. The remaining incremental streams are also incremental but with one difference, they:
 
    - read all records;
    - output only new records.
 
    Consider this behavior when using these incremental streams, because it may affect your API call limits.
+
+   The `repositories` stream is an exception. It asks GitHub for repositories sorted by most recently updated, so it stops paginating once it reaches records it has already synced instead of reading the whole list.
 
 4. For some large streams, setting a `start_date` very far in the past can cause GitHub to return errors instead of records. The connector logs a `WARN` message in this case. If you encounter this, try setting a more recent `start_date`.
 
@@ -172,10 +174,14 @@ This connector outputs the following incremental streams:
    - `assignees`
    - `branches`
    - `collaborators`
+   - `contributor_activity`
    - `issue_labels`
+   - `issue_timeline_events`
    - `organizations`
    - `pull_request_commits`
    - `tags`
+   - `team_members`
+   - `team_memberships`
    - `teams`
    - `users`
 
@@ -219,6 +225,12 @@ When every configured token is rate-limited, the connector waits for the limit t
 
 Refer to GitHub article [Rate limits for the REST API](https://docs.github.com/en/rest/overview/rate-limits-for-the-rest-api).
 
+#### Secondary rate limits
+
+On top of the hourly quota, GitHub enforces [secondary rate limits](https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits) that cap how fast you may send requests, including 900 points per minute for REST API endpoints, where a read request costs one point. When the connector hits a secondary limit it waits and retries rather than switching tokens, because GitHub applies these limits to the account rather than to the individual token.
+
+The connector throttles itself to 900 requests per minute to stay inside that limit, but only for streams that have moved to its declarative implementation (currently `repositories`). Requests from the other streams aren't counted against that budget, so a large sync can still trip a secondary limit. Raising **Number of Concurrent Threads** makes this more likely.
+
 #### Adding repositories or organizations to an existing connection
 
 Widening the **GitHub Repositories** field on a connection that has already synced does not backfill what the new repositories or organizations did in the past. The connector keeps one sync position per repository or organization, and a newly added one starts from the connection's current overall position instead of from your configured **Start date**. Anything created or last updated before that position is never emitted, and the sync reports no warning or error.
@@ -241,7 +253,7 @@ The Releases stream uses the GitHub GraphQL API and fetches up to 100 assets per
 
 The connector uses the GitHub GraphQL API for `pull_request_stats`, `reviews`, `pull_request_comment_reactions`, `issue_reactions`, `projects_v2`, and `releases`. GitHub limits GraphQL queries by point cost and by the amount of work needed to return a page of results.
 
-Starting in version 2.1.28, the `releases` stream requests fewer records per page by default, because repositories with long release notes can return HTTP 504 Gateway Timeout when a single GraphQL page asks for too many releases. If a GraphQL stream still fails with HTTP 502 or 504 errors, lower the **Page size for large streams** option (where your Airbyte deployment exposes it). Smaller pages are cheaper for GitHub to process, but increase total sync time because the connector makes more requests.
+Starting in version 2.1.28, the `releases` stream requests fewer records per page by default, because repositories with long release notes can return HTTP 504 Gateway Timeout when a single GraphQL page asks for too many releases. When a GraphQL stream hits HTTP 502 or 504, the connector halves the page size and retries, so these errors usually resolve themselves at the cost of a longer sync. If a stream keeps failing, split the connection so that fewer, smaller repositories sync together.
 
 #### Permissions and scopes
 
