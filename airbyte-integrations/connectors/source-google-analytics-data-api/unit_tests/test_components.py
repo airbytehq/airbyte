@@ -503,8 +503,8 @@ def test_dynamic_stream_orders_paged_run_report_requests_by_every_dimension():
                     "enabled": "true",
                 },
             },
-            None,
-            id="cohort_report_omits_order_bys",
+            [{"dimension": {"dimensionName": "cohort"}}, {"dimension": {"dimensionName": "cohortNthDay"}}],
+            id="cohort_report_orders_every_dimension",
         ),
         pytest.param(
             {
@@ -519,9 +519,9 @@ def test_dynamic_stream_orders_paged_run_report_requests_by_every_dimension():
     ],
 )
 def test_run_report_order_bys(manifest_path, custom_report, expected_order_bys):
-    """`orderBys` must cover every dimension for paginated runReport requests, and must be absent
-    where GA4 either does not accept it (pivot requests) or does not document it (cohorts), and
-    where there is nothing to order by."""
+    """`orderBys` must cover every dimension for paginated runReport requests, including cohort
+    requests, and must be absent where GA4 does not accept it (pivot requests) and where there
+    is nothing to order by."""
     manifest = yaml.safe_load(manifest_path.read_text())
     config = {"property_ids": ["12345"], "custom_reports_array": [custom_report]}
 

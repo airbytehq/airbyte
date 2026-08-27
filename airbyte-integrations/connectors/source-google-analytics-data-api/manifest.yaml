@@ -1003,12 +1003,13 @@ dynamic_streams:
                  and GA4 documents no default ordering for runReport (it may also sample or
                  re-aggregate between requests). GA4 returns one row per unique dimension-value
                  combination, so ordering by every dimension is a total order and makes page
-                 boundaries stable. Omitted for pivot requests (RunPivotReportRequest has no
-                 top-level orderBys, and pivot streams use NoPagination), for cohort requests
-                 (Google documents cohort-specific request restrictions and says nothing about
-                 orderBys support there; cohort reports are small and end on the first page),
-                 and for metric-only reports (no dimensions to order by). #}
-              {% if components_values.get("dimensions") and not pivots and not (cohort and cohort.get("enabled") == "true") %}
+                 boundaries stable. Cohort requests also receive orderBys: they paginate like
+                 any other runReport, and GA4 accepts orderBys alongside cohortSpec (verified
+                 against the live API; GA4 returns 400 for genuinely invalid cohort request
+                 combinations such as supplying dateRanges). Omitted for pivot requests
+                 (RunPivotReportRequest has no top-level orderBys, and pivot streams use
+                 NoPagination) and for metric-only reports (no dimensions to order by). #}
+              {% if components_values.get("dimensions") and not pivots %}
               orderBys: [{% for dimension in components_values.get("dimensions") %}{"dimension": {"dimensionName": "{{ dimension }}"}}{% if not loop.last %}, {% endif %}{% endfor %}]
               {% endif %}
         # This mapping update pagination conditionally as pivots are not support pagination
