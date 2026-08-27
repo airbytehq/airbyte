@@ -43,12 +43,12 @@ This connector supports the following entities and actions. For more details, se
 |--------|---------|
 | Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get), [Context Store Search](./REFERENCE.md#candidates-context-store-search) |
 | Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get), [Context Store Search](./REFERENCE.md#applications-context-store-search) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Context Store Search](./REFERENCE.md#jobs-context-store-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Context Store Search](./REFERENCE.md#jobs-context-store-search), [Semantic Search](./REFERENCE.md#jobs-semantic-search) |
 | Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get), [Context Store Search](./REFERENCE.md#offers-context-store-search) |
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
 | Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Context Store Search](./REFERENCE.md#departments-context-store-search) |
 | Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get), [Context Store Search](./REFERENCE.md#offices-context-store-search) |
-| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get), [Context Store Search](./REFERENCE.md#job-posts-context-store-search) |
+| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get), [Context Store Search](./REFERENCE.md#job-posts-context-store-search), [Semantic Search](./REFERENCE.md#job-posts-semantic-search) |
 | Sources | [List](./REFERENCE.md#sources-list), [Context Store Search](./REFERENCE.md#sources-context-store-search) |
 | Scheduled Interviews | [List](./REFERENCE.md#scheduled-interviews-list), [Get](./REFERENCE.md#scheduled-interviews-get) |
 | Application Attachment | [Download](./REFERENCE.md#application-attachment-download) |
