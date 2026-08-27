@@ -271,6 +271,35 @@ class TestGoogleAdsStreamingDecoder:
         out = self._decode_all(decoder, resp)
         assert out == {"results": msg[0]["results"]}
 
+    def test_preserves_multibyte_characters_split_across_chunks(self, decoder):
+        msg = [{"results": [{"text": "café"}]}]
+        raw = json.dumps(msg, ensure_ascii=False).encode("utf-8")
+        split = raw.index("é".encode("utf-8")) + 1
+
+        records = list(decoder._parse_records_from_stream([raw[:split], raw[split:]]))
+
+        assert records == msg[0]["results"]
+        assert "\ufffd" not in records[0]["text"]
+
+    def test_preserves_multibyte_character_split_byte_by_byte_across_chunks(self, decoder):
+        msg = [{"results": [{"text": "smile 😀"}]}]
+        raw = json.dumps(msg, ensure_ascii=False).encode("utf-8")
+        emoji = "😀".encode("utf-8")
+        emoji_start = raw.index(emoji)
+        chunks = [
+            raw[:emoji_start],
+            bytes([emoji[0]]),
+            bytes([emoji[1]]),
+            bytes([emoji[2]]),
+            bytes([emoji[3]]),
+            raw[emoji_start + len(emoji) :],
+        ]
+
+        records = list(decoder._parse_records_from_stream(chunks))
+
+        assert records == msg[0]["results"]
+        assert "\ufffd" not in records[0]["text"]
+
     def test_braces_inside_strings_do_not_confuse_depth(self, decoder):
         """Braces and brackets inside string values must not break item boundary tracking."""
         tricky_text = "note: has braces { like this } and [also arrays]"

@@ -318,6 +318,7 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.1 | 2026-08-26 | [85057](https://github.com/airbytehq/airbyte/pull/85057) | Send PKCE `code_challenge`/`code_challenge_method=S256` on the consent URL and `code_verifier` on the token exchange, so OAuth works in orgs that require PKCE |
 | 2.9.0 | 2026-08-25 | [82722](https://github.com/airbytehq/airbyte/pull/82722) | Add an optional end date for bounded incremental syncs |
 | 2.8.1 | 2026-08-05 | [82784](https://github.com/airbytehq/airbyte/pull/82784) | Fail fast when the refresh token is rejected instead of retrying the token endpoint from every stream |
 | 2.8.0 | 2026-07-17 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
