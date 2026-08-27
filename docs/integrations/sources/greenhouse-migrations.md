@@ -4,13 +4,13 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 ## Upgrading to 1.0.0
 
-Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. This is a breaking release; see the recommended upgrade path below before upgrading.
+Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 because Greenhouse is sunsetting Harvest v1 and v2 together on 2026-08-31. This is a breaking release; follow the upgrade path below before upgrading.
 
-### Recommended upgrade path: create a new connection
+### Upgrade path: create a new connection
 
 **No stream in 1.0.0 is a one-to-one replacement for its Harvest v1 equivalent.** The migration changes authentication, the endpoint each stream reads, pagination, incremental cursors and state, and the record shape of every stream, so the rows and columns that 1.0.0 produces do not line up with the rows and columns already in your destination.
 
-Because of that, we highly recommend creating a **brand-new connection** with `source-greenhouse` 1.0.0 and a new destination namespace or table prefix, instead of upgrading the existing connection and refreshing its data. That keeps the historical Harvest v1 data already in your destination intact while v3 data lands cleanly alongside it, and it lets you reconcile the two before retiring the old tables. Refreshing an existing connection instead replaces that history with v3-shaped records, and any downstream model built on the v1 columns breaks at the same moment.
+Because of that, create a **brand-new connection** with `source-greenhouse` 1.0.0 writing to a new destination namespace or table prefix, and keep your existing Harvest v1 tables as history. Do not upgrade the existing connection in place and continue writing v3 records into the v1 tables. No viable path keeps the old tables in use: a schema refresh leaves every v1-only column in place, permanently null and stale on all v3 rows, while dropped nested objects such as `candidates.applications` and `jobs.openings` disappear from new rows but remain populated on the old ones. In destinations that merge records, the two record shapes collide on the same primary keys, so v3 rows overwrite v1 rows column by column and the mixed table can no longer be reasoned about; in append modes the table simply accumulates two incompatible shapes. Creating a new connection keeps the v1 history intact and lets you reconcile the two datasets before retiring the old tables.
 
 Steps:
 
@@ -20,11 +20,9 @@ Steps:
 4. Sync, then update downstream models against the v3 columns — see [Stream and schema changes](#stream-and-schema-changes) for the removed and renamed fields.
 5. Disable the old connection once the new one has caught up, and keep its destination tables for as long as you need the v1 history.
 
-If you upgrade the existing connection in place instead, you must re-authenticate with OAuth, refresh the schema, and reset the affected streams; `applications` will backfill once because its legacy `applied_at` watermark is discarded.
-
 ### Authentication
 
-Harvest v3 uses OAuth 2.0 instead of Harvest API keys. Airbyte Cloud and partner integrations use Authorization Code authentication and refresh tokens: enter the OAuth client ID and client secret and click **Authenticate** to complete the consent flow. Self-managed users create a custom integration in Greenhouse under **API Credentials**, choose credential type **Harvest V3 (OAuth)**, and provide its client ID and client secret through the **OAuth client credentials (self-managed)** option. This self-managed flow has no authorize step or refresh token; configure its scopes on the credential in the Greenhouse UI rather than requesting them at token time, and optionally provide a numeric authorizing user ID (`sub`). The authorizing user, or the integration service user Greenhouse uses when `sub` is omitted, must be a Site Admin because every v3 list endpoint requires Site Admin authorization. After upgrading to 1.0.0, Authorization Code connections require authentication again; self-managed users who previously used an API key should create the custom integration instead.
+Harvest v3 uses OAuth 2.0 instead of Harvest API keys. Airbyte Cloud and partner integrations use Authorization Code authentication and refresh tokens: enter the OAuth client ID and client secret and click **Authenticate** to complete the consent flow. Self-managed users create a custom integration in Greenhouse under **API Credentials**, choose credential type **Harvest V3 (OAuth)**, and provide its client ID and client secret through the **OAuth client credentials (self-managed)** option. This self-managed flow has no authorize step or refresh token; configure its scopes on the credential in the Greenhouse UI rather than requesting them at token time, and optionally provide a numeric authorizing user ID (`sub`). The authorizing user, or the integration service user Greenhouse uses when `sub` is omitted, must be a Site Admin because every v3 list endpoint requires Site Admin authorization. This is the most likely first-sync failure: where 0.8.1 ignored `403` responses and produced an empty stream, 1.0.0 fails the sync with a configuration error, so a non-Site-Admin authorizing user or a grant missing scopes stops the sync instead of silently yielding no records. After upgrading to 1.0.0, Authorization Code connections require authentication again; self-managed users who previously used an API key should create the custom integration instead.
 
 Version 1.0.0 introduces a new optional `start_date` configuration value for incremental streams. When it is omitted, the connector preserves the previous full-history behavior.
 
@@ -38,7 +36,7 @@ The 33 remaining existing streams now use their Harvest v3 collection endpoints,
 - `candidates` no longer embeds applications and uses `private`, `preferred_name`, `last_activity_at`, and linked user identifiers.
 - `jobs_openings`, `offers`, and `users` use v3 relationship identifiers instead of the v1 nested objects.
 - `offices.location` is a string in v3 rather than the v1 object.
-- `activity_feed` changes record grain. In v1 it returned one row per candidate whose only columns were the `activities`, `emails`, and `notes` arrays, and the stream had no primary key. It now reads `GET /v3/notes` and emits one flat row per note, with `id` as the primary key. Every existing column is replaced and the row count grows to the number of notes per candidate - drop and re-create the destination table for this stream rather than refreshing the schema in place.
+- `activity_feed` changes record grain without losing content. In v1 it returned one row per candidate whose only columns were the `activities`, `emails`, and `notes` arrays, and the stream had no primary key. It now reads `GET /v3/notes` and emits one flat row per activity-feed entry, with `id` as the primary key. `GET /v3/notes` returns every entry type - candidate notes, logged emails, system activity, interview feedback, LinkedIn messages, and contact entries - discriminated by the `type` field, and the flat row carries `subject`, `body`, `body_with_tags`, `email_to`, `email_cc`, `email_from`, and `email_attachment_file_names`. The nested v1 arrays are therefore flattened rather than dropped: filter on `type` to rebuild each of them. Because every column is replaced and the row count grows to the number of entries per candidate, drop and re-create the destination table for this stream rather than refreshing the schema in place.
 
 #### Dropped and renamed top-level fields
 
@@ -46,7 +44,7 @@ Version 1.0.0 removes the redundant `applications_demographics_answers`, `applic
 
 | Stream | Dropped from this stream in v3 | Renamed in v3 |
 |---|---|---|
-| activity_feed | `activities`, `emails`, `notes` | |
+| activity_feed | `activities`, `emails`, `notes` (flattened into one row per entry, not dropped - see above) | |
 | applications | `attachments`, `credited_to`, `current_stage`, `jobs`, `location`, `prospect_detail`, `prospective_department`, `prospective_office`, `rejection_details`, `source` | `applied_at` -> `updated_at`; `rejection_reason` object -> `rejection_reason_id` (join to the `rejection_reasons` stream on `id`) |
 | approvals | `approver_groups`, `requested_by_user_id` | |
 | candidates | `application_ids`, `applications`, `attachments`, `coordinator`, `educations`, `employments`, `keyed_custom_fields`, `photo_url`, `recruiter` | `is_private` -> `private`, `last_activity` -> `last_activity_at` |
@@ -68,7 +66,7 @@ Version 1.0.0 removes the redundant `applications_demographics_answers`, `applic
 | user_roles | `type` | |
 | users | `departments`, `offices` | `disabled` -> `deactivated`, `primary_email_address` -> `primary_email` |
 
-If you upgrade an existing connection in place, refresh the schema in every destination and reset streams whose records or fields are used downstream. Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string.
+Timestamp and date fields now carry `format: date-time` / `format: date`, so destinations type them as TIMESTAMP/DATE rather than string. This is another reason the new connection needs its own tables: the v1 tables type those columns as string, and destinations do not change a column's type on a schema refresh.
 
 Most of the fields above are not gone from Harvest. Harvest v3 moved them off the parent record onto their own collection endpoints, and this release does not sync those endpoints yet. Adding the rest is tracked for a follow-up release and requires new OAuth scopes, so it will need a second authorization. Until then, Harvest v3 still serves this data at:
 
@@ -97,6 +95,8 @@ Most of the fields above are not gone from Harvest. Harvest v3 moved them off th
 ### Pagination and incremental state
 
 Harvest v3 returns opaque cursor URLs in the `Link` response header. The connector sends `per_page=500`, incremental filters, parent filters, and static filters only on the first request; cursor follow-up requests use only the cursor URL. The legacy `applied_at` watermark is discarded during the 1.0.0 upgrade because it is v3's `created_at`, so `applications` backfills once on the new `updated_at` cursor. The remaining de-fanned child streams preserve the minimum recoverable `updated_at` cursor and resume without a backfill.
+
+`eeoc` keeps `submitted_at` as its cursor, matching 0.8.1, because `/v3/eeoc` exposes no `updated_at` filter. Corrections made to an EEOC response after submission do not change `submitted_at`, so incremental syncs never re-read them and, with `application_id` as the primary key in destinations that merge records, the corrected values are silently missed. Re-run the stream in full refresh if you need corrections to land.
 
 The deleted child streams were redundant in v3: `demographics_answers`, `interviews`, and `job_stages` now provide the complete collections formerly exposed through their child-stream counterparts.
 
