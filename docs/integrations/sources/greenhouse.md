@@ -59,10 +59,6 @@ Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Gr
 Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
 :::
 
-## Authorization Code refresh token lifetime
-
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Connections that are paused, turned off, or failing for longer than 24 hours require manual reauthentication.
-
 ## Supported sync modes
 
 The Greenhouse source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):

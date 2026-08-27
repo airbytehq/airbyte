@@ -10,7 +10,7 @@ Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 be
 
 **No stream in 1.0.0 is a one-to-one replacement for its Harvest v1 equivalent.** The migration changes authentication, the endpoint each stream reads, pagination, incremental cursors and state, and the record shape of every stream, so the rows and columns that 1.0.0 produces do not line up with the rows and columns already in your destination.
 
-There are two ways to upgrade. Creating a new connection is strongly recommended because it retains your Harvest v1 data; upgrading the existing connection in place is supported and keeps the connection itself, but it refreshes the destination tables and therefore discards that history.
+There are two ways to upgrade. Creating a new connection is strongly recommended because it retains your Harvest v1 data; upgrading the existing connection in place is supported and keeps the connection itself, but it requires clearing the affected streams, which replaces the contents of those destination tables and therefore does not retain that history.
 
 #### Option 1 (recommended): create a new connection
 
