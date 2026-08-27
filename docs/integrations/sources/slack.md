@@ -32,14 +32,14 @@ To create a Slack app, read this [tutorial](https://api.slack.com/tutorials/trac
 4. In the navigation menu, select **OAuth & Permissions**.
 5. Under **Scopes** > **Bot Token Scopes**, add the scopes the connector uses:
 
-```
-channels:history
-channels:join
-channels:read
-groups:history
-groups:read
-users:read
-```
+   ```
+   channels:history
+   channels:join
+   channels:read
+   groups:history
+   groups:read
+   users:read
+   ```
 
 6. At the top of the **OAuth & Permissions** page, click **Install to Workspace**. This generates a bot user OAuth token that begins with `xoxb-`. Copy it if you plan to authenticate with a bot token.
 7. In Slack, open a channel you want to sync, then go to **Info** > **More** > **Add Apps**.
@@ -106,14 +106,14 @@ Bot tokens don't expire, so no [refresh token](https://api.slack.com/authenticat
 
 **Join all channels** (required, enabled by default): When enabled, the Channels stream calls `conversations.join` for every non-archived public channel the app isn't already a member of. This is a write operation: syncing modifies your workspace by adding the app to channels, and members of those channels see a join message. It requires the `channels:join` scope, and it never joins private or archived channels.
 
-When disabled, the Channel Messages and Threads streams skip channels the app isn't a member of, so you must add the app to each channel you want to sync. The Channels and Channel Members streams still return every channel the app can see, whether or not it's a member.
+When disabled, the Channel Messages and Threads streams skip channels the app isn't a member of, so you must add the app to each channel you want to sync. The Channels and Channel Members streams still return every channel the app can see that passes **Channel name filter**, whether or not it's a member.
 
 </FieldAnchor>
 <FieldAnchor field="channel_filter">
 
 **Channel name filter** (optional): A list of channel names, without the leading `#`, that limits which channels the connector syncs. Names must match exactly. An empty list, which is the default, means no filtering.
 
-The filter applies to all five streams: the Channels stream emits only matching channels, and Channel Members, Channel Messages, and Threads read only from those channels. Because the connector filters after Slack returns the channel list, the filter doesn't reduce `conversations.list` calls, but it substantially reduces calls for the other streams. When **Join all channels** is enabled, the connector only joins channels that pass the filter.
+The filter applies to the four channel-based streams: the Channels stream emits only matching channels, and Channel Members, Channel Messages, and Threads read only from those channels. The Users stream is unaffected, because it isn't scoped to channels. Because the connector filters after Slack returns the channel list, the filter doesn't reduce `conversations.list` calls, but it substantially reduces calls for the other streams. When **Join all channels** is enabled, the connector only joins channels that pass the filter.
 
 </FieldAnchor>
 <FieldAnchor field="include_private_channels">
