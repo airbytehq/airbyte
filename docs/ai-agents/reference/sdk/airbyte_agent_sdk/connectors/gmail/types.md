@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DraftsAnyCondition"></a>
@@ -97,7 +97,7 @@ Classes
 <a id="DraftsContainsCondition"></a>
 
 `DraftsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -151,6 +151,20 @@ Classes
     ### Class variables
 
     `draft_id: str`
+    :   The type of the None singleton.
+
+<a id="DraftsEndswithCondition"></a>
+
+`DraftsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gmail.types.DraftsStringFilter`
     :   The type of the None singleton.
 
 <a id="DraftsEqCondition"></a>
@@ -279,20 +293,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gmail.types.DraftsStringFilter`
     :   The type of the None singleton.
 
-<a id="DraftsLikeCondition"></a>
-
-`DraftsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gmail.types.DraftsStringFilter`
-    :   The type of the None singleton.
-
 <a id="DraftsListParams"></a>
 
 `DraftsListParams(*args, **kwargs)`
@@ -377,7 +377,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition`
     :   The type of the None singleton.
 
 <a id="DraftsOrCondition"></a>
@@ -399,7 +399,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DraftsSearchFilter"></a>
@@ -430,7 +430,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gmail.types.DraftsEqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsGteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLtCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsLteCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsInCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsNotCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAndCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsOrCondition | airbyte_agent_sdk.connectors.gmail.types.DraftsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gmail.types.DraftsSortFilter]`
@@ -467,10 +467,24 @@ Classes
     `message: Literal['asc', 'desc']`
     :   Draft message payload (headers, body, and metadata)
 
+<a id="DraftsStartswithCondition"></a>
+
+`DraftsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gmail.types.DraftsStringFilter`
+    :   The type of the None singleton.
+
 <a id="DraftsStringFilter"></a>
 
 `DraftsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -537,7 +551,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LabelsAnyCondition"></a>
@@ -591,7 +605,7 @@ Classes
 <a id="LabelsContainsCondition"></a>
 
 `LabelsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -654,6 +668,20 @@ Classes
     ### Class variables
 
     `label_id: str`
+    :   The type of the None singleton.
+
+<a id="LabelsEndswithCondition"></a>
+
+`LabelsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gmail.types.LabelsStringFilter`
     :   The type of the None singleton.
 
 <a id="LabelsEqCondition"></a>
@@ -788,20 +816,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gmail.types.LabelsStringFilter`
     :   The type of the None singleton.
 
-<a id="LabelsLikeCondition"></a>
-
-`LabelsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gmail.types.LabelsStringFilter`
-    :   The type of the None singleton.
-
 <a id="LabelsListParams"></a>
 
 `LabelsListParams(*args, **kwargs)`
@@ -872,7 +886,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition`
     :   The type of the None singleton.
 
 <a id="LabelsOrCondition"></a>
@@ -894,7 +908,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LabelsSearchFilter"></a>
@@ -934,7 +948,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gmail.types.LabelsEqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsGteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLtCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsLteCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsInCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsNotCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAndCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsOrCondition | airbyte_agent_sdk.connectors.gmail.types.LabelsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gmail.types.LabelsSortFilter]`
@@ -966,10 +980,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Label type: `system` or `user`
 
+<a id="LabelsStartswithCondition"></a>
+
+`LabelsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gmail.types.LabelsStringFilter`
+    :   The type of the None singleton.
+
 <a id="LabelsStringFilter"></a>
 
 `LabelsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1057,7 +1085,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLikeCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MessagesAnyCondition"></a>
@@ -1120,7 +1148,7 @@ Classes
 <a id="MessagesContainsCondition"></a>
 
 `MessagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1146,6 +1174,20 @@ Classes
     :   The type of the None singleton.
 
     `thread_id: str`
+    :   The type of the None singleton.
+
+<a id="MessagesEndswithCondition"></a>
+
+`MessagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gmail.types.MessagesStringFilter`
     :   The type of the None singleton.
 
 <a id="MessagesEqCondition"></a>
@@ -1295,20 +1337,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gmail.types.MessagesStringFilter`
     :   The type of the None singleton.
 
-<a id="MessagesLikeCondition"></a>
-
-`MessagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gmail.types.MessagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="MessagesListParams"></a>
 
 `MessagesListParams(*args, **kwargs)`
@@ -1396,7 +1424,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLikeCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="MessagesOrCondition"></a>
@@ -1418,7 +1446,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLikeCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MessagesSearchFilter"></a>
@@ -1467,7 +1495,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLikeCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gmail.types.MessagesEqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesGteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLtCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesLteCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesInCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesNotCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAndCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesOrCondition | airbyte_agent_sdk.connectors.gmail.types.MessagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gmail.types.MessagesSortFilter]`
@@ -1508,10 +1536,24 @@ Classes
     `thread_id: Literal['asc', 'desc']`
     :   Identifier of the thread this message belongs to
 
+<a id="MessagesStartswithCondition"></a>
+
+`MessagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gmail.types.MessagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="MessagesStringFilter"></a>
 
 `MessagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1610,7 +1652,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProfileAnyCondition"></a>
@@ -1661,7 +1703,7 @@ Classes
 <a id="ProfileContainsCondition"></a>
 
 `ProfileContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -1670,6 +1712,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.gmail.types.ProfileAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProfileEndswithCondition"></a>
+
+`ProfileEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gmail.types.ProfileStringFilter`
     :   The type of the None singleton.
 
 <a id="ProfileEqCondition"></a>
@@ -1796,20 +1852,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gmail.types.ProfileStringFilter`
     :   The type of the None singleton.
 
-<a id="ProfileLikeCondition"></a>
-
-`ProfileLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gmail.types.ProfileStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProfileLtCondition"></a>
 
 `ProfileLtCondition(*args, **kwargs)`
@@ -1871,7 +1913,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProfileOrCondition"></a>
@@ -1893,7 +1935,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProfileSearchFilter"></a>
@@ -1930,7 +1972,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gmail.types.ProfileEqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileGteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLtCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileLteCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileInCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileNotCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAndCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileOrCondition | airbyte_agent_sdk.connectors.gmail.types.ProfileAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gmail.types.ProfileSortFilter]`
@@ -1959,10 +2001,24 @@ Classes
     `threads_total: Literal['asc', 'desc']`
     :   Total number of threads currently in the mailbox
 
+<a id="ProfileStartswithCondition"></a>
+
+`ProfileStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gmail.types.ProfileStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProfileStringFilter"></a>
 
 `ProfileStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2001,7 +2057,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ThreadsAnyCondition"></a>
@@ -2049,7 +2105,7 @@ Classes
 <a id="ThreadsContainsCondition"></a>
 
 `ThreadsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Literal case-insensitive substring on scalar fields or exact array membership.
 
     ### Ancestors (in MRO)
 
@@ -2058,6 +2114,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ThreadsEndswithCondition"></a>
+
+`ThreadsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.gmail.types.ThreadsStringFilter`
     :   The type of the None singleton.
 
 <a id="ThreadsEqCondition"></a>
@@ -2192,20 +2262,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.gmail.types.ThreadsStringFilter`
     :   The type of the None singleton.
 
-<a id="ThreadsLikeCondition"></a>
-
-`ThreadsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.gmail.types.ThreadsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ThreadsListParams"></a>
 
 `ThreadsListParams(*args, **kwargs)`
@@ -2293,7 +2349,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ThreadsOrCondition"></a>
@@ -2315,7 +2371,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ThreadsSearchFilter"></a>
@@ -2349,7 +2405,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLikeCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gmail.types.ThreadsEqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNeqCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsGteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLtCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsLteCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsInCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsStartswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsEndswithCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsFuzzyCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsKeywordCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsContainsCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsNotCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAndCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsOrCondition | airbyte_agent_sdk.connectors.gmail.types.ThreadsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gmail.types.ThreadsSortFilter]`
@@ -2375,10 +2431,24 @@ Classes
     `snippet: Literal['asc', 'desc']`
     :   Short snippet of the thread's most recent message
 
+<a id="ThreadsStartswithCondition"></a>
+
+`ThreadsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.gmail.types.ThreadsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ThreadsStringFilter"></a>
 
 `ThreadsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

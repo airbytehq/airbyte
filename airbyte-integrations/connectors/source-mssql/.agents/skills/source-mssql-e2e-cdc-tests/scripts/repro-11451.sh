@@ -51,7 +51,7 @@ mkdir -p "$REPRO_OUT/working"
   --catalog-path="$SKILL/fixtures/catalogs/users-cdc.json"
 
 # 3. Pull STATE messages out of stdout.txt into a state file.
-"$SKILL/scripts/extract-state.py" \
+"$GENERIC/scripts/extract-state.py" \
   "$REPRO_OUT/repro-11451-baseline/stdout.txt" \
   > "$REPRO_OUT/working/state.json"
 

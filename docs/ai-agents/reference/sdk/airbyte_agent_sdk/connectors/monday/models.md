@@ -854,7 +854,7 @@ Classes
     :   Board creator
 
     `description: str | None`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: list[typing.Any] | None`
     :   Board groups
@@ -1133,7 +1133,7 @@ Classes
     :   The type of the None singleton.
 
     `name: str | None`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: dict[str, typing.Any] | None`
     :   Parent item (for subitems)
@@ -1984,7 +1984,7 @@ Classes
     :   Files attached to this update
 
     `body: str | None`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: str | None`
     :   When the update was created
@@ -2002,10 +2002,10 @@ Classes
     :   The type of the None singleton.
 
     `replies: list[typing.Any] | None`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: str | None`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: str | None`
     :   When the update was last modified
