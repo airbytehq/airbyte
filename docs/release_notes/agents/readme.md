@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## August 27, 2026
+
+Web app
+
+- Chat now keeps up with your skills while a conversation is open. If you add, edit, disable, or remove a skill mid-chat, your agent picks up the change on your next message instead of continuing to follow the old instructions. If the skill list can't be loaded for a message, the agent tells you it's temporarily unavailable and asks you to try again rather than answering from skill content it saw earlier.
+
+SDK
+
+- Search filters now separate text matching from list matching. Use `contains` to match part of a text field, ignoring capitalization, and the new `array_contains` to check whether a list field includes an exact value. If you previously used `contains` against a list field, switch that filter to `array_contains`.
+- When you run connectors with credentials supplied from your own environment, you can now keep those credentials in Google Cloud Secret Manager in addition to AWS Secrets Manager.
+
 ## August 12, 2026
 
 Web app
