@@ -10,7 +10,7 @@ Version 1.0.0 migrates the connector from Greenhouse Harvest v1 to Harvest v3 be
 
 **No stream in 1.0.0 is a one-to-one replacement for its Harvest v1 equivalent.** The migration changes authentication, the endpoint each stream reads, pagination, incremental cursors and state, and the record shape of every stream, so the rows and columns that 1.0.0 produces do not line up with the rows and columns already in your destination.
 
-There are two ways to upgrade. Creating a new connection is strongly recommended; upgrading the existing connection in place is supported, but it mixes two incompatible record shapes in the same tables.
+There are two ways to upgrade. Creating a new connection is strongly recommended because it retains your Harvest v1 data; upgrading the existing connection in place is supported and keeps the connection itself, but it refreshes the destination tables and therefore discards that history.
 
 #### Option 1 (recommended): create a new connection
 
@@ -24,7 +24,7 @@ Create a **brand-new connection** with `source-greenhouse` 1.0.0 writing to a ne
 
 #### Option 2: upgrade the existing connection in place
 
-If you would rather keep the existing connection and its destination tables, update the source configuration to the new OAuth credential, refresh each stream's schema, and clear the existing data for the affected streams so v3 records do not land beside v1 records.
+This path keeps your existing connection, its streams, and its destination tables in place: you update the source configuration to the new OAuth credential, refresh each stream's schema, and clear the affected streams. The trade-off is the data itself — clearing refreshes those destination tables from scratch, so the Harvest v1 rows they hold are replaced by v3 rows and the v1 history is not retained. Back up or copy the tables first if you need that history, or use Option 1 instead.
 
 1. Edit the existing Greenhouse source and complete the authentication setup (see [Authentication](#authentication)).
 2. Refresh the schema for every enabled stream and accept the changes.
@@ -34,7 +34,6 @@ If you would rather keep the existing connection and its destination tables, upd
 
 What to expect if you take this path:
 
-- Clearing a stream removes the v1 rows for it, so the Harvest v1 history in that table is gone once you sync. Back up or copy the tables first if you need it.
 - If you skip the clear, the two record shapes coexist: v1-only columns stay in the table, permanently null on v3 rows, and dropped nested objects such as `candidates.applications` and `jobs.openings` remain populated on old rows only. In destinations that merge records, the shapes collide on the same primary keys, so v3 rows overwrite v1 rows column by column; in append modes the table accumulates both.
 - Timestamp columns are typed `string` in the v1 tables and `date-time` in v3. Destinations do not retype an existing column on a schema refresh, so those columns stay strings unless the table is re-created.
 - `applications` switches from the `applied_at` cursor to `updated_at` and its legacy state is discarded, so it backfills once regardless of which path you choose.
