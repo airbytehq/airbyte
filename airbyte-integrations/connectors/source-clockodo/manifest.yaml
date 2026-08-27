@@ -25,7 +25,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/projects
+          path: /v4/projects
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -34,7 +34,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - projects
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -49,7 +49,7 @@ definitions:
             type: CursorPagination
             page_size: 1000
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ (response.paging.count_pages | default(0) | int) == 0 or response.paging.count_pages == response.paging.current_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -63,7 +63,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/absences
+          path: /v4/absences
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -72,7 +72,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - absences
+              - data
         partition_router:
           type: ListPartitionRouter
           values: "{{ config['years'] }}"
@@ -94,7 +94,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/customers
+          path: /v3/customers
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -103,7 +103,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - customers
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -118,7 +118,7 @@ definitions:
             type: CursorPagination
             page_size: 1000
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ (response.paging.count_pages | default(0) | int) == 0 or response.paging.count_pages == response.paging.current_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -151,7 +151,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ (response.paging.count_pages | default(0) | int) == 0 or response.paging.count_pages == response.paging.current_page }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: time_last_change
@@ -187,7 +187,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /holidayscarry
+          path: /v3/holidaysCarry
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -196,7 +196,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - holidayscarry
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -210,7 +210,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /holidaysquota
+          path: /v2/holidaysQuota
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -219,7 +219,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - holidaysquota
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -233,7 +233,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/lumpsumservices
+          path: /v4/lumpSumServices
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -242,7 +242,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - lumpSumServices
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -256,7 +256,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /nonbusinessdays
+          path: /v2/nonbusinessDays
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -265,7 +265,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - nonbusinessdays
+              - data
         partition_router:
           type: ListPartitionRouter
           values: "{{ config.years }}"
@@ -287,7 +287,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /overtimecarry
+          path: /v3/overtimeCarry
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -296,7 +296,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - overtimecarry
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -310,7 +310,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/services
+          path: /v4/services
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -319,7 +319,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - services
+              - data
         paginator:
           type: DefaultPaginator
           page_token_option:
@@ -334,7 +334,7 @@ definitions:
             type: CursorPagination
             page_size: 1000
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ (response.paging.count_pages | default(0) | int) == 0 or response.paging.count_pages == response.paging.current_page }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -352,6 +352,16 @@ definitions:
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 410
+                      - 404
         record_selector:
           type: RecordSelector
           extractor:
@@ -394,7 +404,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/teams
+          path: /v3/teams
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -403,7 +413,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - teams
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -446,7 +456,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /v2/users
+          path: /v3/users
           http_method: GET
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
@@ -455,7 +465,7 @@ definitions:
           extractor:
             type: DpathExtractor
             field_path:
-              - users
+              - data
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -507,8 +517,8 @@ definitions:
           http_method: GET
           request_parameters:
             users_id: "{{ stream_partition.user_id }}"
-            date_since: "{{ format_datetime(config['start_time'], '%Y-%m-%d') }}"
-            date_until: "{{ format_datetime(config[\"end_time\"], '%Y-%m-%d') }}"
+            date_since: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            date_until: "{{ now_utc().strftime('%Y-%m-%d') }}"
           request_headers:
             X-Clockodo-External-Application: "{{ config[\"external_application\"] }}"
         record_selector:
@@ -526,7 +536,7 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ response.paging.current_page | int + 1 }}"
-            stop_condition: "{{ response.paging.count_pages == response.paging.current_page}}"
+            stop_condition: "{{ (response.paging.count_pages | default(0) | int) == 0 or response.paging.count_pages == response.paging.current_page }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
