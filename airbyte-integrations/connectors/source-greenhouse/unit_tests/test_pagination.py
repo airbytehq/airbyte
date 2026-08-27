@@ -2,6 +2,8 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 import base64
+import datetime
+from unittest.mock import patch
 from urllib.parse import parse_qs
 
 import pytest
@@ -81,6 +83,7 @@ def test_applications_retries_429_and_completes(requests_mock, get_source):
         if len(application_requests) == 1:
             context.status_code = 429
             context.headers["X-RateLimit-Remaining"] = "0"
+            context.headers["X-RateLimit-Reset"] = "0"
             context.headers["Retry-After"] = "1"
             return {"message": "Too Many Requests"}
         context.status_code = 200
@@ -117,6 +120,7 @@ def test_applications_429_waits_for_retry_after(requests_mock, get_source, monke
         if len(application_requests) == 1:
             context.status_code = 429
             context.headers["X-RateLimit-Remaining"] = "0"
+            context.headers["X-RateLimit-Reset"] = "0"
             context.headers["Retry-After"] = "1"
             return {"message": "Too Many Requests"}
         context.status_code = 200
@@ -132,6 +136,45 @@ def test_applications_429_waits_for_retry_after(requests_mock, get_source, monke
     assert not output.errors
     assert waits
     assert waits[0] == pytest.approx(2)
+
+
+def test_applications_refreshes_client_credentials_token_on_401(requests_mock, get_source):
+    token_requests = []
+
+    def token_callback(request, context):
+        token_requests.append(request)
+        context.status_code = 200
+        return {"access_token": f"token-{len(token_requests)}", "expires_in": 3600}
+
+    application_requests = []
+
+    def applications_callback(request, context):
+        application_requests.append(request)
+        if request.headers["Authorization"] == "Bearer token-1":
+            context.status_code = 401
+            return {"message": "Unauthorized"}
+        context.status_code = 200
+        return [{"id": 1, "updated_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.post("https://auth.greenhouse.io/token", json=token_callback)
+    requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
+
+    config = {
+        "credentials": {
+            "auth_type": "ClientCredentials",
+            "client_id": "test-client",
+            "client_secret": "test-secret",
+        }
+    }
+    source = get_source(config)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=config, catalog=catalog)
+
+    assert len(token_requests) == 2
+    assert len(application_requests) == 2
+    assert application_requests[1].headers["Authorization"] == "Bearer token-2"
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [1]
 
 
 @pytest.mark.parametrize("stream_name", ["offices", "users"])
@@ -654,6 +697,20 @@ def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
         )
 
 
+def test_manifest_uses_greenhouse_fixed_window_api_budget(connector_path):
+    manifest = yaml.safe_load((connector_path / "manifest.yaml").read_text())
+
+    assert manifest["api_budget"]["ratelimit_reset_header"] == "X-RateLimit-Reset"
+    assert manifest["api_budget"]["policies"] == [
+        {
+            "type": "FixedWindowCallRatePolicy",
+            "call_limit": 50,
+            "period": "PT30S",
+            "matchers": [],
+        }
+    ]
+
+
 def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, get_source):
     _register_token(requests_mock)
     eeoc_requests = []
@@ -679,6 +736,39 @@ def test_eeoc_uses_submitted_at_filter_and_cursor_only_follow_up(requests_mock, 
     }
     assert parse_qs(eeoc_requests[1].query) == {"cursor": ["cursor-2"]}
     assert [record.record.data["application_id"] for record in output.records] == [1, 2]
+
+
+def test_email_templates_incremental_stateful_cursor_pagination(requests_mock, get_source):
+    _register_token(requests_mock)
+    email_template_requests = []
+
+    def email_templates_callback(request, context):
+        email_template_requests.append(request)
+        context.status_code = 200
+        if len(email_template_requests) == 1:
+            context.headers["Link"] = '<https://harvest.greenhouse.io/v3/email_templates?cursor=cursor-2>; rel="next"'
+            return [{"id": 1, "updated_at": "2026-08-24T12:30:00.000Z"}]
+        return [{"id": 2, "updated_at": "2026-08-24T13:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/email_templates", json=email_templates_callback)
+
+    state = StateBuilder().with_stream_state("email_templates", {"updated_at": "2026-08-24T12:00:00.000Z"}).build()
+    source = get_source(CONFIG_WITH_EPOCH_START_DATE, state=state)
+    catalog = CatalogBuilder().with_stream("email_templates", SyncMode.incremental).build()
+    now = datetime.datetime(2026, 8, 27, tzinfo=datetime.timezone.utc)
+    with patch(
+        "airbyte_cdk.sources.streams.concurrent.state_converters.datetime_stream_state_converter.ab_datetime_now",
+        return_value=now,
+    ):
+        output = read(source, config=CONFIG_WITH_EPOCH_START_DATE, catalog=catalog)
+
+    assert email_template_requests[0].qs == {
+        "per_page": ["500"],
+        "updated_at": ["gte|2026-08-24t11:00:00.000z"],
+    }
+    assert parse_qs(email_template_requests[1].query) == {"cursor": ["cursor-2"]}
+    assert [record.record.data["id"] for record in output.records] == [1, 2]
+    assert vars(output.most_recent_state.stream_state) == {"updated_at": "2026-08-24T13:00:00.000Z"}
 
 
 def test_lookback_window_widens_resume_bound(requests_mock, get_source):

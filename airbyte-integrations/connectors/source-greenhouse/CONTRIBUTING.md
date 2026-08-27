@@ -16,6 +16,7 @@ v3 invariants a future edit must not break:
 - `/v3/demographic_questions` and `/v3/demographic_answer_options` expose no `created_at`/`updated_at` filter, which is why those streams are full refresh.
 - Incremental streams use the optional `start_date` configuration value and default to all history when it is omitted.
 - `job_ids` on `/v3/approval_flows` excludes `offer_candidate` flows.
+- HTTP 401 responses must remain `REFRESH_TOKEN_THEN_RETRY`, and the API budget must model Greenhouse's fixed 30-second window with `X-RateLimit-Reset` and `X-RateLimit-Remaining`; do not switch it back to a moving window.
 
 | Stream | Relationship | Cursor field | Request filter | Status |
 |---|---|---|---|---|

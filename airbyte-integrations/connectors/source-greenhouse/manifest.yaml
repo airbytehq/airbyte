@@ -17,6 +17,10 @@ definitions:
     response_filters:
       - type: HttpResponseFilter
         http_codes:
+          - 401
+        action: REFRESH_TOKEN_THEN_RETRY
+      - type: HttpResponseFilter
+        http_codes:
           - 403
         action: FAIL
         failure_type: config_error
@@ -1539,13 +1543,13 @@ concurrency_level:
 # figure (X-RateLimit-Limit: 75); raising it requires an observed header value.
 api_budget:
   type: HTTPAPIBudget
+  ratelimit_reset_header: X-RateLimit-Reset
   ratelimit_remaining_header: X-RateLimit-Remaining
   status_codes_for_ratelimit_hit: [429]
   policies:
-    - type: MovingWindowCallRatePolicy
-      rates:
-        - limit: 50
-          interval: PT30S
+    - type: FixedWindowCallRatePolicy
+      call_limit: 50
+      period: PT30S
       matchers: []
 
 spec:
@@ -2257,6 +2261,7 @@ schemas:
         description: Default value applied when a new parent record is created without an explicit value for this field. Shape varies by `value_type` (string for text/url, number for currency/number, option id for single_select, ISO 8601 for date).
         type:
         - 'null'
+        - object
         - string
         - number
         - boolean
