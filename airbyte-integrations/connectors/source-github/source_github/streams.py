@@ -151,7 +151,7 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
-                if isinstance(self, Organizations):
+                if isinstance(self, Teams):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
                 elif isinstance(self, TeamMemberships):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
@@ -166,7 +166,7 @@ class GithubStreamABC(HttpStream, ABC):
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                if isinstance(self, (Organizations, Teams, Users)):
+                if isinstance(self, Teams):
                     error_msg = (
                         f"Skipping `{self.name}` for organization `{organisation}`: "
                         f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
@@ -469,10 +469,21 @@ class Branches(GithubStream):
         }
 
 
-class Organizations(GithubStreamABC):
+class Teams(GithubStreamABC):
     """
-    API docs: https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
+    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams
+
+    Retained only as the parent of `TeamMembers`, which is in turn the parent of
+    `TeamMemberships`; both stay Python until Step 7 migrates the parent-child group.
+    The catalog's `teams` stream comes from `manifest.yaml` — this class is not returned by
+    `SourceGithub.streams()` and must stay in step with the manifest definition until it can be
+    deleted. `use_cache` means the parent read and the declarative stream share one HTTP cache
+    entry, so keeping it costs no extra quota.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
+
+    use_cache = True
 
     # GitHub pagination could be from 1 to 100.
     page_size = 100
@@ -487,42 +498,15 @@ class Organizations(GithubStreamABC):
             yield {"organization": organization}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        return record
-
-
-class Teams(Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams
-    """
-
-    use_cache = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/teams"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
-
-class Users(Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#list-organization-members
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/members"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():
-            yield self.transform(record=record, stream_slice=stream_slice)
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["organization"] = stream_slice["organization"]
+        return record
 
 
 # Below are semi incremental streams

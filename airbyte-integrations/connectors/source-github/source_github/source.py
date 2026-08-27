@@ -43,7 +43,6 @@ from .streams import (
     IssueReactions,
     Issues,
     IssueTimelineEvents,
-    Organizations,
     ProjectCards,
     ProjectColumns,
     Projects,
@@ -59,7 +58,6 @@ from .streams import (
     TeamMembers,
     TeamMemberships,
     Teams,
-    Users,
     WorkflowJobs,
     WorkflowRuns,
     Workflows,
@@ -382,6 +380,9 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
+        # Not returned below: `teams` is a manifest stream as of Step 4. The instance survives
+        # only because `TeamMembers` — and through it `TeamMemberships` — reads its slices and
+        # records as a parent, and both stay Python until Step 7.
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
@@ -402,7 +403,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             IssueMilestones(**repository_args_with_start_date),
             IssueReactions(**repository_args_with_start_date),
             Issues(**repository_args_with_start_date),
-            Organizations(**organization_args),
             ProjectCards(project_columns_stream, **repository_args_with_start_date),
             project_columns_stream,
             projects_stream,
@@ -415,9 +415,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
-            teams_stream,
             team_members_stream,
-            Users(**organization_args),
             Workflows(**repository_args_with_start_date),
             workflow_runs_stream,
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),

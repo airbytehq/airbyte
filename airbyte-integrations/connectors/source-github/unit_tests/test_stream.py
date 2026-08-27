@@ -28,7 +28,6 @@ from source_github.streams import (
     IssueMilestones,
     Issues,
     IssueTimelineEvents,
-    Organizations,
     ProjectCards,
     ProjectColumns,
     Projects,
@@ -44,7 +43,6 @@ from source_github.streams import (
     TeamMembers,
     TeamMemberships,
     Teams,
-    Users,
     WorkflowJobs,
     WorkflowRuns,
     Workflows,
@@ -354,19 +352,21 @@ def test_retry_after_rate_limit(time_mock, requests_mock):
             return ""
         context.status_code = HTTPStatus.OK
         context.headers = {}
-        context.text = '{"login": "airbytehq"}'
-        return '{"login": "airbytehq"}'
+        context.text = '[{"id": 1, "slug": "core"}]'
+        return '[{"id": 1, "slug": "core"}]'
 
     requests_mock.get(
-        "https://api.github.com/orgs/airbytehq",
+        "https://api.github.com/orgs/airbytehq/teams",
         text=request_callback,
     )
 
-    stream = Organizations(organizations=["airbytehq"])
+    # `teams` is a manifest stream as of Step 4; the class survives as `TeamMembers`' parent and
+    # is still the org-scoped Python stream this retry behaviour lives on.
+    stream = Teams(organizations=["airbytehq"])
     list(read_full_refresh(stream))
     assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/airbytehq?per_page=100"
-    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/airbytehq?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/airbytehq/teams?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/airbytehq/teams?per_page=100"
 
 
 @patch("time.sleep")
@@ -376,12 +376,12 @@ def test_permission_403_raises_error(time_mock, requests_mock):
     not retry indefinitely.
     """
     requests_mock.get(
-        "https://api.github.com/orgs/airbytehq",
+        "https://api.github.com/orgs/airbytehq/teams",
         status_code=HTTPStatus.FORBIDDEN,
         json={"message": "Resource not accessible by personal access token"},
     )
 
-    stream = Organizations(organizations=["airbytehq"])
+    stream = Teams(organizations=["airbytehq"])
     with pytest.raises((AirbyteTracedException, AttributeError)):
         list(read_full_refresh(stream))
     # Should fail on first attempt, not retry
@@ -408,10 +408,10 @@ def test_read_records_404_message_for_repository_stream(time_mock, caplog, reque
 
 @patch("time.sleep")
 def test_read_records_403_message_for_org_stream(time_mock, caplog, requests_mock):
-    stream = Organizations(organizations=["restricted-org"])
+    stream = Teams(organizations=["restricted-org"])
 
     requests_mock.get(
-        "https://api.github.com/orgs/restricted-org",
+        "https://api.github.com/orgs/restricted-org/teams",
         status_code=requests.codes.FORBIDDEN,
         json={"message": "Resource not accessible by integration"},
     )
@@ -559,28 +559,22 @@ def test_stream_teams_502(sleep_mock, requests_mock):
 
 
 def test_stream_organizations_availability_report():
+    """`organizations` itself is declarative as of Step 4 — see
+    test_manifest_org_scoped_streams.py. The org-scoped Python base still opts out of the
+    availability strategy, which `TeamMembers` inherits through `Teams`."""
     organization_args = {"organizations": ["org1", "org2"]}
-    stream = Organizations(**organization_args)
+    stream = Teams(**organization_args)
     assert stream.availability_strategy is None
-
-
-def test_stream_organizations_read(requests_mock):
-    organization_args = {"organizations": ["org1", "org2"]}
-    stream = Organizations(**organization_args)
-    requests_mock.get("https://api.github.com/orgs/org1", json={"id": 1})
-    requests_mock.get("https://api.github.com/orgs/org2", json={"id": 2})
-    records = list(read_full_refresh(stream))
-    assert records == [{"id": 1}, {"id": 2}]
 
 
 @patch("time.sleep")
 def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
     """Replaces the deleted test_stream_repositories_401: GithubStreamABC.read_records still logs
     the PAT-renewal hint on 401 and re-raises, for every stream still on the Python path."""
-    stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
+    stream = Teams(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
 
     requests_mock.get(
-        "https://api.github.com/orgs/org1/members",
+        "https://api.github.com/orgs/org1/teams",
         status_code=requests.codes.UNAUTHORIZED,
         json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
     )
@@ -610,15 +604,18 @@ def test_stream_teams_read(requests_mock):
 
 
 def test_stream_users_read(requests_mock):
+    """`users` is declarative as of Step 4; its read parity is asserted in
+    test_manifest_org_scoped_streams.py. This exercises the same shape through `Teams`, the
+    org-scoped Python stream that remains as `TeamMembers`' parent."""
     organization_args = {"organizations": ["org1", "org2"]}
-    stream = Users(**organization_args)
-    requests_mock.get("https://api.github.com/orgs/org1/members", json=[{"id": 1}, {"id": 2}])
-    requests_mock.get("https://api.github.com/orgs/org2/members", json=[{"id": 3}])
+    stream = Teams(**organization_args)
+    requests_mock.get("https://api.github.com/orgs/org1/teams", json=[{"id": 1}, {"id": 2}])
+    requests_mock.get("https://api.github.com/orgs/org2/teams", json=[{"id": 3}])
     records = list(read_full_refresh(stream))
     assert records == [{"id": 1, "organization": "org1"}, {"id": 2, "organization": "org1"}, {"id": 3, "organization": "org2"}]
     assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/members?per_page=100"
-    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/members?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/teams?per_page=100"
+    assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/teams?per_page=100"
 
 
 def test_stream_projects_disabled(requests_mock):
