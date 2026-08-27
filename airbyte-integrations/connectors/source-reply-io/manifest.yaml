@@ -358,9 +358,9 @@ definitions:
         inject_into: header
         field_name: x-api-key
     request_headers:
-      X-USER-ID: \"{{ config.get('user_id', '') }}\"
-      X-User-Email: \"{{ config.get('user_email', '') }}\"
-      X-TEAM-ID: \"{{ config.get('team_id', '') }}\"
+      X-USER-ID: "{{ config.get('user_id', '') }}"
+      X-User-Email: "{{ config.get('user_email', '') }}"
+      X-TEAM-ID: "{{ config.get('team_id', '') }}"
 streams:
   - type: DeclarativeStream
     name: campaigns
