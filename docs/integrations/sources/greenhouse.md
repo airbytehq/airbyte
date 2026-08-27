@@ -91,7 +91,7 @@ For Airbyte Cloud and partner Authorization Code connections, Greenhouse refresh
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
-Version 1.0.0 migrates the 33 remaining existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for Airbyte Cloud and partner integrations or OAuth Client Credentials authentication for self-managed integrations, and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. The recommended path is to create a new connection on 1.0.0 rather than refresh the existing one; see the [recommended upgrade path](./greenhouse-migrations.md#recommended-upgrade-path-create-a-new-connection) before upgrading.
+Version 1.0.0 migrates the 33 remaining existing streams from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for Airbyte Cloud and partner integrations or OAuth Client Credentials authentication for self-managed integrations, and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. Create a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade path](./greenhouse-migrations.md#upgrade-path-create-a-new-connection) before upgrading.
 
 ## IP allow list
 
