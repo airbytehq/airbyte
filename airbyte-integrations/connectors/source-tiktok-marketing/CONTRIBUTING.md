@@ -75,19 +75,7 @@ rate limits are per-access-token.
 
 ---
 
-## 5. Smart+ Ads Without modify_time (Resolved)
-
-TikTok's Smart+ Ad records can be returned by the API without a `modify_time` value. Previously, the
-`ads` stream included a `RecordFilter` that dropped these records because the CDK crashed on missing
-cursor fields. This was resolved by a CDK fix
-([airbytehq/airbyte-python-cdk#605](https://github.com/airbytehq/airbyte-python-cdk/pull/605)) — the
-CDK now handles missing cursor fields gracefully: records without the cursor field are always synced
-and do not advance the cursor state. The `RecordFilter` was removed and `modify_time` is now nullable
-in the ads schema, so Smart+ ads are included in syncs.
-
----
-
-## 6. Sandbox Account Rate Limit and Credential Restriction
+## 5. Sandbox Account Rate Limit and Credential Restriction
 
 The TikTok Sandbox account has a rate limit of 10 requests per second. If you run CATs in CI while simultaneously testing locally with the same credentials, you will exceed this limit and the credentials may be temporarily restricted — preventing **all** requests from succeeding. The restriction appears to last a couple of hours, and there is evidence that continued request attempts during the restriction period extend the lockout duration. There is no official TikTok documentation on this restriction behavior or its exact duration.
 
