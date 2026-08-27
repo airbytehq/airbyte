@@ -33,199 +33,200 @@ definitions:
         - filter
         - updatedAt
         - gte
+  base_issues_stream:
+    type: DeclarativeStream
+    name: issues
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+        request_body_json:
+          query: >-
+            query Issues($after: String, $filter: IssueFilter, $orderBy: PaginationOrderBy) { issues(after: $after, first: 25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
+            nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
+            archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
+            canceledAt completedAt createdAt creator { id }
+            customerTicketCount cycle { id } description descriptionState
+            dueDate estimate identifier integrationSourceType labelIds number
+            parent { id } previousIdentifiers priority priorityLabel
+            prioritySortOrder project { id } projectMilestone { id }
+            reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
+            state { id } startedTriageAt subIssueSortOrder team { id } title
+            trashed triagedAt updatedAt url attachments { nodes { id } }
+            sourceComment { id } labels { nodes { id } } slaType slaStartedAt
+            slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
+            } } subscribers { nodes { id } } } pageInfo { hasNextPage
+            endCursor } } }
+          variables:
+            orderBy: updatedAt
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - issues
+            - nodes
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_path:
+            - variables
+            - after
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.issues.pageInfo.endCursor or \"\" }}"
+          stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - assigneeId
+            value: "{{ record.assignee.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - assignee
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - creatorId
+            value: "{{ record.creator.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - creator
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - cycleId
+            value: "{{ record.cycle.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - cycle
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - stateId
+            value: "{{ record.state.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - state
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - teamId
+            value: "{{ record.team.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - team
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - parentId
+            value: "{{ record.parent.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - parent
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - projectId
+            value: "{{ record.project.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - project
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - milestoneId
+            value: "{{ record.projectMilestone.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - projectMilestone
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - attachmentIds
+            value: "{{ record.attachments.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - attachments
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - labelIds
+            value: "{{ record.labels.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - labels
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - subscriberIds
+            value: "{{ record.subscribers.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - subscribers
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - relationIds
+            value: "{{ record.relations.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - relations
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - sourceCommentId
+            value: "{{ record.sourceComment.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - sourceComment
+            - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/issues"
   streams:
     issues:
-      type: DeclarativeStream
-      name: issues
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /
-          http_method: POST
-          request_headers:
-            Content-Type: application/json
-          request_body_json:
-            query: >-
-              query Issues($after: String, $filter: IssueFilter, $orderBy: PaginationOrderBy) { issues(after: $after, first: 25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
-              nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
-              archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
-              canceledAt completedAt createdAt creator { id }
-              customerTicketCount cycle { id } description descriptionState
-              dueDate estimate identifier integrationSourceType labelIds number
-              parent { id } previousIdentifiers priority priorityLabel
-              prioritySortOrder project { id } projectMilestone { id }
-              reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
-              state { id } startedTriageAt subIssueSortOrder team { id } title
-              trashed triagedAt updatedAt url attachments { nodes { id } }
-              sourceComment { id } labels { nodes { id } } slaType slaStartedAt
-              slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
-              } } subscribers { nodes { id } } } pageInfo { hasNextPage
-              endCursor } } }
-            variables:
-              orderBy: updatedAt
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-              - issues
-              - nodes
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_path:
-              - variables
-              - after
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: "{{ response.data.issues.pageInfo.endCursor or \"\" }}"
-            stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
-        decoder:
-          type: JsonDecoder
+      $ref: "#/definitions/base_issues_stream"
       incremental_sync:
         $ref: "#/definitions/incremental_sync_updated_at"
-
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - assigneeId
-              value: "{{ record.assignee.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - assignee
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - creatorId
-              value: "{{ record.creator.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - creator
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - cycleId
-              value: "{{ record.cycle.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - cycle
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - stateId
-              value: "{{ record.state.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - state
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - teamId
-              value: "{{ record.team.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - team
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - parentId
-              value: "{{ record.parent.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - parent
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - projectId
-              value: "{{ record.project.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - project
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - milestoneId
-              value: "{{ record.projectMilestone.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - projectMilestone
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - attachmentIds
-              value: "{{ record.attachments.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - attachments
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - labelIds
-              value: "{{ record.labels.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - labels
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - subscriberIds
-              value: "{{ record.subscribers.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - subscribers
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - relationIds
-              value: "{{ record.relations.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - relations
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - sourceCommentId
-              value: "{{ record.sourceComment.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - sourceComment
-              - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/issues"
     customers:
       type: DeclarativeStream
       name: customers
@@ -1381,6 +1382,303 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/customer_tiers"
+    initiatives:
+      type: DeclarativeStream
+      name: initiatives
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Initiatives($after: String, $filter: InitiativeFilter,
+              $orderBy: PaginationOrderBy) { initiatives(after: $after, first:
+              25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
+              nodes { archivedAt canceledAt color completedAt createdAt creator
+              { id } description health healthUpdatedAt icon id name owner { id }
+              parentInitiative { id } slugId sortOrder startedAt status targetDate
+              targetDateResolution trashed updatedAt url } pageInfo { endCursor
+              hasNextPage } } }
+            variables:
+              orderBy: updatedAt
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - initiatives
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.data.initiatives.pageInfo.endCursor or \"\" }}"
+            stop_condition: "{{ response.data.initiatives.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - creatorId
+              value: "{{ record.creator.id if record.creator else None }}"
+        - type: RemoveFields
+          field_pointers:
+            - - creator
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ownerId
+              value: "{{ record.owner.id if record.owner else None }}"
+        - type: RemoveFields
+          field_pointers:
+            - - owner
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - parentInitiativeId
+              value: "{{ record.parentInitiative.id if record.parentInitiative else None }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parentInitiative
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/initiatives"
+    initiative_to_projects:
+      type: DeclarativeStream
+      name: initiative_to_projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query InitiativeToProjects($after: String) {
+              initiativeToProjects(after: $after, first: 50, includeArchived:
+              true) { nodes { archivedAt createdAt id initiative { id } project
+              { id } sortOrder updatedAt } pageInfo { endCursor hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - initiativeToProjects
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.data.initiativeToProjects.pageInfo.endCursor or \"\" }}"
+            stop_condition: "{{ response.data.initiativeToProjects.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - initiativeId
+              value: "{{ record.initiative.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - initiative
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - projectId
+              value: "{{ record.project.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - project
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/initiative_to_projects"
+    project_updates:
+      type: DeclarativeStream
+      name: project_updates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query ProjectUpdates($after: String, $filter:
+              ProjectUpdateFilter, $orderBy: PaginationOrderBy) {
+              projectUpdates(after: $after, first: 25, includeArchived: true,
+              filter: $filter, orderBy: $orderBy) { nodes { archivedAt body
+              createdAt editedAt health id infoSnapshot isDiffHidden project {
+               id } reactionData slugId updatedAt url user { id } } pageInfo {
+              endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - projectUpdates
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.data.projectUpdates.pageInfo.endCursor or \"\" }}"
+            stop_condition: "{{ response.data.projectUpdates.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - projectId
+              value: "{{ record.project.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - project
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - userId
+              value: "{{ record.user.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - user
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_updates"
+    issue_history:
+      type: DeclarativeStream
+      name: issue_history
+      primary_key:
+        - issueId
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query IssueHistory($issueId: String!, $after: String) { issue(id:
+              $issueId) { history(after: $after, first: 50, includeArchived:
+              true) { nodes { actorId addedLabelIds archived archivedAt
+              attachmentId autoArchived autoClosed changes createdAt customerNeedId
+              fromAssigneeId fromCycleId fromDueDate fromEstimate fromParentId
+              fromPriority fromProjectId fromStateId fromTeamId fromTitle id
+              removedLabelIds toAssigneeId toConvertedProjectId toCycleId
+              toDueDate toEstimate toParentId toPriority toProjectId toStateId
+              toTeamId toTitle trashed updatedAt updatedDescription } pageInfo {
+              endCursor hasNextPage } } } }
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: issue_id
+              stream:
+                $ref: "#/definitions/base_issues_stream"
+              request_option:
+                type: RequestOption
+                inject_into: body_json
+                field_path:
+                  - variables
+                  - issueId
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - issue
+              - history
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ ((((response.get("data") or {}).get("issue") or {}).get("history") or {}).get("pageInfo") or {}).get("endCursor") or "" }}'
+            stop_condition: '{{ ((((response.get("data") or {}).get("issue") or {}).get("history") or {}).get("pageInfo") or {}).get("hasNextPage") is not true }}'
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - issueId
+              value: "{{ stream_partition['issue_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issue_history"
   base_requester:
     type: HttpRequester
     url_base: https://api.linear.app/graphql
@@ -1417,7 +1715,7 @@ definitions:
             If you authenticated with OAuth, re-authenticate to obtain a new refresh token.
             Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'authentication failed') }}
         # 3 · Permission and plan gating — user-correctable, but not a credential problem.
-        #     This handler is shared by all 16 streams and by `check`, so the text must stay stream-agnostic.
+        #     This handler is shared by all 20 streams and by `check`, so the text must stay stream-agnostic.
         - predicate: "{{ 'errors' in response and response['errors'] and (response['errors'][0].get('extensions', {}).get('code') in ['FORBIDDEN', 'FEATURE_NOT_ACCESSIBLE'] or response['errors'][0].get('extensions', {}).get('type') in ['forbidden', 'feature not accessible']) and not (response.get('data') or {}).values() | select | list }}"
           action: FAIL
           failure_type: config_error
@@ -1504,6 +1802,10 @@ streams:
   - $ref: "#/definitions/streams/issue_relations"
   - $ref: "#/definitions/streams/customer_statuses"
   - $ref: "#/definitions/streams/customer_tiers"
+  - $ref: "#/definitions/streams/initiatives"
+  - $ref: "#/definitions/streams/initiative_to_projects"
+  - $ref: "#/definitions/streams/project_updates"
+  - $ref: "#/definitions/streams/issue_history"
 
 # Linear API documented rate limits (per-user, per-hour windows):
 # - API key auth: 2,500 requests / hour (approximately 0.69 req/sec).
@@ -1677,6 +1979,7 @@ spec:
         scopes:
           - scope: "read"
           - scope: "customer:read"
+          - scope: "initiative:read"
         scopes_join_strategy: comma
         consent_url: "https://linear.app/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}&{{scopes_param}}&actor=app&prompt=consent"
         access_token_url: "https://api.linear.app/oauth/token"
@@ -1771,6 +2074,10 @@ metadata:
     issue_relations: true
     customer_statuses: true
     customer_tiers: true
+    initiatives: false
+    initiative_to_projects: false
+    project_updates: false
+    issue_history: false
   testedStreams:
     issues:
       streamHash: 31da36c397cf9d42c652cf26817aa06d507c1f10
@@ -3311,3 +3618,399 @@ schemas:
           - "null"
     required:
       - id
+  initiatives:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      canceledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      color:
+        type:
+          - string
+          - "null"
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      creator:
+        type:
+          - object
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      health:
+        type:
+          - string
+          - "null"
+      healthUpdatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      parentInitiative:
+        type:
+          - object
+          - "null"
+      parentInitiativeId:
+        type:
+          - string
+          - "null"
+      slugId:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - number
+          - "null"
+      startedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type:
+          - string
+          - "null"
+      targetDate:
+        type:
+          - "null"
+          - string
+        format: date
+      targetDateResolution:
+        type:
+          - string
+          - "null"
+      trashed:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  initiative_to_projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      id:
+        type: string
+      initiative:
+        type:
+          - object
+          - "null"
+      initiativeId:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+  project_updates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      body:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      editedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      health:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      infoSnapshot:
+        type:
+          - object
+          - "null"
+      isDiffHidden:
+        type:
+          - boolean
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      reactionData:
+        type:
+          - object
+          - array
+          - "null"
+      slugId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  issue_history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actorId:
+        type:
+          - string
+          - "null"
+      addedLabelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      archived:
+        type:
+          - boolean
+          - "null"
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      attachmentId:
+        type:
+          - string
+          - "null"
+      autoArchived:
+        type:
+          - boolean
+          - "null"
+      autoClosed:
+        type:
+          - boolean
+          - "null"
+      changes:
+        type:
+          - object
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      customerNeedId:
+        type:
+          - string
+          - "null"
+      fromAssigneeId:
+        type:
+          - string
+          - "null"
+      fromCycleId:
+        type:
+          - string
+          - "null"
+      fromDueDate:
+        type:
+          - "null"
+          - string
+        format: date
+      fromEstimate:
+        type:
+          - number
+          - "null"
+      fromParentId:
+        type:
+          - string
+          - "null"
+      fromPriority:
+        type:
+          - number
+          - "null"
+      fromProjectId:
+        type:
+          - string
+          - "null"
+      fromStateId:
+        type:
+          - string
+          - "null"
+      fromTeamId:
+        type:
+          - string
+          - "null"
+      fromTitle:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      issueId:
+        type: string
+      removedLabelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      toAssigneeId:
+        type:
+          - string
+          - "null"
+      toConvertedProjectId:
+        type:
+          - string
+          - "null"
+      toCycleId:
+        type:
+          - string
+          - "null"
+      toDueDate:
+        type:
+          - "null"
+          - string
+        format: date
+      toEstimate:
+        type:
+          - number
+          - "null"
+      toParentId:
+        type:
+          - string
+          - "null"
+      toPriority:
+        type:
+          - number
+          - "null"
+      toProjectId:
+        type:
+          - string
+          - "null"
+      toStateId:
+        type:
+          - string
+          - "null"
+      toTeamId:
+        type:
+          - string
+          - "null"
+      toTitle:
+        type:
+          - string
+          - "null"
+      trashed:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedDescription:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - issueId
