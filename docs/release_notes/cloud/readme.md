@@ -2,6 +2,14 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 27, 2026
+
+Platform
+
+- If your organization is on a capacity-based plan (Pro or Enterprise Flex), the workspace Usage page now shows which region the workspace runs in, alongside its data worker usage. This makes it easier to tell which region's capacity your workspace consumes.
+- If your organization signs in with single sign-on but your plan doesn't include role-based access control, people who sign in for the first time are now added as organization admins. Previously they could be left with a role that nobody in your organization was able to change.
+- If your organization is on the Plus plan, reported usage no longer schedules an unintended downgrade to the Standard plan. Your plan stays as you purchased it.
+
 ## August 12, 2026
 
 Connections
