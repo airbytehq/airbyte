@@ -317,7 +317,7 @@ definitions:
               query Users($after: String, $filter: UserFilter, $orderBy: PaginationOrderBy) { users(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) {
               nodes { active admin archivedAt avatarBackgroundColor avatarUrl
               calendarHash createdAt createdIssueCount description disableReason
-              displayName email guest id initials inviteHash isMe lastSeen name
+              displayName email guest id initials isMe lastSeen name
               statusEmoji statusLabel statusUntilAt teams { nodes { id } }
               timezone updatedAt url } pageInfo { hasNextPage endCursor } } }
             variables:
@@ -1062,13 +1062,13 @@ definitions:
               cycleCooldownTime cycleDuration cycleIssueAutoAssignCompleted
               cycleIssueAutoAssignStarted cycleLockToActive cycleStartDay
               cyclesEnabled defaultIssueEstimate defaultIssueState { id }
-              description groupIssueHistory icon id inviteHash issueCount
+              description groupIssueHistory icon id issueCount
               issueEstimationAllowZero issueEstimationExtended
               issueEstimationType joinByDefault key
-              markedAsDuplicateWorkflowState { id } name parent { id } private
+              markedAsDuplicateWorkflowState { id } name parent { id }
               requirePriorityToLeaveTriage scimGroupName scimManaged
               setIssueSortOrderOnStateChange timezone triageEnabled updatedAt
-              upcomingCycleCount triageIssueState { id } } pageInfo { endCursor
+              upcomingCycleCount triageIssueState { id } visibility } pageInfo { endCursor
               hasNextPage } } }
             variables:
               orderBy: updatedAt
@@ -1307,7 +1307,7 @@ definitions:
             query: >-
               query CustomerStatus($after: String) { customerStatuses(after:
               $after, first: 50, includeArchived: true) { nodes { archivedAt color createdAt
-              description id name position type updatedAt } pageInfo { endCursor
+              description id name position updatedAt } pageInfo { endCursor
               hasNextPage } } }
         record_selector:
           type: RecordSelector
@@ -2207,14 +2207,17 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       addedToProjectAt:
         type:
           - string
           - "null"
+        format: date-time
       addedToTeamAt:
         type:
           - string
           - "null"
+        format: date-time
       archivedAt:
         type:
           - "null"
@@ -2248,14 +2251,17 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       completedAt:
         type:
           - string
           - "null"
+        format: date-time
       createdAt:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -2284,6 +2290,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       estimate:
         type:
           - number
@@ -2390,6 +2397,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       state:
         type:
           - object
@@ -2434,6 +2442,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -2458,6 +2467,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       domains:
         type:
           - array
@@ -2512,6 +2522,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   users:
@@ -2544,6 +2555,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       createdIssueCount:
         type:
           - number
@@ -2566,10 +2578,6 @@ schemas:
         type:
           - string
           - "null"
-      inviteHash:
-        type:
-          - string
-          - "null"
       isMe:
         type:
           - boolean
@@ -2578,6 +2586,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       name:
         type:
           - string
@@ -2602,6 +2611,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -2630,10 +2640,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       editedAt:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       issue:
@@ -2664,6 +2676,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -2691,6 +2704,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       completedIssueCountHistory:
         type:
           - array
@@ -2716,10 +2730,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       endsAt:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       inProgressScopeHistory:
@@ -2766,6 +2782,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       team:
         type:
           - object
@@ -2790,6 +2807,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   customer_needs:
@@ -2818,6 +2836,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       creatorId:
         type:
           - string
@@ -2856,6 +2875,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   projects:
@@ -2876,6 +2896,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       color:
         type:
           - string
@@ -2884,6 +2905,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       completedIssueCountHistory:
         type:
           - array
@@ -2920,6 +2942,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -2936,6 +2959,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       icon:
         type:
           - string
@@ -3006,10 +3030,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       startedAt:
         type:
           - string
           - "null"
+        format: date-time
       status:
         type:
           - object
@@ -3022,6 +3048,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       teamIds:
         type:
           - array
@@ -3050,6 +3077,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -3074,6 +3102,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       descriptionState:
         type:
           - string
@@ -3108,10 +3137,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       updatedAt:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   project_statuses:
@@ -3136,6 +3167,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       indefinite:
@@ -3154,6 +3186,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   issue_labels:
@@ -3178,6 +3211,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -3220,6 +3254,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   workflow_states:
@@ -3248,6 +3283,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       inheritedFromId:
@@ -3274,6 +3310,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   teams:
@@ -3314,6 +3351,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       cycleCalenderUrl:
         type:
           - string
@@ -3368,10 +3406,6 @@ schemas:
           - "null"
       id:
         type: string
-      inviteHash:
-        type:
-          - string
-          - "null"
       issueCount:
         type:
           - number
@@ -3408,10 +3442,6 @@ schemas:
         type:
           - string
           - "null"
-      private:
-        type:
-          - boolean
-          - "null"
       requirePriorityToLeaveTriage:
         type:
           - boolean
@@ -3440,10 +3470,15 @@ schemas:
         type:
           - number
           - "null"
+      visibility:
+        type:
+          - string
+          - "null"
       updatedAt:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   attachments:
@@ -3460,6 +3495,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -3498,6 +3534,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -3522,6 +3559,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       issue:
@@ -3544,6 +3582,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   customer_statuses:
@@ -3564,6 +3603,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       name:
@@ -3578,6 +3618,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   customer_tiers:
@@ -3598,6 +3639,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       displayName:
         type:
           - string
@@ -3616,6 +3658,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   initiatives:
