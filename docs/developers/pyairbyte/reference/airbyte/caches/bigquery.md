@@ -51,7 +51,7 @@ Initialize the cache and backends.
 
 #### Methods {#airbyte.caches.bigquery.BigQueryCache--methods}
 
-#### `get_arrow_dataset` {#airbyte.caches.bigquery.BigQueryCache.get_arrow_dataset}
+##### `get_arrow_dataset` {#airbyte.caches.bigquery.BigQueryCache.get_arrow_dataset}
 
 <ApiMember kind="method">
 
@@ -129,7 +129,7 @@ validated to form a valid model.
 
 #### Methods {#airbyte.caches.bigquery.BigQueryConfig--methods}
 
-#### `get_database_name` {#airbyte.caches.bigquery.BigQueryConfig.get_database_name}
+##### `get_database_name` {#airbyte.caches.bigquery.BigQueryConfig.get_database_name}
 
 <ApiMember kind="method">
 
@@ -145,7 +145,7 @@ Return the name of the database. For BigQuery, this is the project name.
 
 </ApiMember>
 
-#### `get_sql_alchemy_url` {#airbyte.caches.bigquery.BigQueryConfig.get_sql_alchemy_url}
+##### `get_sql_alchemy_url` {#airbyte.caches.bigquery.BigQueryConfig.get_sql_alchemy_url}
 
 <ApiMember kind="method">
 
@@ -164,7 +164,7 @@ We suppress warnings about unrecognized JSON type. More info on that here:
 
 </ApiMember>
 
-#### `get_vendor_client` {#airbyte.caches.bigquery.BigQueryConfig.get_vendor_client}
+##### `get_vendor_client` {#airbyte.caches.bigquery.BigQueryConfig.get_vendor_client}
 
 <ApiMember kind="method">
 

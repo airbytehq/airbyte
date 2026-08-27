@@ -51,7 +51,7 @@ streams as they are discovered.
 
 #### Static Methods {#airbyte.shared.catalog_providers.CatalogProvider--static-methods}
 
-#### `from_read_result` {#airbyte.shared.catalog_providers.CatalogProvider.from_read_result}
+##### `from_read_result` {#airbyte.shared.catalog_providers.CatalogProvider.from_read_result}
 
 <ApiMember kind="method">
 
@@ -67,7 +67,7 @@ Create a catalog provider from a `ReadResult` object.
 
 </ApiMember>
 
-#### `validate_catalog` {#airbyte.shared.catalog_providers.CatalogProvider.validate_catalog}
+##### `validate_catalog` {#airbyte.shared.catalog_providers.CatalogProvider.validate_catalog}
 
 <ApiMember kind="method">
 
@@ -88,7 +88,7 @@ not, both values will be set to `1`.
 
 #### Methods {#airbyte.shared.catalog_providers.CatalogProvider--methods}
 
-#### `get_configured_stream_info` {#airbyte.shared.catalog_providers.CatalogProvider.get_configured_stream_info}
+##### `get_configured_stream_info` {#airbyte.shared.catalog_providers.CatalogProvider.get_configured_stream_info}
 
 <ApiMember kind="method">
 
@@ -107,7 +107,7 @@ Return the column definitions for the given stream.
 
 </ApiMember>
 
-#### `get_cursor_key` {#airbyte.shared.catalog_providers.CatalogProvider.get_cursor_key}
+##### `get_cursor_key` {#airbyte.shared.catalog_providers.CatalogProvider.get_cursor_key}
 
 <ApiMember kind="method">
 
@@ -123,7 +123,7 @@ Return the cursor key for the given stream.
 
 </ApiMember>
 
-#### `get_primary_keys` {#airbyte.shared.catalog_providers.CatalogProvider.get_primary_keys}
+##### `get_primary_keys` {#airbyte.shared.catalog_providers.CatalogProvider.get_primary_keys}
 
 <ApiMember kind="method">
 
@@ -139,7 +139,7 @@ Return the primary keys for the given stream.
 
 </ApiMember>
 
-#### `get_stream_json_schema` {#airbyte.shared.catalog_providers.CatalogProvider.get_stream_json_schema}
+##### `get_stream_json_schema` {#airbyte.shared.catalog_providers.CatalogProvider.get_stream_json_schema}
 
 <ApiMember kind="method">
 
@@ -155,7 +155,7 @@ Return the column definitions for the given stream.
 
 </ApiMember>
 
-#### `get_stream_properties` {#airbyte.shared.catalog_providers.CatalogProvider.get_stream_properties}
+##### `get_stream_properties` {#airbyte.shared.catalog_providers.CatalogProvider.get_stream_properties}
 
 <ApiMember kind="method">
 
@@ -171,7 +171,7 @@ Return the names of the top-level properties for the given stream.
 
 </ApiMember>
 
-#### `resolve_write_method` {#airbyte.shared.catalog_providers.CatalogProvider.resolve_write_method}
+##### `resolve_write_method` {#airbyte.shared.catalog_providers.CatalogProvider.resolve_write_method}
 
 <ApiMember kind="method">
 
@@ -191,7 +191,7 @@ Return the write method for the given stream.
 
 </ApiMember>
 
-#### `with_write_strategy` {#airbyte.shared.catalog_providers.CatalogProvider.with_write_strategy}
+##### `with_write_strategy` {#airbyte.shared.catalog_providers.CatalogProvider.with_write_strategy}
 
 <ApiMember kind="method">
 

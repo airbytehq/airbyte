@@ -64,7 +64,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.cloud.models.CloudConnectionInfo--static-methods}
 
-#### `from_api_response` {#airbyte.cloud.models.CloudConnectionInfo.from_api_response}
+##### `from_api_response` {#airbyte.cloud.models.CloudConnectionInfo.from_api_response}
 
 <ApiMember kind="method">
 
@@ -123,7 +123,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo--static-methods}
 
-#### `from_api_response` {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo.from_api_response}
+##### `from_api_response` {#airbyte.cloud.models.CloudCustomSourceDefinitionInfo.from_api_response}
 
 <ApiMember kind="method">
 
@@ -178,7 +178,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.cloud.models.CloudDestinationInfo--static-methods}
 
-#### `from_api_response` {#airbyte.cloud.models.CloudDestinationInfo.from_api_response}
+##### `from_api_response` {#airbyte.cloud.models.CloudDestinationInfo.from_api_response}
 
 <ApiMember kind="method">
 
@@ -241,7 +241,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.cloud.models.CloudJobInfo--static-methods}
 
-#### `from_api_response` {#airbyte.cloud.models.CloudJobInfo.from_api_response}
+##### `from_api_response` {#airbyte.cloud.models.CloudJobInfo.from_api_response}
 
 <ApiMember kind="method">
 
@@ -296,7 +296,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.cloud.models.CloudSourceInfo--static-methods}
 
-#### `from_api_response` {#airbyte.cloud.models.CloudSourceInfo.from_api_response}
+##### `from_api_response` {#airbyte.cloud.models.CloudSourceInfo.from_api_response}
 
 <ApiMember kind="method">
 
@@ -359,7 +359,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.cloud.models.CloudWorkspaceInfo--static-methods}
 
-#### `from_api_response` {#airbyte.cloud.models.CloudWorkspaceInfo.from_api_response}
+##### `from_api_response` {#airbyte.cloud.models.CloudWorkspaceInfo.from_api_response}
 
 <ApiMember kind="method">
 
@@ -377,7 +377,7 @@ Create a public model from an internal API workspace response.
 
 </ApiMember>
 
-#### `from_mapping` {#airbyte.cloud.models.CloudWorkspaceInfo.from_mapping}
+##### `from_mapping` {#airbyte.cloud.models.CloudWorkspaceInfo.from_mapping}
 
 <ApiMember kind="method">
 
@@ -397,7 +397,7 @@ Create a public model from a workspace mapping.
 
 #### Methods {#airbyte.cloud.models.CloudWorkspaceInfo--methods}
 
-#### `to_dict` {#airbyte.cloud.models.CloudWorkspaceInfo.to_dict}
+##### `to_dict` {#airbyte.cloud.models.CloudWorkspaceInfo.to_dict}
 
 <ApiMember kind="method">
 

@@ -158,7 +158,7 @@ calling `.SyncResult.get_attempts()`.
 
 #### Methods {#airbyte.cloud.sync_results.SyncAttempt--methods}
 
-#### `get_full_log_text` {#airbyte.cloud.sync_results.SyncAttempt.get_full_log_text}
+##### `get_full_log_text` {#airbyte.cloud.sync_results.SyncAttempt.get_full_log_text}
 
 <ApiMember kind="method">
 
@@ -250,7 +250,7 @@ interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 
 #### Methods {#airbyte.cloud.sync_results.SyncResult--methods}
 
-#### `get_attempts` {#airbyte.cloud.sync_results.SyncResult.get_attempts}
+##### `get_attempts` {#airbyte.cloud.sync_results.SyncResult.get_attempts}
 
 <ApiMember kind="method">
 
@@ -266,7 +266,7 @@ Return a list of attempts for this sync job.
 
 </ApiMember>
 
-#### `get_dataset` {#airbyte.cloud.sync_results.SyncResult.get_dataset}
+##### `get_dataset` {#airbyte.cloud.sync_results.SyncResult.get_dataset}
 
 <ApiMember kind="method">
 
@@ -288,7 +288,7 @@ TODO: In a future iteration, we can consider providing stream configuration info
 
 </ApiMember>
 
-#### `get_job_status` {#airbyte.cloud.sync_results.SyncResult.get_job_status}
+##### `get_job_status` {#airbyte.cloud.sync_results.SyncResult.get_job_status}
 
 <ApiMember kind="method">
 
@@ -304,7 +304,7 @@ Check if the sync job is still running.
 
 </ApiMember>
 
-#### `get_sql_cache` {#airbyte.cloud.sync_results.SyncResult.get_sql_cache}
+##### `get_sql_cache` {#airbyte.cloud.sync_results.SyncResult.get_sql_cache}
 
 <ApiMember kind="method">
 
@@ -320,7 +320,7 @@ Return a SQL Cache object for working with the data in a SQL-based destination's
 
 </ApiMember>
 
-#### `get_sql_database_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_database_name}
+##### `get_sql_database_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_database_name}
 
 <ApiMember kind="method">
 
@@ -336,7 +336,7 @@ Return the SQL database name.
 
 </ApiMember>
 
-#### `get_sql_engine` {#airbyte.cloud.sync_results.SyncResult.get_sql_engine}
+##### `get_sql_engine` {#airbyte.cloud.sync_results.SyncResult.get_sql_engine}
 
 <ApiMember kind="method">
 
@@ -352,7 +352,7 @@ Return a SQL Engine for querying a SQL-based destination.
 
 </ApiMember>
 
-#### `get_sql_schema_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_schema_name}
+##### `get_sql_schema_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_schema_name}
 
 <ApiMember kind="method">
 
@@ -368,7 +368,7 @@ Return the SQL schema name.
 
 </ApiMember>
 
-#### `get_sql_table` {#airbyte.cloud.sync_results.SyncResult.get_sql_table}
+##### `get_sql_table` {#airbyte.cloud.sync_results.SyncResult.get_sql_table}
 
 <ApiMember kind="method">
 
@@ -384,7 +384,7 @@ Return a SQLAlchemy table object for the named stream.
 
 </ApiMember>
 
-#### `get_sql_table_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_table_name}
+##### `get_sql_table_name` {#airbyte.cloud.sync_results.SyncResult.get_sql_table_name}
 
 <ApiMember kind="method">
 
@@ -400,7 +400,7 @@ Return the SQL table name of the named stream.
 
 </ApiMember>
 
-#### `is_job_complete` {#airbyte.cloud.sync_results.SyncResult.is_job_complete}
+##### `is_job_complete` {#airbyte.cloud.sync_results.SyncResult.is_job_complete}
 
 <ApiMember kind="method">
 
@@ -416,7 +416,7 @@ Check if the sync job is complete.
 
 </ApiMember>
 
-#### `raise_failure_status` {#airbyte.cloud.sync_results.SyncResult.raise_failure_status}
+##### `raise_failure_status` {#airbyte.cloud.sync_results.SyncResult.raise_failure_status}
 
 <ApiMember kind="method">
 
@@ -438,7 +438,7 @@ Otherwise, do nothing.
 
 </ApiMember>
 
-#### `wait_for_completion` {#airbyte.cloud.sync_results.SyncResult.wait_for_completion}
+##### `wait_for_completion` {#airbyte.cloud.sync_results.SyncResult.wait_for_completion}
 
 <ApiMember kind="method">
 

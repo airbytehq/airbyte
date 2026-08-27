@@ -61,7 +61,7 @@ method of the `Source` class.
 
 #### Methods {#airbyte.results.ReadResult--methods}
 
-#### `get_sql_engine` {#airbyte.results.ReadResult.get_sql_engine}
+##### `get_sql_engine` {#airbyte.results.ReadResult.get_sql_engine}
 
 <ApiMember kind="method">
 
@@ -117,7 +117,7 @@ method of the `Destination` class.
 
 #### Methods {#airbyte.results.WriteResult--methods}
 
-#### `get_state_provider` {#airbyte.results.WriteResult.get_state_provider}
+##### `get_state_provider` {#airbyte.results.WriteResult.get_state_provider}
 
 <ApiMember kind="method">
 

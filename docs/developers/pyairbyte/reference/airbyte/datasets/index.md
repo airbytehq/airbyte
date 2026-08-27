@@ -45,7 +45,7 @@ If stream_configuration is set to False, we skip the stream configuration retrie
 `airbyte.datasets._sql.SQLDataset`
 #### Methods {#airbyte.datasets.CachedDataset--methods}
 
-#### `to_arrow` {#airbyte.datasets.CachedDataset.to_arrow}
+##### `to_arrow` {#airbyte.datasets.CachedDataset.to_arrow}
 
 <ApiMember kind="method">
 
@@ -70,7 +70,7 @@ Return an Arrow Dataset containing the data from the specified stream.
 
 </ApiMember>
 
-#### `to_pandas` {#airbyte.datasets.CachedDataset.to_pandas}
+##### `to_pandas` {#airbyte.datasets.CachedDataset.to_pandas}
 
 <ApiMember kind="method">
 
@@ -86,7 +86,7 @@ Return the underlying dataset data as a pandas DataFrame.
 
 </ApiMember>
 
-#### `to_sql_table` {#airbyte.datasets.CachedDataset.to_sql_table}
+##### `to_sql_table` {#airbyte.datasets.CachedDataset.to_sql_table}
 
 <ApiMember kind="method">
 
@@ -132,7 +132,7 @@ Base implementation for all datasets.
 
 #### Methods {#airbyte.datasets.DatasetBase--methods}
 
-#### `to_arrow` {#airbyte.datasets.DatasetBase.to_arrow}
+##### `to_arrow` {#airbyte.datasets.DatasetBase.to_arrow}
 
 <ApiMember kind="method">
 
@@ -150,7 +150,7 @@ This method should be implemented by subclasses.
 
 </ApiMember>
 
-#### `to_documents` {#airbyte.datasets.DatasetBase.to_documents}
+##### `to_documents` {#airbyte.datasets.DatasetBase.to_documents}
 
 <ApiMember kind="method">
 
@@ -179,7 +179,7 @@ the main content. Otherwise, metadata will be attached to the document but not r
 
 </ApiMember>
 
-#### `to_pandas` {#airbyte.datasets.DatasetBase.to_pandas}
+##### `to_pandas` {#airbyte.datasets.DatasetBase.to_pandas}
 
 <ApiMember kind="method">
 
@@ -244,7 +244,7 @@ A dataset that is loaded incrementally from a source or a SQL query.
 `airbyte.datasets._base.DatasetBase`
 #### Methods {#airbyte.datasets.LazyDataset--methods}
 
-#### `close` {#airbyte.datasets.LazyDataset.close}
+##### `close` {#airbyte.datasets.LazyDataset.close}
 
 <ApiMember kind="method">
 
@@ -264,7 +264,7 @@ fetching process.
 
 </ApiMember>
 
-#### `fetch_all` {#airbyte.datasets.LazyDataset.fetch_all}
+##### `fetch_all` {#airbyte.datasets.LazyDataset.fetch_all}
 
 <ApiMember kind="method">
 
@@ -334,7 +334,7 @@ If stream_configuration is set to False, we skip the stream configuration retrie
 
 #### Methods {#airbyte.datasets.SQLDataset--methods}
 
-#### `to_arrow` {#airbyte.datasets.SQLDataset.to_arrow}
+##### `to_arrow` {#airbyte.datasets.SQLDataset.to_arrow}
 
 <ApiMember kind="method">
 
@@ -352,7 +352,7 @@ This method should be implemented by subclasses.
 
 </ApiMember>
 
-#### `to_pandas` {#airbyte.datasets.SQLDataset.to_pandas}
+##### `to_pandas` {#airbyte.datasets.SQLDataset.to_pandas}
 
 <ApiMember kind="method">
 
@@ -370,7 +370,7 @@ The base implementation simply passes the record iterator to Panda's DataFrame c
 
 </ApiMember>
 
-#### `with_filter` {#airbyte.datasets.SQLDataset.with_filter}
+##### `with_filter` {#airbyte.datasets.SQLDataset.with_filter}
 
 <ApiMember kind="method">
 

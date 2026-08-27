@@ -50,7 +50,7 @@ Initialize the type converter.
 `airbyte._processors.sql.bigquery.BigQueryTypeConverter`, `airbyte._processors.sql.snowflake.SnowflakeTypeConverter`
 #### Static Methods {#airbyte.types.SQLTypeConverter--static-methods}
 
-#### `get_failover_type` {#airbyte.types.SQLTypeConverter.get_failover_type}
+##### `get_failover_type` {#airbyte.types.SQLTypeConverter.get_failover_type}
 
 <ApiMember kind="method">
 
@@ -66,7 +66,7 @@ Get the 'last resort' type to use if no other type is found.
 
 </ApiMember>
 
-#### `get_json_type` {#airbyte.types.SQLTypeConverter.get_json_type}
+##### `get_json_type` {#airbyte.types.SQLTypeConverter.get_json_type}
 
 <ApiMember kind="method">
 
@@ -82,7 +82,7 @@ Get the type to use for nested JSON data.
 
 </ApiMember>
 
-#### `get_string_type` {#airbyte.types.SQLTypeConverter.get_string_type}
+##### `get_string_type` {#airbyte.types.SQLTypeConverter.get_string_type}
 
 <ApiMember kind="method">
 
@@ -100,7 +100,7 @@ Get the type to use for string data.
 
 #### Methods {#airbyte.types.SQLTypeConverter--methods}
 
-#### `to_sql_type` {#airbyte.types.SQLTypeConverter.to_sql_type}
+##### `to_sql_type` {#airbyte.types.SQLTypeConverter.to_sql_type}
 
 <ApiMember kind="method">
 

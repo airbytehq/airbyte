@@ -75,7 +75,7 @@ A class to provide state artifacts.
 
 #### Methods {#airbyte.shared.state_providers.StateProviderBase--methods}
 
-#### `get_stream_state` {#airbyte.shared.state_providers.StateProviderBase.get_stream_state}
+##### `get_stream_state` {#airbyte.shared.state_providers.StateProviderBase.get_stream_state}
 
 <ApiMember kind="method">
 
@@ -96,7 +96,7 @@ Return the state message for the specified stream name.
 
 </ApiMember>
 
-#### `to_state_input_file_text` {#airbyte.shared.state_providers.StateProviderBase.to_state_input_file_text}
+##### `to_state_input_file_text` {#airbyte.shared.state_providers.StateProviderBase.to_state_input_file_text}
 
 <ApiMember kind="method">
 

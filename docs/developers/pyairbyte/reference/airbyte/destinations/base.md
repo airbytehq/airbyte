@@ -54,7 +54,7 @@ If config is provided, it will be validated against the spec if validate is True
 
 #### Methods {#airbyte.destinations.base.Destination--methods}
 
-#### `get_sql_cache` {#airbyte.destinations.base.Destination.get_sql_cache}
+##### `get_sql_cache` {#airbyte.destinations.base.Destination.get_sql_cache}
 
 <ApiMember kind="method">
 
@@ -83,7 +83,7 @@ it builds a cache from the destination's configuration using
 
 </ApiMember>
 
-#### `write` {#airbyte.destinations.base.Destination.write}
+##### `write` {#airbyte.destinations.base.Destination.write}
 
 <ApiMember kind="method">
 

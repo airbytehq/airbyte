@@ -188,7 +188,7 @@ Initialize the progress tracker.
 
 #### Methods {#airbyte.progress.ProgressTracker--methods}
 
-#### `log_batch_written` {#airbyte.progress.ProgressTracker.log_batch_written}
+##### `log_batch_written` {#airbyte.progress.ProgressTracker.log_batch_written}
 
 <ApiMember kind="method">
 
@@ -209,7 +209,7 @@ Log that a batch has been written.
 
 </ApiMember>
 
-#### `log_batches_finalized` {#airbyte.progress.ProgressTracker.log_batches_finalized}
+##### `log_batches_finalized` {#airbyte.progress.ProgressTracker.log_batches_finalized}
 
 <ApiMember kind="method">
 
@@ -225,7 +225,7 @@ Log that a batch has been finalized.
 
 </ApiMember>
 
-#### `log_batches_finalizing` {#airbyte.progress.ProgressTracker.log_batches_finalizing}
+##### `log_batches_finalizing` {#airbyte.progress.ProgressTracker.log_batches_finalizing}
 
 <ApiMember kind="method">
 
@@ -245,7 +245,7 @@ finalize any accumulated batches.
 
 </ApiMember>
 
-#### `log_cache_processing_complete` {#airbyte.progress.ProgressTracker.log_cache_processing_complete}
+##### `log_cache_processing_complete` {#airbyte.progress.ProgressTracker.log_cache_processing_complete}
 
 <ApiMember kind="method">
 
@@ -261,7 +261,7 @@ Log that cache processing is complete.
 
 </ApiMember>
 
-#### `log_failure` {#airbyte.progress.ProgressTracker.log_failure}
+##### `log_failure` {#airbyte.progress.ProgressTracker.log_failure}
 
 <ApiMember kind="method">
 
@@ -277,7 +277,7 @@ Log the failure of a sync operation.
 
 </ApiMember>
 
-#### `log_read_complete` {#airbyte.progress.ProgressTracker.log_read_complete}
+##### `log_read_complete` {#airbyte.progress.ProgressTracker.log_read_complete}
 
 <ApiMember kind="method">
 
@@ -293,7 +293,7 @@ Log that reading is complete.
 
 </ApiMember>
 
-#### `log_stream_finalized` {#airbyte.progress.ProgressTracker.log_stream_finalized}
+##### `log_stream_finalized` {#airbyte.progress.ProgressTracker.log_stream_finalized}
 
 <ApiMember kind="method">
 
@@ -309,7 +309,7 @@ Log that a stream has been finalized.
 
 </ApiMember>
 
-#### `log_stream_start` {#airbyte.progress.ProgressTracker.log_stream_start}
+##### `log_stream_start` {#airbyte.progress.ProgressTracker.log_stream_start}
 
 <ApiMember kind="method">
 
@@ -325,7 +325,7 @@ Log that a stream has started reading.
 
 </ApiMember>
 
-#### `log_success` {#airbyte.progress.ProgressTracker.log_success}
+##### `log_success` {#airbyte.progress.ProgressTracker.log_success}
 
 <ApiMember kind="method">
 
@@ -341,7 +341,7 @@ Log the success of a sync operation.
 
 </ApiMember>
 
-#### `reset_progress_style` {#airbyte.progress.ProgressTracker.reset_progress_style}
+##### `reset_progress_style` {#airbyte.progress.ProgressTracker.reset_progress_style}
 
 <ApiMember kind="method">
 
@@ -370,7 +370,7 @@ progress.reset_progress_style(ProgressStyle.PLAIN)
 
 </ApiMember>
 
-#### `tally_bytes_read` {#airbyte.progress.ProgressTracker.tally_bytes_read}
+##### `tally_bytes_read` {#airbyte.progress.ProgressTracker.tally_bytes_read}
 
 <ApiMember kind="method">
 
@@ -388,7 +388,7 @@ Unlike the other tally methods, this method does not yield messages.
 
 </ApiMember>
 
-#### `tally_confirmed_writes` {#airbyte.progress.ProgressTracker.tally_confirmed_writes}
+##### `tally_confirmed_writes` {#airbyte.progress.ProgressTracker.tally_confirmed_writes}
 
 <ApiMember kind="method">
 
@@ -409,7 +409,7 @@ The original messages are passed through unchanged.
 
 </ApiMember>
 
-#### `tally_pending_writes` {#airbyte.progress.ProgressTracker.tally_pending_writes}
+##### `tally_pending_writes` {#airbyte.progress.ProgressTracker.tally_pending_writes}
 
 <ApiMember kind="method">
 
@@ -428,7 +428,7 @@ This method simply tallies the number of records processed and yields the messag
 
 </ApiMember>
 
-#### `tally_records_read` {#airbyte.progress.ProgressTracker.tally_records_read}
+##### `tally_records_read` {#airbyte.progress.ProgressTracker.tally_records_read}
 
 <ApiMember kind="method">
 

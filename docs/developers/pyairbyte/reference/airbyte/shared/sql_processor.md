@@ -154,7 +154,7 @@ validated to form a valid model.
 
 #### Methods {#airbyte.shared.sql_processor.SqlConfig--methods}
 
-#### `dispose_engine` {#airbyte.shared.sql_processor.SqlConfig.dispose_engine}
+##### `dispose_engine` {#airbyte.shared.sql_processor.SqlConfig.dispose_engine}
 
 <ApiMember kind="method">
 
@@ -170,7 +170,7 @@ Dispose of the cached SQL engine and release all connections.
 
 </ApiMember>
 
-#### `get_create_table_extra_clauses` {#airbyte.shared.sql_processor.SqlConfig.get_create_table_extra_clauses}
+##### `get_create_table_extra_clauses` {#airbyte.shared.sql_processor.SqlConfig.get_create_table_extra_clauses}
 
 <ApiMember kind="method">
 
@@ -186,7 +186,7 @@ Return a list of clauses to append on CREATE TABLE statements.
 
 </ApiMember>
 
-#### `get_database_name` {#airbyte.shared.sql_processor.SqlConfig.get_database_name}
+##### `get_database_name` {#airbyte.shared.sql_processor.SqlConfig.get_database_name}
 
 <ApiMember kind="method">
 
@@ -202,7 +202,7 @@ Return the name of the database.
 
 </ApiMember>
 
-#### `get_sql_alchemy_connect_args` {#airbyte.shared.sql_processor.SqlConfig.get_sql_alchemy_connect_args}
+##### `get_sql_alchemy_connect_args` {#airbyte.shared.sql_processor.SqlConfig.get_sql_alchemy_connect_args}
 
 <ApiMember kind="method">
 
@@ -218,7 +218,7 @@ Return the SQL Alchemy connect_args.
 
 </ApiMember>
 
-#### `get_sql_alchemy_url` {#airbyte.shared.sql_processor.SqlConfig.get_sql_alchemy_url}
+##### `get_sql_alchemy_url` {#airbyte.shared.sql_processor.SqlConfig.get_sql_alchemy_url}
 
 <ApiMember kind="method">
 
@@ -234,7 +234,7 @@ Returns a SQL Alchemy URL.
 
 </ApiMember>
 
-#### `get_sql_engine` {#airbyte.shared.sql_processor.SqlConfig.get_sql_engine}
+##### `get_sql_engine` {#airbyte.shared.sql_processor.SqlConfig.get_sql_engine}
 
 <ApiMember kind="method">
 
@@ -250,7 +250,7 @@ Return a cached SQL engine, creating it if necessary.
 
 </ApiMember>
 
-#### `get_vendor_client` {#airbyte.shared.sql_processor.SqlConfig.get_vendor_client}
+##### `get_vendor_client` {#airbyte.shared.sql_processor.SqlConfig.get_vendor_client}
 
 <ApiMember kind="method">
 
@@ -354,7 +354,7 @@ Create a new SQL processor.
 
 #### Methods {#airbyte.shared.sql_processor.SqlProcessorBase--methods}
 
-#### `cleanup_all` {#airbyte.shared.sql_processor.SqlProcessorBase.cleanup_all}
+##### `cleanup_all` {#airbyte.shared.sql_processor.SqlProcessorBase.cleanup_all}
 
 <ApiMember kind="method">
 
@@ -370,7 +370,7 @@ Clean resources.
 
 </ApiMember>
 
-#### `fetch_column_info` {#airbyte.shared.sql_processor.SqlProcessorBase.fetch_column_info}
+##### `fetch_column_info` {#airbyte.shared.sql_processor.SqlProcessorBase.fetch_column_info}
 
 <ApiMember kind="method">
 
@@ -405,7 +405,7 @@ Raises if the table does not exist or is not accessible.
 
 </ApiMember>
 
-#### `fetch_row_count` {#airbyte.shared.sql_processor.SqlProcessorBase.fetch_row_count}
+##### `fetch_row_count` {#airbyte.shared.sql_processor.SqlProcessorBase.fetch_row_count}
 
 <ApiMember kind="method">
 
@@ -424,7 +424,7 @@ fails for any other reason.
 
 </ApiMember>
 
-#### `fetch_table_statistics` {#airbyte.shared.sql_processor.SqlProcessorBase.fetch_table_statistics}
+##### `fetch_table_statistics` {#airbyte.shared.sql_processor.SqlProcessorBase.fetch_table_statistics}
 
 <ApiMember kind="method">
 
@@ -453,7 +453,7 @@ Streams whose tables are not found are omitted from the result.
 
 </ApiMember>
 
-#### `finalizing_batches` {#airbyte.shared.sql_processor.SqlProcessorBase.finalizing_batches}
+##### `finalizing_batches` {#airbyte.shared.sql_processor.SqlProcessorBase.finalizing_batches}
 
 <ApiMember kind="method">
 
@@ -475,7 +475,7 @@ Returns a mapping of batch IDs to batch handles, for those processed batches.
 
 </ApiMember>
 
-#### `get_sql_alchemy_url` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_alchemy_url}
+##### `get_sql_alchemy_url` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_alchemy_url}
 
 <ApiMember kind="method">
 
@@ -491,7 +491,7 @@ Return the SQLAlchemy URL to use.
 
 </ApiMember>
 
-#### `get_sql_connection` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_connection}
+##### `get_sql_connection` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_connection}
 
 <ApiMember kind="method">
 
@@ -511,7 +511,7 @@ If the connection needs to close, it will be closed automatically.
 
 </ApiMember>
 
-#### `get_sql_engine` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_engine}
+##### `get_sql_engine` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_engine}
 
 <ApiMember kind="method">
 
@@ -527,7 +527,7 @@ Return a new SQL engine to use.
 
 </ApiMember>
 
-#### `get_sql_table` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_table}
+##### `get_sql_table` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_table}
 
 <ApiMember kind="method">
 
@@ -543,7 +543,7 @@ Return the main table object for the stream.
 
 </ApiMember>
 
-#### `get_sql_table_name` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_table_name}
+##### `get_sql_table_name` {#airbyte.shared.sql_processor.SqlProcessorBase.get_sql_table_name}
 
 <ApiMember kind="method">
 
@@ -559,7 +559,7 @@ Return the name of the SQL table for the given stream.
 
 </ApiMember>
 
-#### `process_airbyte_messages` {#airbyte.shared.sql_processor.SqlProcessorBase.process_airbyte_messages}
+##### `process_airbyte_messages` {#airbyte.shared.sql_processor.SqlProcessorBase.process_airbyte_messages}
 
 <ApiMember kind="method">
 
@@ -583,7 +583,7 @@ This method assumes that the catalog is already registered with the processor.
 
 </ApiMember>
 
-#### `process_record_message` {#airbyte.shared.sql_processor.SqlProcessorBase.process_record_message}
+##### `process_record_message` {#airbyte.shared.sql_processor.SqlProcessorBase.process_record_message}
 
 <ApiMember kind="method">
 
@@ -609,7 +609,7 @@ the file processor.
 
 </ApiMember>
 
-#### `write_stream_data` {#airbyte.shared.sql_processor.SqlProcessorBase.write_stream_data}
+##### `write_stream_data` {#airbyte.shared.sql_processor.SqlProcessorBase.write_stream_data}
 
 <ApiMember kind="method">
 

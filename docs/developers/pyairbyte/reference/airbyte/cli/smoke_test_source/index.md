@@ -43,7 +43,7 @@ of additional scenarios via the ``custom_scenarios`` config field.
 `airbyte_cdk.sources.source.Source`
 #### Methods {#airbyte.cli.smoke_test_source.SourceSmokeTest--methods}
 
-#### `check` {#airbyte.cli.smoke_test_source.SourceSmokeTest.check}
+##### `check` {#airbyte.cli.smoke_test_source.SourceSmokeTest.check}
 
 <ApiMember kind="method">
 
@@ -63,7 +63,7 @@ Validate the configuration.
 
 </ApiMember>
 
-#### `discover` {#airbyte.cli.smoke_test_source.SourceSmokeTest.discover}
+##### `discover` {#airbyte.cli.smoke_test_source.SourceSmokeTest.discover}
 
 <ApiMember kind="method">
 
@@ -83,7 +83,7 @@ Return the catalog with all test scenario streams.
 
 </ApiMember>
 
-#### `read` {#airbyte.cli.smoke_test_source.SourceSmokeTest.read}
+##### `read` {#airbyte.cli.smoke_test_source.SourceSmokeTest.read}
 
 <ApiMember kind="method">
 
@@ -105,7 +105,7 @@ Read records from selected smoke test streams.
 
 </ApiMember>
 
-#### `spec` {#airbyte.cli.smoke_test_source.SourceSmokeTest.spec}
+##### `spec` {#airbyte.cli.smoke_test_source.SourceSmokeTest.spec}
 
 <ApiMember kind="method">
 

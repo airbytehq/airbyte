@@ -89,7 +89,7 @@ validated to form a valid model.
 
 #### Methods {#airbyte.caches.duckdb.DuckDBConfig--methods}
 
-#### `get_sql_alchemy_url` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_alchemy_url}
+##### `get_sql_alchemy_url` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_alchemy_url}
 
 <ApiMember kind="method">
 
@@ -105,7 +105,7 @@ Return the SQLAlchemy URL to use.
 
 </ApiMember>
 
-#### `get_sql_engine` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_engine}
+##### `get_sql_engine` {#airbyte.caches.duckdb.DuckDBConfig.get_sql_engine}
 
 <ApiMember kind="method">
 

@@ -128,7 +128,7 @@ Initialize the dictionary with the given data.
 `builtins.dict`
 #### Static Methods {#airbyte.records.StreamRecord--static-methods}
 
-#### `from_record_message` {#airbyte.records.StreamRecord.from_record_message}
+##### `from_record_message` {#airbyte.records.StreamRecord.from_record_message}
 
 <ApiMember kind="method">
 
@@ -184,7 +184,7 @@ Initialize the dictionary with the given data.
 
 #### Methods {#airbyte.records.StreamRecordHandler--methods}
 
-#### `to_display_case` {#airbyte.records.StreamRecordHandler.to_display_case}
+##### `to_display_case` {#airbyte.records.StreamRecordHandler.to_display_case}
 
 <ApiMember kind="method">
 
@@ -202,7 +202,7 @@ If the key is not found in the pretty case lookup, return the key provided.
 
 </ApiMember>
 
-#### `to_index_case` {#airbyte.records.StreamRecordHandler.to_index_case}
+##### `to_index_case` {#airbyte.records.StreamRecordHandler.to_index_case}
 
 <ApiMember kind="method">
 

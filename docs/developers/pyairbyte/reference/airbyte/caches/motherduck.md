@@ -82,7 +82,7 @@ validated to form a valid model.
 
 #### Methods {#airbyte.caches.motherduck.MotherDuckConfig--methods}
 
-#### `get_sql_alchemy_url` {#airbyte.caches.motherduck.MotherDuckConfig.get_sql_alchemy_url}
+##### `get_sql_alchemy_url` {#airbyte.caches.motherduck.MotherDuckConfig.get_sql_alchemy_url}
 
 <ApiMember kind="method">
 

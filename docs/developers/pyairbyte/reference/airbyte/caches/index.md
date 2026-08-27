@@ -96,7 +96,7 @@ Initialize the cache and backends.
 
 #### Methods {#airbyte.caches.BigQueryCache--methods}
 
-#### `get_arrow_dataset` {#airbyte.caches.BigQueryCache.get_arrow_dataset}
+##### `get_arrow_dataset` {#airbyte.caches.BigQueryCache.get_arrow_dataset}
 
 <ApiMember kind="method">
 
@@ -186,7 +186,7 @@ Initialize the cache and backends.
 
 #### Methods {#airbyte.caches.CacheBase--methods}
 
-#### `close` {#airbyte.caches.CacheBase.close}
+##### `close` {#airbyte.caches.CacheBase.close}
 
 <ApiMember kind="method">
 
@@ -213,7 +213,7 @@ This method is idempotent and can be called multiple times safely.
 
 </ApiMember>
 
-#### `create_source_tables` {#airbyte.caches.CacheBase.create_source_tables}
+##### `create_source_tables` {#airbyte.caches.CacheBase.create_source_tables}
 
 <ApiMember kind="method">
 
@@ -240,7 +240,7 @@ Tables are created based upon the Source's catalog.
 
 </ApiMember>
 
-#### `execute_sql` {#airbyte.caches.CacheBase.execute_sql}
+##### `execute_sql` {#airbyte.caches.CacheBase.execute_sql}
 
 <ApiMember kind="method">
 
@@ -269,7 +269,7 @@ is raised. Most databases will rollback the transaction in this case.
 
 </ApiMember>
 
-#### `fetch_table_statistics` {#airbyte.caches.CacheBase.fetch_table_statistics}
+##### `fetch_table_statistics` {#airbyte.caches.CacheBase.fetch_table_statistics}
 
 <ApiMember kind="method">
 
@@ -295,7 +295,7 @@ Streams whose tables are not found are omitted from the result.
 
 </ApiMember>
 
-#### `get_arrow_dataset` {#airbyte.caches.CacheBase.get_arrow_dataset}
+##### `get_arrow_dataset` {#airbyte.caches.CacheBase.get_arrow_dataset}
 
 <ApiMember kind="method">
 
@@ -316,7 +316,7 @@ Return an Arrow Dataset with the stream's data.
 
 </ApiMember>
 
-#### `get_pandas_dataframe` {#airbyte.caches.CacheBase.get_pandas_dataframe}
+##### `get_pandas_dataframe` {#airbyte.caches.CacheBase.get_pandas_dataframe}
 
 <ApiMember kind="method">
 
@@ -335,7 +335,7 @@ Return a Pandas data frame with the stream's data.
 
 </ApiMember>
 
-#### `get_record_processor` {#airbyte.caches.CacheBase.get_record_processor}
+##### `get_record_processor` {#airbyte.caches.CacheBase.get_record_processor}
 
 <ApiMember kind="method">
 
@@ -361,7 +361,7 @@ For the state writer, we use a state writer which stores state in an internal SQ
 
 </ApiMember>
 
-#### `get_records` {#airbyte.caches.CacheBase.get_records}
+##### `get_records` {#airbyte.caches.CacheBase.get_records}
 
 <ApiMember kind="method">
 
@@ -377,7 +377,7 @@ Uses SQLAlchemy to select all rows from the table.
 
 </ApiMember>
 
-#### `get_state_provider` {#airbyte.caches.CacheBase.get_state_provider}
+##### `get_state_provider` {#airbyte.caches.CacheBase.get_state_provider}
 
 <ApiMember kind="method">
 
@@ -399,7 +399,7 @@ Return a state provider for the specified source name.
 
 </ApiMember>
 
-#### `get_state_writer` {#airbyte.caches.CacheBase.get_state_writer}
+##### `get_state_writer` {#airbyte.caches.CacheBase.get_state_writer}
 
 <ApiMember kind="method">
 
@@ -422,7 +422,7 @@ If syncing to a destination, `destination_name` should be the destination name.
 
 </ApiMember>
 
-#### `register_source` {#airbyte.caches.CacheBase.register_source}
+##### `register_source` {#airbyte.caches.CacheBase.register_source}
 
 <ApiMember kind="method">
 
@@ -443,7 +443,7 @@ Register the source name and catalog.
 
 </ApiMember>
 
-#### `run_sql_query` {#airbyte.caches.CacheBase.run_sql_query}
+##### `run_sql_query` {#airbyte.caches.CacheBase.run_sql_query}
 
 <ApiMember kind="method">
 
@@ -566,7 +566,7 @@ Initialize the cache and backends.
 
 #### Methods {#airbyte.caches.PostgresCache--methods}
 
-#### `clone_as_cloud_destination_config` {#airbyte.caches.PostgresCache.clone_as_cloud_destination_config}
+##### `clone_as_cloud_destination_config` {#airbyte.caches.PostgresCache.clone_as_cloud_destination_config}
 
 <ApiMember kind="method">
 

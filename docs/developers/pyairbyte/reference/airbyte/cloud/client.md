@@ -62,7 +62,7 @@ Initialize a `CloudClient` from explicit auth values.
 
 #### Static Methods {#airbyte.cloud.client.CloudClient--static-methods}
 
-#### `from_auth` {#airbyte.cloud.client.CloudClient.from_auth}
+##### `from_auth` {#airbyte.cloud.client.CloudClient.from_auth}
 
 <ApiMember kind="method">
 
@@ -92,7 +92,7 @@ after any explicitly provided values.
 
 #### Methods {#airbyte.cloud.client.CloudClient--methods}
 
-#### `create_workspace` {#airbyte.cloud.client.CloudClient.create_workspace}
+##### `create_workspace` {#airbyte.cloud.client.CloudClient.create_workspace}
 
 <ApiMember kind="method">
 
@@ -114,7 +114,7 @@ Create an Airbyte workspace.
 
 </ApiMember>
 
-#### `get_organization` {#airbyte.cloud.client.CloudClient.get_organization}
+##### `get_organization` {#airbyte.cloud.client.CloudClient.get_organization}
 
 <ApiMember kind="method">
 
@@ -135,7 +135,7 @@ Resolve an organization by ID or exact name.
 
 </ApiMember>
 
-#### `get_workspace` {#airbyte.cloud.client.CloudClient.get_workspace}
+##### `get_workspace` {#airbyte.cloud.client.CloudClient.get_workspace}
 
 <ApiMember kind="method">
 
@@ -154,7 +154,7 @@ Create a `CloudWorkspace` using this client's credentials.
 
 </ApiMember>
 
-#### `list_organizations` {#airbyte.cloud.client.CloudClient.list_organizations}
+##### `list_organizations` {#airbyte.cloud.client.CloudClient.list_organizations}
 
 <ApiMember kind="method">
 
@@ -172,7 +172,7 @@ List all organizations available to this client.
 
 </ApiMember>
 
-#### `list_workspaces` {#airbyte.cloud.client.CloudClient.list_workspaces}
+##### `list_workspaces` {#airbyte.cloud.client.CloudClient.list_workspaces}
 
 <ApiMember kind="method">
 
@@ -196,7 +196,7 @@ List workspaces available to this client.
 
 </ApiMember>
 
-#### `permanently_delete_workspace` {#airbyte.cloud.client.CloudClient.permanently_delete_workspace}
+##### `permanently_delete_workspace` {#airbyte.cloud.client.CloudClient.permanently_delete_workspace}
 
 <ApiMember kind="method">
 
@@ -222,7 +222,7 @@ and raises `AirbyteWorkspaceNotEmptyError` if the workspace is not empty.
 
 </ApiMember>
 
-#### `rename_workspace` {#airbyte.cloud.client.CloudClient.rename_workspace}
+##### `rename_workspace` {#airbyte.cloud.client.CloudClient.rename_workspace}
 
 <ApiMember kind="method">
 

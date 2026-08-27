@@ -116,7 +116,7 @@ will raise a validation error.
 
 #### Static Methods {#airbyte.cloud.client_config.CloudClientConfig--static-methods}
 
-#### `from_env` {#airbyte.cloud.client_config.CloudClientConfig.from_env}
+##### `from_env` {#airbyte.cloud.client_config.CloudClientConfig.from_env}
 
 <ApiMember kind="method">
 

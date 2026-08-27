@@ -62,7 +62,7 @@ Initialize the state writer.
 `airbyte.caches._state_backend.SqlStateWriter`, `airbyte.shared.state_writers.NoOpStateWriter`, `airbyte.shared.state_writers.StdOutStateWriter`
 #### Methods {#airbyte.shared.state_writers.StateWriterBase--methods}
 
-#### `write_state` {#airbyte.shared.state_writers.StateWriterBase.write_state}
+##### `write_state` {#airbyte.shared.state_writers.StateWriterBase.write_state}
 
 <ApiMember kind="method">
 

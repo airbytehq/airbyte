@@ -169,7 +169,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.registry.ApiDocsUrl--static-methods}
 
-#### `from_manifest_dict` {#airbyte.registry.ApiDocsUrl.from_manifest_dict}
+##### `from_manifest_dict` {#airbyte.registry.ApiDocsUrl.from_manifest_dict}
 
 <ApiMember kind="method">
 

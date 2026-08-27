@@ -55,7 +55,7 @@ Initialize the cache and backends.
 
 #### Methods {#airbyte.caches.postgres.PostgresCache--methods}
 
-#### `clone_as_cloud_destination_config` {#airbyte.caches.postgres.PostgresCache.clone_as_cloud_destination_config}
+##### `clone_as_cloud_destination_config` {#airbyte.caches.postgres.PostgresCache.clone_as_cloud_destination_config}
 
 <ApiMember kind="method">
 
@@ -116,7 +116,7 @@ validated to form a valid model.
 
 #### Methods {#airbyte.caches.postgres.PostgresConfig--methods}
 
-#### `get_sql_alchemy_url` {#airbyte.caches.postgres.PostgresConfig.get_sql_alchemy_url}
+##### `get_sql_alchemy_url` {#airbyte.caches.postgres.PostgresConfig.get_sql_alchemy_url}
 
 <ApiMember kind="method">
 

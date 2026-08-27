@@ -136,7 +136,7 @@ Initialize a cloud connector object.
 
 #### Methods {#airbyte.cloud.connectors.CloudConnector--methods}
 
-#### `check` {#airbyte.cloud.connectors.CloudConnector.check}
+##### `check` {#airbyte.cloud.connectors.CloudConnector.check}
 
 <ApiMember kind="method">
 
@@ -162,7 +162,7 @@ or by converting the object to a string.
 
 </ApiMember>
 
-#### `permanently_delete` {#airbyte.cloud.connectors.CloudConnector.permanently_delete}
+##### `permanently_delete` {#airbyte.cloud.connectors.CloudConnector.permanently_delete}
 
 <ApiMember kind="method">
 
@@ -209,7 +209,7 @@ Initialize a cloud connector object.
 
 #### Methods {#airbyte.cloud.connectors.CloudDestination--methods}
 
-#### `rename` {#airbyte.cloud.connectors.CloudDestination.rename}
+##### `rename` {#airbyte.cloud.connectors.CloudDestination.rename}
 
 <ApiMember kind="method">
 
@@ -233,7 +233,7 @@ Updated CloudDestination object with refreshed info
 
 </ApiMember>
 
-#### `update_config` {#airbyte.cloud.connectors.CloudDestination.update_config}
+##### `update_config` {#airbyte.cloud.connectors.CloudDestination.update_config}
 
 <ApiMember kind="method">
 
@@ -294,7 +294,7 @@ Initialize a cloud connector object.
 
 #### Methods {#airbyte.cloud.connectors.CloudSource--methods}
 
-#### `rename` {#airbyte.cloud.connectors.CloudSource.rename}
+##### `rename` {#airbyte.cloud.connectors.CloudSource.rename}
 
 <ApiMember kind="method">
 
@@ -318,7 +318,7 @@ Updated CloudSource object with refreshed info
 
 </ApiMember>
 
-#### `update_config` {#airbyte.cloud.connectors.CloudSource.update_config}
+##### `update_config` {#airbyte.cloud.connectors.CloudSource.update_config}
 
 <ApiMember kind="method">
 
@@ -451,7 +451,7 @@ will raise NotImplementedError.
 
 #### Methods {#airbyte.cloud.connectors.CustomCloudSourceDefinition--methods}
 
-#### `deploy_source` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.deploy_source}
+##### `deploy_source` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.deploy_source}
 
 <ApiMember kind="method">
 
@@ -485,7 +485,7 @@ A `CloudSource` object representing the newly created source.
 
 </ApiMember>
 
-#### `get_builder_project_data` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.get_builder_project_data}
+##### `get_builder_project_data` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.get_builder_project_data}
 
 <ApiMember kind="method">
 
@@ -521,7 +521,7 @@ the project metadata and draft manifest (if one exists).
 
 </ApiMember>
 
-#### `permanently_delete` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.permanently_delete}
+##### `permanently_delete` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.permanently_delete}
 
 <ApiMember kind="method">
 
@@ -541,7 +541,7 @@ Permanently delete this custom source definition.
 
 </ApiMember>
 
-#### `rename` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.rename}
+##### `rename` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.rename}
 
 <ApiMember kind="method">
 
@@ -576,7 +576,7 @@ Updated CustomCloudSourceDefinition object
 
 </ApiMember>
 
-#### `set_testing_values` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.set_testing_values}
+##### `set_testing_values` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.set_testing_values}
 
 <ApiMember kind="method">
 
@@ -615,7 +615,7 @@ This `CustomCloudSourceDefinition` object (for method chaining).
 
 </ApiMember>
 
-#### `update_definition` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.update_definition}
+##### `update_definition` {#airbyte.cloud.connectors.CustomCloudSourceDefinition.update_definition}
 
 <ApiMember kind="method">
 

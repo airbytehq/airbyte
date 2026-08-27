@@ -150,7 +150,7 @@ Initialize a `CloudClient` from explicit auth values.
 
 #### Static Methods {#airbyte.cloud.CloudClient--static-methods}
 
-#### `from_auth` {#airbyte.cloud.CloudClient.from_auth}
+##### `from_auth` {#airbyte.cloud.CloudClient.from_auth}
 
 <ApiMember kind="method">
 
@@ -180,7 +180,7 @@ after any explicitly provided values.
 
 #### Methods {#airbyte.cloud.CloudClient--methods}
 
-#### `create_workspace` {#airbyte.cloud.CloudClient.create_workspace}
+##### `create_workspace` {#airbyte.cloud.CloudClient.create_workspace}
 
 <ApiMember kind="method">
 
@@ -202,7 +202,7 @@ Create an Airbyte workspace.
 
 </ApiMember>
 
-#### `get_organization` {#airbyte.cloud.CloudClient.get_organization}
+##### `get_organization` {#airbyte.cloud.CloudClient.get_organization}
 
 <ApiMember kind="method">
 
@@ -223,7 +223,7 @@ Resolve an organization by ID or exact name.
 
 </ApiMember>
 
-#### `get_workspace` {#airbyte.cloud.CloudClient.get_workspace}
+##### `get_workspace` {#airbyte.cloud.CloudClient.get_workspace}
 
 <ApiMember kind="method">
 
@@ -242,7 +242,7 @@ Create a `CloudWorkspace` using this client's credentials.
 
 </ApiMember>
 
-#### `list_organizations` {#airbyte.cloud.CloudClient.list_organizations}
+##### `list_organizations` {#airbyte.cloud.CloudClient.list_organizations}
 
 <ApiMember kind="method">
 
@@ -260,7 +260,7 @@ List all organizations available to this client.
 
 </ApiMember>
 
-#### `list_workspaces` {#airbyte.cloud.CloudClient.list_workspaces}
+##### `list_workspaces` {#airbyte.cloud.CloudClient.list_workspaces}
 
 <ApiMember kind="method">
 
@@ -284,7 +284,7 @@ List workspaces available to this client.
 
 </ApiMember>
 
-#### `permanently_delete_workspace` {#airbyte.cloud.CloudClient.permanently_delete_workspace}
+##### `permanently_delete_workspace` {#airbyte.cloud.CloudClient.permanently_delete_workspace}
 
 <ApiMember kind="method">
 
@@ -310,7 +310,7 @@ and raises `AirbyteWorkspaceNotEmptyError` if the workspace is not empty.
 
 </ApiMember>
 
-#### `rename_workspace` {#airbyte.cloud.CloudClient.rename_workspace}
+##### `rename_workspace` {#airbyte.cloud.CloudClient.rename_workspace}
 
 <ApiMember kind="method">
 
@@ -403,7 +403,7 @@ will raise a validation error.
 
 #### Static Methods {#airbyte.cloud.CloudClientConfig--static-methods}
 
-#### `from_env` {#airbyte.cloud.CloudClientConfig.from_env}
+##### `from_env` {#airbyte.cloud.CloudClientConfig.from_env}
 
 <ApiMember kind="method">
 
@@ -538,7 +538,7 @@ Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 
 #### Methods {#airbyte.cloud.CloudConnection--methods}
 
-#### `cancel_sync` {#airbyte.cloud.CloudConnection.cancel_sync}
+##### `cancel_sync` {#airbyte.cloud.CloudConnection.cancel_sync}
 
 <ApiMember kind="method">
 
@@ -560,7 +560,7 @@ targeted with an explicit `job_id`.
 
 </ApiMember>
 
-#### `check_is_valid` {#airbyte.cloud.CloudConnection.check_is_valid}
+##### `check_is_valid` {#airbyte.cloud.CloudConnection.check_is_valid}
 
 <ApiMember kind="method">
 
@@ -589,7 +589,7 @@ True if the connection exists and belongs to the expected workspace.
 
 </ApiMember>
 
-#### `dump_raw_catalog` {#airbyte.cloud.CloudConnection.dump_raw_catalog}
+##### `dump_raw_catalog` {#airbyte.cloud.CloudConnection.dump_raw_catalog}
 
 <ApiMember kind="method">
 
@@ -625,7 +625,7 @@ The configured catalog dict, or `None` if not found.
 
 </ApiMember>
 
-#### `dump_raw_state` {#airbyte.cloud.CloudConnection.dump_raw_state}
+##### `dump_raw_state` {#airbyte.cloud.CloudConnection.dump_raw_state}
 
 <ApiMember kind="method">
 
@@ -660,7 +660,7 @@ directly to `import_raw_state()` for backup/restore workflows.
 
 </ApiMember>
 
-#### `get_catalog_artifact` {#airbyte.cloud.CloudConnection.get_catalog_artifact}
+##### `get_catalog_artifact` {#airbyte.cloud.CloudConnection.get_catalog_artifact}
 
 <ApiMember kind="method">
 
@@ -685,7 +685,7 @@ Dictionary containing the configured catalog, or `None` if not found.
 
 </ApiMember>
 
-#### `get_previous_sync_logs` {#airbyte.cloud.CloudConnection.get_previous_sync_logs}
+##### `get_previous_sync_logs` {#airbyte.cloud.CloudConnection.get_previous_sync_logs}
 
 <ApiMember kind="method">
 
@@ -723,7 +723,7 @@ A list of SyncResult objects representing the sync jobs.
 
 </ApiMember>
 
-#### `get_state_artifacts` {#airbyte.cloud.CloudConnection.get_state_artifacts}
+##### `get_state_artifacts` {#airbyte.cloud.CloudConnection.get_state_artifacts}
 
 <ApiMember kind="method">
 
@@ -739,7 +739,7 @@ Deprecated. Use `dump_raw_state()` instead.
 
 </ApiMember>
 
-#### `get_stream_state` {#airbyte.cloud.CloudConnection.get_stream_state}
+##### `get_stream_state` {#airbyte.cloud.CloudConnection.get_stream_state}
 
 <ApiMember kind="method">
 
@@ -776,7 +776,7 @@ The stream's state blob as a dictionary, or None if the stream is not found.
 
 </ApiMember>
 
-#### `get_sync_result` {#airbyte.cloud.CloudConnection.get_sync_result}
+##### `get_sync_result` {#airbyte.cloud.CloudConnection.get_sync_result}
 
 <ApiMember kind="method">
 
@@ -799,7 +799,7 @@ Returns `None` if job_id is omitted and no previous jobs are found.
 
 </ApiMember>
 
-#### `import_raw_catalog` {#airbyte.cloud.CloudConnection.import_raw_catalog}
+##### `import_raw_catalog` {#airbyte.cloud.CloudConnection.import_raw_catalog}
 
 <ApiMember kind="method">
 
@@ -832,7 +832,7 @@ Accepts either format:
 
 </ApiMember>
 
-#### `import_raw_state` {#airbyte.cloud.CloudConnection.import_raw_state}
+##### `import_raw_state` {#airbyte.cloud.CloudConnection.import_raw_state}
 
 <ApiMember kind="method">
 
@@ -879,7 +879,7 @@ The updated connection state as a dictionary.
 
 </ApiMember>
 
-#### `permanently_delete` {#airbyte.cloud.CloudConnection.permanently_delete}
+##### `permanently_delete` {#airbyte.cloud.CloudConnection.permanently_delete}
 
 <ApiMember kind="method">
 
@@ -905,7 +905,7 @@ Delete the connection.
 
 </ApiMember>
 
-#### `rename` {#airbyte.cloud.CloudConnection.rename}
+##### `rename` {#airbyte.cloud.CloudConnection.rename}
 
 <ApiMember kind="method">
 
@@ -929,7 +929,7 @@ Updated CloudConnection object with refreshed info
 
 </ApiMember>
 
-#### `run_sync` {#airbyte.cloud.CloudConnection.run_sync}
+##### `run_sync` {#airbyte.cloud.CloudConnection.run_sync}
 
 <ApiMember kind="method">
 
@@ -950,7 +950,7 @@ Run a sync.
 
 </ApiMember>
 
-#### `set_enabled` {#airbyte.cloud.CloudConnection.set_enabled}
+##### `set_enabled` {#airbyte.cloud.CloudConnection.set_enabled}
 
 <ApiMember kind="method">
 
@@ -975,7 +975,7 @@ Set the enabled status of the connection.
 
 </ApiMember>
 
-#### `set_manual_schedule` {#airbyte.cloud.CloudConnection.set_manual_schedule}
+##### `set_manual_schedule` {#airbyte.cloud.CloudConnection.set_manual_schedule}
 
 <ApiMember kind="method">
 
@@ -993,7 +993,7 @@ Disables automatic syncs. Syncs will only run when manually triggered.
 
 </ApiMember>
 
-#### `set_schedule` {#airbyte.cloud.CloudConnection.set_schedule}
+##### `set_schedule` {#airbyte.cloud.CloudConnection.set_schedule}
 
 <ApiMember kind="method">
 
@@ -1019,7 +1019,7 @@ Set a cron schedule for the connection.
 
 </ApiMember>
 
-#### `set_selected_streams` {#airbyte.cloud.CloudConnection.set_selected_streams}
+##### `set_selected_streams` {#airbyte.cloud.CloudConnection.set_selected_streams}
 
 <ApiMember kind="method">
 
@@ -1049,7 +1049,7 @@ Updated CloudConnection object with refreshed info
 
 </ApiMember>
 
-#### `set_stream_state` {#airbyte.cloud.CloudConnection.set_stream_state}
+##### `set_stream_state` {#airbyte.cloud.CloudConnection.set_stream_state}
 
 <ApiMember kind="method">
 
@@ -1092,7 +1092,7 @@ Uses the safe variant that prevents updates while a sync is running (HTTP 423).
 
 </ApiMember>
 
-#### `set_table_prefix` {#airbyte.cloud.CloudConnection.set_table_prefix}
+##### `set_table_prefix` {#airbyte.cloud.CloudConnection.set_table_prefix}
 
 <ApiMember kind="method">
 
@@ -1248,7 +1248,7 @@ Validate and initialize credentials.
 
 #### Static Methods {#airbyte.cloud.CloudWorkspace--static-methods}
 
-#### `from_env` {#airbyte.cloud.CloudWorkspace.from_env}
+##### `from_env` {#airbyte.cloud.CloudWorkspace.from_env}
 
 <ApiMember kind="method">
 
@@ -1311,7 +1311,7 @@ workspace = CloudWorkspace.from_env(workspace_id="your-workspace-id")
 
 #### Methods {#airbyte.cloud.CloudWorkspace--methods}
 
-#### `connect` {#airbyte.cloud.CloudWorkspace.connect}
+##### `connect` {#airbyte.cloud.CloudWorkspace.connect}
 
 <ApiMember kind="method">
 
@@ -1331,7 +1331,7 @@ Note: It is not necessary to call this method before calling other operations. I
 
 </ApiMember>
 
-#### `deploy_connection` {#airbyte.cloud.CloudWorkspace.deploy_connection}
+##### `deploy_connection` {#airbyte.cloud.CloudWorkspace.deploy_connection}
 
 <ApiMember kind="method">
 
@@ -1365,7 +1365,7 @@ Returns the newly deployed connection object.
 
 </ApiMember>
 
-#### `deploy_destination` {#airbyte.cloud.CloudWorkspace.deploy_destination}
+##### `deploy_destination` {#airbyte.cloud.CloudWorkspace.deploy_destination}
 
 <ApiMember kind="method">
 
@@ -1397,7 +1397,7 @@ Returns the newly deployed destination ID.
 
 </ApiMember>
 
-#### `deploy_source` {#airbyte.cloud.CloudWorkspace.deploy_source}
+##### `deploy_source` {#airbyte.cloud.CloudWorkspace.deploy_source}
 
 <ApiMember kind="method">
 
@@ -1429,7 +1429,7 @@ Returns the newly deployed source.
 
 </ApiMember>
 
-#### `get_connection` {#airbyte.cloud.CloudWorkspace.get_connection}
+##### `get_connection` {#airbyte.cloud.CloudWorkspace.get_connection}
 
 <ApiMember kind="method">
 
@@ -1451,7 +1451,7 @@ which will be loaded lazily as needed.
 
 </ApiMember>
 
-#### `get_custom_source_definition` {#airbyte.cloud.CloudWorkspace.get_custom_source_definition}
+##### `get_custom_source_definition` {#airbyte.cloud.CloudWorkspace.get_custom_source_definition}
 
 <ApiMember kind="method">
 
@@ -1481,7 +1481,7 @@ CustomCloudSourceDefinition object
 
 </ApiMember>
 
-#### `get_destination` {#airbyte.cloud.CloudWorkspace.get_destination}
+##### `get_destination` {#airbyte.cloud.CloudWorkspace.get_destination}
 
 <ApiMember kind="method">
 
@@ -1503,7 +1503,7 @@ which will be loaded lazily as needed.
 
 </ApiMember>
 
-#### `get_organization` {#airbyte.cloud.CloudWorkspace.get_organization}
+##### `get_organization` {#airbyte.cloud.CloudWorkspace.get_organization}
 
 <ApiMember kind="method">
 
@@ -1539,7 +1539,7 @@ or None if raise_on_error=False and an error occurred.
 
 </ApiMember>
 
-#### `get_source` {#airbyte.cloud.CloudWorkspace.get_source}
+##### `get_source` {#airbyte.cloud.CloudWorkspace.get_source}
 
 <ApiMember kind="method">
 
@@ -1558,7 +1558,7 @@ which will be loaded lazily as needed.
 
 </ApiMember>
 
-#### `list_connections` {#airbyte.cloud.CloudWorkspace.list_connections}
+##### `list_connections` {#airbyte.cloud.CloudWorkspace.list_connections}
 
 <ApiMember kind="method">
 
@@ -1580,7 +1580,7 @@ List connections by name in the workspace, with an optional limit.
 
 </ApiMember>
 
-#### `list_custom_source_definitions` {#airbyte.cloud.CloudWorkspace.list_custom_source_definitions}
+##### `list_custom_source_definitions` {#airbyte.cloud.CloudWorkspace.list_custom_source_definitions}
 
 <ApiMember kind="method">
 
@@ -1608,7 +1608,7 @@ List of CustomCloudSourceDefinition objects matching the specified type
 
 </ApiMember>
 
-#### `list_destinations` {#airbyte.cloud.CloudWorkspace.list_destinations}
+##### `list_destinations` {#airbyte.cloud.CloudWorkspace.list_destinations}
 
 <ApiMember kind="method">
 
@@ -1630,7 +1630,7 @@ List all destinations in the workspace, with an optional limit.
 
 </ApiMember>
 
-#### `list_sources` {#airbyte.cloud.CloudWorkspace.list_sources}
+##### `list_sources` {#airbyte.cloud.CloudWorkspace.list_sources}
 
 <ApiMember kind="method">
 
@@ -1652,7 +1652,7 @@ List all sources in the workspace, with an optional limit.
 
 </ApiMember>
 
-#### `list_workspaces` {#airbyte.cloud.CloudWorkspace.list_workspaces}
+##### `list_workspaces` {#airbyte.cloud.CloudWorkspace.list_workspaces}
 
 <ApiMember kind="method">
 
@@ -1674,7 +1674,7 @@ List workspaces available to the current credentials, with an optional limit.
 
 </ApiMember>
 
-#### `permanently_delete` {#airbyte.cloud.CloudWorkspace.permanently_delete}
+##### `permanently_delete` {#airbyte.cloud.CloudWorkspace.permanently_delete}
 
 <ApiMember kind="method">
 
@@ -1699,7 +1699,7 @@ and raises `AirbyteWorkspaceNotEmptyError` if the workspace is not empty.
 
 </ApiMember>
 
-#### `permanently_delete_connection` {#airbyte.cloud.CloudWorkspace.permanently_delete_connection}
+##### `permanently_delete_connection` {#airbyte.cloud.CloudWorkspace.permanently_delete_connection}
 
 <ApiMember kind="method">
 
@@ -1729,7 +1729,7 @@ Delete a deployed connection from the workspace.
 
 </ApiMember>
 
-#### `permanently_delete_destination` {#airbyte.cloud.CloudWorkspace.permanently_delete_destination}
+##### `permanently_delete_destination` {#airbyte.cloud.CloudWorkspace.permanently_delete_destination}
 
 <ApiMember kind="method">
 
@@ -1757,7 +1757,7 @@ You can pass either the `Cache` class or the deployed destination ID as a `str`.
 
 </ApiMember>
 
-#### `permanently_delete_source` {#airbyte.cloud.CloudWorkspace.permanently_delete_source}
+##### `permanently_delete_source` {#airbyte.cloud.CloudWorkspace.permanently_delete_source}
 
 <ApiMember kind="method">
 
@@ -1785,7 +1785,7 @@ You can pass either the source ID `str` or a deployed `Source` object.
 
 </ApiMember>
 
-#### `publish_custom_source_definition` {#airbyte.cloud.CloudWorkspace.publish_custom_source_definition}
+##### `publish_custom_source_definition` {#airbyte.cloud.CloudWorkspace.publish_custom_source_definition}
 
 <ApiMember kind="method">
 
@@ -1833,7 +1833,7 @@ CustomCloudSourceDefinition object representing the created definition
 
 </ApiMember>
 
-#### `rename` {#airbyte.cloud.CloudWorkspace.rename}
+##### `rename` {#airbyte.cloud.CloudWorkspace.rename}
 
 <ApiMember kind="method">
 
@@ -1894,7 +1894,7 @@ validated to form a valid model.
 
 #### Static Methods {#airbyte.cloud.CloudWorkspaceInfo--static-methods}
 
-#### `from_api_response` {#airbyte.cloud.CloudWorkspaceInfo.from_api_response}
+##### `from_api_response` {#airbyte.cloud.CloudWorkspaceInfo.from_api_response}
 
 <ApiMember kind="method">
 
@@ -1912,7 +1912,7 @@ Create a public model from an internal API workspace response.
 
 </ApiMember>
 
-#### `from_mapping` {#airbyte.cloud.CloudWorkspaceInfo.from_mapping}
+##### `from_mapping` {#airbyte.cloud.CloudWorkspaceInfo.from_mapping}
 
 <ApiMember kind="method">
 
@@ -1932,7 +1932,7 @@ Create a public model from a workspace mapping.
 
 #### Methods {#airbyte.cloud.CloudWorkspaceInfo--methods}
 
-#### `to_dict` {#airbyte.cloud.CloudWorkspaceInfo.to_dict}
+##### `to_dict` {#airbyte.cloud.CloudWorkspaceInfo.to_dict}
 
 <ApiMember kind="method">
 
@@ -2098,7 +2098,7 @@ interacting with the `.CloudWorkspace` and `.CloudConnection` objects.
 
 #### Methods {#airbyte.cloud.SyncResult--methods}
 
-#### `get_attempts` {#airbyte.cloud.SyncResult.get_attempts}
+##### `get_attempts` {#airbyte.cloud.SyncResult.get_attempts}
 
 <ApiMember kind="method">
 
@@ -2114,7 +2114,7 @@ Return a list of attempts for this sync job.
 
 </ApiMember>
 
-#### `get_dataset` {#airbyte.cloud.SyncResult.get_dataset}
+##### `get_dataset` {#airbyte.cloud.SyncResult.get_dataset}
 
 <ApiMember kind="method">
 
@@ -2136,7 +2136,7 @@ TODO: In a future iteration, we can consider providing stream configuration info
 
 </ApiMember>
 
-#### `get_job_status` {#airbyte.cloud.SyncResult.get_job_status}
+##### `get_job_status` {#airbyte.cloud.SyncResult.get_job_status}
 
 <ApiMember kind="method">
 
@@ -2152,7 +2152,7 @@ Check if the sync job is still running.
 
 </ApiMember>
 
-#### `get_sql_cache` {#airbyte.cloud.SyncResult.get_sql_cache}
+##### `get_sql_cache` {#airbyte.cloud.SyncResult.get_sql_cache}
 
 <ApiMember kind="method">
 
@@ -2168,7 +2168,7 @@ Return a SQL Cache object for working with the data in a SQL-based destination's
 
 </ApiMember>
 
-#### `get_sql_database_name` {#airbyte.cloud.SyncResult.get_sql_database_name}
+##### `get_sql_database_name` {#airbyte.cloud.SyncResult.get_sql_database_name}
 
 <ApiMember kind="method">
 
@@ -2184,7 +2184,7 @@ Return the SQL database name.
 
 </ApiMember>
 
-#### `get_sql_engine` {#airbyte.cloud.SyncResult.get_sql_engine}
+##### `get_sql_engine` {#airbyte.cloud.SyncResult.get_sql_engine}
 
 <ApiMember kind="method">
 
@@ -2200,7 +2200,7 @@ Return a SQL Engine for querying a SQL-based destination.
 
 </ApiMember>
 
-#### `get_sql_schema_name` {#airbyte.cloud.SyncResult.get_sql_schema_name}
+##### `get_sql_schema_name` {#airbyte.cloud.SyncResult.get_sql_schema_name}
 
 <ApiMember kind="method">
 
@@ -2216,7 +2216,7 @@ Return the SQL schema name.
 
 </ApiMember>
 
-#### `get_sql_table` {#airbyte.cloud.SyncResult.get_sql_table}
+##### `get_sql_table` {#airbyte.cloud.SyncResult.get_sql_table}
 
 <ApiMember kind="method">
 
@@ -2232,7 +2232,7 @@ Return a SQLAlchemy table object for the named stream.
 
 </ApiMember>
 
-#### `get_sql_table_name` {#airbyte.cloud.SyncResult.get_sql_table_name}
+##### `get_sql_table_name` {#airbyte.cloud.SyncResult.get_sql_table_name}
 
 <ApiMember kind="method">
 
@@ -2248,7 +2248,7 @@ Return the SQL table name of the named stream.
 
 </ApiMember>
 
-#### `is_job_complete` {#airbyte.cloud.SyncResult.is_job_complete}
+##### `is_job_complete` {#airbyte.cloud.SyncResult.is_job_complete}
 
 <ApiMember kind="method">
 
@@ -2264,7 +2264,7 @@ Check if the sync job is complete.
 
 </ApiMember>
 
-#### `raise_failure_status` {#airbyte.cloud.SyncResult.raise_failure_status}
+##### `raise_failure_status` {#airbyte.cloud.SyncResult.raise_failure_status}
 
 <ApiMember kind="method">
 
@@ -2286,7 +2286,7 @@ Otherwise, do nothing.
 
 </ApiMember>
 
-#### `wait_for_completion` {#airbyte.cloud.SyncResult.wait_for_completion}
+##### `wait_for_completion` {#airbyte.cloud.SyncResult.wait_for_completion}
 
 <ApiMember kind="method">
 

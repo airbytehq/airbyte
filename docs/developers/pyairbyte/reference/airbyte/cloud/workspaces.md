@@ -110,7 +110,7 @@ Validate and initialize credentials.
 
 #### Static Methods {#airbyte.cloud.workspaces.CloudWorkspace--static-methods}
 
-#### `from_env` {#airbyte.cloud.workspaces.CloudWorkspace.from_env}
+##### `from_env` {#airbyte.cloud.workspaces.CloudWorkspace.from_env}
 
 <ApiMember kind="method">
 
@@ -173,7 +173,7 @@ workspace = CloudWorkspace.from_env(workspace_id="your-workspace-id")
 
 #### Methods {#airbyte.cloud.workspaces.CloudWorkspace--methods}
 
-#### `connect` {#airbyte.cloud.workspaces.CloudWorkspace.connect}
+##### `connect` {#airbyte.cloud.workspaces.CloudWorkspace.connect}
 
 <ApiMember kind="method">
 
@@ -193,7 +193,7 @@ Note: It is not necessary to call this method before calling other operations. I
 
 </ApiMember>
 
-#### `deploy_connection` {#airbyte.cloud.workspaces.CloudWorkspace.deploy_connection}
+##### `deploy_connection` {#airbyte.cloud.workspaces.CloudWorkspace.deploy_connection}
 
 <ApiMember kind="method">
 
@@ -227,7 +227,7 @@ Returns the newly deployed connection object.
 
 </ApiMember>
 
-#### `deploy_destination` {#airbyte.cloud.workspaces.CloudWorkspace.deploy_destination}
+##### `deploy_destination` {#airbyte.cloud.workspaces.CloudWorkspace.deploy_destination}
 
 <ApiMember kind="method">
 
@@ -259,7 +259,7 @@ Returns the newly deployed destination ID.
 
 </ApiMember>
 
-#### `deploy_source` {#airbyte.cloud.workspaces.CloudWorkspace.deploy_source}
+##### `deploy_source` {#airbyte.cloud.workspaces.CloudWorkspace.deploy_source}
 
 <ApiMember kind="method">
 
@@ -291,7 +291,7 @@ Returns the newly deployed source.
 
 </ApiMember>
 
-#### `get_connection` {#airbyte.cloud.workspaces.CloudWorkspace.get_connection}
+##### `get_connection` {#airbyte.cloud.workspaces.CloudWorkspace.get_connection}
 
 <ApiMember kind="method">
 
@@ -313,7 +313,7 @@ which will be loaded lazily as needed.
 
 </ApiMember>
 
-#### `get_custom_source_definition` {#airbyte.cloud.workspaces.CloudWorkspace.get_custom_source_definition}
+##### `get_custom_source_definition` {#airbyte.cloud.workspaces.CloudWorkspace.get_custom_source_definition}
 
 <ApiMember kind="method">
 
@@ -343,7 +343,7 @@ CustomCloudSourceDefinition object
 
 </ApiMember>
 
-#### `get_destination` {#airbyte.cloud.workspaces.CloudWorkspace.get_destination}
+##### `get_destination` {#airbyte.cloud.workspaces.CloudWorkspace.get_destination}
 
 <ApiMember kind="method">
 
@@ -365,7 +365,7 @@ which will be loaded lazily as needed.
 
 </ApiMember>
 
-#### `get_organization` {#airbyte.cloud.workspaces.CloudWorkspace.get_organization}
+##### `get_organization` {#airbyte.cloud.workspaces.CloudWorkspace.get_organization}
 
 <ApiMember kind="method">
 
@@ -401,7 +401,7 @@ or None if raise_on_error=False and an error occurred.
 
 </ApiMember>
 
-#### `get_source` {#airbyte.cloud.workspaces.CloudWorkspace.get_source}
+##### `get_source` {#airbyte.cloud.workspaces.CloudWorkspace.get_source}
 
 <ApiMember kind="method">
 
@@ -420,7 +420,7 @@ which will be loaded lazily as needed.
 
 </ApiMember>
 
-#### `list_connections` {#airbyte.cloud.workspaces.CloudWorkspace.list_connections}
+##### `list_connections` {#airbyte.cloud.workspaces.CloudWorkspace.list_connections}
 
 <ApiMember kind="method">
 
@@ -442,7 +442,7 @@ List connections by name in the workspace, with an optional limit.
 
 </ApiMember>
 
-#### `list_custom_source_definitions` {#airbyte.cloud.workspaces.CloudWorkspace.list_custom_source_definitions}
+##### `list_custom_source_definitions` {#airbyte.cloud.workspaces.CloudWorkspace.list_custom_source_definitions}
 
 <ApiMember kind="method">
 
@@ -470,7 +470,7 @@ List of CustomCloudSourceDefinition objects matching the specified type
 
 </ApiMember>
 
-#### `list_destinations` {#airbyte.cloud.workspaces.CloudWorkspace.list_destinations}
+##### `list_destinations` {#airbyte.cloud.workspaces.CloudWorkspace.list_destinations}
 
 <ApiMember kind="method">
 
@@ -492,7 +492,7 @@ List all destinations in the workspace, with an optional limit.
 
 </ApiMember>
 
-#### `list_sources` {#airbyte.cloud.workspaces.CloudWorkspace.list_sources}
+##### `list_sources` {#airbyte.cloud.workspaces.CloudWorkspace.list_sources}
 
 <ApiMember kind="method">
 
@@ -514,7 +514,7 @@ List all sources in the workspace, with an optional limit.
 
 </ApiMember>
 
-#### `list_workspaces` {#airbyte.cloud.workspaces.CloudWorkspace.list_workspaces}
+##### `list_workspaces` {#airbyte.cloud.workspaces.CloudWorkspace.list_workspaces}
 
 <ApiMember kind="method">
 
@@ -536,7 +536,7 @@ List workspaces available to the current credentials, with an optional limit.
 
 </ApiMember>
 
-#### `permanently_delete` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete}
+##### `permanently_delete` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete}
 
 <ApiMember kind="method">
 
@@ -561,7 +561,7 @@ and raises `AirbyteWorkspaceNotEmptyError` if the workspace is not empty.
 
 </ApiMember>
 
-#### `permanently_delete_connection` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete_connection}
+##### `permanently_delete_connection` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete_connection}
 
 <ApiMember kind="method">
 
@@ -591,7 +591,7 @@ Delete a deployed connection from the workspace.
 
 </ApiMember>
 
-#### `permanently_delete_destination` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete_destination}
+##### `permanently_delete_destination` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete_destination}
 
 <ApiMember kind="method">
 
@@ -619,7 +619,7 @@ You can pass either the `Cache` class or the deployed destination ID as a `str`.
 
 </ApiMember>
 
-#### `permanently_delete_source` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete_source}
+##### `permanently_delete_source` {#airbyte.cloud.workspaces.CloudWorkspace.permanently_delete_source}
 
 <ApiMember kind="method">
 
@@ -647,7 +647,7 @@ You can pass either the source ID `str` or a deployed `Source` object.
 
 </ApiMember>
 
-#### `publish_custom_source_definition` {#airbyte.cloud.workspaces.CloudWorkspace.publish_custom_source_definition}
+##### `publish_custom_source_definition` {#airbyte.cloud.workspaces.CloudWorkspace.publish_custom_source_definition}
 
 <ApiMember kind="method">
 
@@ -695,7 +695,7 @@ CustomCloudSourceDefinition object representing the created definition
 
 </ApiMember>
 
-#### `rename` {#airbyte.cloud.workspaces.CloudWorkspace.rename}
+##### `rename` {#airbyte.cloud.workspaces.CloudWorkspace.rename}
 
 <ApiMember kind="method">
 

@@ -1462,7 +1462,7 @@ Base class for exceptions in Airbyte.
 
 #### Methods {#airbyte.exceptions.PyAirbyteError--methods}
 
-#### `get_message` {#airbyte.exceptions.PyAirbyteError.get_message}
+##### `get_message` {#airbyte.exceptions.PyAirbyteError.get_message}
 
 <ApiMember kind="method">
 
@@ -1482,7 +1482,7 @@ We resolve the following in order:
 
 </ApiMember>
 
-#### `safe_logging_dict` {#airbyte.exceptions.PyAirbyteError.safe_logging_dict}
+##### `safe_logging_dict` {#airbyte.exceptions.PyAirbyteError.safe_logging_dict}
 
 <ApiMember kind="method">
 

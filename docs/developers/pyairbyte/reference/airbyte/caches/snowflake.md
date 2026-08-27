@@ -144,7 +144,7 @@ validated to form a valid model.
 
 #### Methods {#airbyte.caches.snowflake.SnowflakeConfig--methods}
 
-#### `get_sql_alchemy_url` {#airbyte.caches.snowflake.SnowflakeConfig.get_sql_alchemy_url}
+##### `get_sql_alchemy_url` {#airbyte.caches.snowflake.SnowflakeConfig.get_sql_alchemy_url}
 
 <ApiMember kind="method">
 
@@ -160,7 +160,7 @@ Return the SQLAlchemy URL to use.
 
 </ApiMember>
 
-#### `get_vendor_client` {#airbyte.caches.snowflake.SnowflakeConfig.get_vendor_client}
+##### `get_vendor_client` {#airbyte.caches.snowflake.SnowflakeConfig.get_vendor_client}
 
 <ApiMember kind="method">
 

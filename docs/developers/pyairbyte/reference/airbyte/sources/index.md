@@ -316,7 +316,7 @@ If config is provided, it will be validated against the spec if validate is True
 
 #### Methods {#airbyte.sources.Source--methods}
 
-#### `get_available_streams` {#airbyte.sources.Source.get_available_streams}
+##### `get_available_streams` {#airbyte.sources.Source.get_available_streams}
 
 <ApiMember kind="method">
 
@@ -332,7 +332,7 @@ Get the available streams from the spec.
 
 </ApiMember>
 
-#### `get_configured_catalog` {#airbyte.sources.Source.get_configured_catalog}
+##### `get_configured_catalog` {#airbyte.sources.Source.get_configured_catalog}
 
 <ApiMember kind="method">
 
@@ -361,7 +361,7 @@ when supported by the stream. Otherwise, incremental sync mode is used when supp
 
 </ApiMember>
 
-#### `get_documents` {#airbyte.sources.Source.get_documents}
+##### `get_documents` {#airbyte.sources.Source.get_documents}
 
 <ApiMember kind="method">
 
@@ -391,7 +391,7 @@ the main content.
 
 </ApiMember>
 
-#### `get_records` {#airbyte.sources.Source.get_records}
+##### `get_records` {#airbyte.sources.Source.get_records}
 
 <ApiMember kind="method">
 
@@ -431,7 +431,7 @@ This involves the following steps:
 
 </ApiMember>
 
-#### `get_samples` {#airbyte.sources.Source.get_samples}
+##### `get_samples` {#airbyte.sources.Source.get_samples}
 
 <ApiMember kind="method">
 
@@ -453,7 +453,7 @@ Get a sample of records from the given streams.
 
 </ApiMember>
 
-#### `get_selected_streams` {#airbyte.sources.Source.get_selected_streams}
+##### `get_selected_streams` {#airbyte.sources.Source.get_selected_streams}
 
 <ApiMember kind="method">
 
@@ -471,7 +471,7 @@ If no streams are selected, return an empty list.
 
 </ApiMember>
 
-#### `get_stream_json_schema` {#airbyte.sources.Source.get_stream_json_schema}
+##### `get_stream_json_schema` {#airbyte.sources.Source.get_stream_json_schema}
 
 <ApiMember kind="method">
 
@@ -487,7 +487,7 @@ Return the JSON Schema spec for the specified stream name.
 
 </ApiMember>
 
-#### `print_samples` {#airbyte.sources.Source.print_samples}
+##### `print_samples` {#airbyte.sources.Source.print_samples}
 
 <ApiMember kind="method">
 
@@ -509,7 +509,7 @@ Print a sample of records from the given streams.
 
 </ApiMember>
 
-#### `read` {#airbyte.sources.Source.read}
+##### `read` {#airbyte.sources.Source.read}
 
 <ApiMember kind="method">
 
@@ -541,7 +541,7 @@ Read from the connector and write to the cache.
 
 </ApiMember>
 
-#### `select_all_streams` {#airbyte.sources.Source.select_all_streams}
+##### `select_all_streams` {#airbyte.sources.Source.select_all_streams}
 
 <ApiMember kind="method">
 
@@ -560,7 +560,7 @@ This is a more streamlined equivalent to:
 
 </ApiMember>
 
-#### `select_streams` {#airbyte.sources.Source.select_streams}
+##### `select_streams` {#airbyte.sources.Source.select_streams}
 
 <ApiMember kind="method">
 
@@ -582,7 +582,7 @@ Currently, if this is not set, all streams will be read.
 
 </ApiMember>
 
-#### `set_config` {#airbyte.sources.Source.set_config}
+##### `set_config` {#airbyte.sources.Source.set_config}
 
 <ApiMember kind="method">
 
@@ -603,7 +603,7 @@ is called.
 
 </ApiMember>
 
-#### `set_cursor_key` {#airbyte.sources.Source.set_cursor_key}
+##### `set_cursor_key` {#airbyte.sources.Source.set_cursor_key}
 
 <ApiMember kind="method">
 
@@ -629,7 +629,7 @@ Set the cursor for a single stream.
 
 </ApiMember>
 
-#### `set_cursor_keys` {#airbyte.sources.Source.set_cursor_keys}
+##### `set_cursor_keys` {#airbyte.sources.Source.set_cursor_keys}
 
 <ApiMember kind="method">
 
@@ -663,7 +663,7 @@ Usage:
 
 </ApiMember>
 
-#### `set_primary_key` {#airbyte.sources.Source.set_primary_key}
+##### `set_primary_key` {#airbyte.sources.Source.set_primary_key}
 
 <ApiMember kind="method">
 
@@ -693,7 +693,7 @@ Set the primary key for a single stream.
 
 </ApiMember>
 
-#### `set_primary_keys` {#airbyte.sources.Source.set_primary_keys}
+##### `set_primary_keys` {#airbyte.sources.Source.set_primary_keys}
 
 <ApiMember kind="method">
 
@@ -729,7 +729,7 @@ Usage:
 
 </ApiMember>
 
-#### `set_streams` {#airbyte.sources.Source.set_streams}
+##### `set_streams` {#airbyte.sources.Source.set_streams}
 
 <ApiMember kind="method">
 

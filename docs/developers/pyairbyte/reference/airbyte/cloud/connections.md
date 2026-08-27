@@ -95,7 +95,7 @@ Instead, use `CloudWorkspace.get_connection()` to create a connection object.
 
 #### Methods {#airbyte.cloud.connections.CloudConnection--methods}
 
-#### `cancel_sync` {#airbyte.cloud.connections.CloudConnection.cancel_sync}
+##### `cancel_sync` {#airbyte.cloud.connections.CloudConnection.cancel_sync}
 
 <ApiMember kind="method">
 
@@ -117,7 +117,7 @@ targeted with an explicit `job_id`.
 
 </ApiMember>
 
-#### `check_is_valid` {#airbyte.cloud.connections.CloudConnection.check_is_valid}
+##### `check_is_valid` {#airbyte.cloud.connections.CloudConnection.check_is_valid}
 
 <ApiMember kind="method">
 
@@ -146,7 +146,7 @@ True if the connection exists and belongs to the expected workspace.
 
 </ApiMember>
 
-#### `dump_raw_catalog` {#airbyte.cloud.connections.CloudConnection.dump_raw_catalog}
+##### `dump_raw_catalog` {#airbyte.cloud.connections.CloudConnection.dump_raw_catalog}
 
 <ApiMember kind="method">
 
@@ -182,7 +182,7 @@ The configured catalog dict, or `None` if not found.
 
 </ApiMember>
 
-#### `dump_raw_state` {#airbyte.cloud.connections.CloudConnection.dump_raw_state}
+##### `dump_raw_state` {#airbyte.cloud.connections.CloudConnection.dump_raw_state}
 
 <ApiMember kind="method">
 
@@ -217,7 +217,7 @@ directly to `import_raw_state()` for backup/restore workflows.
 
 </ApiMember>
 
-#### `get_catalog_artifact` {#airbyte.cloud.connections.CloudConnection.get_catalog_artifact}
+##### `get_catalog_artifact` {#airbyte.cloud.connections.CloudConnection.get_catalog_artifact}
 
 <ApiMember kind="method">
 
@@ -242,7 +242,7 @@ Dictionary containing the configured catalog, or `None` if not found.
 
 </ApiMember>
 
-#### `get_previous_sync_logs` {#airbyte.cloud.connections.CloudConnection.get_previous_sync_logs}
+##### `get_previous_sync_logs` {#airbyte.cloud.connections.CloudConnection.get_previous_sync_logs}
 
 <ApiMember kind="method">
 
@@ -280,7 +280,7 @@ A list of SyncResult objects representing the sync jobs.
 
 </ApiMember>
 
-#### `get_state_artifacts` {#airbyte.cloud.connections.CloudConnection.get_state_artifacts}
+##### `get_state_artifacts` {#airbyte.cloud.connections.CloudConnection.get_state_artifacts}
 
 <ApiMember kind="method">
 
@@ -296,7 +296,7 @@ Deprecated. Use `dump_raw_state()` instead.
 
 </ApiMember>
 
-#### `get_stream_state` {#airbyte.cloud.connections.CloudConnection.get_stream_state}
+##### `get_stream_state` {#airbyte.cloud.connections.CloudConnection.get_stream_state}
 
 <ApiMember kind="method">
 
@@ -333,7 +333,7 @@ The stream's state blob as a dictionary, or None if the stream is not found.
 
 </ApiMember>
 
-#### `get_sync_result` {#airbyte.cloud.connections.CloudConnection.get_sync_result}
+##### `get_sync_result` {#airbyte.cloud.connections.CloudConnection.get_sync_result}
 
 <ApiMember kind="method">
 
@@ -356,7 +356,7 @@ Returns `None` if job_id is omitted and no previous jobs are found.
 
 </ApiMember>
 
-#### `import_raw_catalog` {#airbyte.cloud.connections.CloudConnection.import_raw_catalog}
+##### `import_raw_catalog` {#airbyte.cloud.connections.CloudConnection.import_raw_catalog}
 
 <ApiMember kind="method">
 
@@ -389,7 +389,7 @@ Accepts either format:
 
 </ApiMember>
 
-#### `import_raw_state` {#airbyte.cloud.connections.CloudConnection.import_raw_state}
+##### `import_raw_state` {#airbyte.cloud.connections.CloudConnection.import_raw_state}
 
 <ApiMember kind="method">
 
@@ -436,7 +436,7 @@ The updated connection state as a dictionary.
 
 </ApiMember>
 
-#### `permanently_delete` {#airbyte.cloud.connections.CloudConnection.permanently_delete}
+##### `permanently_delete` {#airbyte.cloud.connections.CloudConnection.permanently_delete}
 
 <ApiMember kind="method">
 
@@ -462,7 +462,7 @@ Delete the connection.
 
 </ApiMember>
 
-#### `rename` {#airbyte.cloud.connections.CloudConnection.rename}
+##### `rename` {#airbyte.cloud.connections.CloudConnection.rename}
 
 <ApiMember kind="method">
 
@@ -486,7 +486,7 @@ Updated CloudConnection object with refreshed info
 
 </ApiMember>
 
-#### `run_sync` {#airbyte.cloud.connections.CloudConnection.run_sync}
+##### `run_sync` {#airbyte.cloud.connections.CloudConnection.run_sync}
 
 <ApiMember kind="method">
 
@@ -507,7 +507,7 @@ Run a sync.
 
 </ApiMember>
 
-#### `set_enabled` {#airbyte.cloud.connections.CloudConnection.set_enabled}
+##### `set_enabled` {#airbyte.cloud.connections.CloudConnection.set_enabled}
 
 <ApiMember kind="method">
 
@@ -532,7 +532,7 @@ Set the enabled status of the connection.
 
 </ApiMember>
 
-#### `set_manual_schedule` {#airbyte.cloud.connections.CloudConnection.set_manual_schedule}
+##### `set_manual_schedule` {#airbyte.cloud.connections.CloudConnection.set_manual_schedule}
 
 <ApiMember kind="method">
 
@@ -550,7 +550,7 @@ Disables automatic syncs. Syncs will only run when manually triggered.
 
 </ApiMember>
 
-#### `set_schedule` {#airbyte.cloud.connections.CloudConnection.set_schedule}
+##### `set_schedule` {#airbyte.cloud.connections.CloudConnection.set_schedule}
 
 <ApiMember kind="method">
 
@@ -576,7 +576,7 @@ Set a cron schedule for the connection.
 
 </ApiMember>
 
-#### `set_selected_streams` {#airbyte.cloud.connections.CloudConnection.set_selected_streams}
+##### `set_selected_streams` {#airbyte.cloud.connections.CloudConnection.set_selected_streams}
 
 <ApiMember kind="method">
 
@@ -606,7 +606,7 @@ Updated CloudConnection object with refreshed info
 
 </ApiMember>
 
-#### `set_stream_state` {#airbyte.cloud.connections.CloudConnection.set_stream_state}
+##### `set_stream_state` {#airbyte.cloud.connections.CloudConnection.set_stream_state}
 
 <ApiMember kind="method">
 
@@ -649,7 +649,7 @@ Uses the safe variant that prevents updates while a sync is running (HTTP 423).
 
 </ApiMember>
 
-#### `set_table_prefix` {#airbyte.cloud.connections.CloudConnection.set_table_prefix}
+##### `set_table_prefix` {#airbyte.cloud.connections.CloudConnection.set_table_prefix}
 
 <ApiMember kind="method">
 

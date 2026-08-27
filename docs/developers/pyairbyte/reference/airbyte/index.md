@@ -457,7 +457,7 @@ Initialize the cache and backends.
 
 #### Methods {#airbyte.BigQueryCache--methods}
 
-#### `get_arrow_dataset` {#airbyte.BigQueryCache.get_arrow_dataset}
+##### `get_arrow_dataset` {#airbyte.BigQueryCache.get_arrow_dataset}
 
 <ApiMember kind="method">
 
@@ -518,7 +518,7 @@ If stream_configuration is set to False, we skip the stream configuration retrie
 `airbyte.datasets._sql.SQLDataset`
 #### Methods {#airbyte.CachedDataset--methods}
 
-#### `to_arrow` {#airbyte.CachedDataset.to_arrow}
+##### `to_arrow` {#airbyte.CachedDataset.to_arrow}
 
 <ApiMember kind="method">
 
@@ -543,7 +543,7 @@ Return an Arrow Dataset containing the data from the specified stream.
 
 </ApiMember>
 
-#### `to_pandas` {#airbyte.CachedDataset.to_pandas}
+##### `to_pandas` {#airbyte.CachedDataset.to_pandas}
 
 <ApiMember kind="method">
 
@@ -559,7 +559,7 @@ Return the underlying dataset data as a pandas DataFrame.
 
 </ApiMember>
 
-#### `to_sql_table` {#airbyte.CachedDataset.to_sql_table}
+##### `to_sql_table` {#airbyte.CachedDataset.to_sql_table}
 
 <ApiMember kind="method">
 
@@ -620,7 +620,7 @@ If config is provided, it will be validated against the spec if validate is True
 
 #### Methods {#airbyte.Destination--methods}
 
-#### `get_sql_cache` {#airbyte.Destination.get_sql_cache}
+##### `get_sql_cache` {#airbyte.Destination.get_sql_cache}
 
 <ApiMember kind="method">
 
@@ -649,7 +649,7 @@ it builds a cache from the destination's configuration using
 
 </ApiMember>
 
-#### `write` {#airbyte.Destination.write}
+##### `write` {#airbyte.Destination.write}
 
 <ApiMember kind="method">
 
@@ -772,7 +772,7 @@ method of the `Source` class.
 
 #### Methods {#airbyte.ReadResult--methods}
 
-#### `get_sql_engine` {#airbyte.ReadResult.get_sql_engine}
+##### `get_sql_engine` {#airbyte.ReadResult.get_sql_engine}
 
 <ApiMember kind="method">
 
@@ -901,7 +901,7 @@ If config is provided, it will be validated against the spec if validate is True
 
 #### Methods {#airbyte.Source--methods}
 
-#### `get_available_streams` {#airbyte.Source.get_available_streams}
+##### `get_available_streams` {#airbyte.Source.get_available_streams}
 
 <ApiMember kind="method">
 
@@ -917,7 +917,7 @@ Get the available streams from the spec.
 
 </ApiMember>
 
-#### `get_configured_catalog` {#airbyte.Source.get_configured_catalog}
+##### `get_configured_catalog` {#airbyte.Source.get_configured_catalog}
 
 <ApiMember kind="method">
 
@@ -946,7 +946,7 @@ when supported by the stream. Otherwise, incremental sync mode is used when supp
 
 </ApiMember>
 
-#### `get_documents` {#airbyte.Source.get_documents}
+##### `get_documents` {#airbyte.Source.get_documents}
 
 <ApiMember kind="method">
 
@@ -976,7 +976,7 @@ the main content.
 
 </ApiMember>
 
-#### `get_records` {#airbyte.Source.get_records}
+##### `get_records` {#airbyte.Source.get_records}
 
 <ApiMember kind="method">
 
@@ -1016,7 +1016,7 @@ This involves the following steps:
 
 </ApiMember>
 
-#### `get_samples` {#airbyte.Source.get_samples}
+##### `get_samples` {#airbyte.Source.get_samples}
 
 <ApiMember kind="method">
 
@@ -1038,7 +1038,7 @@ Get a sample of records from the given streams.
 
 </ApiMember>
 
-#### `get_selected_streams` {#airbyte.Source.get_selected_streams}
+##### `get_selected_streams` {#airbyte.Source.get_selected_streams}
 
 <ApiMember kind="method">
 
@@ -1056,7 +1056,7 @@ If no streams are selected, return an empty list.
 
 </ApiMember>
 
-#### `get_stream_json_schema` {#airbyte.Source.get_stream_json_schema}
+##### `get_stream_json_schema` {#airbyte.Source.get_stream_json_schema}
 
 <ApiMember kind="method">
 
@@ -1072,7 +1072,7 @@ Return the JSON Schema spec for the specified stream name.
 
 </ApiMember>
 
-#### `print_samples` {#airbyte.Source.print_samples}
+##### `print_samples` {#airbyte.Source.print_samples}
 
 <ApiMember kind="method">
 
@@ -1094,7 +1094,7 @@ Print a sample of records from the given streams.
 
 </ApiMember>
 
-#### `read` {#airbyte.Source.read}
+##### `read` {#airbyte.Source.read}
 
 <ApiMember kind="method">
 
@@ -1126,7 +1126,7 @@ Read from the connector and write to the cache.
 
 </ApiMember>
 
-#### `select_all_streams` {#airbyte.Source.select_all_streams}
+##### `select_all_streams` {#airbyte.Source.select_all_streams}
 
 <ApiMember kind="method">
 
@@ -1145,7 +1145,7 @@ This is a more streamlined equivalent to:
 
 </ApiMember>
 
-#### `select_streams` {#airbyte.Source.select_streams}
+##### `select_streams` {#airbyte.Source.select_streams}
 
 <ApiMember kind="method">
 
@@ -1167,7 +1167,7 @@ Currently, if this is not set, all streams will be read.
 
 </ApiMember>
 
-#### `set_config` {#airbyte.Source.set_config}
+##### `set_config` {#airbyte.Source.set_config}
 
 <ApiMember kind="method">
 
@@ -1188,7 +1188,7 @@ is called.
 
 </ApiMember>
 
-#### `set_cursor_key` {#airbyte.Source.set_cursor_key}
+##### `set_cursor_key` {#airbyte.Source.set_cursor_key}
 
 <ApiMember kind="method">
 
@@ -1214,7 +1214,7 @@ Set the cursor for a single stream.
 
 </ApiMember>
 
-#### `set_cursor_keys` {#airbyte.Source.set_cursor_keys}
+##### `set_cursor_keys` {#airbyte.Source.set_cursor_keys}
 
 <ApiMember kind="method">
 
@@ -1248,7 +1248,7 @@ Usage:
 
 </ApiMember>
 
-#### `set_primary_key` {#airbyte.Source.set_primary_key}
+##### `set_primary_key` {#airbyte.Source.set_primary_key}
 
 <ApiMember kind="method">
 
@@ -1278,7 +1278,7 @@ Set the primary key for a single stream.
 
 </ApiMember>
 
-#### `set_primary_keys` {#airbyte.Source.set_primary_keys}
+##### `set_primary_keys` {#airbyte.Source.set_primary_keys}
 
 <ApiMember kind="method">
 
@@ -1314,7 +1314,7 @@ Usage:
 
 </ApiMember>
 
-#### `set_streams` {#airbyte.Source.set_streams}
+##### `set_streams` {#airbyte.Source.set_streams}
 
 <ApiMember kind="method">
 
@@ -1388,7 +1388,7 @@ Initialize the dictionary with the given data.
 `builtins.dict`
 #### Static Methods {#airbyte.StreamRecord--static-methods}
 
-#### `from_record_message` {#airbyte.StreamRecord.from_record_message}
+##### `from_record_message` {#airbyte.StreamRecord.from_record_message}
 
 <ApiMember kind="method">
 
@@ -1448,7 +1448,7 @@ method of the `Destination` class.
 
 #### Methods {#airbyte.WriteResult--methods}
 
-#### `get_state_provider` {#airbyte.WriteResult.get_state_provider}
+##### `get_state_provider` {#airbyte.WriteResult.get_state_provider}
 
 <ApiMember kind="method">
 
