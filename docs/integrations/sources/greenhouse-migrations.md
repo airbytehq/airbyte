@@ -30,7 +30,7 @@ For Airbyte Cloud and partner Authorization Code integrations, Greenhouse issues
 
 ### Stream and schema changes
 
-The 33 remaining existing streams now use their Harvest v3 collection endpoints, and this release adds one new `custom_field_options` stream. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
+The 33 streams carried over from 0.8.1 now use their Harvest v3 collection endpoints, and this release adds one new `custom_field_options` stream, for 34 streams in total. The v3 response schemas remove several nested v1 objects and add v3 identifiers, timestamps, and relationship fields. Examples include:
 
 - `applications` uses `updated_at` for incremental state instead of `applied_at` and exposes flat job, stage, recruiter, coordinator, and source identifiers.
 - `candidates` no longer embeds applications and uses `private`, `preferred_name`, `last_activity_at`, and linked user identifiers.
