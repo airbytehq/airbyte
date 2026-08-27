@@ -76,7 +76,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 0.3.27 | 2026-08-28 | [PENDING](https://github.com/airbytehq/airbyte/pull/PENDING) | Add optional `base_url` so non-`na1` Insightly pods can authenticate (host was hardcoded to `api.na1.insightly.com`) |
+| 0.3.27 | 2026-08-28 | [85112](https://github.com/airbytehq/airbyte/pull/85112) | Add optional `base_url` so non-`na1` Insightly pods can authenticate (host was hardcoded to `api.na1.insightly.com`) |
 | 0.3.26 | 2025-10-14 | [67374](https://github.com/airbytehq/airbyte/pull/67374) | Update dependencies |
 | 0.3.25 | 2025-09-30 | [61132](https://github.com/airbytehq/airbyte/pull/61132) | Update dependencies |
 | 0.3.24 | 2025-09-12 | [66197](https://github.com/airbytehq/airbyte/pull/66197) | Update to CDK v7 |
