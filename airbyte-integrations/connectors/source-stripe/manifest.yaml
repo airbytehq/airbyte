@@ -14937,9 +14937,13 @@ schemas:
   payment_methods:
     $schema: https://json-schema.org/draft-07/schema#
     additionalProperties: true
+    # Keep this order. The CDK only recognises a schema root as a JSON schema when `type` is
+    # `object` or exactly `["null", "object"]` (ManifestComponentTransformer._is_json_schema_object).
+    # Any other order makes the transformer treat the schema as a component and propagate the
+    # stream template's `$parameters` (and `name`) into the schema root and every property.
     type:
-      - object
       - "null"
+      - object
     properties:
       acss_debit:
         properties:
