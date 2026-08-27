@@ -250,7 +250,11 @@ ${"\n".join(doc_lines)}
                if v.name not in PYDANTIC_NOISE_MEMBERS]
   methods = [m for m in cls.methods(show_inherited_members, sort=sort_identifiers)
              if m.name not in PYDANTIC_NOISE_MEMBERS]
-  mro = [c for c in cls.mro() if c.refname not in ("pydantic.main.BaseModel", "builtins.object")]
+  direct_bases = []
+  for base in getattr(cls.obj, "__bases__", ()):
+      base_doc = cls.module.find_class(base)
+      if base_doc.refname not in ("pydantic.main.BaseModel", "builtins.object"):
+          direct_bases.append(base_doc)
   # cls.obj can be a typing generic alias (e.g. a Callable type alias) rather
   # than a real class, for which pdoc3's subclasses() raises TypeError.
   try:
@@ -267,31 +271,44 @@ ${heading} `${cls.name}` {#${cls.refname}}
 ${signature_block('class', cls.name, params, '', cls.refname)}
 ${docstring_md(cls.docstring)}
 
-% if mro:
-**Bases:** ${", ".join("`%s`" % c.refname for c in mro)}
+% if direct_bases:
+${sub} Bases {#${cls.refname}--bases}
 
+${", ".join("`%s`" % c.refname for c in direct_bases)}
 % endif
 % if subclasses:
-**Subclasses:** ${", ".join("`%s`" % c.refname for c in subclasses)}
+${sub} Descendants {#${cls.refname}--descendants}
 
+${", ".join("`%s`" % c.refname for c in subclasses)}
 % endif
-% if class_vars or inst_vars:
-${sub} Attributes {#${cls.refname}--attributes}
+% if class_vars:
+${sub} Class Variables {#${cls.refname}--class-variables}
 
 % for v in class_vars:
 ${variable(v, depth + 1)}
 % endfor
+% endif
+% if inst_vars:
+${sub} Instance Variables {#${cls.refname}--instance-variables}
+
 % for v in inst_vars:
 ${variable(v, depth + 1)}
 % endfor
-
 % endif
+% if static_methods:
+${sub} Static Methods {#${cls.refname}--static-methods}
+
 % for f in static_methods:
 ${function(f, depth + 1)}
 % endfor
+% endif
+% if methods:
+${sub} Methods {#${cls.refname}--methods}
+
 % for m in methods:
 ${function(m, depth + 1)}
 % endfor
+% endif
 
 </ApiMember>
 </%def>

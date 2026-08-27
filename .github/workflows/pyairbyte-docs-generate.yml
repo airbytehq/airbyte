@@ -115,6 +115,7 @@ jobs:
               echo "id: ${unique_id}"
               echo "title: \"${module_title} Module\""
               echo "sidebar_label: \"${module_title}\""
+              echo "toc_max_heading_level: 5"
               echo "---"
               echo ""
               echo "# \`${module_title}\` Module"
