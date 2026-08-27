@@ -70,7 +70,7 @@ Page sizes are fixed and can't be configured.
 
 ### Stream details
 
-- **Transactions** requests `fields=all`, so each record contains every transaction detail section PayPal exposes. PayPal caps each request at a 31-day range and 10,000 records, and needs up to three hours to make an executed transaction available.
+- **Transactions** requests `fields=all`, so each record contains every transaction detail section PayPal exposes. PayPal caps each request at a 31-day range and 10,000 records, and needs up to three hours to make an executed transaction available. The connector copies `transaction_info.transaction_id` into a top-level `transaction_id` field, the stream's primary key, and always emits it as a string, even when the ID resembles a number in scientific notation, such as `35E87645934406417`.
 - **Balances** requests one `as_of_time` per cursor value rather than a date range, so **Number of days per request** has no effect on it.
 - **Show Product Details** reads one product per request, using the IDs from `list_products` as partitions. Because `list_products` pages 20 products at a time and PayPal serves these requests sequentially, a large catalog takes a long time to sync: a catalog of 30,000 products can take 10 to 15 minutes to list, and syncing the details for every product can take hours. Schedule these two streams when a long-running sync is acceptable.
 - **List Disputes** uses millisecond precision throughout. It reads disputes updated between **Dispute Start Date Range** (or 180 days ago) and 30 minutes before the sync starts, which avoids PayPal's `INVALID_DATE_TIME_FORMAT` and `INVALID_DATE_RANGE` errors.
