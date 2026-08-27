@@ -76,7 +76,7 @@ Streams that support incremental sync use the `updatedAt` field as the cursor. T
 
 That lower bound is inclusive, so a record whose `updatedAt` matches the stored cursor exactly is read again on the next sync. Overlap is also wider after a failed sync. Each stream gets its own cursor, and the connector advances a stream's cursor only once that stream finishes, so a stream interrupted by a failure re-reads everything updated since its own last successful run. Streams that finished before the failure keep their new cursor and aren't affected. In **Incremental - Append + Deduped** mode the destination collapses these repeats. In **Incremental - Append** mode they land as extra rows, so deduplicate on the primary key downstream if that matters to you.
 
-The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, `customer_tiers`, `initiative_to_projects`, and `issue_history`.
+The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, `customer_tiers`, and `initiative_to_projects`. `issue_history` is full-refresh only for a different reason: Linear exposes an issue's history only through that issue, so the connector reads it issue by issue. See [Issue history](#issue-history).
 
 ## Supported streams
 
@@ -120,6 +120,15 @@ See Linear's [Customer Requests documentation](https://linear.app/docs/customer-
 ### Initiative streams
 
 The `initiatives` and `initiative_to_projects` streams need Linear's `initiative:read` scope. Connector version `0.4.0` requests it, but Linear grants scopes when you authorize, so OAuth sources created before `0.4.0` hold tokens without it. If either stream fails with `Invalid scope: initiative:read ... required for app user to read initiative data`, a workspace admin must re-authenticate the source in Sources > your source > Settings. API key sources are unaffected.
+
+### Issue history
+
+`issue_history` is the only stream the connector reads through a parent stream. On every sync it pages through all your issues, then sends a separate query for each issue to collect that issue's history entries, 50 entries per page. Two consequences:
+
+- Request volume and sync time scale with your issue count, not with how much changed since the last sync, and the queries count against the same hourly request and complexity budgets as every other stream. On a workspace with many issues, selecting this stream can slow every other stream in the connection. See [Rate limiting](#rate-limiting).
+- The stream has no cursor, so each sync returns the complete history again. Sync it in **Full Refresh - Overwrite** mode unless you have a reason to keep the repeats. In **Full Refresh - Append** mode, every sync appends another full copy.
+
+The connector reads the parent issues itself, so you don't need to select the `issues` stream to sync `issue_history`. Each history record carries an `issueId` field that the connector adds from the parent issue; Linear's own response doesn't include it. The primary key is `issueId` and `id` together.
 
 ### Archived records
 
@@ -204,7 +213,7 @@ For programmatic configuration, use these parameter names:
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
 | 1.0.0 | 2026-08-27 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Type all date and datetime fields and remove deprecated Linear fields from the `users`, `teams` and `customer_statuses` queries. |
-| 0.4.0 | 2026-08-26 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
+| 0.4.0 | 2026-08-27 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
 | 0.3.0 | 2026-08-26 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Sync archived records in every stream and declare `archivedAt` (plus `trashed` on `issues` and `projects`) in the stream schemas |
 | 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |
