@@ -3,8 +3,10 @@
 #
 
 import logging
+from multiprocessing import Pool
 from typing import Any, List, Mapping, Tuple
 
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 
@@ -16,6 +18,17 @@ DEFAULT_COUNT = 1_000
 
 class SourceFaker(AbstractSource):
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
+        parallelism: int = config["parallelism"] if "parallelism" in config else 4
+        try:
+            pool = Pool(processes=parallelism)
+            pool.close()
+            pool.join()
+            config["parallelism"] = parallelism
+            emit_configuration_as_airbyte_control_message(config)
+            logger.info(f"Worker pool preflight passed (parallelism={parallelism})")
+        except OSError as error:
+            return False, f"Cannot allocate worker pool (parallelism={parallelism}): {error}. Reduce the parallelism setting."
+
         if type(config["count"]) == int or type(config["count"]) == float:
             return True, None
         else:
