@@ -124,6 +124,9 @@ can still assert on it.
 Build the target image first when using `--test-version=dev`, or pass
 `--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
+`--skip-fixtures` (run against whatever state the backend already has;
+for the second/later `run.sh` invocation of a multi-phase driver, when
+re-applying the initial fixture would wipe intermediate state),
 `--step-name`, `--catalog` (skip discover-derived generation),
 `--state=PATH` (pass a saved STATE file to the read as `--state-path`;
 for use by multi-phase drivers), `--sync-mode=incremental`,

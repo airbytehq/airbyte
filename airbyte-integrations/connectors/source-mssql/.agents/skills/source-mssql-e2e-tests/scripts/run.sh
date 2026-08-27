@@ -15,16 +15,25 @@
 # only ever one ordering to maintain.
 #
 # Usage:
-#   run.sh [--command=all] [--fixture=PATH]… [--test-version=dev]
-#          [--control-version=TAG] [--reset=none|fixture|backend]
-#          [--skip-read] [--step-name=NAME] [--catalog=PATH]
-#          [--state=PATH] [--sync-mode=full_refresh|incremental]
-#          [--cursor-field=NAME] [--streams=a,b] [--config-template=PATH]
+#   run.sh [--command=all] [--fixture=PATH]… [--skip-fixtures]
+#          [--test-version=dev] [--control-version=TAG]
+#          [--reset=none|fixture|backend] [--skip-read]
+#          [--step-name=NAME] [--catalog=PATH] [--state=PATH]
+#          [--sync-mode=full_refresh|incremental] [--cursor-field=NAME]
+#          [--streams=a,b] [--config-template=PATH]
 #          [--expect-test=pass|fail] [--expect-control=pass|fail]
 #          [--min-records=N] [--min-states=N]
 #          [--expect-match=[<command>:]<channel>:<regex>[:N]]…
 #          [--forbid-match=[<command>:]<channel>:<regex>]…
 #          [--build] [--keep-backend] [-- extra airbyte-ops args…]
+#
+#   --skip-fixtures runs the sweep against whatever state the backend
+#           already has, without applying any fixtures. Used by
+#           multi-phase driver scripts on the second/later `run.sh`
+#           invocation, when re-applying the initial fixture would wipe
+#           the intermediate state a preceding phase established. Fails
+#           if any `--fixture=` is also passed (either apply fixtures
+#           or skip them — asking for both is a caller bug).
 #
 #   --state passes a saved state file to the read step as
 #           `--state-path`. Meant for multi-phase drivers: a first
@@ -100,6 +109,7 @@ export REPRO_OUT
 
 COMMAND="all"
 FIXTURES=()
+SKIP_FIXTURES=false
 TEST_VERSION="dev"
 CONTROL_VERSION_ARG=""
 RESET="none"
@@ -139,6 +149,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --command=*)         COMMAND="${1#*=}" ;;
     --fixture=*)         FIXTURES+=("${1#*=}") ;;
+    --skip-fixtures)     SKIP_FIXTURES=true ;;
     --test-version=*)    TEST_VERSION="${1#*=}" ;;
     --control-version=*) CONTROL_VERSION_ARG="${1#*=}" ;;
     --reset=*)           RESET="${1#*=}" ;;
@@ -159,7 +170,7 @@ while [[ $# -gt 0 ]]; do
     --build)             BUILD=true ;;
     --keep-backend)      KEEP_BACKEND=true ;;
     --)                  shift; EXTRA_ARGS=("$@"); break ;;
-    -h|--help)           sed -n '2,92p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help)           sed -n '2,100p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "[run] unknown argument: $1" >&2; exit 2 ;;
   esac
   shift
@@ -217,7 +228,11 @@ fi
 PER_IMAGE_SWEEPS=false
 [[ -n "$CONTROL_VERSION_ARG" && "$RESET" != none ]] && PER_IMAGE_SWEEPS=true
 
-if [[ ${#FIXTURES[@]} -eq 0 ]]; then
+if [[ "$SKIP_FIXTURES" == true && ${#FIXTURES[@]} -gt 0 ]]; then
+  echo "[run] --skip-fixtures + --fixture= is inconsistent (either apply fixtures or skip them)" >&2
+  exit 2
+fi
+if [[ "$SKIP_FIXTURES" != true && ${#FIXTURES[@]} -eq 0 ]]; then
   FIXTURES=("$SKILL_DIR/fixtures/sql/00-init-base.sql")
 fi
 if [[ -z "$STEP_NAME" ]]; then
@@ -243,6 +258,7 @@ cleanup() {
 trap cleanup EXIT
 
 apply_fixtures() {
+  [[ "$SKIP_FIXTURES" == true ]] && return 0
   for fixture in "${FIXTURES[@]}"; do
     "$SCRIPTS/apply-sql.sh" "$fixture"
   done
