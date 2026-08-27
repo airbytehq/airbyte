@@ -22,10 +22,10 @@
       },
       "base_url": {
         "type": "string",
-        "default": "https://app.posthog.com",
+        "default": "https://us.posthog.com",
         "title": "Base URL",
-        "description": "Base PostHog url. Defaults to PostHog Cloud (https://app.posthog.com).",
-        "examples": ["https://posthog.example.com"]
+        "description": "Base PostHog url. Defaults to PostHog US Cloud (https://us.posthog.com). EU Cloud is https://eu.posthog.com. app.posthog.com is the product UI, not the US API host.",
+        "examples": ["https://us.posthog.com", "https://eu.posthog.com", "https://posthog.example.com"]
       },
       "events_time_step": {
         "type": "integer",
