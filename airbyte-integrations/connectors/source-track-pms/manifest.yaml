@@ -1,4 +1,4 @@
-version: 7.28.0
+version: 7.23.7
 
 type: DeclarativeSource
 
@@ -126,10 +126,6 @@ streams:
             type:
               - string
               - "null"
-          parent:
-            type:
-              - object
-              - "null"
           bankName:
             type:
               - string
@@ -137,10 +133,6 @@ streams:
           category:
             type:
               - string
-              - "null"
-          currency:
-            type:
-              - object
               - "null"
           isActive:
             type:
@@ -170,18 +162,6 @@ streams:
             type:
               - boolean
               - "null"
-          checkSetup:
-            type:
-              - object
-              - "null"
-          externalId:
-            type:
-              - object
-              - "null"
-          verifiedAt:
-            type:
-              - object
-              - "null"
           accountType:
             type:
               - string
@@ -194,17 +174,9 @@ streams:
             type:
               - string
               - "null"
-          stakeholder:
-            type:
-              - object
-              - "null"
           checkSetupId:
             type:
               - number
-              - "null"
-          externalName:
-            type:
-              - object
               - "null"
           accountNumber:
             type:
@@ -225,14 +197,6 @@ streams:
           currentBalance:
             type:
               - string
-              - "null"
-          dwollaCustomer:
-            type:
-              - object
-              - "null"
-          connectionStatus:
-            type:
-              - object
               - "null"
           recursiveBalance:
             type:
@@ -12624,6 +12588,101 @@ streams:
           - - _embedded
             - type
   - type: DeclarativeStream
+    name: nodes_availability
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://{{ config.customer_domain }}/api/v2/pms/nodes/{{
+          stream_interval.node_id }}/availability
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  predicate: >-
+                    {{ response.status == 409 and response.detail == 'Invalid
+                    page provided' }}
+                  http_codes: []
+                  error_message: >-
+                    Track's inappropriate 409 for page numbers too high. Nothing
+                    to do but continue to work with the vendor.
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RATE_LIMITED
+                  predicate: "{{ response.status == 429 }}"
+                  http_codes: []
+                  error_message: >-
+                    Track rate limit (10,000 requests per 5 minutes) met,
+                    waiting 5 minutes and 5 seconds to reset.
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  predicate: "{{ response.status == 404 }}"
+                  error_message: "{{  response.detail  }}"
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 305
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/37"
+            parent_key: id
+            partition_field: node_id
+    primary_key:
+      - node_id
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - node_id
+          - date
+        properties:
+          date:
+            type: string
+          count:
+            type:
+              - number
+              - "null"
+          total:
+            type:
+              - number
+              - "null"
+          node_id:
+            type: number
+        additionalProperties: true
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - node_id
+            value: "{{ stream_interval.node_id }}"
+  - type: DeclarativeStream
     name: nodes_types
     retriever:
       type: SimpleRetriever
@@ -13669,7 +13728,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/42"
+              $ref: "#/streams/43"
             parent_key: id
             partition_field: statement_id
     primary_key:
@@ -14968,7 +15027,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/39"
+              $ref: "#/streams/40"
             parent_key: id
             partition_field: owner_id
     primary_key:
@@ -21550,7 +21609,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/49"
+              $ref: "#/streams/50"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -22093,7 +22152,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/49"
+              $ref: "#/streams/50"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -22456,7 +22515,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/49"
+              $ref: "#/streams/50"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -22695,7 +22754,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/49"
+              $ref: "#/streams/50"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -22816,7 +22875,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/49"
+              $ref: "#/streams/50"
             parent_key: id
             partition_field: reservation_id
     primary_key:
@@ -27588,6 +27647,97 @@ streams:
         field_pointers:
           - - _links
   - type: DeclarativeStream
+    name: units_availability
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      requester:
+        type: HttpRequester
+        url: >-
+          https://{{ config.customer_domain }}/api/v2/pms/units/{{
+          stream_interval.unit_id }}/availability
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          type: CompositeErrorHandler
+          error_handlers:
+            - type: DefaultErrorHandler
+              response_filters:
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  predicate: >-
+                    {{ response.status == 409 and response.detail == 'Invalid
+                    page provided' }}
+                  http_codes: []
+                  error_message: >-
+                    Track's inappropriate 409 for page numbers too high. Nothing
+                    to do but continue to work with the vendor.
+            - type: DefaultErrorHandler
+              max_retries: 3
+              response_filters:
+                - type: HttpResponseFilter
+                  action: RATE_LIMITED
+                  predicate: "{{ response.status == 429 }}"
+                  http_codes: []
+                  error_message: >-
+                    Track rate limit (10,000 requests per 5 minutes) met,
+                    waiting 5 minutes and 5 seconds to reset.
+                - type: HttpResponseFilter
+                  action: IGNORE
+                  predicate: "{{ response.status == 404 }}"
+                  error_message: "{{  response.detail  }}"
+              backoff_strategies:
+                - type: ConstantBackoffStrategy
+                  backoff_time_in_seconds: 305
+        request_headers:
+          $ref: "#/definitions/linked/HttpRequester/request_headers"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/streams/70"
+            parent_key: id
+            partition_field: unit_id
+    primary_key:
+      - unit_id
+      - date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        required:
+          - unit_id
+          - date
+        properties:
+          date:
+            type: string
+          count:
+            type:
+              - number
+              - "null"
+          unit_id:
+            type: number
+        additionalProperties: true
+    transformations:
+      - type: RemoveFields
+        field_pointers:
+          - - _links
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - unit_id
+            value: "{{ stream_interval.unit_id }}"
+  - type: DeclarativeStream
     name: units_bed_types
     retriever:
       type: SimpleRetriever
@@ -28036,7 +28186,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/69"
+              $ref: "#/streams/70"
             parent_key: id
             partition_field: unit_id
     primary_key:
@@ -29239,7 +29389,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/69"
+              $ref: "#/streams/70"
             parent_key: id
             partition_field: unit_id
     primary_key:
@@ -29345,7 +29495,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/77"
+              $ref: "#/streams/79"
             parent_key: id
             partition_field: unit_id
     primary_key:
@@ -30395,7 +30545,7 @@ streams:
         parent_stream_configs:
           - type: ParentStreamConfig
             stream:
-              $ref: "#/streams/78"
+              $ref: "#/streams/80"
             parent_key: id
             partition_field: unit_type_id
     primary_key:
@@ -31134,6 +31284,14 @@ metadata:
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
       responsesAreSuccessful: true
+    nodes_availability:
+      isStale: false
+      hasRecords: true
+      streamHash: 0289c1f5b1cd229940ebf6eb6cb7936c111aec76
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
     reservations_notes:
       hasRecords: true
       streamHash: 205f1bcae90270efb8d49a78bf24d4744c1705bf
@@ -31144,6 +31302,14 @@ metadata:
     reservations_types:
       hasRecords: true
       streamHash: aa4e5befb96926d4dba8af1aa881200bd6206599
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    units_availability:
+      isStale: false
+      hasRecords: true
+      streamHash: f97a44aac4312ec5d90a532e271e6d9d784ce388
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -31165,7 +31331,7 @@ metadata:
     accounting_accounts:
       isStale: false
       hasRecords: true
-      streamHash: d4b86cc3a7d17d3bae4a10ac21c758e3ac24f047
+      streamHash: 7ba9510f226b1f4fc1f71a4f55e7e462ed83aa79
       hasResponse: true
       primaryKeysAreUnique: true
       primaryKeysArePresent: true
@@ -31263,8 +31429,8 @@ metadata:
       primaryKeysArePresent: true
       responsesAreSuccessful: true
     reservations_all_parent:
-      streamHash: fce86f1c4ccd69e44b86f22c20abc0553ccb2bbe
       isStale: false
+      streamHash: fce86f1c4ccd69e44b86f22c20abc0553ccb2bbe
     housekeeping_clean_types:
       hasRecords: true
       streamHash: bc6cd8a08ad00e1ca47f8b97f229e2f824b8a714
@@ -31396,8 +31562,10 @@ metadata:
     contacts_companies: false
     fractionals_owners: false
     housekeeping_zones: false
+    nodes_availability: false
     reservations_notes: false
     reservations_types: false
+    units_availability: false
     units_taxes_parent: false
     users_pii_redacted: false
     accounting_accounts: false
