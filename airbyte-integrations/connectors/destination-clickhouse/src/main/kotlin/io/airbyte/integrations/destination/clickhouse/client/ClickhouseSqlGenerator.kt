@@ -13,15 +13,28 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_RAW_ID
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
+import io.airbyte.integrations.destination.clickhouse.spec.ClickhouseConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 
 @Singleton
-class ClickhouseSqlGenerator {
+class ClickhouseSqlGenerator(
+    private val config: ClickhouseConfiguration,
+) {
     private val log = KotlinLogging.logger {}
 
+    /**
+     * The `ON CLUSTER` appended to every DDL statement when a cluster name is configured, so DDL
+     * reaches all nodes of cluster via the distributed DDL queue.
+     */
+    private val onCluster: String =
+        if (config.resolvedClusterName.isNotBlank()) " ON CLUSTER `${config.resolvedClusterName}`"
+        else ""
+
+    private val enginePrefix: String = if (config.resolvedUseReplicatedEngines) "Replicated" else ""
+
     fun createNamespace(namespace: String): String {
-        return "CREATE DATABASE IF NOT EXISTS `$namespace`;".andLog()
+        return "CREATE DATABASE IF NOT EXISTS `$namespace`$onCluster;".andLog()
     }
 
     fun createTable(
@@ -29,7 +42,7 @@ class ClickhouseSqlGenerator {
         tableSchema: StreamTableSchema,
         replace: Boolean,
     ): String {
-        val forceCreateTable = if (replace) "OR REPLACE" else ""
+        val createPrefix = if (replace) "CREATE OR REPLACE TABLE" else "CREATE TABLE IF NOT EXISTS"
 
         val finalSchema = tableSchema.columnSchema.finalSchema
         val columnDeclarations =
@@ -65,13 +78,13 @@ class ClickhouseSqlGenerator {
                             // is invalid
                             COLUMN_NAME_AB_EXTRACTED_AT
                         }
-                    "ReplacingMergeTree($versionColumn)"
+                    "${enginePrefix}ReplacingMergeTree($versionColumn)"
                 }
-                else -> "MergeTree()"
+                else -> "${enginePrefix}MergeTree()"
             }
 
         return """
-            CREATE $forceCreateTable TABLE `${tableName.namespace}`.`${tableName.name}` (
+            $createPrefix `${tableName.namespace}`.`${tableName.name}`$onCluster (
               $COLUMN_NAME_AB_RAW_ID String NOT NULL,
               $COLUMN_NAME_AB_EXTRACTED_AT DateTime64(3) NOT NULL,
               $COLUMN_NAME_AB_META String NOT NULL,
@@ -86,12 +99,12 @@ class ClickhouseSqlGenerator {
     }
 
     fun dropTable(tableName: TableName): String =
-        "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`;".andLog()
+        "DROP TABLE IF EXISTS `${tableName.namespace}`.`${tableName.name}`$onCluster;".andLog()
 
     fun exchangeTable(sourceTableName: TableName, targetTableName: TableName): String =
         """
         EXCHANGE TABLES `${sourceTableName.namespace}`.`${sourceTableName.name}`
-            AND `${targetTableName.namespace}`.`${targetTableName.name}`;
+            AND `${targetTableName.namespace}`.`${targetTableName.name}`$onCluster;
         """
             .trimIndent()
             .andLog()
@@ -147,7 +160,7 @@ class ClickhouseSqlGenerator {
     fun alterTable(alterationSummary: ColumnChangeset, tableName: TableName): String {
         val builder =
             StringBuilder()
-                .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`")
+                .append("ALTER TABLE `${tableName.namespace}`.`${tableName.name}`$onCluster")
                 .appendLine()
         alterationSummary.columnsToAdd.forEach { (columnName, columnType) ->
             builder.append(" ADD COLUMN `$columnName` ${columnType.typeDecl()},")

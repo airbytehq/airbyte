@@ -21,6 +21,10 @@ definitions:
     http_method: GET
     error_handler:
       type: DefaultErrorHandler
+      max_retries: 9
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
       response_filters:
         - predicate: "{{ response.get('code') == 40100 }}"
           action: RATE_LIMITED
@@ -28,6 +32,15 @@ definitions:
         - predicate: "{{ response.get('code') == 60001 }}"
           action: RETRY
           error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 50000 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API returned a transient server-side error (code 50000). The connector will retry automatically. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 51041 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API returned a transient server-side error (code 51041). The connector will retry automatically. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 51004 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -397,6 +410,10 @@ definitions:
   # non-report streams keep the generic handler from the global requester.
   report_daily_error_handler:
     type: DefaultErrorHandler
+    max_retries: 9
+    backoff_strategies:
+      - type: ConstantBackoffStrategy
+        backoff_time_in_seconds: 60
     response_filters:
       - predicate: "{{ response.get('code') == 40100 }}"
         action: RATE_LIMITED
@@ -404,6 +421,15 @@ definitions:
       - predicate: "{{ response.get('code') == 60001 }}"
         action: RETRY
         error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 50000 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 50000). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51041 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51041). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51004 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
       - predicate: "{{ response.get('code') == 40002 }}"
         action: IGNORE
         error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -2176,6 +2202,10 @@ definitions:
         http_method: GET
         error_handler:
           type: DefaultErrorHandler
+          max_retries: 9
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 60
           response_filters:
             - predicate: "{{ response.get('code') == 40100 }}"
               action: RATE_LIMITED
@@ -2190,6 +2220,15 @@ definitions:
             - predicate: "{{ response.get('code') == 60001 }}"
               action: RETRY
               error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 50000 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 50000). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51041 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51041). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51004 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -2281,6 +2320,10 @@ definitions:
           date_range: "{{ {'start_date': day_delta(-29, format='%Y-%m-%d'), 'end_date': format_datetime(now_utc() + duration('P1D'), '%Y-%m-%d')} | string }}"
         error_handler:
           type: DefaultErrorHandler
+          max_retries: 9
+          backoff_strategies:
+            - type: ConstantBackoffStrategy
+              backoff_time_in_seconds: 60
           response_filters:
             - predicate: "{{ response.get('code') == 40100 }}"
               action: RATE_LIMITED
@@ -2291,6 +2334,15 @@ definitions:
             - predicate: "{{ response.get('code') == 60001 }}"
               action: RETRY
               error_message: "TikTok Marketing API is undergoing service maintenance on their side (error 60001). The connector will retry automatically, but if the issue persists you may need to re-sync after 30 minutes to a few hours. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 50000 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 50000). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51041 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51041). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51004 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -3397,6 +3449,11 @@ definitions:
         ad_name:
           description: The name of the ad
           type: string
+        smart_plus_ad_id:
+          description: The unique identifier of the Smart+ ad. Only present for Smart+ ads.
+          type:
+            - "null"
+            - integer
         tracking_app_id:
           description: The unique identifier of the tracking app
           type:
