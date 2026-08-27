@@ -27,8 +27,9 @@ data:
       enableProgressiveRollout: false
     breakingChanges:
       1.0.0:
-        message: "Date and datetime fields are now typed as `date` and `date-time` instead of strings, and the deprecated Linear fields `users.inviteHash`, `teams.inviteHash`, `teams.private` and `customer_statuses.type` have been removed (`teams.visibility` replaces `private`). Affected columns change type in your destination, so you must refresh the source schema and clear affected streams after upgrading."
+        message: "This release corrects Linear date and datetime schemas so destinations receive accurate date and timestamp column types, and removes fields deprecated by Linear: `users.inviteHash`, `teams.inviteHash`, `teams.private`, and `customer_statuses.type` (`teams.visibility` replaces `teams.private`). Users syncing any of these streams are affected: `attachments`, `comments`, `customer_needs`, `customer_statuses`, `customer_tiers`, `customers`, `cycles`, `issue_labels`, `issue_relations`, `issues`, `project_milestones`, `project_statuses`, `projects`, `teams`, `users`, and `workflow_states`. After upgrading and before the first sync, refresh the source schema, update downstream references to removed fields or string casts, and clear those streams. See the [Linear 1.0.0 migration guide](https://docs.airbyte.com/integrations/sources/linear-migrations#upgrading-to-100) for field-level details and steps."
         upgradeDeadline: "2026-09-10"
+        deadlineAction: "auto_upgrade"
         scopedImpact:
           - scopeType: stream
             impactedScopes:
