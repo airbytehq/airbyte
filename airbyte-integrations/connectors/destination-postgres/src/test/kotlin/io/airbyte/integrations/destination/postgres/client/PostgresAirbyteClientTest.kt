@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class PostgresAirbyteClientTest {
     private lateinit var client: PostgresAirbyteClient
@@ -122,7 +123,7 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "namespace", name = "name")
         val statement =
             mockk<Statement> {
-                every { executeQuery(any()) } throws SQLException("table does not exist")
+                every { executeQuery(any()) } throws SQLException("table does not exist", "42P01")
             }
         val mockConnection =
             mockk<Connection> {
@@ -138,6 +139,41 @@ internal class PostgresAirbyteClientTest {
             assertNull(result)
             verify(exactly = 1) { mockConnection.close() }
         }
+    }
+
+    @Test
+    fun testCountTableConnectionError() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val exception = SQLException("connection failure", "08006")
+        val statement = mockk<Statement> { every { executeQuery(any()) } throws exception }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.countTable(tableName) } returns MOCK_SQL_QUERY
+
+        val thrown = assertThrows<SQLException> { runBlocking { client.countTable(tableName) } }
+        assertEquals(exception, thrown)
+    }
+
+    @Test
+    fun testCountTableWrappedMissingTable() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val exception = RuntimeException("wrapper", SQLException("table does not exist", "42P01"))
+        val statement = mockk<Statement> { every { executeQuery(any()) } throws exception }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.countTable(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking { assertNull(client.countTable(tableName)) }
     }
 
     @Test
@@ -352,7 +388,11 @@ internal class PostgresAirbyteClientTest {
     @Test
     fun testGetGenerationIdNoResult() {
         val tableName = TableName(namespace = "namespace", name = "name")
-        val resultSet = mockk<ResultSet> { every { next() } returns false }
+        val resultSet =
+            mockk<ResultSet> {
+                every { next() } returns false
+                every { close() } just Runs
+            }
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns resultSet
@@ -375,10 +415,12 @@ internal class PostgresAirbyteClientTest {
     }
 
     @Test
-    fun testGetGenerationIdError() {
+    fun testGetGenerationIdMissingTable() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val statement =
-            mockk<Statement> { every { executeQuery(any()) } throws SQLException("error") }
+            mockk<Statement> {
+                every { executeQuery(any()) } throws SQLException("table does not exist", "42P01")
+            }
         val mockConnection =
             mockk<Connection> {
                 every { close() } just Runs
@@ -393,6 +435,42 @@ internal class PostgresAirbyteClientTest {
             assertEquals(0L, result)
             verify(exactly = 1) { mockConnection.close() }
         }
+    }
+
+    @Test
+    fun testGetGenerationIdConnectionError() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val exception = SQLException("connection failure", "08006")
+        val statement = mockk<Statement> { every { executeQuery(any()) } throws exception }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.getGenerationId(tableName) } returns MOCK_SQL_QUERY
+
+        val thrown =
+            assertThrows<SQLException> { runBlocking { client.getGenerationId(tableName) } }
+        assertEquals(exception, thrown)
+    }
+
+    @Test
+    fun testGetGenerationIdWrappedMissingTable() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val exception = RuntimeException("wrapper", SQLException("table does not exist", "3F000"))
+        val statement = mockk<Statement> { every { executeQuery(any()) } throws exception }
+        val mockConnection =
+            mockk<Connection> {
+                every { close() } just Runs
+                every { createStatement() } returns statement
+            }
+
+        every { dataSource.connection } returns mockConnection
+        every { sqlGenerator.getGenerationId(tableName) } returns MOCK_SQL_QUERY
+
+        runBlocking { assertEquals(0L, client.getGenerationId(tableName)) }
     }
 
     @Test
@@ -578,9 +656,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         // no column changes - mock stream's pre-computed table schema to return same columns as DB
         every { columnManager.getMetaColumnNames() } returns emptySet()
@@ -605,7 +682,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
@@ -658,9 +734,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and col2 (col2 is new)
@@ -684,7 +759,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = mapOf("col2" to ColumnType("integer", true)),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
@@ -738,9 +812,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         val finalSchema = mapOf("col1" to ColumnType("text", true))
@@ -763,7 +836,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = true,
                     primaryKeyColumnNames = listOf("new_pk"),
@@ -817,9 +889,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         val finalSchema = mapOf("col1" to ColumnType("text", true))
@@ -842,7 +913,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = emptyMap(),
-                    columnsToRemove = emptyMap(),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
@@ -897,9 +967,8 @@ internal class PostgresAirbyteClientTest {
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
-        every {
-            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any(), any())
-        } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumnNames() } returns emptySet()
         // Stream has col1 and new_col but not old_col
@@ -923,7 +992,6 @@ internal class PostgresAirbyteClientTest {
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = mapOf("new_col" to ColumnType("integer", true)),
-                    columnsToRemove = mapOf("old_col" to ColumnType("varchar", true)),
                     columnsToModify = emptyMap(),
                     recreatePrimaryKeyIndex = true,
                     primaryKeyColumnNames = listOf("new_pk"),

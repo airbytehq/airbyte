@@ -1,5 +1,5 @@
-# https://hub.docker.com/_/python/tags?name=3.11.13-slim-bookworm
-ARG BASE_IMAGE=docker.io/python:3.13.9-slim-bookworm@sha256:ee6c0814498e24cc54424475b9611edb99072250b2b30f9fb83d9256a1469b7a
+# https://hub.docker.com/_/python/tags?name=3.13.14-slim-bookworm
+ARG BASE_IMAGE=docker.io/python:3.13.14-slim-bookworm@sha256:05b95397cac02b060ff1251afaa78087d92d7034369afbc8eb765631cada8257
 FROM ${BASE_IMAGE}
 
 # Set the timezone to UTC
@@ -35,7 +35,13 @@ RUN mkdir -p ${PIP_CACHE_DIR} && chown -R airbyte:airbyte ${PIP_CACHE_DIR}
 RUN pip install --upgrade \
       pip==24.0 \
       setuptools==78.1.1 \
-      poetry==1.8.4
+      poetry==1.8.4 && \
+    # Remove vulnerable embedded wheel from virtualenv seed
+    # (GHSA-8rrh-rw8j-w5fx - path traversal in wheel unpack)
+    # This file is unused because POETRY_VIRTUALENVS_CREATE=false
+    find /usr/local/lib -path '*/virtualenv/seed/wheels/embed/wheel-*' -delete && \
+    # Clean pip cache to reduce image size and remove cached vulnerable packages
+    rm -rf /root/.cache/pip
 
 # Install system dependencies 
 RUN apt-get update && \
@@ -49,7 +55,7 @@ RUN apt-get install -y socat=1.7.4.4-2
 RUN apt-get update && \
     apt-get install -y \
       tesseract-ocr=5.3.0-2 \
-      poppler-utils=22.12.0-2+deb12u1
+      poppler-utils=22.12.0-2+deb12u2
 
 # NLTK data directory (this may not be needed)
 # ENV NLTK_DATA_DIR="/usr/share/nltk_data"
