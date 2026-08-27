@@ -145,21 +145,30 @@ expectation flags that it enforces itself before returning:
 | `--expect-control=pass\|fail` | Same for the control sweep (comparison-mode runs only; requires `--control-version`). |
 | `--min-records=N` | Target read's `stdout.txt` must contain ≥N `RECORD` messages. |
 | `--min-states=N` | Target read's `stdout.txt` must contain ≥N `STATE` messages. |
-| `--expect-match=<channel>:<regex>[:N]` | Target read's `<channel>` (`stdout` \| `stderr` \| `any`) must match `<regex>` at least N times (default 1). Repeatable. |
-| `--forbid-match=<channel>:<regex>` | Same shape but must match zero times. Repeatable. |
+| `--expect-match=[<command>:]<channel>:<regex>[:N]` | Target's `<command>` step's `<channel>` (`stdout` \| `stderr` \| `any`) must match `<regex>` at least N times (default 1). `<command>` (`spec` \| `check` \| `discover` \| `read`) is optional and defaults to `read`. Repeatable. |
+| `--forbid-match=[<command>:]<channel>:<regex>` | Same shape but must match zero times. Repeatable. |
 
-All match assertions run against the **target-side** read step's
-artifacts. Under `--control-version + --reset=none` those live at
-`$ARTIFACTS_DIR/read/target/` (created by airbyte-ops's comparison
-mode); under `--reset=fixture|backend` at `$ARTIFACTS_DIR/target/read/`;
-under single-version at `$ARTIFACTS_DIR/read/`. `run.sh` picks the right
-path automatically.
+All match assertions run against the **target-side** artifacts of the
+named command (or `read` if no `<command>` prefix). Under
+`--control-version + --reset=none` those live at
+`$ARTIFACTS_DIR/<command>/target/` (created by airbyte-ops's comparison
+mode); under `--reset=fixture|backend` at
+`$ARTIFACTS_DIR/target/<command>/`; under single-version at
+`$ARTIFACTS_DIR/<command>/`. `run.sh` picks the right path automatically.
 
-The regex grammar for `--expect-match`/`--forbid-match` strips a
-trailing `:N` only when the last colon-separated field is a positive
-integer, so a regex containing `:` still parses (e.g.
-`--expect-match=stderr:io.debezium.DebeziumException` is channel
-`stderr`, regex `io.debezium.DebeziumException`, count 1).
+The match-spec grammar disambiguates the leading `<command>:` from the
+`<channel>:` on the first colon-separated field (command names and
+channel names don't overlap), and strips a trailing `:N` only when the
+last field is a positive integer. So a regex containing `:` still
+parses: `--expect-match=stderr:io.debezium.DebeziumException` reads as
+command `read` (default), channel `stderr`, regex
+`io.debezium.DebeziumException`, count 1. `--expect-match=check:stderr:should be positive`
+reads as command `check`, channel `stderr`, regex `should be positive`,
+count 1.
+
+`--min-records` and `--min-states` are read-step only — they count
+RECORD / STATE envelopes, which are read-specific — and have no
+`<command>:` prefix.
 
 Any expectation failure exits non-zero regardless of the command-level
 verdicts and appends an `**Expectation failures:**` section to the
