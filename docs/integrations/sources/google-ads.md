@@ -57,7 +57,15 @@ The scope for the Google Ads API is: https://www.googleapis.com/auth/adwords
 
 Each Google Ads API developer token is assigned an access level and "permissible use". The access level determines whether you can affect production accounts and the number of operations and requests that you can execute daily. Permissible use determines the specific Google Ads API features that the developer token is allowed to use. Read more about it and apply for higher access [here](https://developers.google.com/google-ads/api/docs/access-levels#access_levels_2).
 
-To use a service account, create a Google Cloud service account and download its JSON key file. Paste the full JSON key into **Service Account Info**. If your Google Ads account requires domain-wide delegation, enter the delegated user email in **Impersonated Email**. The connector uses the Google Ads API scope `https://www.googleapis.com/auth/adwords`.
+To use a service account instead:
+
+1. Create a Google Cloud service account and download its JSON key file. See [Google's service account guide](https://developers.google.com/google-ads/api/docs/oauth/service-accounts) for details.
+2. Grant the service account access to your Google Ads account. Either:
+   - **Direct access (recommended)**: sign in to Google Ads as an administrator, go to **Admin > Access and security**, and add the service account email (`name@project.iam.gserviceaccount.com`) as a user. Leave **Impersonated Email** blank.
+   - **Domain-wide delegation**: if you use a Google Workspace domain and prefer to act on behalf of an existing Google Ads user, [delegate domain-wide authority](https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority) to the service account for the `https://www.googleapis.com/auth/adwords` scope, then enter that user's address in **Impersonated Email**.
+3. Paste the full JSON key into **Service Account JSON Key**.
+
+A Developer Token is still required for service account authentication, exactly as it is for OAuth. The connector requests the Google Ads API scope `https://www.googleapis.com/auth/adwords`.
 
 ### Step 3: Set up the Google Ads connector in Airbyte
 
@@ -136,8 +144,8 @@ If you are accessing your account through a Google Ads Manager account, you must
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Find and select **Google Ads** from the list of available sources.
 4. Enter a **Source name** of your choosing.
-5. Enter the **Developer Token** you obtained from Google.
-6. Select **OAuth Credentials** or **Service Account Key Authentication**. For OAuth, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**. For service account authentication, paste the full service account JSON key into **Service Account Info** and optionally enter an **Impersonated Email**.
+5. Select **OAuth Credentials** or **Service Account Key Authentication**.
+6. Enter the **Developer Token** you obtained from Google. Then, for OAuth, enter your Google application's **Client ID**, **Client Secret**, **Refresh Token**, and optionally, the **Access Token**. For service account authentication, paste the full service account JSON key into **Service Account JSON Key**, and enter an **Impersonated Email** only if you are using domain-wide delegation.
 7. (Optional) Enter a comma-separated list of the **Customer ID(s)** for your account. These IDs are 10-digit numbers that uniquely identify your account. To find your Customer ID, please follow [Google's instructions](https://support.google.com/google-ads/answer/1704344). Leaving this field blank will replicate data from all connected accounts.
 8. (Optional) Enter customer statuses to filter customers. Leaving this field blank will replicate data from all accounts. Check [Google Ads documentation](https://developers.google.com/google-ads/api/reference/rpc/v23/CustomerStatusEnum.CustomerStatus) for more info.
 9. (Optional) Enter a **Start Date** using the provided datepicker, or by programmatically entering the date in YYYY-MM-DD format. The data added on and after this date will be replicated. (Default start date is 2 years ago)
