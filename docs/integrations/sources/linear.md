@@ -15,14 +15,15 @@ This page contains the setup guide and reference information for the [Linear](ht
   - **OAuth 2.0 (Airbyte Cloud)**: A Linear workspace administrator account with permission to authorize the required workspace data. Airbyte supplies the OAuth application.
   - **OAuth 2.0 (Self-managed)**: A Linear OAuth application and its client ID and client secret. You also need a Linear workspace administrator account with permission to authorize the required workspace data, because the connector installs the app at the workspace level.
   - **API Key**: A Linear personal API key.
+- To sync the `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams: Linear's Customer Requests feature enabled in your workspace, and credentials with the `customer:read` scope. See [Customer Requests streams](#customer-requests-streams).
 
 ## Setup guide
 
-### Step 1: Choose an authentication method
+## Set up Linear
 
 The Linear source connector supports OAuth 2.0 and API key authentication. Starting with connector version `0.2.19`, the setup form selects OAuth 2.0 by default.
 
-#### OAuth 2.0
+### OAuth 2.0
 
 1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
 2. For a self-managed deployment, add the redirect callback URL shown during the Airbyte OAuth setup to the application's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app. Copy the application's client ID and client secret.
@@ -37,7 +38,7 @@ If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete 
 2. Exchange the code for tokens by sending a form-encoded `POST` request to `https://api.linear.app/oauth/token` with `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`.
 3. Copy the `refresh_token` from the response into the connector configuration. The connector uses it to mint access tokens, which Linear expires after 24 hours. The first refresh replaces this token, so don't reuse the same value in another source or keep a copy to paste in later.
 
-#### API key
+### API key
 
 1. Log in to your [Linear](https://linear.app/) account.
 2. Navigate to **Settings** by clicking your workspace name in the sidebar.
@@ -50,7 +51,7 @@ The API key inherits your user's permissions in the workspace. The connector can
 
 For more information, see the [Linear GraphQL API documentation](https://linear.app/developers/graphql).
 
-### Step 2: Configure the Linear connector in Airbyte
+## Set up the Linear connector in Airbyte
 
 1. In the Airbyte UI, navigate to **Sources** and click **+ New source**.
 2. Select **Linear** from the list of available sources.
@@ -67,10 +68,10 @@ Existing connections that authenticated with a Linear API key continue to use AP
 
 The Linear source connector supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---overwrite)
-- [Full Refresh - Append](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---append)
-- [Incremental - Append](https://docs.airbyte.com/cloud/core-concepts/#incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/cloud/core-concepts/#incremental-append--deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
 Streams that support incremental sync use the `updatedAt` field as the cursor. The Start Date you set when configuring the connector is the lower bound for the first incremental sync. Subsequent syncs use the most recent `updatedAt` value from the previous sync as the new lower bound.
 
@@ -78,7 +79,7 @@ That lower bound is inclusive, so a record whose `updatedAt` matches the stored 
 
 The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, `customer_tiers`, and `initiative_to_projects`. `issue_history` is full-refresh only for a different reason: Linear exposes an issue's history only through that issue, so the connector reads it issue by issue. See [Issue history](#issue-history).
 
-## Supported streams
+## Supported Streams
 
 The Linear source connector supports the following streams. Streams marked as incremental use `updatedAt` as the cursor field.
 
@@ -132,14 +133,14 @@ The connector reads the parent issues itself, so you don't need to select the `i
 
 ### Archived records
 
-Linear hides archived records from API responses by default rather than deleting them, and it archives some records for you: completed issues, cycles, and projects are auto-archived over time. Deletion is a separate action, described below in [Limitations and troubleshooting](#limitations-and-troubleshooting). Starting with connector version `0.3.0`, every stream asks Linear for archived records, so they sync alongside active ones. Each record's `archivedAt` field holds the time Linear archived it, and is `null` while the record is active.
+Linear hides archived records from API responses by default rather than deleting them, and it archives some records for you: completed issues, cycles, and projects are auto-archived over time. Deletion is a separate action, described below in [Limitations & Troubleshooting](#limitations--troubleshooting). Starting with connector version `0.3.0`, every stream asks Linear for archived records, so they sync alongside active ones. Each record's `archivedAt` field holds the time Linear archived it, and is `null` while the record is active.
 
 Before `0.3.0` the connector didn't request archived records, so Linear left them out of every response and `archivedAt` was always `null`. Upgrading changes what your syncs return:
 
 - Streams you sync in full refresh mode return all archived records on the next sync. In an established workspace this can be a large one-time increase in volume.
 - Streams you sync incrementally return an archived record only when its `updatedAt` value is later than the stream's cursor. Records Linear archives from now on qualify; records archived before the upgrade usually don't, because their `updatedAt` predates the cursor. To pick those up, [refresh the stream](https://docs.airbyte.com/platform/operator-guides/refreshes).
 
-## Limitations and troubleshooting
+## Limitations & Troubleshooting
 
 ### Rate limiting
 
@@ -185,11 +186,7 @@ Responses that contain both errors and usable records still sync. If Linear retu
 
 Request timeouts and Linear's 5xx responses are retried, so they only fail a sync if they persist. A rejected credential, denied access, or an invalid query fails immediately no matter which status code accompanies it.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
-## Reference
+### Programmatic configuration
 
 This connector uses the [Linear GraphQL API](https://linear.app/developers/graphql). All API requests use the `https://api.linear.app/graphql` endpoint.
 
@@ -204,6 +201,10 @@ For programmatic configuration, use these parameter names:
 | `credentials.refresh_token` | Required for OAuth 2.0 authentication | Refresh token returned by the Linear OAuth flow. |
 | `start_date` | No | UTC date and time in ISO 8601 format. Records updated before this date aren't replicated for streams that support incremental sync. If unset, defaults to two years before the first sync. |
 | `num_workers` | No | Number of worker threads used to read streams in parallel (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting rate limits. |
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
 ## Changelog
 
