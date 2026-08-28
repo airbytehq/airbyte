@@ -55,16 +55,16 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 ## Supported streams
 
 | Stream | Incremental | Notes |
-|:-------|:------------|:------|
+| :----- | :---------- | :---- |
 | [Users](https://developer.okta.com/docs/reference/api/users/#list-users) | Yes | Cursor: `lastUpdated` |
 | [User Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-user) | No | Roles assigned to each user |
 | [Groups](https://developer.okta.com/docs/reference/api/groups/#list-groups) | Yes | Cursor: `lastUpdated` |
 | [Group Members](https://developer.okta.com/docs/reference/api/groups/#list-group-members) | No | Members of each group |
 | [Group Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-group) | No | Roles assigned to each group |
 | [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started) | Yes | Cursor: `published` |
-| [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles) | No |  |
+| [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles) | No | |
 | [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions) | No | Permissions of each custom role |
-| [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets) | No |  |
+| [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets) | No | |
 
 ## Performance considerations
 
