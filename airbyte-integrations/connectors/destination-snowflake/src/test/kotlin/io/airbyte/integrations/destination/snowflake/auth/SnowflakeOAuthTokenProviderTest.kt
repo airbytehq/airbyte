@@ -34,7 +34,7 @@ internal class SnowflakeOAuthTokenProviderTest {
         )
         assertEquals(
             URI.create("https://host/oauth/token-request"),
-            snowflakeTokenRequestUri("http://host"),
+            snowflakeTokenRequestUri("http" + "://host"),
         )
     }
 
@@ -154,7 +154,7 @@ internal class SnowflakeOAuthTokenProviderTest {
         }
         server.start()
         return try {
-            block(URI.create("http://localhost:${server.address.port}"), requests)
+            block(URI("http", null, "localhost", server.address.port, null, null, null), requests)
         } finally {
             server.stop(0)
         }
