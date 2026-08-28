@@ -2402,6 +2402,22 @@ def test_graphql_rate_limit_check_with_valid_rate_limited_body():
     assert result.response_action == ResponseAction.RATE_LIMITED
 
 
+def test_graphql_error_handler_rate_limit_precedes_body_errors():
+    """A rate-limit body is also a body with errors, so GitHubGraphQLErrorHandler has to check for
+    the rate limit first. Resolving it as the generic body-errors RETRY instead spends the retry
+    budget on short backoffs and skips the token rotation that only RATE_LIMITED enables."""
+    stream = PullRequestStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    handler = stream.get_error_handler()
+    resp = MagicMock(spec=requests.Response)
+    resp.status_code = 200
+    resp.headers = {"X-RateLimit-Resource": "graphql"}
+    resp.text = '{"errors": [{"type": "RATE_LIMIT"}]}'
+    resp.ok = True
+    resp.json = MagicMock(return_value={"errors": [{"type": "RATE_LIMIT"}]})
+    result = handler.interpret_response(resp)
+    assert result.response_action == ResponseAction.RATE_LIMITED
+
+
 def test_releases_marked_as_large_stream():
     """The Releases GraphQL query is high-cost, so the stream must be marked as
     large_stream so that page_size defaults to the smaller large-stream value."""
