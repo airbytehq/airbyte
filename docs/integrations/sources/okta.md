@@ -21,7 +21,7 @@ Okta API tokens expire after 30 days of inactivity. If you restrict API calls to
 
 #### OAuth 2.0
 
-Provide the **Client ID**, **Client Secret**, and a current **Refresh Token** for an OAuth 2.0 web app integration in your Okta org. The connector uses the refresh token to obtain new access tokens when they expire.
+This is the **OAuth2.0** option in the Airbyte UI. Provide the **Client ID**, **Client Secret**, and a current **Refresh Token** for an OAuth 2.0 web app integration in your Okta org. The connector uses the refresh token to obtain new access tokens when they expire.
 
 #### OAuth 2.0 with private key
 
@@ -37,7 +37,7 @@ Create an [API service app](https://developer.okta.com/docs/guides/implement-oau
 1. Log in to your Airbyte Cloud or Airbyte Open Source account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for the connector.
-4. Enter your **Okta domain**. Enter only the domain part: if your Okta URL is `https://MY_DOMAIN.okta.com/`, enter `MY_DOMAIN`.
+4. Enter your **Okta domain**. Enter only the domain part: if your Okta URL is `https://MY_DOMAIN.okta.com/`, enter `MY_DOMAIN`. The connector always calls `https://{domain}.okta.com`, so if your org uses a custom domain, enter its underlying `okta.com` subdomain rather than the custom hostname. Orgs reachable only on other Okta hosts (such as `okta-emea.com` or `oktapreview.com`) aren't supported.
 5. Enter a **Start Date** in the format `YYYY-MM-DDTHH:MM:SSZ`. Data before this date isn't replicated. If you leave this field empty, the connector syncs data from the last 7 days only.
 6. Choose an authentication method and fill in its fields:
    - **API Token**: enter your **Personal API Token**.
