@@ -142,7 +142,7 @@ Before `0.3.0` the connector didn't request archived records, so Linear left the
 
 ### Date and timestamp columns
 
-Starting with connector version `1.0.0`, the connector declares `date` and `date-time` formats on Linear's temporal fields, so destinations create date and timestamp columns for them instead of strings. `issues.dueDate`, `projects.startDate`, `projects.targetDate`, `project_milestones.targetDate`, `initiatives.targetDate`, and `issue_history.fromDueDate` and `toDueDate` become date columns, because Linear stores them as calendar dates with no time. Every other temporal field, including `createdAt`, `updatedAt`, and `archivedAt`, becomes a timestamp column.
+Starting with connector version `1.0.0`, the connector declares `date` and `date-time` formats on Linear's temporal fields, so destinations create date and timestamp columns for them instead of strings. `issues.dueDate`, `projects.startDate`, `projects.targetDate`, `project_milestones.targetDate`, `initiatives.targetDate`, `issue_history.fromDueDate`, and `issue_history.toDueDate` become date columns, because Linear stores them as calendar dates with no time. Every other temporal field, including `createdAt`, `updatedAt`, and `archivedAt`, becomes a timestamp column.
 
 This changes existing column types in your destination. Refresh the source schema and clear the affected streams after upgrading, and update downstream models that cast these columns from strings. See the [Linear migration guide](/integrations/sources/linear-migrations#upgrading-to-100).
 
