@@ -147,7 +147,7 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 | Integration Type | Airbyte Type | Notes |
 | :--------------- | :----------- | :---- |
 | `string`, `text`, `textarea`, `url`, `phone`, `email`, `reference`, `lead_function` | `string` | Marketo types the connector doesn't recognize are also mapped to `string`. |
-| `integer`, `percent`, `score` | `integer` | Decimals are truncated, so `4.7` becomes `4`. Values the connector can't parse as a number become `null`. |
+| `integer`, `percent`, `score` | `integer` | Decimal values are truncated, so `4.7` becomes `4`. Values the connector can't parse as a whole number become `null`. |
 | `float`, `currency` | `number` | Values the connector can't parse as a number become `null`. |
 | `boolean` | `boolean` | Strings count as `true` only when they read `true`, in any capitalization. Numbers follow `0` is `false` and anything else is `true`. Values of any other type become `null`. |
 | `date` | `string` | Format: `date` |
