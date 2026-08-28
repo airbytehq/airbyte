@@ -51,6 +51,8 @@ source-mssql-e2e-tests/
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
+    ├── gradle/
+    │   └── maven-mirror-init.gradle  # routes Maven Central through Google's mirror (429 avoidance); applied by run.sh's :dev build
     └── sql/
         ├── .gitignore          # `.tmp/` — subtree for uncommitted per-bug scratch fixtures
         └── 00-init-base.sql    # CREATE DATABASE TestDb + dbo.sample table
@@ -122,7 +124,13 @@ one command instead exits with the connector's own exit code, so a repro
 can still assert on it.
 
 Build the target image first when using `--test-version=dev`, or pass
-`--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
+`--build` to have `run.sh` run `:dockerBuildx` for you. That build routes
+Maven Central through Google's mirror of it via
+`fixtures/gradle/maven-mirror-init.gradle`, because Central 429s
+unauthenticated clients per source IP and a cold connector build trips
+that limit reliably on a shared-egress machine — costing ~10 minutes of
+failed resolution before the build gives up. `E2E_GRADLE_MIRROR=0` opts
+out. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--skip-fixtures` (run against whatever state the backend already has;
 for the second/later `run.sh` invocation of a multi-phase driver, when
@@ -142,14 +150,14 @@ Instead of driver scripts hand-rolling `grep -q '<substring>' || exit 1`
 against each command's artifacts, `run.sh` accepts a small set of
 expectation flags that it enforces itself before returning:
 
-| Flag | Effect |
-|---|---|
-| `--expect-test=pass\|fail` | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed. |
-| `--expect-control=pass\|fail` | Same for the control sweep (comparison-mode runs only; requires `--control-version`). |
-| `--min-records=N` | Target read's `stdout.txt` must contain ≥N `RECORD` messages. |
-| `--min-states=N` | Target read's `stdout.txt` must contain ≥N `STATE` messages. |
+| Flag                                               | Effect                                                                                                                                                                                                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--expect-test=pass\|fail`                         | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed.                                                                                                                          |
+| `--expect-control=pass\|fail`                      | Same for the control sweep (comparison-mode runs only; requires `--control-version`).                                                                                                                                              |
+| `--min-records=N`                                  | Target read's `stdout.txt` must contain ≥N `RECORD` messages.                                                                                                                                                                      |
+| `--min-states=N`                                   | Target read's `stdout.txt` must contain ≥N `STATE` messages.                                                                                                                                                                       |
 | `--expect-match=[<command>:]<channel>:<regex>[:N]` | Target's `<command>` step's `<channel>` (`stdout` \| `stderr` \| `any`) must match `<regex>` at least N times (default 1). `<command>` (`spec` \| `check` \| `discover` \| `read`) is optional and defaults to `read`. Repeatable. |
-| `--forbid-match=[<command>:]<channel>:<regex>` | Same shape but must match zero times. Repeatable. |
+| `--forbid-match=[<command>:]<channel>:<regex>`     | Same shape but must match zero times. Repeatable.                                                                                                                                                                                  |
 
 All match assertions run against the **target-side** artifacts of the
 named command (or `read` if no `<command>` prefix). Under

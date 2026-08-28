@@ -123,6 +123,15 @@ directly.
   must be started with `MSSQL_AGENT_ENABLED=true` (the generic skill's
   `start-backend.sh` sets this). Without Agent, Debezium silently sees
   an empty change table.
+- **A `:dockerBuildx` build dies partway through dependency
+  resolution with HTTP 429.** Maven Central rate-limits unauthenticated
+  clients per source IP, and a cold connector build resolves enough
+  artifacts to trip it on any shared-egress machine. `run.sh` builds
+  `:dev` with
+  [`fixtures/gradle/maven-mirror-init.gradle`](.agents/skills/source-mssql-e2e-tests/fixtures/gradle/maven-mirror-init.gradle),
+  which routes Central through Google's mirror of it; pass the same
+  script via `--init-script` when invoking `./gradlew` by hand, or set
+  `E2E_GRADLE_MIRROR=0` to opt out of it inside `run.sh`.
 - **`prettier` reformats your committed JSON catalog.** The Format Check
   CI job runs `prettier`, which collapses short JSON arrays onto one
   line. Run `pnpm prettier --write airbyte-integrations/connectors/source-mssql/.agents`
