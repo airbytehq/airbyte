@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdAccountsAnyCondition"></a>
@@ -89,10 +89,24 @@ Classes
     `updated_time: Any`
     :   Timestamp when the ad account was last updated (Unix seconds)
 
+<a id="AdAccountsArrayContainsCondition"></a>
+
+`AdAccountsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdAccountsContainsCondition"></a>
 
 `AdAccountsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -339,7 +353,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdAccountsOrCondition"></a>
@@ -361,7 +375,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdAccountsSearchFilter"></a>
@@ -410,7 +424,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdAccountsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.AdAccountsSortFilter]`
@@ -519,7 +533,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsAnyCondition"></a>
@@ -630,10 +644,24 @@ Classes
     `updated_time: Any`
     :   Last update timestamp (Unix seconds)
 
+<a id="AdGroupsArrayContainsCondition"></a>
+
+`AdGroupsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdGroupsContainsCondition"></a>
 
 `AdGroupsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -923,7 +951,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdGroupsOrCondition"></a>
@@ -945,7 +973,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdGroupsSearchFilter"></a>
@@ -1045,7 +1073,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdGroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.AdGroupsSortFilter]`
@@ -1256,7 +1284,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsAnyCondition"></a>
@@ -1376,10 +1404,24 @@ Classes
     `view_tracking_url: Any`
     :   View tracking URL
 
+<a id="AdsArrayContainsCondition"></a>
+
+`AdsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.AdsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AdsContainsCondition"></a>
 
 `AdsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1678,7 +1720,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AdsOrCondition"></a>
@@ -1700,7 +1742,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AdsSearchFilter"></a>
@@ -1809,7 +1851,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.AdsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsInCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AdsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.AdsSortFilter]`
@@ -2061,7 +2103,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AudiencesAnyCondition"></a>
@@ -2130,10 +2172,24 @@ Classes
     `updated_timestamp: Any`
     :   Last update time (Unix seconds)
 
+<a id="AudiencesArrayContainsCondition"></a>
+
+`AudiencesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AudiencesContainsCondition"></a>
 
 `AudiencesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2375,7 +2431,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition`
     :   The type of the None singleton.
 
 <a id="AudiencesOrCondition"></a>
@@ -2397,7 +2453,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AudiencesSearchFilter"></a>
@@ -2455,7 +2511,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.AudiencesEqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesGteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLtCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesLteCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesInCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesNotCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAndCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesOrCondition | airbyte_agent_sdk.connectors.pinterest.types.AudiencesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.AudiencesSortFilter]`
@@ -2582,7 +2638,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardPinsAnyCondition"></a>
@@ -2669,10 +2725,24 @@ Classes
     `title: Any`
     :   Pin title
 
+<a id="BoardPinsArrayContainsCondition"></a>
+
+`BoardPinsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BoardPinsContainsCondition"></a>
 
 `BoardPinsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2932,7 +3002,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BoardPinsOrCondition"></a>
@@ -2954,7 +3024,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardPinsSearchFilter"></a>
@@ -3030,7 +3100,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardPinsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.BoardPinsSortFilter]`
@@ -3193,7 +3263,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardSectionsAnyCondition"></a>
@@ -3235,10 +3305,24 @@ Classes
     `name: Any`
     :   Name of the board section
 
+<a id="BoardSectionsArrayContainsCondition"></a>
+
+`BoardSectionsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BoardSectionsContainsCondition"></a>
 
 `BoardSectionsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3453,7 +3537,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BoardSectionsOrCondition"></a>
@@ -3475,7 +3559,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardSectionsSearchFilter"></a>
@@ -3506,7 +3590,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.BoardSectionsSortFilter]`
@@ -3579,7 +3663,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardsAnyCondition"></a>
@@ -3648,10 +3732,24 @@ Classes
     `privacy: Any`
     :   Board privacy setting
 
+<a id="BoardsArrayContainsCondition"></a>
+
+`BoardsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BoardsContainsCondition"></a>
 
 `BoardsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3907,7 +4005,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BoardsOrCondition"></a>
@@ -3929,7 +4027,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardsSearchFilter"></a>
@@ -3987,7 +4085,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.BoardsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsInCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.BoardsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.BoardsSortFilter]`
@@ -4114,7 +4212,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -4201,10 +4299,24 @@ Classes
     `updated_time: Any`
     :   Last update timestamp (Unix seconds)
 
+<a id="CampaignsArrayContainsCondition"></a>
+
+`CampaignsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4470,7 +4582,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -4492,7 +4604,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -4568,7 +4680,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.CampaignsSortFilter]`
@@ -4731,7 +4843,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogsAnyCondition"></a>
@@ -4782,10 +4894,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the catalog was last updated
 
+<a id="CatalogsArrayContainsCondition"></a>
+
+`CatalogsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CatalogsContainsCondition"></a>
 
 `CatalogsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4843,7 +4969,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogsFeedsAnyCondition"></a>
@@ -4918,10 +5044,24 @@ Classes
     `updated_at: Any`
     :   Timestamp when the feed was last updated
 
+<a id="CatalogsFeedsArrayContainsCondition"></a>
+
+`CatalogsFeedsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CatalogsFeedsContainsCondition"></a>
 
 `CatalogsFeedsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5166,7 +5306,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CatalogsFeedsOrCondition"></a>
@@ -5188,7 +5328,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogsFeedsSearchFilter"></a>
@@ -5252,7 +5392,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsFeedsSortFilter]`
@@ -5554,7 +5694,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CatalogsOrCondition"></a>
@@ -5576,7 +5716,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogsProductGroupsAndCondition"></a>
@@ -5598,7 +5738,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogsProductGroupsAnyCondition"></a>
@@ -5661,10 +5801,24 @@ Classes
     `updated_at: Any`
     :   Last update timestamp (Unix seconds)
 
+<a id="CatalogsProductGroupsArrayContainsCondition"></a>
+
+`CatalogsProductGroupsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CatalogsProductGroupsContainsCondition"></a>
 
 `CatalogsProductGroupsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5897,7 +6051,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CatalogsProductGroupsOrCondition"></a>
@@ -5919,7 +6073,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CatalogsProductGroupsSearchFilter"></a>
@@ -5971,7 +6125,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsProductGroupsSortFilter]`
@@ -6104,7 +6258,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.CatalogsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CatalogsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.CatalogsSortFilter]`
@@ -6195,7 +6349,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConversionTagsAnyCondition"></a>
@@ -6258,10 +6412,24 @@ Classes
     `version: Any`
     :   Version number
 
+<a id="ConversionTagsArrayContainsCondition"></a>
+
+`ConversionTagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ConversionTagsContainsCondition"></a>
 
 `ConversionTagsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6497,7 +6665,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ConversionTagsOrCondition"></a>
@@ -6519,7 +6687,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConversionTagsSearchFilter"></a>
@@ -6571,7 +6739,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsInCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.ConversionTagsSortFilter]`
@@ -6686,7 +6854,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomerListsAnyCondition"></a>
@@ -6752,10 +6920,24 @@ Classes
     `updated_time: Any`
     :   Last update time (Unix seconds)
 
+<a id="CustomerListsArrayContainsCondition"></a>
+
+`CustomerListsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CustomerListsContainsCondition"></a>
 
 `CustomerListsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6994,7 +7176,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomerListsOrCondition"></a>
@@ -7016,7 +7198,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomerListsSearchFilter"></a>
@@ -7071,7 +7253,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsInCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.CustomerListsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.CustomerListsSortFilter]`
@@ -7192,7 +7374,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="KeywordsAnyCondition"></a>
@@ -7252,10 +7434,24 @@ Classes
     `value: Any`
     :   Keyword text value
 
+<a id="KeywordsArrayContainsCondition"></a>
+
+`KeywordsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="KeywordsContainsCondition"></a>
 
 `KeywordsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7491,7 +7687,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition`
     :   The type of the None singleton.
 
 <a id="KeywordsOrCondition"></a>
@@ -7513,7 +7709,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="KeywordsSearchFilter"></a>
@@ -7562,7 +7758,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.pinterest.types.KeywordsEqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNeqCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsGteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLtCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsLteCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsInCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsStartswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsEndswithCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsFuzzyCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsKeywordCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsArrayContainsCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsNotCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAndCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsOrCondition | airbyte_agent_sdk.connectors.pinterest.types.KeywordsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.pinterest.types.KeywordsSortFilter]`
