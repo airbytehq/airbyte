@@ -374,7 +374,7 @@ def test_client_credentials_token_request_shape(config, expected_sub, requests_m
     assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"cc-client:cc-secret").decode()
     assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
     assert request.query == "", "Refresh args must not be on the query string because Greenhouse reads them from the body"
-    token_params = parse_qs(request.text)
+    token_params = parse_qs(request.text, keep_blank_values=True)
     assert token_params["grant_type"] == ["client_credentials"]
     assert "refresh_token" not in token_params
     if expected_sub is None:
