@@ -4,8 +4,11 @@
 
 
 import json
+import logging
 from typing import Any, Mapping
+from unittest.mock import patch
 
+import pytest
 from source_google_ads.config_migrations import MigrateAuthType, MigrateCustomQuery
 from source_google_ads.source import SourceGoogleAds
 
@@ -141,8 +144,9 @@ def test_source_init_backfills_auth_type_for_legacy_in_memory_config():
     assert source._config["credentials"]["auth_type"] == "Client"
 
 
-def test_legacy_oauth_config_can_build_streams_after_in_memory_backfill():
-    legacy_config = {
+def _legacy_oauth_config():
+    """An on-disk config from before the OAuth / Service Account `oneOf` split: no `auth_type`."""
+    return {
         "credentials": {
             "developer_token": "dev",
             "client_id": "client",
@@ -153,6 +157,29 @@ def test_legacy_oauth_config_can_build_streams_after_in_memory_backfill():
         "start_date": "2021-01-01",
     }
 
-    source = SourceGoogleAds(catalog=None, config=legacy_config, state=None)
 
+def test_legacy_oauth_config_can_discover_after_in_memory_backfill():
+    legacy_config = _legacy_oauth_config()
+
+    source = SourceGoogleAds(catalog=None, config=legacy_config, state=None)
+    catalog = source.discover(logging.getLogger("airbyte"), legacy_config)
+
+    assert catalog.streams
     assert source.streams(config=legacy_config)
+    # The caller's config is left alone; only the source's own copy is backfilled.
+    assert "auth_type" not in legacy_config["credentials"]
+
+
+def test_legacy_oauth_config_fails_discover_without_the_in_memory_backfill():
+    """Negative control for the test above.
+
+    The manifest resolves auth through a `SelectiveAuthenticator` keyed on
+    `credentials.auth_type`, and the CDK raises when that path is absent. Without
+    `_backfill_auth_type`, every legacy OAuth config breaks on DISCOVER - the regression that
+    sank the first attempt at this feature. This test fails if the backfill is ever dropped.
+    """
+    with patch.object(SourceGoogleAds, "_backfill_auth_type", staticmethod(lambda config: config)):
+        source = SourceGoogleAds(catalog=None, config=_legacy_oauth_config(), state=None)
+
+        with pytest.raises(ValueError, match="authenticator_selection_path"):
+            source.discover(logging.getLogger("airbyte"), _legacy_oauth_config())

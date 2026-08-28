@@ -30,6 +30,15 @@ class SourceGoogleAds(YamlDeclarativeSource):
 
     @staticmethod
     def _backfill_auth_type(config: Mapping[str, Any]) -> Mapping[str, Any]:
+        """Default `credentials.auth_type` to `Client` for legacy OAuth-only configs.
+
+        `MigrateAuthType` in `run.py` persists the same change on disk, but it cannot help
+        the config already loaded into this instance: the source is constructed before the
+        migration runs, and any caller that instantiates `SourceGoogleAds` directly skips
+        `run.py` entirely. Without this in-memory backfill the manifest's
+        `SelectiveAuthenticator` has no branch to resolve and stream building fails - which
+        is what broke DISCOVER in the earlier attempt at this feature (#77530).
+        """
         credentials = config.get("credentials")
         if isinstance(credentials, Mapping) and "auth_type" not in credentials:
             credentials = dict(credentials)

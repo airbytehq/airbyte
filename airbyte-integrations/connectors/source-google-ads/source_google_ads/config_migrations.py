@@ -26,6 +26,17 @@ FULL_REFRESH_CUSTOM_TABLE = [
 
 
 class MigrateAuthType:
+    """
+    Backfills `credentials.auth_type` for configs that pre-date the OAuth / Service Account
+    `oneOf` split in `spec.json`.
+
+    Legacy configs only carry the OAuth fields (`client_id`, `client_secret`, `refresh_token`)
+    and no discriminator, so this sets `auth_type: "Client"` and emits a control message so the
+    platform persists it. This is only about persistence: a legacy config still validates against
+    the OAuth branch (which does not require `auth_type`), and `SourceGoogleAds._backfill_auth_type`
+    covers the in-memory config for the current invocation.
+    """
+
     OAUTH_AUTH_TYPE = "Client"
     message_repository: MessageRepository = InMemoryMessageRepository()
 
