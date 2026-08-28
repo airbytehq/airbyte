@@ -15,6 +15,7 @@ from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Map
 
 import anyascii
 import requests
+from google.auth import exceptions as google_auth_exceptions
 from google.auth.transport.requests import Request as GoogleAuthRequest
 from google.oauth2 import service_account
 from requests.adapters import HTTPAdapter
@@ -36,7 +37,7 @@ from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .google_ads import GoogleAds
+from .google_ads import GoogleAds, build_service_account_credentials
 
 
 logger = logging.getLogger("airbyte")
@@ -45,7 +46,6 @@ logger = logging.getLogger("airbyte")
 # This is an idle timeout per recv() call, not a total request timeout,
 # so streaming responses that keep sending data are unaffected.
 DEFAULT_HTTP_TIMEOUT = 300  # 5 minutes
-GOOGLE_ADS_OAUTH_SCOPE = "https://www.googleapis.com/auth/adwords"
 
 
 class TimeoutHTTPAdapter(HTTPAdapter):
@@ -65,6 +65,12 @@ class TimeoutHTTPAdapter(HTTPAdapter):
 
 @dataclass
 class GoogleAdsServiceAccountAuthenticator(DeclarativeAuthenticator):
+    """Mints Google Ads bearer tokens from a service account key.
+
+    Selected by the manifest's `SelectiveAuthenticator` when `credentials.auth_type` is
+    `Service`. Credentials are built once and refreshed on expiry.
+    """
+
     config: Mapping[str, Any]
     parameters: InitVar[Mapping[str, Any]]
 
@@ -87,36 +93,20 @@ class GoogleAdsServiceAccountAuthenticator(DeclarativeAuthenticator):
             if self._credentials is None:
                 self._credentials = self._build_credentials()
             if not self._credentials.valid:
-                self._credentials.refresh(self._request)
+                try:
+                    self._credentials.refresh(self._request)
+                except google_auth_exceptions.RefreshError as e:
+                    # Google rejected the key or the delegation, e.g. the service account was never
+                    # added to the Google Ads account, or domain-wide delegation is not granted for
+                    # the adwords scope. That is a config problem, not a transient system failure.
+                    raise AirbyteTracedException(
+                        message="Could not obtain an access token for the service account. Confirm the service account has access to the Google Ads account, and that `Impersonated Email` is only set when domain-wide delegation is configured.",
+                        failure_type=FailureType.config_error,
+                    ) from e
             return self._credentials
 
     def _build_credentials(self) -> service_account.Credentials:
-        credentials_config = self.config["credentials"]
-        info = credentials_config.get("service_account_info")
-        if info is None:
-            raise AirbyteTracedException(
-                message="Service account credentials are missing the `service_account_info` field.",
-                failure_type=FailureType.config_error,
-            )
-        if isinstance(info, str):
-            try:
-                info = json.loads(info)
-            except json.JSONDecodeError as e:
-                raise AirbyteTracedException(
-                    message="The `service_account_info` field is not valid JSON.",
-                    failure_type=FailureType.config_error,
-                ) from e
-        if not isinstance(info, Mapping):
-            raise AirbyteTracedException(
-                message="The `service_account_info` field must be a JSON object.",
-                failure_type=FailureType.config_error,
-            )
-
-        credentials = service_account.Credentials.from_service_account_info(info, scopes=[GOOGLE_ADS_OAUTH_SCOPE])
-        impersonated_email = credentials_config.get("impersonated_email")
-        if impersonated_email:
-            credentials = credentials.with_subject(impersonated_email)
-        return credentials
+        return build_service_account_credentials(self.config["credentials"])
 
 
 def _mount_timeout_adapter(requester: Any) -> None:

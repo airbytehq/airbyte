@@ -4,8 +4,6 @@
 
 
 import json
-import os
-import stat
 from copy import deepcopy
 from datetime import date
 
@@ -87,41 +85,45 @@ def test_google_ads_init(mocker):
 
 
 def test_google_ads_init_with_service_account_credentials(mocker):
-    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
-    cleanup_register = mocker.patch("source_google_ads.google_ads.atexit.register")
+    """The service account key is handed to the SDK in memory - never written to disk."""
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient")
+    service_account_mocker = mocker.patch("source_google_ads.google_ads.service_account.Credentials")
+    delegated = service_account_mocker.from_service_account_info.return_value.with_subject.return_value
 
     _ = GoogleAds(**deepcopy(SAMPLE_SERVICE_ACCOUNT_CONFIG))
 
-    sdk_credentials = google_client_mocker.load_from_dict.call_args[0][0]
-    assert "auth_type" not in sdk_credentials
-    assert "service_account_info" not in sdk_credentials
-    assert sdk_credentials["developer_token"] == "developer_token"
-    assert sdk_credentials["impersonated_email"] == "user@example.com"
-    assert sdk_credentials["use_proto_plus"] is True
+    # No `load_from_dict`, so no `json_key_file_path` and no temp file to leak.
+    google_client_mocker.load_from_dict.assert_not_called()
+    service_account_mocker.from_service_account_info.assert_called_once_with(
+        SERVICE_ACCOUNT_KEY_DICT, scopes=["https://www.googleapis.com/auth/adwords"]
+    )
+    service_account_mocker.from_service_account_info.return_value.with_subject.assert_called_once_with("user@example.com")
+    delegated.refresh.assert_called_once()
 
-    json_key_file_path = sdk_credentials["json_key_file_path"]
-    try:
-        with open(json_key_file_path) as key_file:
-            assert json.load(key_file) == SERVICE_ACCOUNT_KEY_DICT
-        assert stat.S_IMODE(os.stat(json_key_file_path).st_mode) == 0o600
-        cleanup_register.assert_called_once()
-        assert cleanup_register.call_args.args[1] == json_key_file_path
-    finally:
-        os.remove(json_key_file_path)
+    kwargs = google_client_mocker.call_args.kwargs
+    assert kwargs["credentials"] is delegated
+    assert kwargs["developer_token"] == "developer_token"
+    assert kwargs["use_proto_plus"] is True
+    assert kwargs["login_customer_id"] is None
 
 
-def test_service_account_credentials_temp_file_reused_across_clients(mocker):
-    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient", return_value=MockGoogleAdsClient)
+def test_service_account_credentials_are_not_mutated_or_persisted(mocker):
+    """Building the SDK client must not rewrite the live config.
 
-    google_ads_client = GoogleAds(**deepcopy(SAMPLE_SERVICE_ACCOUNT_CONFIG))
-    first_key_file = google_client_mocker.load_from_dict.call_args[0][0]["json_key_file_path"]
+    `components.GoogleAdsServiceAccountAuthenticator` reads `credentials.service_account_info`
+    lazily from the same config mapping, so dropping the key here would break the declarative
+    HTTP auth path for any config that also uses custom GAQL queries.
+    """
+    google_client_mocker = mocker.patch("source_google_ads.google_ads.GoogleAdsClient")
+    mocker.patch("source_google_ads.google_ads.service_account.Credentials")
+    config = deepcopy(SAMPLE_SERVICE_ACCOUNT_CONFIG)
+
+    google_ads_client = GoogleAds(**config)
     google_ads_client.get_client("9999999999")
-    second_key_file = google_client_mocker.load_from_dict.call_args[0][0]["json_key_file_path"]
 
-    try:
-        assert first_key_file == second_key_file
-    finally:
-        os.remove(first_key_file)
+    assert config["credentials"]["service_account_info"] == json.dumps(SERVICE_ACCOUNT_KEY_DICT)
+    assert "json_key_file_path" not in config["credentials"]
+    assert google_client_mocker.call_args.kwargs["login_customer_id"] == "9999999999"
 
 
 def test_service_account_credentials_invalid_json_raises_config_error(mocker):

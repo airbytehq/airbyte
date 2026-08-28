@@ -8,6 +8,7 @@ from typing import List
 from unittest.mock import MagicMock, patch
 
 import pytest
+from google.auth import exceptions as google_auth_exceptions
 from requests.exceptions import ChunkedEncodingError, StreamConsumedError
 from source_google_ads.components import (
     ClickViewHttpRequester,
@@ -22,6 +23,7 @@ from source_google_ads.components import (
 )
 
 from airbyte_cdk import AirbyteTracedException
+from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
 from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
@@ -1173,7 +1175,7 @@ _SERVICE_ACCOUNT_KEY_DICT = {
 }
 
 
-@patch("source_google_ads.components.service_account.Credentials")
+@patch("source_google_ads.google_ads.service_account.Credentials")
 def test_service_account_authenticator_emits_bearer_token_with_subject(mock_credentials_cls):
     delegated = MagicMock()
     delegated.valid = False
@@ -1204,7 +1206,7 @@ def test_service_account_authenticator_emits_bearer_token_with_subject(mock_cred
     delegated.refresh.assert_called_once()
 
 
-@patch("source_google_ads.components.service_account.Credentials")
+@patch("source_google_ads.google_ads.service_account.Credentials")
 def test_service_account_authenticator_skips_subject_when_not_configured(mock_credentials_cls):
     credentials = MagicMock()
     credentials.valid = True
@@ -1274,3 +1276,44 @@ def test_service_account_authenticator_rejects_non_object_json():
         _ = authenticator.token
 
     assert "JSON object" in exc_info.value.message
+
+
+@patch("source_google_ads.google_ads.service_account.Credentials")
+def test_service_account_authenticator_reports_refresh_failure_as_config_error(mock_credentials_cls):
+    """A rejected key or missing delegation is a config problem, not a system failure."""
+    credentials = MagicMock()
+    credentials.valid = False
+    credentials.refresh.side_effect = google_auth_exceptions.RefreshError("unauthorized_client")
+    mock_credentials_cls.from_service_account_info.return_value = credentials
+
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={
+            "credentials": {
+                "auth_type": "Service",
+                "developer_token": "x",
+                "service_account_info": _SERVICE_ACCOUNT_KEY_DICT,
+            }
+        },
+        parameters={},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _ = authenticator.token
+
+    assert exc_info.value.failure_type == FailureType.config_error
+
+
+@patch("source_google_ads.google_ads.service_account.Credentials")
+def test_service_account_authenticator_rejects_unusable_key_material(mock_credentials_cls):
+    """`from_service_account_info` raises ValueError for an incomplete key; classify it."""
+    mock_credentials_cls.from_service_account_info.side_effect = ValueError("No key could be detected.")
+
+    authenticator = GoogleAdsServiceAccountAuthenticator(
+        config={"credentials": {"auth_type": "Service", "developer_token": "x", "service_account_info": '{"type": "service_account"}'}},
+        parameters={},
+    )
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _ = authenticator.token
+
+    assert exc_info.value.failure_type == FailureType.config_error
