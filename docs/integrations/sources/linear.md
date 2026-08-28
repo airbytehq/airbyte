@@ -15,7 +15,7 @@ This page contains the setup guide and reference information for the [Linear](ht
   - **OAuth 2.0 (Airbyte Cloud)**: A Linear workspace administrator account with permission to authorize the required workspace data. Airbyte supplies the OAuth application.
   - **OAuth 2.0 (Self-managed)**: A Linear OAuth application and its client ID and client secret. You also need a Linear workspace administrator account with permission to authorize the required workspace data, because the connector installs the app at the workspace level.
   - **API Key**: A Linear personal API key.
-- To sync the `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams: Linear's Customer Requests feature enabled in your workspace, and credentials with the `customer:read` scope. See [Customer Requests streams](#customer-requests-streams).
+- To sync the `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams: Linear's Customer Requests feature enabled in your workspace. OAuth connections also need the `customer:read` scope; API keys don't use scopes. See [Customer Requests streams](#customer-requests-streams).
 
 ## Setup guide
 
