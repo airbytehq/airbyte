@@ -77,6 +77,20 @@ definitions:
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["api_token"] }}'
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 10
+      backoff_strategies:
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 20
+      response_filters:
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          error_message_contains: Too many requests
 
 streams:
   - $ref: "#/definitions/streams/activity"

@@ -32,7 +32,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                  |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------- |
-| 0.2.26 | 2026-08-28 | [85105](https://github.com/airbytehq/airbyte/pull/85105) | Send required `date_to` on activity requests and parse ISO `created_at` cursors (vendor 422s without `date_to`; records are ISO not unix) |
+| 0.2.26 | 2026-08-28 | [85105](https://github.com/airbytehq/airbyte/pull/85105) | Send required `date_to` on activity requests, parse ISO `created_at` cursors, and retry 429s (vendor 422s without `date_to`; records are ISO not unix; activity is easy to rate-limit) |
 | 0.2.25 | 2025-05-24 | [60696](https://github.com/airbytehq/airbyte/pull/60696) | Update dependencies |
 | 0.2.24 | 2025-05-10 | [59865](https://github.com/airbytehq/airbyte/pull/59865) | Update dependencies |
 | 0.2.23 | 2025-05-03 | [59278](https://github.com/airbytehq/airbyte/pull/59278) | Update dependencies |
