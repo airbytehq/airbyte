@@ -147,11 +147,11 @@ directly.
   CI job runs `prettier`, which collapses short JSON arrays onto one
   line. Run `pnpm prettier --write airbyte-integrations/connectors/source-mssql/.agents`
   before pushing.
-- **The matrix detector requires a `dockerImageTag` bump.** Files inside
-  `airbyte-integrations/connectors/source-mssql/` are treated as
-  connector changes by CI, including `.agents/skills/` and
-  `CONTRIBUTING.md`. Bump `metadata.yaml`'s `dockerImageTag` and append
-  a row to the changelog when you touch any of them.
+- **The matrix detector requires a `dockerImageTag` bump for published
+  connector changes.** `.agents/**`, `AGENTS.md`, and `CLAUDE.md` are
+  excluded from modified-connector detection, so harness-only changes need
+  no version bump or changelog. Changes under `src/`, `build.gradle*`, or
+  `metadata.yaml` still require both.
 - **`config.cdc.json` uses `ssl_method: unencrypted`.** Fine for a local
   throwaway container, never for a real source.
 

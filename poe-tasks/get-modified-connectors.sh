@@ -60,6 +60,10 @@ ignore_patterns=(
   'poe_tasks.toml'
   'airbyte-integrations/connectors/[^/]+/README.md'
   'airbyte-integrations/connectors/[^/]+/CONTRIBUTING.md'
+  # Agent and harness files are not part of the published image.
+  'airbyte-integrations/connectors/[^/]+/AGENTS.md'
+  'airbyte-integrations/connectors/[^/]+/CLAUDE.md'
+  'airbyte-integrations/connectors/[^/]+/\.agents/.*'
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
