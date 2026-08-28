@@ -150,14 +150,14 @@ Instead of driver scripts hand-rolling `grep -q '<substring>' || exit 1`
 against each command's artifacts, `run.sh` accepts a small set of
 expectation flags that it enforces itself before returning:
 
-| Flag                                               | Effect                                                                                                                                                                                                                             |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--expect-test=pass\|fail`                         | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed.                                                                                                                          |
-| `--expect-control=pass\|fail`                      | Same for the control sweep (comparison-mode runs only; requires `--control-version`).                                                                                                                                              |
-| `--min-records=N`                                  | Target read's `stdout.txt` must contain ≥N `RECORD` messages.                                                                                                                                                                      |
-| `--min-states=N`                                   | Target read's `stdout.txt` must contain ≥N `STATE` messages.                                                                                                                                                                       |
+| Flag | Effect |
+|---|---|
+| `--expect-test=pass\|fail` | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed. |
+| `--expect-control=pass\|fail` | Same for the control sweep (comparison-mode runs only; requires `--control-version`). |
+| `--min-records=N` | Target read's `stdout.txt` must contain ≥N `RECORD` messages. |
+| `--min-states=N` | Target read's `stdout.txt` must contain ≥N `STATE` messages. |
 | `--expect-match=[<command>:]<channel>:<regex>[:N]` | Target's `<command>` step's `<channel>` (`stdout` \| `stderr` \| `any`) must match `<regex>` at least N times (default 1). `<command>` (`spec` \| `check` \| `discover` \| `read`) is optional and defaults to `read`. Repeatable. |
-| `--forbid-match=[<command>:]<channel>:<regex>`     | Same shape but must match zero times. Repeatable.                                                                                                                                                                                  |
+| `--forbid-match=[<command>:]<channel>:<regex>` | Same shape but must match zero times. Repeatable. |
 
 All match assertions run against the **target-side** artifacts of the
 named command (or `read` if no `<command>` prefix). Under
