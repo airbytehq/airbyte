@@ -76,7 +76,7 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies only to the incremental streams. Full refresh streams always read everything the endpoint returns, and the five child streams pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either. `demographics_answer_options`, `demographics_questions`, and `demographics_question_sets` are full refresh because Harvest v3 exposes no date filter on those endpoints.
 
 | Stream | Sync mode | Notes |
-|:---|:---|:---|
+| :--- | :--- | :--- |
 | [`activity_feed`](https://harvestdocs.greenhouse.io/reference/get_v3-notes) | Full refresh | Notes for each candidate in `candidates` |
 | [`applications`](https://harvestdocs.greenhouse.io/reference/get_v3-applications) | Incremental (`updated_at`) | |
 | [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Full refresh | |
