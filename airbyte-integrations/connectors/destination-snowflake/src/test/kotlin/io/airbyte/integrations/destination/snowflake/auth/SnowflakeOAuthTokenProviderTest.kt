@@ -23,6 +23,22 @@ import org.junit.jupiter.params.provider.ValueSource
 internal class SnowflakeOAuthTokenProviderTest {
 
     @Test
+    fun testSnowflakeTokenRequestUriAlwaysUsesHttps() {
+        assertEquals(
+            URI.create("https://host/oauth/token-request"),
+            snowflakeTokenRequestUri("host")
+        )
+        assertEquals(
+            URI.create("https://host/oauth/token-request"),
+            snowflakeTokenRequestUri("https://host/"),
+        )
+        assertEquals(
+            URI.create("https://host/oauth/token-request"),
+            snowflakeTokenRequestUri("http://host"),
+        )
+    }
+
+    @Test
     fun testRefreshRequestAndTokenCaching() {
         withTokenServer(
             response = { _, _ ->
@@ -112,7 +128,7 @@ internal class SnowflakeOAuthTokenProviderTest {
         refreshToken: String = "test-refresh-token",
     ) =
         SnowflakeOAuthTokenProvider(
-            host = serverUri.toString(),
+            tokenRequestUri = serverUri.resolve("/oauth/token-request"),
             clientId = clientId,
             clientSecret = clientSecret,
             refreshToken = refreshToken,

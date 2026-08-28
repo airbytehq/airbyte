@@ -12,6 +12,7 @@ import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.auth.SnowflakeOAuthTokenProvider
+import io.airbyte.integrations.destination.snowflake.auth.snowflakeTokenRequestUri
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
@@ -118,7 +119,7 @@ class SnowflakeBeanFactory {
         val oauthTokenProvider =
             (snowflakeConfiguration.authType as? OAuthAuthConfiguration)?.let { auth ->
                 SnowflakeOAuthTokenProvider(
-                    host = snowflakeConfiguration.host,
+                    tokenRequestUri = snowflakeTokenRequestUri(snowflakeConfiguration.host),
                     clientId = auth.clientId,
                     clientSecret = auth.clientSecret,
                     refreshToken = auth.refreshToken,

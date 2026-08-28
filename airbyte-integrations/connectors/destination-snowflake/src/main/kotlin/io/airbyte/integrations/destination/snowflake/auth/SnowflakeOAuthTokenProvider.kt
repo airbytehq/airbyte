@@ -19,16 +19,19 @@ import java.time.Duration
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 
+internal fun snowflakeTokenRequestUri(host: String): URI {
+    val normalizedHost =
+        host.replaceFirst(Regex("^https?://", RegexOption.IGNORE_CASE), "").trimEnd('/')
+    return URI.create("https://$normalizedHost/oauth/token-request")
+}
+
 class SnowflakeOAuthTokenProvider(
-    host: String,
+    private val tokenRequestUri: URI,
     private val clientId: String,
     private val clientSecret: String,
     private val refreshToken: String,
     private val httpClient: HttpClient,
 ) {
-    private val tokenRequestUri =
-        URI.create("${host.toHttpsHost().trimEnd('/')}/oauth/token-request")
-
     private var accessToken: String? = null
     private var accessTokenExpiresAtMillis = 0L
 
@@ -96,13 +99,6 @@ class SnowflakeOAuthTokenProvider(
             System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(expiresInSeconds)
         return refreshedToken
     }
-
-    private fun String.toHttpsHost(): String =
-        if (startsWith("http://", ignoreCase = true) || startsWith("https://", ignoreCase = true)) {
-            this
-        } else {
-            "https://$this"
-        }
 
     private companion object {
         const val DEFAULT_TOKEN_EXPIRY_SECONDS = 600L
