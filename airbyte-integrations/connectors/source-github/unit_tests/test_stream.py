@@ -28,6 +28,7 @@ from source_github.streams import (
     IssueEvents,
     IssueLabels,
     IssueMilestones,
+    IssueReactions,
     Issues,
     IssueTimelineEvents,
     Organizations,
@@ -1528,8 +1529,10 @@ def test_stream_reviews_incremental_read(requests_mock):
 
 
 @patch("time.sleep")
-def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock, caplog):
-    stream = Reviews(
+def test_graphql_stream_rebuilds_request_after_504(time_mock, requests_mock, caplog):
+    # IssueReactions is deliberately used here instead of a `large_stream`: it starts at the
+    # default page size of 100, so the halving to 50 is visible in the rebuilt query body.
+    stream = IssueReactions(
         start_date="2000-01-01T00:00:00Z",
         page_size_for_large_streams=10,
         repositories=["airbytehq/airbyte"],
@@ -1540,7 +1543,7 @@ def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock, cap
             "repository": {
                 "name": "airbyte",
                 "owner": {"login": "airbytehq"},
-                "pullRequests": {
+                "issues": {
                     "nodes": [],
                     "pageInfo": {"hasNextPage": False, "endCursor": None},
                 },
@@ -1562,7 +1565,7 @@ def test_stream_reviews_rebuilds_request_after_504(time_mock, requests_mock, cap
     assert queries[1].count("first: 50") == 2
     assert stream.page_size == 50
     assert any(
-        "stream `reviews`, owner `airbytehq`, repository `airbyte`" in message and "page_size from 100 to 50" in message
+        "stream `issue_reactions`, owner `airbytehq`, repository `airbyte`" in message and "page_size from 100 to 50" in message
         for message in caplog.messages
     )
 
@@ -2476,3 +2479,6 @@ def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock)
         "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
         for msg in caplog.messages
     )
+    # The halving bottoms out at 1 (which stops emitting RESET_PAGINATION) and the reduced
+    # page size is kept for the rest of the sync instead of springing back to the default.
+    assert stream.page_size == 1
