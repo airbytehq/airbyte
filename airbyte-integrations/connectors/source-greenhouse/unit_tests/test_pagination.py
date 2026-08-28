@@ -24,6 +24,19 @@ CONFIG = {
         "refresh_token": "test-refresh-token",
     }
 }
+CLIENT_CREDENTIALS_CONFIG = {
+    "credentials": {
+        "auth_type": "ClientCredentials",
+        "client_id": "cc-client",
+        "client_secret": "cc-secret",
+    }
+}
+CLIENT_CREDENTIALS_CONFIG_WITH_SUB = {
+    "credentials": {
+        **CLIENT_CREDENTIALS_CONFIG["credentials"],
+        "sub": 1234567,
+    }
+}
 CONFIG_WITH_EPOCH_START_DATE = {**CONFIG, "start_date": "1970-01-01T00:00:00Z"}
 CONFIG_WITH_LATER_START_DATE = {**CONFIG, "start_date": "2025-01-01T00:00:00Z"}
 CURSOR_NOW = datetime.datetime(2026, 8, 27, tzinfo=datetime.timezone.utc)
@@ -36,12 +49,14 @@ def _freeze_cursor_time():
     )
 
 
-def _register_token(requests_mock):
+def _register_token(requests_mock, client_credentials=False):
     token_requests = []
 
     def token_callback(request, context):
         token_requests.append(request)
         context.status_code = 200
+        if client_credentials:
+            return {"access_token": "access-token", "expires_in": 3600}
         return {
             "access_token": "access-token",
             "expires_at": "2030-01-01T00:00:00+0000",
@@ -335,6 +350,71 @@ def test_oauth_rotated_refresh_token_is_persisted(requests_mock, get_source):
     assert updated_credentials["refresh_token"] == "rotated-refresh-token"
     assert updated_credentials["access_token"] == "access-token"
     assert updated_credentials["token_expiry_date"]
+
+
+@pytest.mark.parametrize(
+    "config, expected_sub",
+    [
+        (CLIENT_CREDENTIALS_CONFIG, None),
+        (CLIENT_CREDENTIALS_CONFIG_WITH_SUB, "1234567"),
+    ],
+)
+def test_client_credentials_token_request_shape(config, expected_sub, requests_mock, get_source):
+    token_requests = _register_token(requests_mock, client_credentials=True)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/applications",
+        json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
+    )
+
+    source = get_source(config)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    read(source, config=config, catalog=catalog)
+
+    request = token_requests[0]
+    assert request.headers["Authorization"] == "Basic " + base64.b64encode(b"cc-client:cc-secret").decode()
+    assert request.headers["Content-Type"] == "application/x-www-form-urlencoded"
+    assert request.query == "", "Refresh args must not be on the query string because Greenhouse reads them from the body"
+    token_params = parse_qs(request.text)
+    assert token_params["grant_type"] == ["client_credentials"]
+    assert "refresh_token" not in token_params
+    if expected_sub is None:
+        assert "sub" not in token_params
+    else:
+        assert token_params["sub"] == [expected_sub]
+
+
+def test_client_credentials_read_uses_bearer_access_token(requests_mock, get_source):
+    _register_token(requests_mock, client_credentials=True)
+    application_requests = []
+
+    def applications_callback(request, context):
+        application_requests.append(request)
+        context.status_code = 200
+        return [{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}]
+
+    requests_mock.get("https://harvest.greenhouse.io/v3/applications", json=applications_callback)
+
+    source = get_source(CLIENT_CREDENTIALS_CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CLIENT_CREDENTIALS_CONFIG, catalog=catalog)
+
+    assert not output.errors
+    assert [record.record.data["id"] for record in output.records] == [1]
+    assert application_requests[0].headers["Authorization"] == "Bearer access-token"
+
+
+def test_client_credentials_does_not_persist_token(requests_mock, get_source):
+    _register_token(requests_mock, client_credentials=True)
+    requests_mock.get(
+        "https://harvest.greenhouse.io/v3/applications",
+        json=[{"id": 1, "created_at": "2024-01-01T00:00:00.000Z"}],
+    )
+
+    source = get_source(CLIENT_CREDENTIALS_CONFIG)
+    catalog = CatalogBuilder().with_stream("applications", SyncMode.incremental).build()
+    output = read(source, config=CLIENT_CREDENTIALS_CONFIG, catalog=catalog)
+
+    assert not output.get_message_by_types([Type.CONTROL])
 
 
 def _read_application_start_date_request(requests_mock, get_source, config):
@@ -668,21 +748,26 @@ def test_documented_v3_examples_validate_against_stream_schemas(connector_path):
         )
 
 
-def test_manifest_uses_greenhouse_fixed_window_api_budget(connector_path):
+def test_manifest_uses_greenhouse_selective_authentication_and_fixed_window_api_budget(connector_path):
     manifest = yaml.safe_load((connector_path / "manifest.yaml").read_text())
 
-    assert "SelectiveAuthenticator" not in yaml.safe_dump(manifest)
     assert manifest["spec"]["advanced_auth"]["predicate_value"] == "Client"
     authenticator = manifest["definitions"]["base_requester"]["authenticator"]
-    assert authenticator["type"] == "OAuthAuthenticator"
-    assert authenticator["grant_type"] == "refresh_token"
-    assert "refresh_token_updater" in authenticator
+    assert authenticator["type"] == "SelectiveAuthenticator"
+    assert authenticator["authenticator_selection_path"] == ["credentials", "auth_type"]
+    assert set(authenticator["authenticators"]) == {"Client", "ClientCredentials"}
+    client_authenticator = manifest["definitions"]["authenticators"]["authorization_code"]
+    assert client_authenticator["grant_type"] == "refresh_token"
+    assert "refresh_token_updater" in client_authenticator
+    client_credentials_authenticator = manifest["definitions"]["authenticators"]["client_credentials"]
+    assert client_credentials_authenticator["grant_type"] == "client_credentials"
+    assert "refresh_token_updater" not in client_credentials_authenticator
     credentials = manifest["spec"]["connection_specification"]["properties"]["credentials"]
-    assert len(credentials["oneOf"]) == 1
-    credentials_option = credentials["oneOf"][0]
-    assert credentials_option["properties"]["auth_type"]["const"] == "Client"
-    assert "ClientCredentials" not in yaml.safe_dump(credentials)
-    assert "sub" not in yaml.safe_dump(credentials)
+    assert len(credentials["oneOf"]) == 2
+    assert {option["properties"]["auth_type"]["const"] for option in credentials["oneOf"]} == {
+        "Client",
+        "ClientCredentials",
+    }
     assert manifest["api_budget"]["ratelimit_reset_header"] == "X-RateLimit-Reset"
     assert manifest["api_budget"]["policies"] == [
         {

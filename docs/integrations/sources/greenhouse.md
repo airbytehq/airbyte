@@ -2,9 +2,18 @@
 
 This page contains the setup guide and reference information for the Greenhouse source connector.
 
+## Authentication
+
+Harvest v3 supports two authentication paths, and the credential type must match the Greenhouse application type:
+
+- **Authorization Code (`Client`)** requires Airbyte's Greenhouse partner OAuth app. In Airbyte Cloud, select **OAuth** and click **Authenticate** to complete the Greenhouse consent flow. For self-managed Airbyte, use the same partner app with your registered redirect URI.
+- **Client Credentials (`ClientCredentials`)** requires a customer-created **Harvest V3 (OAuth)** custom integration credential. Self-managed users can create this credential in Greenhouse and enter its client ID and client secret directly in the source.
+
+Every Harvest v3 list endpoint requires Site Admin authorization. For Client Credentials, provide the optional Site Admin `sub` user ID unless the custom integration's service user is itself a Site Admin. For Authorization Code, the Greenhouse user who approves the consent flow must be a Site Admin.
+
 ## Prerequisites
 
-Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Greenhouse issues these credentials to partners on request: email partner-support@greenhouse.io to request a client ID and client secret and register your redirect URI. For Airbyte Cloud, use `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte, use `<your-airbyte-url>/auth_flow`. The authorization consent must grant these scopes:
+For Authorization Code, use OAuth 2.0 credentials for a Greenhouse Harvest v3 app. Greenhouse issues these credentials to partners on request: email partner-support@greenhouse.io to request a client ID and client secret and register your redirect URI. For Airbyte Cloud, use `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte, use `<your-airbyte-url>/auth_flow`. For either authentication path, grant the authorization consent or custom integration access to these scopes:
 
 - `harvest:applications:list`
 - `harvest:approval_flows:list`
@@ -44,10 +53,10 @@ The Greenhouse user who approves the consent flow must be a Site Admin. Harvest 
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Select **OAuth**, enter the **OAuth client ID** and **OAuth client secret**, then click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token.
+5. Select **OAuth** for Authorization Code or **Client Credentials** for a custom integration. For Authorization Code, enter the **OAuth client ID** and **OAuth client secret**, then click **Authenticate** and complete the Greenhouse consent flow; Airbyte stores the resulting refresh token. For Client Credentials, enter the custom integration's **client ID** and **client secret**.
 6. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
 7. Optionally change **Number of concurrent threads**. The connector syncs with 2 threads by default and accepts 1 to 8. All threads share one Greenhouse rate limit, so raise this only if your Greenhouse account can absorb more API traffic, and lower it to 1 if syncs fail with rate-limit errors.
-8. If your deployment does not surface **Authenticate**, open the Greenhouse authorization URL with your client ID, registered redirect URI, and the scopes above, then exchange the returned code within one minute:
+8. If your deployment does not surface **Authenticate** for Authorization Code, open the Greenhouse authorization URL with your client ID, registered redirect URI, and the scopes above, then exchange the returned code within one minute:
    1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
    2. Exchange the `code` query parameter:
 
@@ -138,6 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.1.0 | 2026-08-28 | | Add client-credentials authentication for Greenhouse custom integrations and self-managed deployments. |
 | 1.0.0 | 2026-08-28 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |

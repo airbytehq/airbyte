@@ -1443,9 +1443,8 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/user_permissions"
-  base_requester:
-    type: HttpRequester
-    authenticator:
+  authenticators:
+    authorization_code:
       type: OAuthAuthenticator
       token_refresh_endpoint: https://auth.greenhouse.io/token
       grant_type: refresh_token
@@ -1476,6 +1475,38 @@ definitions:
         token_expiry_date_config_path:
           - credentials
           - token_expiry_date
+    client_credentials:
+      type: OAuthAuthenticator
+      token_refresh_endpoint: https://auth.greenhouse.io/token
+      grant_type: client_credentials
+      client_id: "{{ config['credentials']['client_id'] }}"
+      client_secret: "{{ config['credentials']['client_secret'] }}"
+      access_token_name: access_token
+      expires_in_name: expires_in
+      refresh_request_headers:
+        Authorization: "Basic {{ (config['credentials']['client_id'] + ':' + config['credentials']['client_secret']) | base64encode }}"
+        Content-Type: application/x-www-form-urlencoded
+      refresh_request_body:
+        sub: "{{ config['credentials']['sub'] }}"
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: message
+      refresh_token_error_values:
+        - Bad Request Params
+        - Unauthorized
+  base_requester:
+    type: HttpRequester
+    authenticator:
+      type: SelectiveAuthenticator
+      authenticator_selection_path:
+        - credentials
+        - auth_type
+      authenticators:
+        Client:
+          $ref: "#/definitions/authenticators/authorization_code"
+        ClientCredentials:
+          $ref: "#/definitions/authenticators/client_credentials"
 
 streams:
   - $ref: "#/definitions/streams/applications"
@@ -1587,6 +1618,45 @@ spec:
                 title: Token expiry date
                 format: date-time
                 order: 5
+          - title: Client Credentials
+            description: >-
+              Authenticate with the client ID and secret of a Greenhouse custom
+              integration credential ("Harvest V3 (OAuth)"). Use this option for
+              self-managed deployments and for credentials you created yourself in
+              Greenhouse.
+            type: object
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+            properties:
+              auth_type:
+                type: string
+                const: ClientCredentials
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: The client ID of your Greenhouse custom integration credential.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client secret
+                description: The client secret of your Greenhouse custom integration credential.
+                airbyte_secret: true
+                order: 2
+              sub:
+                type: integer
+                title: Site Admin user ID
+                description: >-
+                  The Greenhouse user ID of the Site Admin to authorize as. Every
+                  Harvest v3 list endpoint requires Site Admin authorization. If you
+                  omit this, Greenhouse authorizes as the credential's integration
+                  service user, which must itself be a Site Admin.
+                examples:
+                  - 1234567
+                order: 3
       start_date:
         type: string
         title: Start date
