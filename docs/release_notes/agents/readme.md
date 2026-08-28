@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## August 28, 2026
+
+Web app
+
+- The Connectors page no longer shows an error on a connector whose data is ready and searchable again, so the status you see reflects how the connector is working now rather than a problem that has already been resolved.
+
 ## August 12, 2026
 
 Web app
