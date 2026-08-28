@@ -26,6 +26,9 @@ data:
     - title: Intercom API OpenAPI specification
       url: https://developers.intercom.com/docs/references/rest-api/api.intercom.io/openapi.json
       type: openapi_spec
+    - title: Intercom OpenAPI specification repository
+      url: https://github.com/intercom/Intercom-OpenAPI
+      type: spec_repository
   githubIssueLabel: source-intercom
   icon: intercom.svg
   license: ELv2
@@ -43,7 +46,12 @@ data:
   releaseStage: generally_available
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
   suggestedStreams:
     streams:
       - conversations

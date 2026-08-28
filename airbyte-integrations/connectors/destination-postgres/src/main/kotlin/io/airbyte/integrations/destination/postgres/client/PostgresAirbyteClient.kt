@@ -25,6 +25,7 @@ import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGen
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.ResultSet
+import java.sql.SQLException
 import javax.sql.DataSource
 
 private val log = KotlinLogging.logger {}
@@ -44,6 +45,8 @@ class PostgresAirbyteClient(
 
     companion object {
         private const val COLUMN_NAME_COLUMN = "column_name"
+        /** SQLSTATE 42P01 = undefined_table; 3F000 = invalid_schema_name. */
+        private val MISSING_RELATION_SQL_STATES = setOf("42P01", "3F000")
     }
 
     override suspend fun countTable(tableName: TableName): Long? =
@@ -56,10 +59,17 @@ class PostgresAirbyteClient(
                 }
             }
         } catch (e: Exception) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. Returning a null count to signal a missing table."
+            if (isMissingRelation(e)) {
+                log.debug(e) {
+                    "Table ${tableName.namespace}.${tableName.name} does not exist. Returning a null count to signal a missing table."
+                }
+                null
+            } else {
+                log.error(e) {
+                    "Failed to count rows in table ${tableName.namespace}.${tableName.name}."
+                }
+                throw e
             }
-            null
         }
 
     override suspend fun namespaceExists(namespace: String): Boolean {
@@ -175,12 +185,10 @@ class PostgresAirbyteClient(
         // In typed mode, finalSchema contains the mapped user columns
         val columnsInStream = stream.tableSchema.columnSchema.finalSchema
 
-        val (addedColumns, deletedColumns, modifiedColumns) =
-            generateSchemaChanges(columnsInDb, columnsInStream)
+        val (addedColumns, _, modifiedColumns) = generateSchemaChanges(columnsInDb, columnsInStream)
 
         log.info { "Summary of the table alterations:" }
         log.info { "Added columns: $addedColumns" }
-        log.info { "Deleted columns: $deletedColumns" }
         log.info { "Modified columns: $modifiedColumns" }
 
         // In raw tables mode, skip primary key and cursor indexes since those columns don't exist
@@ -190,7 +198,6 @@ class PostgresAirbyteClient(
             sqlGenerator.matchSchemas(
                 tableName = tableName,
                 columnsToAdd = addedColumns,
-                columnsToRemove = deletedColumns,
                 columnsToModify = modifiedColumns,
                 recreatePrimaryKeyIndex =
                     !isRawTablesMode && shouldRecreatePrimaryKeyIndex(stream, tableName),
@@ -234,19 +241,16 @@ class PostgresAirbyteClient(
     ) {
         if (
             columnChangeset.columnsToAdd.isNotEmpty() ||
-                columnChangeset.columnsToDrop.isNotEmpty() ||
                 columnChangeset.columnsToChange.isNotEmpty()
         ) {
             log.info { "Summary of the table alterations:" }
             log.info { "Added columns: ${columnChangeset.columnsToAdd}" }
-            log.info { "Deleted columns: ${columnChangeset.columnsToDrop}" }
             log.info { "Modified columns: ${columnChangeset.columnsToChange}" }
 
             execute(
                 sqlGenerator.matchSchemas(
                     tableName = tableName,
                     columnsToAdd = columnChangeset.columnsToAdd,
-                    columnsToRemove = columnChangeset.columnsToDrop,
                     columnsToModify = columnChangeset.columnsToChange,
                     recreatePrimaryKeyIndex = false,
                     primaryKeyColumnNames = emptyList(),
@@ -415,8 +419,13 @@ class PostgresAirbyteClient(
                 }
             }
         } catch (e: Exception) {
-            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
-            0L
+            if (isMissingRelation(e)) {
+                log.debug(e) { "Table $tableName does not exist. Returning generation ID 0." }
+                0L
+            } else {
+                log.error(e) { "Failed to retrieve the generation ID for table $tableName." }
+                throw e
+            }
         }
 
     fun describeTable(tableName: TableName): List<String> =
@@ -484,4 +493,8 @@ class PostgresAirbyteClient(
             }
         }
     }
+
+    private fun isMissingRelation(exception: Throwable): Boolean =
+        generateSequence(exception) { it.cause }
+            .any { it is SQLException && it.sqlState in MISSING_RELATION_SQL_STATES }
 }
