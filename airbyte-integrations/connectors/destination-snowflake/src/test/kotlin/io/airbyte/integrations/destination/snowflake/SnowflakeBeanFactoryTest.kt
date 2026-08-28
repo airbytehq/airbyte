@@ -13,9 +13,11 @@ import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfigurati
 import io.airbyte.integrations.destination.snowflake.spec.OAuthAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
+import io.mockk.every
+import io.mockk.mockkConstructor
+import io.mockk.unmockkConstructor
 import java.io.File
 import java.io.StringWriter
-import java.net.http.HttpClient
 import java.nio.charset.StandardCharsets
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -49,29 +51,15 @@ internal class SnowflakeBeanFactoryTest {
                         accessToken = null,
                     )
             )
-        val factory =
-            object : SnowflakeBeanFactory() {
-                override fun createOAuthTokenProvider(
-                    snowflakeConfiguration: SnowflakeConfiguration,
-                    auth: OAuthAuthConfiguration,
-                ): SnowflakeOAuthTokenProvider =
-                    object :
-                        SnowflakeOAuthTokenProvider(
-                            host = snowflakeConfiguration.host,
-                            clientId = auth.clientId,
-                            clientSecret = auth.clientSecret,
-                            refreshToken = auth.refreshToken,
-                            httpClient = HttpClient.newHttpClient(),
-                        ) {
-                        override fun getAccessToken() = token
-                    }
-            }
+        mockkConstructor(SnowflakeOAuthTokenProvider::class)
+        every { anyConstructed<SnowflakeOAuthTokenProvider>().getAccessToken() } returns token
 
         val dataSource =
-            factory.snowflakeDataSource(
-                snowflakeConfiguration = snowflakeConfiguration,
-                airbyteEdition = "COMMUNITY",
-            )
+            SnowflakeBeanFactory()
+                .snowflakeDataSource(
+                    snowflakeConfiguration = snowflakeConfiguration,
+                    airbyteEdition = "COMMUNITY",
+                )
         try {
             assertEquals(
                 "oauth",
@@ -82,6 +70,7 @@ internal class SnowflakeBeanFactoryTest {
             assertEquals(token, dataSource.password)
         } finally {
             dataSource.close()
+            unmockkConstructor(SnowflakeOAuthTokenProvider::class)
         }
     }
 

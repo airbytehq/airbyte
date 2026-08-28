@@ -65,7 +65,7 @@ internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 private val logger = KotlinLogging.logger {}
 
 @Factory
-open class SnowflakeBeanFactory {
+class SnowflakeBeanFactory {
 
     @Singleton
     fun tempTableNameGenerator(
@@ -117,7 +117,13 @@ open class SnowflakeBeanFactory {
     ): HikariDataSource {
         val oauthTokenProvider =
             (snowflakeConfiguration.authType as? OAuthAuthConfiguration)?.let { auth ->
-                createOAuthTokenProvider(snowflakeConfiguration, auth)
+                SnowflakeOAuthTokenProvider(
+                    host = snowflakeConfiguration.host,
+                    clientId = auth.clientId,
+                    clientSecret = auth.clientSecret,
+                    refreshToken = auth.refreshToken,
+                    httpClient = HttpClient.newHttpClient(),
+                )
             }
         val snowflakeJdbcUrl =
             "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
@@ -228,18 +234,6 @@ open class SnowflakeBeanFactory {
         }
         return hikariDataSource
     }
-
-    internal open fun createOAuthTokenProvider(
-        snowflakeConfiguration: SnowflakeConfiguration,
-        auth: OAuthAuthConfiguration,
-    ): SnowflakeOAuthTokenProvider =
-        SnowflakeOAuthTokenProvider(
-            host = snowflakeConfiguration.host,
-            clientId = auth.clientId,
-            clientSecret = auth.clientSecret,
-            refreshToken = auth.refreshToken,
-            httpClient = HttpClient.newHttpClient(),
-        )
 
     @Singleton
     @Named("snowflakePrivateKeyFileName")

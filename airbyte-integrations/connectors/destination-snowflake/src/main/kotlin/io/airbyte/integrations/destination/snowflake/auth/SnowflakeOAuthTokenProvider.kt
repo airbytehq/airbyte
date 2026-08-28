@@ -19,7 +19,7 @@ import java.time.Duration
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 
-open class SnowflakeOAuthTokenProvider(
+class SnowflakeOAuthTokenProvider(
     host: String,
     private val clientId: String,
     private val clientSecret: String,
@@ -33,7 +33,7 @@ open class SnowflakeOAuthTokenProvider(
     private var accessTokenExpiresAtMillis = 0L
 
     @Synchronized
-    open fun getAccessToken(): String {
+    fun getAccessToken(): String {
         val now = System.currentTimeMillis()
         val cachedToken = accessToken
         if (
