@@ -93,7 +93,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.0 | 2026-08-28 | [85159](https://github.com/airbytehq/airbyte/pull/85159) | Use Monday's new OAuth token endpoint with refresh tokens; OAuth users must re-authenticate |
+| 3.0.0 | 2026-08-28 | [85170](https://github.com/airbytehq/airbyte/pull/85170) | Use Monday's new OAuth token endpoint with refresh tokens; OAuth users must re-authenticate |
 | 2.5.19 | 2026-08-18 | [84675](https://github.com/airbytehq/airbyte/pull/84675) | Update dependencies |
 | 2.5.18 | 2026-08-11 | [84004](https://github.com/airbytehq/airbyte/pull/84004) | Update dependencies |
 | 2.5.17 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
