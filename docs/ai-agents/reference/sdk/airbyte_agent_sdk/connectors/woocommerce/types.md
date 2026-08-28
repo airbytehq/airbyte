@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CouponsAnyCondition"></a>
@@ -169,10 +169,24 @@ Classes
     `used_by: Any`
     :   Users who have used the coupon
 
+<a id="CouponsArrayContainsCondition"></a>
+
+`CouponsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CouponsContainsCondition"></a>
 
 `CouponsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -181,6 +195,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CouponsEndswithCondition"></a>
+
+`CouponsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.CouponsStringFilter`
     :   The type of the None singleton.
 
 <a id="CouponsEqCondition"></a>
@@ -381,20 +409,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.CouponsStringFilter`
     :   The type of the None singleton.
 
-<a id="CouponsLikeCondition"></a>
-
-`CouponsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.CouponsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CouponsListParams"></a>
 
 `CouponsListParams(*args, **kwargs)`
@@ -497,7 +511,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CouponsOrCondition"></a>
@@ -519,7 +533,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CouponsSearchFilter"></a>
@@ -625,7 +639,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.CouponsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CouponsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.CouponsSortFilter]`
@@ -723,10 +737,24 @@ Classes
     `used_by: Literal['asc', 'desc']`
     :   Users who have used the coupon
 
+<a id="CouponsStartswithCondition"></a>
+
+`CouponsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.CouponsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CouponsStringFilter"></a>
 
 `CouponsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -834,7 +862,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomersAnyCondition"></a>
@@ -915,10 +943,24 @@ Classes
     `username: Any`
     :   Customer login name
 
+<a id="CustomersArrayContainsCondition"></a>
+
+`CustomersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CustomersContainsCondition"></a>
 
 `CustomersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -927,6 +969,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CustomersEndswithCondition"></a>
+
+`CustomersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.CustomersStringFilter`
     :   The type of the None singleton.
 
 <a id="CustomersEqCondition"></a>
@@ -1091,20 +1147,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.CustomersStringFilter`
     :   The type of the None singleton.
 
-<a id="CustomersLikeCondition"></a>
-
-`CustomersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.CustomersStringFilter`
-    :   The type of the None singleton.
-
 <a id="CustomersListParams"></a>
 
 `CustomersListParams(*args, **kwargs)`
@@ -1198,7 +1240,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition`
     :   The type of the None singleton.
 
 <a id="CustomersOrCondition"></a>
@@ -1220,7 +1262,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CustomersSearchFilter"></a>
@@ -1290,7 +1332,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.CustomersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.CustomersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.CustomersSortFilter]`
@@ -1352,10 +1394,24 @@ Classes
     `username: Literal['asc', 'desc']`
     :   Customer login name
 
+<a id="CustomersStartswithCondition"></a>
+
+`CustomersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.CustomersStringFilter`
+    :   The type of the None singleton.
+
 <a id="CustomersStringFilter"></a>
 
 `CustomersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1427,7 +1483,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderNotesAnyCondition"></a>
@@ -1478,10 +1534,24 @@ Classes
     `note: Any`
     :   Order note content
 
+<a id="OrderNotesArrayContainsCondition"></a>
+
+`OrderNotesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OrderNotesContainsCondition"></a>
 
 `OrderNotesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1490,6 +1560,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrderNotesEndswithCondition"></a>
+
+`OrderNotesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStringFilter`
     :   The type of the None singleton.
 
 <a id="OrderNotesEqCondition"></a>
@@ -1627,20 +1711,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStringFilter`
     :   The type of the None singleton.
 
-<a id="OrderNotesLikeCondition"></a>
-
-`OrderNotesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrderNotesListParams"></a>
 
 `OrderNotesListParams(*args, **kwargs)`
@@ -1719,7 +1789,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrderNotesOrCondition"></a>
@@ -1741,7 +1811,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderNotesSearchFilter"></a>
@@ -1781,7 +1851,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesSortFilter]`
@@ -1813,10 +1883,24 @@ Classes
     `note: Literal['asc', 'desc']`
     :   Order note content
 
+<a id="OrderNotesStartswithCondition"></a>
+
+`OrderNotesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.OrderNotesStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrderNotesStringFilter"></a>
 
 `OrderNotesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1858,7 +1942,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrdersAnyCondition"></a>
@@ -2017,10 +2101,24 @@ Classes
     `version: Any`
     :   Version of WooCommerce which last updated the order
 
+<a id="OrdersArrayContainsCondition"></a>
+
+`OrdersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OrdersContainsCondition"></a>
 
 `OrdersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2029,6 +2127,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersEndswithCondition"></a>
+
+`OrdersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.OrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="OrdersEqCondition"></a>
@@ -2271,20 +2383,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.OrdersStringFilter`
     :   The type of the None singleton.
 
-<a id="OrdersLikeCondition"></a>
-
-`OrdersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.OrdersStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrdersListParams"></a>
 
 `OrdersListParams(*args, **kwargs)`
@@ -2393,7 +2491,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrdersOrCondition"></a>
@@ -2415,7 +2513,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrdersSearchFilter"></a>
@@ -2563,7 +2661,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.OrdersEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersInCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.OrdersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.OrdersSortFilter]`
@@ -2703,10 +2801,24 @@ Classes
     `version: Literal['asc', 'desc']`
     :   Version of WooCommerce which last updated the order
 
+<a id="OrdersStartswithCondition"></a>
+
+`OrdersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.OrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrdersStringFilter"></a>
 
 `OrdersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2856,7 +2968,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PaymentGatewaysAnyCondition"></a>
@@ -2919,10 +3031,24 @@ Classes
     `title: Any`
     :   Payment gateway title on checkout
 
+<a id="PaymentGatewaysArrayContainsCondition"></a>
+
+`PaymentGatewaysArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="PaymentGatewaysContainsCondition"></a>
 
 `PaymentGatewaysContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2931,6 +3057,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="PaymentGatewaysEndswithCondition"></a>
+
+`PaymentGatewaysEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStringFilter`
     :   The type of the None singleton.
 
 <a id="PaymentGatewaysEqCondition"></a>
@@ -3077,20 +3217,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStringFilter`
     :   The type of the None singleton.
 
-<a id="PaymentGatewaysLikeCondition"></a>
-
-`PaymentGatewaysLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStringFilter`
-    :   The type of the None singleton.
-
 <a id="PaymentGatewaysListParams"></a>
 
 `PaymentGatewaysListParams(*args, **kwargs)`
@@ -3161,7 +3287,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition`
     :   The type of the None singleton.
 
 <a id="PaymentGatewaysOrCondition"></a>
@@ -3183,7 +3309,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PaymentGatewaysSearchFilter"></a>
@@ -3235,7 +3361,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysInCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysSortFilter]`
@@ -3279,10 +3405,24 @@ Classes
     `title: Literal['asc', 'desc']`
     :   Payment gateway title on checkout
 
+<a id="PaymentGatewaysStartswithCondition"></a>
+
+`PaymentGatewaysStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.PaymentGatewaysStringFilter`
+    :   The type of the None singleton.
+
 <a id="PaymentGatewaysStringFilter"></a>
 
 `PaymentGatewaysStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3336,7 +3476,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductAttributesAnyCondition"></a>
@@ -3390,10 +3530,24 @@ Classes
     `type_: Any`
     :   Type of attribute
 
+<a id="ProductAttributesArrayContainsCondition"></a>
+
+`ProductAttributesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProductAttributesContainsCondition"></a>
 
 `ProductAttributesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3402,6 +3556,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductAttributesEndswithCondition"></a>
+
+`ProductAttributesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductAttributesEqCondition"></a>
@@ -3539,20 +3707,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductAttributesLikeCondition"></a>
-
-`ProductAttributesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductAttributesListParams"></a>
 
 `ProductAttributesListParams(*args, **kwargs)`
@@ -3631,7 +3785,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductAttributesOrCondition"></a>
@@ -3653,7 +3807,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductAttributesSearchFilter"></a>
@@ -3696,7 +3850,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesSortFilter]`
@@ -3731,10 +3885,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of attribute
 
+<a id="ProductAttributesStartswithCondition"></a>
+
+`ProductAttributesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductAttributesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductAttributesStringFilter"></a>
 
 `ProductAttributesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3779,7 +3947,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductCategoriesAnyCondition"></a>
@@ -3842,10 +4010,24 @@ Classes
     `slug: Any`
     :   An alphanumeric identifier
 
+<a id="ProductCategoriesArrayContainsCondition"></a>
+
+`ProductCategoriesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProductCategoriesContainsCondition"></a>
 
 `ProductCategoriesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3854,6 +4036,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductCategoriesEndswithCondition"></a>
+
+`ProductCategoriesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductCategoriesEqCondition"></a>
@@ -4000,20 +4196,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductCategoriesLikeCondition"></a>
-
-`ProductCategoriesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductCategoriesListParams"></a>
 
 `ProductCategoriesListParams(*args, **kwargs)`
@@ -4113,7 +4295,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductCategoriesOrCondition"></a>
@@ -4135,7 +4317,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductCategoriesSearchFilter"></a>
@@ -4187,7 +4369,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesSortFilter]`
@@ -4231,10 +4413,24 @@ Classes
     `slug: Literal['asc', 'desc']`
     :   An alphanumeric identifier
 
+<a id="ProductCategoriesStartswithCondition"></a>
+
+`ProductCategoriesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductCategoriesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductCategoriesStringFilter"></a>
 
 `ProductCategoriesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4288,7 +4484,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductReviewsAnyCondition"></a>
@@ -4354,10 +4550,24 @@ Classes
     `verified: Any`
     :   Shows if the reviewer bought the product
 
+<a id="ProductReviewsArrayContainsCondition"></a>
+
+`ProductReviewsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProductReviewsContainsCondition"></a>
 
 `ProductReviewsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4366,6 +4576,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductReviewsEndswithCondition"></a>
+
+`ProductReviewsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductReviewsEqCondition"></a>
@@ -4515,20 +4739,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductReviewsLikeCondition"></a>
-
-`ProductReviewsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductReviewsListParams"></a>
 
 `ProductReviewsListParams(*args, **kwargs)`
@@ -4622,7 +4832,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductReviewsOrCondition"></a>
@@ -4644,7 +4854,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductReviewsSearchFilter"></a>
@@ -4699,7 +4909,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsSortFilter]`
@@ -4746,10 +4956,24 @@ Classes
     `verified: Literal['asc', 'desc']`
     :   Shows if the reviewer bought the product
 
+<a id="ProductReviewsStartswithCondition"></a>
+
+`ProductReviewsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductReviewsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductReviewsStringFilter"></a>
 
 `ProductReviewsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4806,7 +5030,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductTagsAnyCondition"></a>
@@ -4857,10 +5081,24 @@ Classes
     `slug: Any`
     :   Alphanumeric identifier
 
+<a id="ProductTagsArrayContainsCondition"></a>
+
+`ProductTagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProductTagsContainsCondition"></a>
 
 `ProductTagsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4869,6 +5107,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductTagsEndswithCondition"></a>
+
+`ProductTagsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductTagsEqCondition"></a>
@@ -5003,20 +5255,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductTagsLikeCondition"></a>
-
-`ProductTagsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductTagsListParams"></a>
 
 `ProductTagsListParams(*args, **kwargs)`
@@ -5113,7 +5351,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductTagsOrCondition"></a>
@@ -5135,7 +5373,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductTagsSearchFilter"></a>
@@ -5175,7 +5413,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsSortFilter]`
@@ -5207,10 +5445,24 @@ Classes
     `slug: Literal['asc', 'desc']`
     :   Alphanumeric identifier
 
+<a id="ProductTagsStartswithCondition"></a>
+
+`ProductTagsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductTagsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductTagsStringFilter"></a>
 
 `ProductTagsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5252,7 +5504,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductVariationsAnyCondition"></a>
@@ -5405,10 +5657,24 @@ Classes
     `weight: Any`
     :   Variation weight
 
+<a id="ProductVariationsArrayContainsCondition"></a>
+
+`ProductVariationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProductVariationsContainsCondition"></a>
 
 `ProductVariationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5417,6 +5683,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductVariationsEndswithCondition"></a>
+
+`ProductVariationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductVariationsEqCondition"></a>
@@ -5656,20 +5936,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductVariationsLikeCondition"></a>
-
-`ProductVariationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductVariationsListParams"></a>
 
 `ProductVariationsListParams(*args, **kwargs)`
@@ -5778,7 +6044,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductVariationsOrCondition"></a>
@@ -5800,7 +6066,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductVariationsSearchFilter"></a>
@@ -5942,7 +6208,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsSortFilter]`
@@ -6076,10 +6342,24 @@ Classes
     `weight: Literal['asc', 'desc']`
     :   Variation weight
 
+<a id="ProductVariationsStartswithCondition"></a>
+
+`ProductVariationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductVariationsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductVariationsStringFilter"></a>
 
 `ProductVariationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -6223,7 +6503,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductsAnyCondition"></a>
@@ -6451,10 +6731,24 @@ Classes
     `weight: Any`
     :   Product weight
 
+<a id="ProductsArrayContainsCondition"></a>
+
+`ProductsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProductsContainsCondition"></a>
 
 `ProductsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6463,6 +6757,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ProductsEndswithCondition"></a>
+
+`ProductsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductsStringFilter`
     :   The type of the None singleton.
 
 <a id="ProductsEqCondition"></a>
@@ -6774,20 +7082,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ProductsStringFilter`
     :   The type of the None singleton.
 
-<a id="ProductsLikeCondition"></a>
-
-`ProductsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ProductsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ProductsListParams"></a>
 
 `ProductsListParams(*args, **kwargs)`
@@ -6917,7 +7211,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProductsOrCondition"></a>
@@ -6939,7 +7233,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProductsSearchFilter"></a>
@@ -7156,7 +7450,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ProductsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ProductsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ProductsSortFilter]`
@@ -7365,10 +7659,24 @@ Classes
     `weight: Literal['asc', 'desc']`
     :   Product weight
 
+<a id="ProductsStartswithCondition"></a>
+
+`ProductsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ProductsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ProductsStringFilter"></a>
 
 `ProductsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7587,7 +7895,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RefundsAnyCondition"></a>
@@ -7650,10 +7958,24 @@ Classes
     `refunded_payment: Any`
     :   If the payment was refunded via the API
 
+<a id="RefundsArrayContainsCondition"></a>
+
+`RefundsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="RefundsContainsCondition"></a>
 
 `RefundsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7662,6 +7984,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="RefundsEndswithCondition"></a>
+
+`RefundsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.RefundsStringFilter`
     :   The type of the None singleton.
 
 <a id="RefundsEqCondition"></a>
@@ -7811,20 +8147,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.RefundsStringFilter`
     :   The type of the None singleton.
 
-<a id="RefundsLikeCondition"></a>
-
-`RefundsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.RefundsStringFilter`
-    :   The type of the None singleton.
-
 <a id="RefundsListParams"></a>
 
 `RefundsListParams(*args, **kwargs)`
@@ -7906,7 +8228,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition`
     :   The type of the None singleton.
 
 <a id="RefundsOrCondition"></a>
@@ -7928,7 +8250,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RefundsSearchFilter"></a>
@@ -7980,7 +8302,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.RefundsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.RefundsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.RefundsSortFilter]`
@@ -8024,10 +8346,24 @@ Classes
     `refunded_payment: Literal['asc', 'desc']`
     :   If the payment was refunded via the API
 
+<a id="RefundsStartswithCondition"></a>
+
+`RefundsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.RefundsStringFilter`
+    :   The type of the None singleton.
+
 <a id="RefundsStringFilter"></a>
 
 `RefundsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8081,7 +8417,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ShippingMethodsAnyCondition"></a>
@@ -8126,10 +8462,24 @@ Classes
     `title: Any`
     :   Shipping method title
 
+<a id="ShippingMethodsArrayContainsCondition"></a>
+
+`ShippingMethodsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ShippingMethodsContainsCondition"></a>
 
 `ShippingMethodsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8138,6 +8488,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ShippingMethodsEndswithCondition"></a>
+
+`ShippingMethodsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStringFilter`
     :   The type of the None singleton.
 
 <a id="ShippingMethodsEqCondition"></a>
@@ -8266,20 +8630,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStringFilter`
     :   The type of the None singleton.
 
-<a id="ShippingMethodsLikeCondition"></a>
-
-`ShippingMethodsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ShippingMethodsListParams"></a>
 
 `ShippingMethodsListParams(*args, **kwargs)`
@@ -8350,7 +8700,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ShippingMethodsOrCondition"></a>
@@ -8372,7 +8722,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ShippingMethodsSearchFilter"></a>
@@ -8406,7 +8756,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsSortFilter]`
@@ -8432,10 +8782,24 @@ Classes
     `title: Literal['asc', 'desc']`
     :   Shipping method title
 
+<a id="ShippingMethodsStartswithCondition"></a>
+
+`ShippingMethodsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ShippingMethodsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ShippingMethodsStringFilter"></a>
 
 `ShippingMethodsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8471,7 +8835,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ShippingZonesAnyCondition"></a>
@@ -8516,10 +8880,24 @@ Classes
     `order: Any`
     :   Shipping zone order
 
+<a id="ShippingZonesArrayContainsCondition"></a>
+
+`ShippingZonesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ShippingZonesContainsCondition"></a>
 
 `ShippingZonesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8528,6 +8906,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ShippingZonesEndswithCondition"></a>
+
+`ShippingZonesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStringFilter`
     :   The type of the None singleton.
 
 <a id="ShippingZonesEqCondition"></a>
@@ -8656,20 +9048,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStringFilter`
     :   The type of the None singleton.
 
-<a id="ShippingZonesLikeCondition"></a>
-
-`ShippingZonesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStringFilter`
-    :   The type of the None singleton.
-
 <a id="ShippingZonesListParams"></a>
 
 `ShippingZonesListParams(*args, **kwargs)`
@@ -8740,7 +9118,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ShippingZonesOrCondition"></a>
@@ -8762,7 +9140,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ShippingZonesSearchFilter"></a>
@@ -8796,7 +9174,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesSortFilter]`
@@ -8822,10 +9200,24 @@ Classes
     `order: Literal['asc', 'desc']`
     :   Shipping zone order
 
+<a id="ShippingZonesStartswithCondition"></a>
+
+`ShippingZonesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.ShippingZonesStringFilter`
+    :   The type of the None singleton.
+
 <a id="ShippingZonesStringFilter"></a>
 
 `ShippingZonesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -8861,7 +9253,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TaxClassesAnyCondition"></a>
@@ -8903,10 +9295,24 @@ Classes
     `slug: Any`
     :   Unique identifier
 
+<a id="TaxClassesArrayContainsCondition"></a>
+
+`TaxClassesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TaxClassesContainsCondition"></a>
 
 `TaxClassesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8915,6 +9321,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TaxClassesEndswithCondition"></a>
+
+`TaxClassesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStringFilter`
     :   The type of the None singleton.
 
 <a id="TaxClassesEqCondition"></a>
@@ -9026,20 +9446,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStringFilter`
     :   The type of the None singleton.
 
-<a id="TaxClassesLikeCondition"></a>
-
-`TaxClassesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStringFilter`
-    :   The type of the None singleton.
-
 <a id="TaxClassesListParams"></a>
 
 `TaxClassesListParams(*args, **kwargs)`
@@ -9110,7 +9516,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition`
     :   The type of the None singleton.
 
 <a id="TaxClassesOrCondition"></a>
@@ -9132,7 +9538,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TaxClassesSearchFilter"></a>
@@ -9163,7 +9569,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesSortFilter]`
@@ -9186,10 +9592,24 @@ Classes
     `slug: Literal['asc', 'desc']`
     :   Unique identifier
 
+<a id="TaxClassesStartswithCondition"></a>
+
+`TaxClassesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.TaxClassesStringFilter`
+    :   The type of the None singleton.
+
 <a id="TaxClassesStringFilter"></a>
 
 `TaxClassesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -9222,7 +9642,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TaxRatesAnyCondition"></a>
@@ -9300,10 +9720,24 @@ Classes
     `state: Any`
     :   State code
 
+<a id="TaxRatesArrayContainsCondition"></a>
+
+`TaxRatesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TaxRatesContainsCondition"></a>
 
 `TaxRatesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -9312,6 +9746,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TaxRatesEndswithCondition"></a>
+
+`TaxRatesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStringFilter`
     :   The type of the None singleton.
 
 <a id="TaxRatesEqCondition"></a>
@@ -9473,20 +9921,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStringFilter`
     :   The type of the None singleton.
 
-<a id="TaxRatesLikeCondition"></a>
-
-`TaxRatesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStringFilter`
-    :   The type of the None singleton.
-
 <a id="TaxRatesListParams"></a>
 
 `TaxRatesListParams(*args, **kwargs)`
@@ -9574,7 +10008,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="TaxRatesOrCondition"></a>
@@ -9596,7 +10030,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TaxRatesSearchFilter"></a>
@@ -9663,7 +10097,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLikeCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNeqCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesGteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLtCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesLteCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesInCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStartswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesEndswithCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesFuzzyCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesKeywordCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesArrayContainsCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesNotCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAndCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesOrCondition | airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesSortFilter]`
@@ -9722,10 +10156,24 @@ Classes
     `state: Literal['asc', 'desc']`
     :   State code
 
+<a id="TaxRatesStartswithCondition"></a>
+
+`TaxRatesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.woocommerce.types.TaxRatesStringFilter`
+    :   The type of the None singleton.
+
 <a id="TaxRatesStringFilter"></a>
 
 `TaxRatesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
