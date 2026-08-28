@@ -122,19 +122,19 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 
 #### Connection fields
 
-| Field                                                                                                           | Description                                                                                                                                                                          |
-|:----------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Field                                                                                                           | Description                                                                                                                                                                                                                                                   |
+| :-------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [Host](https://docs.aws.amazon.com/redshift/latest/mgmt/managing-clusters-console.html#obtain-cluster-endpoint) | The endpoint of your Redshift cluster or serverless workgroup. Provisioned clusters end with `.redshift.amazonaws.com`; serverless workgroups end with `.redshift-serverless.amazonaws.com`. Example: `my-cluster.abc123xyz.us-east-1.redshift.amazonaws.com` |
-| Port                                                                                                            | Port of the database. Default: `5439`                                                                                                                                                |
-| Username                                                                                                        | The username you created in Step 1 to allow Airbyte to access the database. Example: `airbyte_user`                                                                                  |
-| Password                                                                                                        | The password associated with the username.                                                                                                                                           |
-| [Database](https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_DATABASE.html)                               | The name of the database you want to sync data into. This database must already exist within your Redshift cluster. Example: `airbyte_database`                                      |
-| [Default Schema](https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_SCHEMA.html)                           | The default schema tables are written to if the source does not specify a namespace. Default: `public`                                                                               |
+| Port                                                                                                            | Port of the database. Default: `5439`                                                                                                                                                                                                                         |
+| Username                                                                                                        | The username you created in Step 1 to allow Airbyte to access the database. Example: `airbyte_user`                                                                                                                                                           |
+| Password                                                                                                        | The password associated with the username.                                                                                                                                                                                                                    |
+| [Database](https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_DATABASE.html)                               | The name of the database you want to sync data into. This database must already exist within your Redshift cluster. Example: `airbyte_database`                                                                                                               |
+| [Default Schema](https://docs.aws.amazon.com/redshift/latest/dg/r_CREATE_SCHEMA.html)                           | The default schema tables are written to if the source does not specify a namespace. Default: `public`                                                                                                                                                        |
 
 #### S3 Staging fields
 
 | Field                                                                                                                        | Description                                                                                                                                                                                                                                                    |
-|:-----------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :--------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [S3 Bucket Name](https://docs.aws.amazon.com/AmazonS3/latest/userguide/create-bucket-overview.html)                          | The name of the staging S3 bucket you created in Step 2. Example: `airbyte-staging-bucket`                                                                                                                                                                     |
 | S3 Bucket Region                                                                                                             | The region of the S3 staging bucket. Place in the same region as your Redshift cluster to reduce costs. Example: `us-east-1`                                                                                                                                   |
 | [S3 Access Key ID](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys) | The AWS Access Key ID for an IAM user with read and write permissions to the staging bucket.                                                                                                                                                                   |
@@ -145,10 +145,10 @@ Navigate to the Airbyte UI to set up Redshift as a destination:
 
 #### Advanced fields
 
-| Field                                                                                                                                         | Description                                                                                                                                                               |
-|:----------------------------------------------------------------------------------------------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [JDBC URL Params](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html) (Optional)                              | Additional properties to pass to the JDBC URL string when connecting to the database, formatted as `key=value` pairs separated by `&`. Example: `key1=value1&key2=value2` |
-| [SSH Tunnel Method](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                      |
+| Field                                                                                                                                         | Description                                                                                                                                                                            |
+| :-------------------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [JDBC URL Params](https://docs.aws.amazon.com/redshift/latest/mgmt/jdbc20-configuration-options.html) (Optional)                              | Additional properties to pass to the JDBC URL string when connecting to the database, formatted as `key=value` pairs separated by `&`. Example: `key1=value1&key2=value2`              |
+| [SSH Tunnel Method](https://docs.airbyte.com/platform/using-airbyte/configuring-connections/configuring-the-connection#ssh-tunnel) (Optional) | Whether to initiate an SSH tunnel before connecting to the database, and if so, which kind of authentication to use.                                                                   |
 | Drop CASCADE (Optional)                                                                                                                       | Whether to use `CASCADE` when dropping tables and columns. **Warning:** This deletes data in all dependent objects (views, etc.), including during schema evolution. Default: `false`. |
 
 ## Output schema
@@ -185,23 +185,23 @@ the [migration guide](redshift-migrations.md) for details.
 
 ## Data type map
 
-| Airbyte type                        | Redshift type      |
-|:------------------------------------|:-------------------|
-| STRING                              | VARCHAR(65535)     |
-| STRING (BASE64)                     | VARCHAR(65535)     |
-| STRING (BIG_NUMBER)                 | VARCHAR(65535)     |
-| STRING (BIG_INTEGER)                | VARCHAR(65535)     |
-| NUMBER                              | DECIMAL(38,9)      |
-| INTEGER                             | BIGINT             |
-| BOOLEAN                             | BOOLEAN            |
-| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ        |
-| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP          |
-| STRING (TIME_WITH_TIMEZONE)         | TIMETZ             |
-| STRING (TIME_WITHOUT_TIMEZONE)      | TIME               |
-| DATE                                | DATE               |
-| OBJECT                              | SUPER              |
-| ARRAY                               | SUPER              |
-| UNKNOWN                             | VARCHAR(65535)     |
+| Airbyte type                        | Redshift type  |
+| :---------------------------------- | :------------- |
+| STRING                              | VARCHAR(65535) |
+| STRING (BASE64)                     | VARCHAR(65535) |
+| STRING (BIG_NUMBER)                 | VARCHAR(65535) |
+| STRING (BIG_INTEGER)                | VARCHAR(65535) |
+| NUMBER                              | DECIMAL(38,9)  |
+| INTEGER                             | BIGINT         |
+| BOOLEAN                             | BOOLEAN        |
+| STRING (TIMESTAMP_WITH_TIMEZONE)    | TIMESTAMPTZ    |
+| STRING (TIMESTAMP_WITHOUT_TIMEZONE) | TIMESTAMP      |
+| STRING (TIME_WITH_TIMEZONE)         | TIMETZ         |
+| STRING (TIME_WITHOUT_TIMEZONE)      | TIME           |
+| DATE                                | DATE           |
+| OBJECT                              | SUPER          |
+| ARRAY                               | SUPER          |
+| UNKNOWN                             | VARCHAR(65535) |
 
 ### Precision and size limits
 
@@ -232,7 +232,7 @@ The Redshift destination connector supports the following
 [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/):
 
 | Sync Mode                                                                                                                                     | Supported? |
-|:----------------------------------------------------------------------------------------------------------------------------------------------|:----------:|
+| :-------------------------------------------------------------------------------------------------------------------------------------------- | :--------: |
 | [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)                   |    Yes     |
 | [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)                         |    Yes     |
 | [Full Refresh - Overwrite + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite-deduped) |    Yes     |
@@ -286,8 +286,8 @@ This is by design for performance reasons.
   <summary>Expand to review</summary>
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
-|:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 4.0.7   | 2026-08-18 | [84459](https://github.com/airbytehq/airbyte/pull/84459)   | Skip CREATE SCHEMA when the configured schema already exists (detect via svv_all_schemas) so check/sync work with schema-only grants                                                                               |
+| :------ | :--------- | :--------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.0.7   | 2026-08-18 | [84459](https://github.com/airbytehq/airbyte/pull/84459)   | Skip CREATE SCHEMA when the configured schema already exists (detect via svv_all_schemas) so check/sync work with schema-only grants                                                                             |
 | 4.0.6   | 2026-08-06 | [82274](https://github.com/airbytehq/airbyte/pull/82274)   | Set ColumnDropBehavior.RETAIN: stop dropping columns during schema evolution                                                                                                                                     |
 | 4.0.5   | 2026-08-04 | [83700](https://github.com/airbytehq/airbyte/pull/83700)   | Ignore NULL primary key records during dedup insert for performance; revert NULL-safe PK matching to plain equijoin                                                                                              |
 | 4.0.4   | 2026-07-29 | [83245](https://github.com/airbytehq/airbyte/pull/83245)   | fix: use NULL-safe primary key matching in upsert to prevent silent mismatches when PK columns contain NULL values                                                                                               |

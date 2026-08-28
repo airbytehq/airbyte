@@ -8,7 +8,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 2a2552ca-9f78-4c1c-9eb7-4d0dc66d72df
-  dockerImageTag: 0.5.48
+  dockerImageTag: 0.5.49
   dockerRepository: airbyte/source-woocommerce
   documentationUrl: https://docs.airbyte.com/integrations/sources/woocommerce
   githubIssueLabel: source-woocommerce
@@ -65,4 +65,7 @@ data:
     - title: WooCommerce Developer Changelog
       url: https://developer.woocommerce.com/changelog/
       type: api_release_history
+    - title: WooCommerce plugin source code
+      url: https://github.com/woocommerce/woocommerce
+      type: code_repository
 metadataSpecVersion: "1.0"
