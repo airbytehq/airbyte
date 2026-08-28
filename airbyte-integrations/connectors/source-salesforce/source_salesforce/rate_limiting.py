@@ -58,6 +58,8 @@ _RETRYABLE_400_STATUS_CODES = {
     420,
     codes.too_many_requests,
 }
+_NO_SUCH_COLUMN_PATTERN = re.compile(r"No such column '(?P<field>[^']+)' on entity")
+
 logger = logging.getLogger("airbyte")
 
 
@@ -137,6 +139,9 @@ class SalesforceErrorHandler(ErrorHandler):
                     ),
                 )
 
+            if error_code == "INVALID_FIELD":
+                return self._handle_invalid_field(response, error_message)
+
             if self._is_bulk_job_creation(response) and response.status_code in [
                 codes.FORBIDDEN,
                 codes.BAD_REQUEST,
@@ -167,6 +172,22 @@ class SalesforceErrorHandler(ErrorHandler):
             ResponseAction.FAIL,
             FailureType.system_error,
             f"An error occurred: {response.content.decode()}",
+        )
+
+    def _handle_invalid_field(self, response: requests.Response, error_message: str) -> ErrorResolution:
+        """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was
+        deleted or renamed, or field-level read access was revoked for the authenticated user. The
+        selected fields come from the sObject describe, so this is a customer-side change rather than an
+        Airbyte failure and must not be reported as a system error.
+        """
+        logger.error(f"Salesforce returned INVALID_FIELD for stream '{self._stream_name}': {error_message}")
+        field_match = _NO_SUCH_COLUMN_PATTERN.search(error_message)
+        field_reference = f"Field '{field_match.group('field')}'" if field_match else "A field"
+        return ErrorResolution(
+            ResponseAction.FAIL,
+            FailureType.config_error,
+            f"{field_reference} requested by stream '{self._stream_name}' does not exist in Salesforce or is not visible to the "
+            "authenticated user. Restore the field or grant it field-level read access, then refresh the connection schema.",
         )
 
     @staticmethod
