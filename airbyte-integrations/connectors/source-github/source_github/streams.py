@@ -480,6 +480,10 @@ class Teams(GithubStreamABC):
     deleted. `use_cache` means the parent read and the declarative stream share one HTTP cache
     entry, so keeping it costs no extra quota.
 
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
+    `schemas/teams.json`; `get_json_schema` is overridden below so the class stays usable (the
+    base implementation would raise `FileNotFoundError`), following what `Branches` does.
+
     TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
@@ -503,6 +507,19 @@ class Teams(GithubStreamABC):
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `TeamMembers` only reads `organization` and `slug` off these records, and this stream is
+        # never discovered or validated against a schema. The user-facing schema is the inline one
+        # in `manifest.yaml`, so duplicating it here would only give it a chance to drift.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "organization": {"type": "string"},
+                "slug": {"type": ["null", "string"]},
+            },
+        }
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
