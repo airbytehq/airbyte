@@ -9,17 +9,18 @@ Local CDC bug-reproduction harness for `source-mssql`. Builds on
 [`source-mssql-e2e-tests`](../source-mssql-e2e-tests/SKILL.md): the
 generic skill stands up the SQL Server backend and runs the connector;
 this skill adds CDC enable, CDC-aware config / catalog templates, and
-per-bug `.sh` driver scripts that apply a SQL fixture, run a protocol
-command, and assert on the output.
+per-bug **case scripts** under `cases/` that call `run.sh` with the
+appropriate fixtures and `--expect-*` assertions.
 
 ## When to use this skill
 
 - Reproducing a CDC-mode bug against `source-mssql` locally.
-- Verifying a fix by re-running an existing worked example after
-  pointing the driver script at a `--test-image=airbyte/source-mssql:dev`.
-- Authoring a new repro fixture for a customer-reported CDC bug.
-  Drop a SQL fixture and a `repro-<issue-number>.sh` driver into this
-  skill; the driver does its own assertions inline.
+- Verifying a fix by re-running an existing case with
+  `VERSION=dev ./cases/<id>.sh` (after `:dockerBuildx`).
+- Authoring a new repro for a customer-reported CDC bug. Drop a SQL
+  fixture under `fixtures/sql/` and a `cases/<issue-number>.sh` script
+  that invokes `run.sh` with the right fixtures and `--expect-*`
+  assertions.
 
 ## Prerequisites
 
@@ -36,11 +37,10 @@ You do not need GSM or Cloud admin credentials.
 ```
 source-mssql-e2e-cdc-tests/
 ├── SKILL.md
-├── scripts/
-│   ├── repro-11451.sh                # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+
-│   ├── repro-12094.sh                # airbytehq/oncall#12094 — schema-history bloat
-│   ├── repro-12162.sh                # airbytehq/oncall#12162 — whitespace in stream name
-│   └── extract-state.py              # uv-PEP-723; pulls STATE messages out of stdout.txt
+├── cases/
+│   ├── 11451.sh                      # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+ (multi-phase)
+│   ├── 12094.sh                      # airbytehq/oncall#12094 — schema-history bloat
+│   └── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
 └── fixtures/
     ├── configs/
     │   └── cdc.template.json
@@ -54,25 +54,45 @@ source-mssql-e2e-cdc-tests/
         └── repro-12162-spaces-in-name.sql
 ```
 
+`extract-state.py` lives in the generic skill
+([`../source-mssql-e2e-tests/scripts/extract-state.py`](../source-mssql-e2e-tests/scripts/extract-state.py)) —
+it walks Airbyte STATE messages, which is protocol-level and not
+CDC-specific.
+
 ## Conventions
 
-- All driver scripts assume the generic skill's backend is running and
-  apply CDC fixtures on top of it. Re-applying any fixture is safe
-  (every step is idempotent).
+- Cases keep the backend up across invocations (`--keep-backend`).
+  Start the backend once at the top of a session, run any subset of
+  cases, tear down when done — see the Usage section below.
+- Fixtures are re-applied at the start of each `run.sh` invocation, so
+  they must be idempotent (`00-init-cdc.sql` uses `IF DB_ID(...) IS NULL`
+  guards, per-bug fixtures use similar shape). Re-applying a fixture
+  during a multi-phase case does not reset the CDC state that the
+  previous phase established.
 - Configured catalogs populate the bulk-CDK-required fields
   (`is_file_based`, `generation_id`, `minimum_generation_id`,
   `sync_id`, `destination_object_name`, `include_files`) so the same
   fixtures drive repros across `source-mssql:4.3.x` and `4.4.x`.
-- Driver scripts default `VERSION=4.4.2`. Override with
-  `VERSION=4.3.4 ./scripts/repro-12162.sh` to test against an earlier
-  version, or `VERSION=dev` after a local
-  `./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker`
+- Cases default `VERSION=4.4.2` (except `11451.sh` which splits into
+  `BASELINE_VERSION`/`TARGET_VERSION`). Override with
+  `VERSION=4.3.4 ./cases/12162.sh` to test against an earlier version,
+  or `VERSION=dev` after a local
+  `./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx`
   to test a fix.
-- Assertions are inline in driver scripts: `grep -c '<substring>'` on
-  `stderr.txt`, `jq -e` on `stdout.txt`, exit-non-zero on miss.
-- The repro-11451 driver captures and uses Airbyte STATE messages. The
-  `extract-state.py` helper is `uv`-PEP-723 standalone; run with
-  `./scripts/extract-state.py <stdout.txt>` or pipe stdin.
+- **Assertions** are declarative via `run.sh`'s expectation flags:
+  `--expect-test`, `--expect-match=[<command>:]<channel>:<regex>[:N]`,
+  `--forbid-match`, `--min-records`, `--min-states`. The runner
+  enforces them and exits non-zero on any failure. The `<command>:`
+  prefix defaults to `read` when omitted; set it explicitly
+  (`check:stderr:…`, `discover:stderr:…`) for check-time or
+  discover-time signatures.
+- Multi-phase cases (`11451.sh`, and any future read → mutate →
+  read-with-state repros) capture Airbyte STATE messages between reads
+  via the generic skill's `extract-state.py` (`uv`-PEP-723 standalone;
+  run with `./scripts/extract-state.py <stdout.txt>` or pipe stdin) and
+  feed the file back into the second read with `run.sh --state=PATH`.
+  Use `--step-name=<bug>/<phase>` to give each phase its own artifact
+  subtree.
 
 ## Usage
 
@@ -81,44 +101,52 @@ SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e
 GENERIC=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
 export REPRO_OUT=/tmp/source-mssql-repro
 
-# 1. Bring up the backend (once per session).
+# 1. Bring up the backend (once per session). Cases pass --keep-backend,
+#    so they don't tear it down between runs.
 "$GENERIC/scripts/start-backend.sh"
 
-# 2. Run any worked example. Each driver does its own assertions.
-"$SKILL/scripts/repro-12162.sh"
-"$SKILL/scripts/repro-12094.sh"
-"$SKILL/scripts/repro-11451.sh"
+# 2. Run any case. Each case's --expect-* flags gate its own exit code
+#    (non-zero on any expectation failure), so bash's `set -e` will fail
+#    the sequence on the first failing case if you chain them.
+"$SKILL/cases/12162.sh"
+"$SKILL/cases/12094.sh"
+"$SKILL/cases/11451.sh"
 
 # 3. (After fix) verify by retargeting `dev` or a fixed version.
-VERSION=dev "$SKILL/scripts/repro-12162.sh"
+VERSION=dev "$SKILL/cases/12162.sh"
 
 # 4. Tear down.
 "$GENERIC/scripts/stop-backend.sh"
 rm -rf "$REPRO_OUT"
 ```
 
-A driver script is responsible for:
+Each case is a shell script that composes `run.sh` invocations:
 
-1. Calling
-   `$GENERIC/scripts/apply-sql.sh fixtures/sql/<00-init-cdc.sql + per-bug.sql>`.
-2. Calling `$GENERIC/scripts/render-config.sh` to produce a working
-   config under `$REPRO_OUT/working/`.
-3. Calling `$GENERIC/scripts/run-protocol-cmd.sh <command> <step-name>
-<version>` with the right `--config-path` /
-   `--catalog-path` / `--state-path` / `--enable-debug-logs=True`.
-4. Asserting on `$REPRO_OUT/<step-name>/stdout.txt` or `stderr.txt`.
-   Exit `0` on PASS, non-zero with a `FAIL:` message on FAIL.
+1. Applies its SQL fixtures (via `--fixture=…`; `run.sh` calls
+   `apply-sql.sh` internally).
+2. Renders the config against the running backend (via
+   `--config-template=…`).
+3. Runs the target protocol command with any `--catalog` / `--state`.
+4. Gates its exit code on `--expect-*` flags — the runner enforces
+   them and exits non-zero on any failure, so the case script has no
+   inline assertion logic to maintain.
+
+Multi-phase cases (`11451.sh`) call `run.sh` more than once, with
+`extract-state.py` and `apply-sql.sh` between invocations. Each phase
+uses `--step-name=<bug>/<phase>` to keep its artifacts separate under
+`$REPRO_OUT/<bug>/<phase>/`.
 
 ## Worked examples
 
 ### airbytehq/oncall#12162 — whitespace in stream name
 
-`scripts/repro-12162.sh`. Creates `dbo.[Order Items]` (note the space),
-enables CDC on it, and runs `read` against it. Expected outcome: the
-read exits non-zero and `stderr.txt` contains
-`io.debezium.DebeziumException: Connector configuration is not valid.
-The 'message.key.columns' value is invalid: dbo.Order Items:id has an
-invalid format`.
+`cases/12162.sh`. Creates `dbo.[Order Items]` (note the space), enables
+CDC on it, and runs `read` against it. Case asserts
+`--expect-test=fail`, `--expect-match=stderr:io.debezium.DebeziumException`,
+and `--expect-match=stderr:message.key.columns` — i.e. the read exits
+non-zero and Debezium's `stderr.txt` contains its
+`Connector configuration is not valid. The 'message.key.columns' value
+is invalid` rejection.
 
 Root cause: `MsSqlServerDebeziumOperations.buildMessageKeyColumns()`
 joins `schema.table:pkcol` strings without filtering or escaping
@@ -128,11 +156,13 @@ to the table's native PK from system tables).
 
 ### airbytehq/oncall#12094 — schema-history bloat
 
-`scripts/repro-12094.sh`. Creates 30 noise tables in `dbo` (CDC not
-enabled on them), runs the baseline `read` against `dbo.users`, and
-greps `stderr.txt` for "Adding table CdcTest.dbo.\* to the list of
-capture schema tables" lines. Expected outcome: at least 30 such
-lines, even though the configured catalog has a single stream.
+`cases/12094.sh`. Creates 30 noise tables in `dbo` (CDC not enabled on
+them), runs the baseline `read` against `dbo.users`, and asserts
+`--expect-match='stdout:Adding table CdcTest\..* to the list of capture schema tables:30'`
+(the trailing `:30` is the count threshold; the fixture creates 30
+noise tables). Adjust with `MIN_LOADED=<N>`. Expected outcome: at
+least 30 "Adding table" lines even though the configured catalog has
+a single stream.
 
 Root cause: `withSchemaHistory()` in the bulk-CDK Debezium properties
 sets `schema.history.internal.store.only.captured.databases.ddl=true`
@@ -142,14 +172,19 @@ lives in the bulk-CDK `extract-cdc` toolkit.
 
 ### airbytehq/oncall#11451 — LSN-range regression in 4.3.4+
 
-`scripts/repro-11451.sh`. Captures a baseline state from a clean read,
-generates noise commits, scans CDC, then runs
-`sys.sp_cdc_cleanup_change_table` with a `low_water_mark` past the
-saved LSN. Re-runs `read` against `4.3.4` (the first version with the
-new per-instance LSN-range check) passing the stale state file.
-Expected outcome: the read exits non-zero with "Saved offset no longer
-present on the server, please reset the connection. Saved LSN '…' is
-no longer available in SQL Server transaction logs."
+`cases/11451.sh`. Multi-phase:
+
+1. Baseline `read` on clean CdcTest (`BASELINE_VERSION`, default `4.4.2`).
+   Case asserts `--expect-test=pass --min-states=1` so a missing STATE
+   fails the case immediately rather than later at replay.
+2. `extract-state.py` on the baseline stdout, then `apply-sql.sh
+   repro-11451-lsn-cleanup.sql` runs `sys.sp_cdc_cleanup_change_table`
+   with a `low_water_mark` past the saved LSN — advancing
+   `fn_cdc_get_min_lsn('dbo_users')` past the baseline offset.
+3. Replay `read` on `TARGET_VERSION` (default `4.3.4`) with the stale
+   state. Case asserts `--expect-test=fail`,
+   `--expect-match=stderr:Saved offset no longer present`, and
+   `--expect-match='stderr:is no longer available in SQL Server transaction logs'`.
 
 Root cause: pre-`4.3.4` the LSN-range query computed `min` via
 `sys.fn_cdc_get_min_lsn('')`, which always returns
@@ -164,16 +199,53 @@ still present. Investigation lives at
 ## Authoring a new repro
 
 1. Drop a SQL fixture in `fixtures/sql/repro-<issue-number>-<slug>.sql`.
+   Make it idempotent (`IF NOT EXISTS` guards for `CREATE`,
+   `IF EXISTS` guards for `DROP`) — cases re-apply fixtures on every
+   `run.sh` invocation.
 2. (Optional) Drop a CDC-aware catalog in `fixtures/catalogs/`.
-3. Drop a driver script in `scripts/repro-<issue-number>.sh` modeled on
-   the existing ones. Inline assertions; `set -euo pipefail`; default
-   `VERSION=4.4.2` with a `${VERSION:-…}` override.
+3. Drop a case script in `cases/<issue-number>.sh` modeled on the
+   existing ones. `set -euo pipefail`; default `VERSION=4.4.2` with a
+   `${VERSION:-…}` override; invoke `run.sh` with the right
+   `--command`, `--fixture=`, `--config-template=`, `--catalog=`, and
+   `--expect-*` flags. Pass `--keep-backend` so the shared-session
+   Usage flow works. For check-time or discover-time signatures, use
+   `--expect-match=check:stderr:…` / `--expect-match=discover:stderr:…`
+   (the `<command>:` prefix defaults to `read` when omitted).
 4. Verify locally:
    ```bash
    "$GENERIC/scripts/start-backend.sh"
-   "$SKILL/scripts/repro-<issue-number>.sh"
+   "$SKILL/cases/<issue-number>.sh"
    "$GENERIC/scripts/stop-backend.sh"
    ```
 5. Note the worked example in this `SKILL.md`'s "Worked examples"
-   section with: customer-symptom one-liner, expected
-   exit-code / stderr substring, root-cause one-liner.
+   section with: customer-symptom one-liner, `--expect-*` assertions
+   the case gates on, root-cause one-liner.
+
+### Multi-phase repros
+
+When the reproduction is single-phase (one `run.sh` invocation is
+enough to trigger the bug), follow the recipe above. Reach for a
+multi-phase shape only when the bug needs an intermediate mutation
+that depends on state from a first read — the canonical example is
+read → extract STATE → mutate the server based on that STATE → replay
+with the stale STATE. Model on [`cases/11451.sh`](cases/11451.sh) —
+the three primitives it composes are:
+
+- **`--step-name=<bug>/<phase>`** — per-phase artifact dirs under
+  `$REPRO_OUT/<bug>/`. `cases/11451.sh` uses `11451/baseline` and
+  `11451/stale`; a new case would use its own bug number and phase
+  names.
+- **`extract-state.py`** (in the generic skill) — reads a phase's
+  `read/stdout.txt` and emits a JSON array of AirbyteStateMessage
+  objects, which is what `run.sh --state=PATH` expects.
+- **`--skip-fixtures`** on the second/later `run.sh` invocation —
+  opts out of the initial-fixture reapply so the intermediate state
+  the previous phase established survives. Otherwise `run.sh`'s
+  default fixture-application would re-run `00-init-cdc.sql`, which
+  drops and recreates `CdcTest` and wipes the mutation. Rejects
+  `--fixture=` in the same invocation (either apply fixtures or skip
+  them).
+
+The between-phase mutation itself is a plain `apply-sql.sh` call
+against a fixture in `fixtures/sql/`. Nothing about the mutation is
+special-cased in `run.sh` — the case script drives the sequencing.

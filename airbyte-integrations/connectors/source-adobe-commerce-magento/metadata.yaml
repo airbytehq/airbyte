@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-adobe-commerce-magento
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.8@sha256:58d3593d8e816d4a346570570d5a42bb78e41de344f8c74c2a5c225acdc4c4d1
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
   connectorType: source
   definitionId: 2a97bcea-a59e-4fe1-89e0-1663f11ec646
-  dockerImageTag: 0.0.22
+  dockerImageTag: 0.0.24
   dockerRepository: airbyte/source-adobe-commerce-magento
   githubIssueLabel: source-adobe-commerce-magento
   icon: icon.svg

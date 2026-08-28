@@ -44,7 +44,12 @@ data:
               - "releases"
               - "review_comments"
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
   suggestedStreams:
     streams:
       - branches
