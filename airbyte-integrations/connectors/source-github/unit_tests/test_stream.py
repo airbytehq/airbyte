@@ -946,6 +946,24 @@ def test_stream_commit_details(requests_mock):
     assert record["files"][0]["filename"] == "README.md"
 
 
+def test_stream_commit_details_schema_declares_the_cursor_and_resolves_refs():
+    """`created_at` is synthesized in `transform`, so it is easy to leave out of the schema - and
+    the connector test suite fails a stream whose cursor field is not declared. Also asserts the
+    `$ref: user.json` pointers actually resolve, since the loader inlines them."""
+    stream = CommitDetails(
+        parent=Commits(repositories=["org/repo"], page_size_for_large_streams=100, start_date="", branches_to_pull=[]),
+        repositories=["org/repo"],
+        page_size_for_large_streams=100,
+    )
+
+    schema = stream.get_json_schema()
+
+    assert stream.cursor_field in schema["properties"]
+    assert stream.primary_key in schema["properties"]
+    assert "$ref" not in schema["properties"]["author"]
+    assert "login" in schema["properties"]["author"]["properties"]
+
+
 def test_stream_commit_details_path():
     repository_args = {
         "repositories": ["organization/repository"],
@@ -1026,16 +1044,31 @@ def test_stream_commit_details_incremental(requests_mock):
         json=make_detail("abc2", "2022-02-03T10:00:00Z"),
     )
 
+    expected_state = {"organization/repository": {"main": {"created_at": "2022-02-03T10:00:00Z"}}}
+
     stream_state = {}
     records = read_incremental(stream, stream_state)
     assert [r["sha"] for r in records] == ["abc1", "abc2"]
-    assert stream_state == {"organization/repository": {"main": {"created_at": "2022-02-03T10:00:00Z"}}}
+    assert stream_state == expected_state
+    # `read_incremental` keeps its own dict, so assert the stream's own state too: that is what
+    # `SemiIncrementalMixin.read_records` writes and what the CDK actually checkpoints.
+    assert stream.state == expected_state
 
-    # Second incremental read with existing state should only fetch SHAs after the cursor
+    detail_calls_after_first_read = len([r for r in requests_mock._adapter.request_history if r.path.endswith("/commits/abc1")])
+    assert detail_calls_after_first_read == 1
+
     records = read_incremental(stream, stream_state)
-    # commits API returns no new commits (since= filters them server-side); no detail calls made
     assert records == []
-    assert stream_state == {"organization/repository": {"main": {"created_at": "2022-02-03T10:00:00Z"}}}
+    assert stream_state == expected_state
+
+    # The parent `Commits` stream reads its `since` out of the *child's* state, which is what
+    # keeps a second sync from paying for a detail request per already-detailed commit. Pin it:
+    # the list-commits request must carry the cursor this stream stored.
+    list_commits_requests = [r for r in requests_mock._adapter.request_history if r.path.endswith("/repository/commits")]
+    assert list_commits_requests[-1].qs["since"] == ["2022-02-03t10:00:00z"]
+    # requests_mock ignores `since` and re-serves both commits, so the parent's semi-incremental
+    # filter is what drops them here. Either way no new detail request may be issued.
+    assert len([r for r in requests_mock._adapter.request_history if r.path.endswith("/commits/abc1")]) == 1
 
 
 def test_stream_commit_details_created_at_in_record(requests_mock):

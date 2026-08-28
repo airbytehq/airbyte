@@ -1946,7 +1946,12 @@ class CommitDetails(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit
 
     Fetches full per-commit detail (stats and per-file changes) for each commit produced by the
-    Commits stream. One API call is made per commit SHA, so sync cost scales with commit volume.
+    Commits stream. The list-commits endpoint returns neither `stats` nor `files`, so one
+    get-a-commit call per SHA is the only way to obtain them; sync cost therefore scales with
+    commit volume, and `files` is capped at 300 entries per commit by GitHub.
+
+    Not in `metadata.yaml`'s `suggestedStreams` on purpose: that list is pre-selected for new
+    connections, and one request per commit is too expensive to enable without an explicit choice.
     """
 
     primary_key = "sha"
@@ -1962,6 +1967,12 @@ class CommitDetails(SemiIncrementalMixin, GithubStream):
 
     def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
         self._starting_point_cache.clear()
+        # `kwargs` carries this stream's own `stream_state`, which `Commits` then reads to build
+        # its `since` parameter. That is load-bearing rather than incidental: both streams key
+        # state on ["repository", "branch"] with a `created_at` cursor, so the shapes are
+        # interchangeable and the parent lists only commits newer than what this stream has
+        # already detailed. Without it every sync would re-list every commit and the semi-
+        # incremental filter would drop the records only after paying for the detail request.
         for stream_slice in self.parent.stream_slices(**kwargs):
             for record in self.parent.read_records(stream_slice=stream_slice, **kwargs):
                 yield {"repository": record["repository"], "sha": record["sha"], "branch": record["branch"]}
