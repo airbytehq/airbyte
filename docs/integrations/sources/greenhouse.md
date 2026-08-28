@@ -36,7 +36,7 @@ Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Gr
 - `harvest:user_roles:list`
 - `harvest:users:list`
 
-The Greenhouse user who approves the consent flow must be a Site Admin. Harvest v3 rejects requests to its list endpoints from any other user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled.
+The Greenhouse user who approves the consent flow must be a Site Admin. Harvest v3 rejects requests to its list endpoints from any other user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -73,42 +73,44 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 ## Supported Streams
 
-Incremental streams use `updated_at` as their cursor, except **EEOC**, which uses `submitted_at`. **Activity Feed**, **Demographic Answer Options For Question**, **Demographic Questions For Question Set**, **Job Openings**, and **User Permissions** read the IDs they need from a parent stream, so those streams cover your full Greenhouse history regardless of the **Start date** you configure.
+The table lists the stream names as they appear in Airbyte, with the Harvest v3 endpoint each one reads. **Start date** applies only to the incremental streams. Full refresh streams always read everything the endpoint returns, and the five child streams pull parent IDs over your full Greenhouse history, so their coverage doesn't depend on **Start date** either. `demographics_answer_options`, `demographics_questions`, and `demographics_question_sets` are full refresh because Harvest v3 exposes no date filter on those endpoints.
 
-- [Activity Feed](https://harvestdocs.greenhouse.io/reference/get_v3-notes)
-- [Applications](https://harvestdocs.greenhouse.io/reference/get_v3-applications) \(Incremental\)
-- [Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
-- [Demographic Answer Options](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
-- [Demographic Answer Options For Question](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
-- [Demographic Questions](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions)
-- [Demographic Question Set](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-question-sets)
-- [Demographic Questions For Question Set](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions)
-- [Approvals](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows)
-- [Candidates](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) \(Incremental\)
-- [Close Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons)
-- [Custom Fields](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields)
-- [Custom Field Options](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
-- [Degrees](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
-- [Departments](https://harvestdocs.greenhouse.io/reference/get_v3-departments)
-- [Disciplines](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
-- [EEOC](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) \(Incremental\)
-- [Email Templates](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) \(Incremental\)
-- [Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
-- [Job Posts](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) \(Incremental\)
-- [Job Stages](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) \(Incremental\)
-- [Jobs](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) \(Incremental\)
-- [Job Openings](https://harvestdocs.greenhouse.io/reference/get_v3-openings)
-- [Offers](https://harvestdocs.greenhouse.io/reference/get_v3-offers) \(Incremental\)
-- [Offices](https://harvestdocs.greenhouse.io/reference/get_v3-offices)
-- [Prospect Pools](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools)
-- [Rejection Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons)
-- [Schools](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
-- [Scorecards](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) \(Incremental\)
-- [Sources](https://harvestdocs.greenhouse.io/reference/get_v3-sources)
-- [Tags](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags)
-- [Users](https://harvestdocs.greenhouse.io/reference/get_v3-users) \(Incremental\)
-- [User Permissions](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions)
-- [User Roles](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles)
+| Stream | Sync mode | Notes |
+|:---|:---|:---|
+| [`activity_feed`](https://harvestdocs.greenhouse.io/reference/get_v3-notes) | Full refresh | Notes for each candidate in `candidates` |
+| [`applications`](https://harvestdocs.greenhouse.io/reference/get_v3-applications) | Incremental (`updated_at`) | |
+| [`approvals`](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows) | Full refresh | |
+| [`candidates`](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) | Incremental (`updated_at`) | |
+| [`close_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons) | Full refresh | |
+| [`custom_field_options`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Every custom field option in the account |
+| [`custom_fields`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields) | Full refresh | |
+| [`degrees`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Custom field options for the `degree` field |
+| [`demographics_answer_options`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options) | Full refresh | |
+| [`demographics_answers`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) | Incremental (`updated_at`) | |
+| [`demographics_answers_answer_options`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options) | Full refresh | Answer options for each question in `demographics_questions` |
+| [`demographics_question_sets`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-question-sets) | Full refresh | |
+| [`demographics_question_sets_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions) | Full refresh | Questions in each set in `demographics_question_sets` |
+| [`demographics_questions`](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions) | Full refresh | |
+| [`departments`](https://harvestdocs.greenhouse.io/reference/get_v3-departments) | Full refresh | |
+| [`disciplines`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Custom field options for the `discipline` field |
+| [`eeoc`](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) | Incremental (`submitted_at`) | |
+| [`email_templates`](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) | Incremental (`updated_at`) | |
+| [`interviews`](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) | Incremental (`updated_at`) | |
+| [`job_posts`](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) | Incremental (`updated_at`) | Includes deleted posts |
+| [`job_stages`](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) | Incremental (`updated_at`) | |
+| [`jobs`](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) | Incremental (`updated_at`) | |
+| [`jobs_openings`](https://harvestdocs.greenhouse.io/reference/get_v3-openings) | Full refresh | Openings for each job in `jobs` |
+| [`offers`](https://harvestdocs.greenhouse.io/reference/get_v3-offers) | Incremental (`updated_at`) | |
+| [`offices`](https://harvestdocs.greenhouse.io/reference/get_v3-offices) | Full refresh | |
+| [`prospect_pools`](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools) | Full refresh | |
+| [`rejection_reasons`](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons) | Full refresh | Includes the reasons Greenhouse ships with |
+| [`schools`](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options) | Full refresh | Custom field options for the `school_name` field |
+| [`scorecards`](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) | Incremental (`updated_at`) | |
+| [`sources`](https://harvestdocs.greenhouse.io/reference/get_v3-sources) | Full refresh | |
+| [`tags`](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags) | Full refresh | Candidate tags |
+| [`user_permissions`](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions) | Full refresh | Job permissions for each user in `users` |
+| [`user_roles`](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles) | Full refresh | |
+| [`users`](https://harvestdocs.greenhouse.io/reference/get_v3-users) | Incremental (`updated_at`) | Includes integration service users |
 
 ## Performance considerations
 
@@ -118,10 +120,11 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 
 ## Limitations
 
-- **EEOC** replicates on `submitted_at`. A correction to an EEOC response after submission doesn't change `submitted_at`, so incremental syncs never re-read it. Refresh the stream if you need corrections to land.
-- **Custom Field Options** reads every custom field option in your account, which makes it a superset of **Degrees**, **Disciplines**, and **Schools**. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
-- **Users** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
-- **Rejection Reasons** includes the default reasons Greenhouse ships with, not only the ones your organization added.
+- **`job_posts`** includes job posts that were deleted in Greenhouse. Harvest v3 excludes deleted posts by default, and the connector asks for them explicitly so that deletions don't linger as stale rows. Filter on `active` downstream if you only want live posts.
+- **`eeoc`** replicates on `submitted_at`. A correction to an EEOC response after submission doesn't change `submitted_at`, so incremental syncs never re-read it. Refresh the stream if you need corrections to land.
+- **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
+- **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
+- **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
@@ -140,7 +143,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1.0.0 | 2026-08-28 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
-| 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
+| 0.8.0 | 2026-08-12 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |
 | 0.7.32 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 0.7.31 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.7.29 — 0.7.30 is built on SDM 7.23.7, which breaks bundled custom components |
