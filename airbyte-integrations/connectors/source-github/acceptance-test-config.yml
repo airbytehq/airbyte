@@ -26,7 +26,7 @@ acceptance_tests:
           - name: "events"
             bypass_reason: "Only events created within the past 90 days can be showed. Stream is tested with integration tests."
           - name: "commit_details"
-            bypass_reason: "Child stream of commits; volume-dependent and covered by unit tests."
+            bypass_reason: "No expected records captured yet: one request per commit makes a full capture expensive. Covered by unit tests."
   incremental:
     tests:
       - config_path: "secrets/config.json"

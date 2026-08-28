@@ -10,6 +10,11 @@
       "description": "The branch name where the commit was made.",
       "type": ["null", "string"]
     },
+    "created_at": {
+      "description": "The creation date and time of the commit.",
+      "type": "string",
+      "format": "date-time"
+    },
     "url": {
       "description": "URL for accessing the commit data.",
       "type": ["null", "string"]
