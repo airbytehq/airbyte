@@ -17,7 +17,7 @@ A source connector for the smsmode API dedicated to standard SMS services, suppo
 
 ### Step 1: Create an smsmode API key
 
-smsmode calls API keys *credentials*, and you manage them through the [Credential API](https://dev.smsmode.com/commons/v1/#tag/Credential). Each credential carries one or more roles (`ADMIN`, `MANAGER`, `USER`, or `MESSAGE`), and the role determines how much data the key can read:
+smsmode calls API keys *credentials*, and you manage them through the [Credential API](https://dev.smsmode.com/commons/v1/#tag/Credential). Each credential carries one or more roles, and the roles determine how much data the key can read:
 
 - A `USER` key reads the messages and consumptions of its own channel.
 - A `MANAGER` key reads them for every channel in its organisation.
