@@ -321,8 +321,8 @@ class GzipXmlDecoder(Decoder):
         try:
             parsed = xmltodict.parse(document, attr_prefix="", cdata_key="value", force_list={"Message"})
         except Exception as e:
-            logger.warning(f"Unable to parse the report for the stream {self.name}, error: {str(e)}")
-            return []
+            logger.warning(f"Unable to parse the report for the stream, error: {str(e)}")
+            raise
 
         reports = parsed.get("AmazonEnvelope", {}).get("Message", {})
         for report in reports:
@@ -501,6 +501,7 @@ class SellerFeedbackReportsTypeTransformer(TypeTransformer):
         A2NODRKZP88ZB9="%Y-%m-%d",  # SE
         A33AVAJ2PDY3EV="%d/%m/%y",  # TR
         A1F83G8C2ARO7P="%d/%m/%y",  # UK
+        A28R8C7NBKEWEA="%d/%m/%y",  # IE
         AMEN7PMS3EDWL="%d/%m/%y",  # BE
         # fe
         A39IBJ37TRP1C6="%d/%m/%y",  # AU

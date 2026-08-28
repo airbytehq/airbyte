@@ -4,7 +4,37 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-To set up the Greenhouse source connector, you'll need the [Harvest API key](https://developers.greenhouse.io/harvest.html#authentication) with permissions to the resources Airbyte should be able to access.
+Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Greenhouse issues these credentials to partners on request: email partner-support@greenhouse.io to request a client ID and client secret and register your redirect URI. For Airbyte Cloud, use `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte, use `<your-airbyte-url>/auth_flow`. The authorization consent must grant these scopes:
+
+- `harvest:applications:list`
+- `harvest:approval_flows:list`
+- `harvest:candidate_tags:list`
+- `harvest:candidates:list`
+- `harvest:close_reasons:list`
+- `harvest:custom_field_options:list`
+- `harvest:custom_fields:list`
+- `harvest:demographic_answer_options:list`
+- `harvest:demographic_answers:list`
+- `harvest:demographic_question_sets:list`
+- `harvest:demographic_questions:list`
+- `harvest:departments:list`
+- `harvest:eeoc:list`
+- `harvest:email_templates:list`
+- `harvest:interviews:list`
+- `harvest:job_interview_stages:list`
+- `harvest:job_posts:list`
+- `harvest:jobs:list`
+- `harvest:notes:list`
+- `harvest:offers:list`
+- `harvest:offices:list`
+- `harvest:openings:list`
+- `harvest:prospect_pools:list`
+- `harvest:rejection_reasons:list`
+- `harvest:scorecards:list`
+- `harvest:sources:list`
+- `harvest:user_job_permissions:list`
+- `harvest:user_roles:list`
+- `harvest:users:list`
 
 ## Set up the Greenhouse connector in Airbyte
 
@@ -12,8 +42,22 @@ To set up the Greenhouse source connector, you'll need the [Harvest API key](htt
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Enter your [**Harvest API Key**](https://developers.greenhouse.io/harvest.html#authentication) that you obtained from Greenhouse.
-6. Click **Set up source**.
+5. Select **OAuth**, enter the **OAuth client ID** and **OAuth client secret**, then click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token.
+6. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
+7. If your deployment does not surface **Authenticate**, open the Greenhouse authorization URL with your client ID, registered redirect URI, and the scopes above, then exchange the returned code within one minute:
+   1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
+   2. Exchange the `code` query parameter:
+
+      ```bash
+      curl -X POST 'https://auth.greenhouse.io/token?grant_type=authorization_code&code=<code>&redirect_uri=<registered_redirect_uri>' -u '<client_id>:<client_secret>' --data ''
+      ```
+
+   3. Copy `refresh_token` from the response into the **Refresh token** field.
+8. Click **Set up source**.
+
+:::warning
+Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
+:::
 
 ## Supported sync modes
 
@@ -26,46 +70,48 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 ## Supported Streams
 
-- [Activity Feed](https://developers.greenhouse.io/harvest.html#get-retrieve-activity-feed)
-- [Applications](https://developers.greenhouse.io/harvest.html#get-list-applications) \(Incremental\)
-- [Applications Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews-for-application) \(Incremental\)
-- [Applications Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers-for-application) \(Incremental\)
-- [Demographics Answers](https://developers.greenhouse.io/harvest.html#get-list-demographic-answers) \(Incremental\)
-- [Demographic Answer Options](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options)
-- [Demographic Answer Options For Question](https://developers.greenhouse.io/harvest.html#get-list-demographic-answer-options-for-demographic-question)
-- [Demographic Questions](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions)
-- [Demographic Question Set](https://developers.greenhouse.io/harvest.html#get-list-demographic-question-sets)
-- [Demographic Questions For Question Set](https://developers.greenhouse.io/harvest.html#get-list-demographic-questions-for-demographic-question-set)
-- [Approvals](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
-- [Candidates](https://developers.greenhouse.io/harvest.html#get-list-candidates) \(Incremental\)
-- [Close Reasons](https://developers.greenhouse.io/harvest.html#get-list-close-reasons)
-- [Custom Fields](https://developers.greenhouse.io/harvest.html#get-list-custom-fields)
-- [Degrees](https://developers.greenhouse.io/harvest.html#get-list-degrees)
-- [Departments](https://developers.greenhouse.io/harvest.html#get-list-departments)
-- [Disciplines](https://developers.greenhouse.io/harvest.html#get-list-approvals-for-job)
-- [EEOC](https://developers.greenhouse.io/harvest.html#get-list-eeoc) \(Incremental\)
-- [Email Templates](https://developers.greenhouse.io/harvest.html#get-list-email-templates) \(Incremental\)
-- [Interviews](https://developers.greenhouse.io/harvest.html#get-list-scheduled-interviews) \(Incremental\)
-- [Job Posts](https://developers.greenhouse.io/harvest.html#get-list-job-posts) \(Incremental\)
-- [Job Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages) \(Incremental\)
-- [Jobs](https://developers.greenhouse.io/harvest.html#get-list-jobs) \(Incremental\)
-- [Job Openings](https://developers.greenhouse.io/harvest.html#get-list-job-openings)
-- [Jobs Stages](https://developers.greenhouse.io/harvest.html#get-list-job-stages-for-job) \(Incremental\)
-- [Offers](https://developers.greenhouse.io/harvest.html#get-list-offers) \(Incremental\)
-- [Offices](https://developers.greenhouse.io/harvest.html#get-list-offices)
-- [Prospect Pools](https://developers.greenhouse.io/harvest.html#get-list-prospect-pools)
-- [Rejection Reasons](https://developers.greenhouse.io/harvest.html#get-list-rejection-reasons)
-- [Schools](https://developers.greenhouse.io/harvest.html#get-list-schools)
-- [Scorecards](https://developers.greenhouse.io/harvest.html#get-list-scorecards) \(Incremental\)
-- [Sources](https://developers.greenhouse.io/harvest.html#get-list-sources)
-- [Tags](https://developers.greenhouse.io/harvest.html#get-list-candidate-tags)
-- [Users](https://developers.greenhouse.io/harvest.html#get-list-users) \(Incremental\)
-- [User Permissions](https://developers.greenhouse.io/harvest.html#get-list-job-permissions)
-- [User Roles](https://developers.greenhouse.io/harvest.html#the-user-role-object)
+- [Activity Feed](https://harvestdocs.greenhouse.io/reference/get_v3-notes)
+- [Applications](https://harvestdocs.greenhouse.io/reference/get_v3-applications) \(Incremental\)
+- [Demographics Answers](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answers) \(Incremental\)
+- [Demographic Answer Options](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
+- [Demographic Answer Options For Question](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-answer-options)
+- [Demographic Questions](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions)
+- [Demographic Question Set](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-question-sets)
+- [Demographic Questions For Question Set](https://harvestdocs.greenhouse.io/reference/get_v3-demographic-questions)
+- [Approvals](https://harvestdocs.greenhouse.io/reference/get_v3-approval-flows)
+- [Candidates](https://harvestdocs.greenhouse.io/reference/get_v3-candidates) \(Incremental\)
+- [Close Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-close-reasons)
+- [Custom Fields](https://harvestdocs.greenhouse.io/reference/get_v3-custom-fields)
+- [Custom Field Options](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
+- [Degrees](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
+- [Departments](https://harvestdocs.greenhouse.io/reference/get_v3-departments)
+- [Disciplines](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
+- [EEOC](https://harvestdocs.greenhouse.io/reference/get_v3-eeoc) \(Incremental\)
+- [Email Templates](https://harvestdocs.greenhouse.io/reference/get_v3-email-templates) \(Incremental\)
+- [Interviews](https://harvestdocs.greenhouse.io/reference/get_v3-interviews) \(Incremental\)
+- [Job Posts](https://harvestdocs.greenhouse.io/reference/get_v3-job-posts) \(Incremental\)
+- [Job Stages](https://harvestdocs.greenhouse.io/reference/get_v3-job-interview-stages) \(Incremental\)
+- [Jobs](https://harvestdocs.greenhouse.io/reference/get_v3-jobs) \(Incremental\)
+- [Job Openings](https://harvestdocs.greenhouse.io/reference/get_v3-openings)
+- [Offers](https://harvestdocs.greenhouse.io/reference/get_v3-offers) \(Incremental\)
+- [Offices](https://harvestdocs.greenhouse.io/reference/get_v3-offices)
+- [Prospect Pools](https://harvestdocs.greenhouse.io/reference/get_v3-prospect-pools)
+- [Rejection Reasons](https://harvestdocs.greenhouse.io/reference/get_v3-rejection-reasons)
+- [Schools](https://harvestdocs.greenhouse.io/reference/get_v3-custom-field-options)
+- [Scorecards](https://harvestdocs.greenhouse.io/reference/get_v3-scorecards) \(Incremental\)
+- [Sources](https://harvestdocs.greenhouse.io/reference/get_v3-sources)
+- [Tags](https://harvestdocs.greenhouse.io/reference/get_v3-candidate-tags)
+- [Users](https://harvestdocs.greenhouse.io/reference/get_v3-users) \(Incremental\)
+- [User Permissions](https://harvestdocs.greenhouse.io/reference/get_v3-user-job-permissions)
+- [User Roles](https://harvestdocs.greenhouse.io/reference/get_v3-user-roles)
 
 ## Performance considerations
 
 The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+
+## Migration from Harvest v1 before the v1/v2 sunset
+
+Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for every deployment and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
 
 ## IP allow list
 
@@ -78,6 +124,17 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.0 | 2026-08-27 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
+| 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
+| 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
+| 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |
+| 0.7.32 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 0.7.31 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.7.29 — 0.7.30 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.7.30 | 2026-07-28 | [82944](https://github.com/airbytehq/airbyte/pull/82944) | Update dependencies |
+| 0.7.29 | 2026-07-21 | [82444](https://github.com/airbytehq/airbyte/pull/82444) | Update dependencies |
+| 0.7.28 | 2026-07-14 | [81887](https://github.com/airbytehq/airbyte/pull/81887) | Update dependencies |
+| 0.7.27 | 2026-06-30 | [81129](https://github.com/airbytehq/airbyte/pull/81129) | Update dependencies |
+| 0.7.26 | 2026-06-23 | [80487](https://github.com/airbytehq/airbyte/pull/80487) | Update dependencies |
 | 0.7.25 | 2026-06-16 | [79888](https://github.com/airbytehq/airbyte/pull/79888) | Update dependencies |
 | 0.7.24 | 2026-06-09 | [79354](https://github.com/airbytehq/airbyte/pull/79354) | Update dependencies |
 | 0.7.23 | 2026-06-02 | [78766](https://github.com/airbytehq/airbyte/pull/78766) | Update dependencies |

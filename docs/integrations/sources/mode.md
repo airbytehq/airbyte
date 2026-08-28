@@ -43,6 +43,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.0.62 | 2026-08-18 | [84679](https://github.com/airbytehq/airbyte/pull/84679) | Update dependencies |
+| 0.0.61 | 2026-08-11 | [84018](https://github.com/airbytehq/airbyte/pull/84018) | Update dependencies |
+| 0.0.60 | 2026-08-04 | [83500](https://github.com/airbytehq/airbyte/pull/83500) | Update dependencies |
+| 0.0.59 | 2026-07-28 | [83010](https://github.com/airbytehq/airbyte/pull/83010) | Update dependencies |
+| 0.0.58 | 2026-07-21 | [82482](https://github.com/airbytehq/airbyte/pull/82482) | Update dependencies |
+| 0.0.57 | 2026-07-14 | [81893](https://github.com/airbytehq/airbyte/pull/81893) | Update dependencies |
+| 0.0.56 | 2026-06-30 | [81152](https://github.com/airbytehq/airbyte/pull/81152) | Update dependencies |
+| 0.0.55 | 2026-06-23 | [80526](https://github.com/airbytehq/airbyte/pull/80526) | Update dependencies |
 | 0.0.54 | 2026-06-16 | [79932](https://github.com/airbytehq/airbyte/pull/79932) | Update dependencies |
 | 0.0.53 | 2026-06-09 | [79410](https://github.com/airbytehq/airbyte/pull/79410) | Update dependencies |
 | 0.0.52 | 2026-06-02 | [78827](https://github.com/airbytehq/airbyte/pull/78827) | Update dependencies |

@@ -60,7 +60,6 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `companies`                 | `crm.objects.companies.read`, `crm.schemas.companies.read`                                                   |
 | `contact_lists`             | `crm.lists.read`                                                                                             |
 | `contacts`                  | `crm.objects.contacts.read`                                                                                  |
-| `contacts_web_analytics`    | `crm.objects.contacts.read`, `business-intelligence`                                                         |
 | `association_streams`       | Read scopes for the selected source and target objects                                                       |
 | Custom CRM Objects          | `crm.objects.custom.read`                                                                                    |
 | `custom_object_association_streams` | `crm.objects.custom.read` and the read scope for any selected standard object                         |
@@ -89,6 +88,18 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 | `deal_splits`               | `crm.objects.deals.read`                                                                                     |
 | `properties`                | No additional scopes required                                                                                |
 | `workflows`                 | `automation`                                                                                                 |
+| `contacts_web_analytics`    | `business-intelligence`, `crm.objects.contacts.read`                                                         |
+| `companies_web_analytics`   | `business-intelligence`, `crm.objects.companies.read`                                                        |
+| `deals_web_analytics`       | `business-intelligence`, `crm.objects.deals.read`                                                            |
+| `tickets_web_analytics`     | `business-intelligence`, `tickets`                                                                           |
+| `engagements_calls_web_analytics` | `business-intelligence`, `crm.objects.contacts.read`                                                   |
+| `engagements_emails_web_analytics` | `business-intelligence`, `crm.objects.contacts.read`, `sales-email-read`                              |
+| `engagements_meetings_web_analytics` | `business-intelligence`, `crm.objects.contacts.read`                                                |
+| `engagements_notes_web_analytics` | `business-intelligence`, `crm.objects.contacts.read`                                                  |
+| `engagements_tasks_web_analytics` | `business-intelligence`, `crm.objects.contacts.read`                                                  |
+| `goals_web_analytics`       | `business-intelligence`, `crm.objects.goals.read`                                                            |
+| `line_items_web_analytics`  | `business-intelligence`, `e-commerce`, `crm.objects.line_items.read`                                         |
+| `products_web_analytics`    | `business-intelligence`, `e-commerce`                                                                        |
 
 </details>
 
@@ -147,7 +158,22 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 
 ### Experimental streams
 
-[Web Analytics](https://developers.hubspot.com/docs/api/events/web-analytics) streams may be enabled as an experimental feature. Note that these streams use a HubSpot API that is currently in beta, and they may be modified or unstable as the API continues to develop.
+Enable the **Enable experimental streams** toggle to sync the Web Analytics streams. These read HubSpot's [Events API](https://developers.hubspot.com/docs/api/events/web-analytics) (`/events/event-occurrences/2026-03`) and emit web analytics events (page views and form submissions) for each parent object:
+
+- `contacts_web_analytics`
+- `companies_web_analytics`
+- `deals_web_analytics`
+- `tickets_web_analytics`
+- `engagements_calls_web_analytics`
+- `engagements_emails_web_analytics`
+- `engagements_meetings_web_analytics`
+- `engagements_notes_web_analytics`
+- `engagements_tasks_web_analytics`
+- `goals_web_analytics`
+- `line_items_web_analytics`
+- `products_web_analytics`
+
+These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only)). They begin syncing from the configured **Start date** with fresh state.
 
 </FieldAnchor>
 
@@ -262,18 +288,6 @@ The HubSpot source connector supports the following streams:
 - [Tickets](https://developers.hubspot.com/docs/api/crm/tickets) \(Incremental\)
 - [Ticket Pipelines](https://developers.hubspot.com/docs/api/crm/pipelines) \(Client-Side Incremental\)
 - [Workflows](https://developers.hubspot.com/docs/api/automation/workflows) \(Client-Side Incremental\)
-- [ContactsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [CompaniesWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [DealsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [TicketsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsCallsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsEmailsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsMeetingsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsNotesWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [EngagementsTasksWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [GoalsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [LineItemsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
-- [ProductsWebAnalytics](https://developers.hubspot.com/docs/api/events/web-analytics) \(Incremental\)
 - [Account Details](https://developers.hubspot.com/docs/api-reference/account-account-info-v3/details/get-account-info-v3-details) \(Full Refresh\)
 - [Association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for standard objects, such as `associations_tickets_companies` \(Incremental\)
 - [Custom object association streams](https://developers.hubspot.com/docs/api-reference/latest/crm/associations/associate-records/batch/get-associations) for custom-to-standard or custom-to-custom associations \(Incremental\)
@@ -322,7 +336,7 @@ The `list_memberships` stream reads memberships for every list returned by the `
 
 ### Notes on the `Custom CRM` Objects
 
-Custom CRM Objects and Custom Web Analytics will appear as streams available for sync, alongside the standard objects listed above.
+Custom CRM Objects will appear as streams available for sync, alongside the standard objects listed above.
 
 If you set up your connections before April 15th, 2023 (on Airbyte Cloud) or before 0.8.0 (OSS) then you'll need to do some additional work to sync custom CRM objects.
 
@@ -444,6 +458,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.8.2 | 2026-08-20 | [84917](https://github.com/airbytehq/airbyte/pull/84917) | Update CDK to 7.28.0 to fix a startup crash (`ValueError: No format in [...] matching True`) when a full-refresh association stream with an `incremental_dependency` parent is deselected. |
+| 6.8.1 | 2026-08-14 | [84411](https://github.com/airbytehq/airbyte/pull/84411) | Fix the `Number of concurrent threads` setting being ignored: read the `num_worker` config key emitted by the spec instead of `num_workers` |
+| 6.8.0 | 2026-06-24 | [80806](https://github.com/airbytehq/airbyte/pull/80806) | Restore 12 Web Analytics streams removed during the v5.8.0 manifest-only migration. Uses HubSpot's latest 2026-03 Events API endpoint with explicit `eventType` fanout. Streams require the `business-intelligence` scope (Marketing Hub Enterprise) plus each parent stream's read scope. Gated behind `enable_experimental_streams` with fresh state from `start_date`. |
 | 6.7.0 | 2026-06-11 | [76396](https://github.com/airbytehq/airbyte/pull/76396) | Add `treat_numbers_and_booleans_as_strings` config toggle to coerce dynamic `number`/`boolean` properties to `string` |
 | 6.6.1 | 2026-06-10 | [79636](https://github.com/airbytehq/airbyte/pull/79636) | Add configurable `property_history_lookback_window` (minutes) to property history streams (deals, contacts, companies) to prevent silent record loss caused by cursor drift from HubSpot calculated properties. Clarify existing `lookback_window` field as CRM Search-specific. |
 | 6.6.0 | 2026-06-08 | [71259](https://github.com/airbytehq/airbyte/pull/71259) | Add association streams for standard and custom objects, including optional OAuth scopes needed to support them |

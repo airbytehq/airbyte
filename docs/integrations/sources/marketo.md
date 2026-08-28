@@ -68,6 +68,18 @@ After you have your Endpoint URL, Client ID, and Client Secret, you can configur
 6. Click **Set up source**
 <!-- /env:oss -->
 
+### Advanced configuration
+
+The **Bulk Export Window in Days** setting controls how large a date range the connector requests at a time when it syncs incrementally. The default is 30 days, and the allowed range is 1 to 31 days. If you set a value outside that range, the sync fails with a configuration error.
+
+The setting affects these streams:
+
+- **Leads** and **Activities_X** streams request one Marketo Bulk Extract job per window.
+- **Programs** and **Emails** streams send one request per window, filtered on `earliestUpdatedAt` and `latestUpdatedAt`.
+- **Campaigns** and **Lists** streams filter records after fetching them, so the setting has no effect on them.
+
+Reduce the window if a Leads sync struggles with the volume of data in a single Bulk Extract job. This is most common with large lead databases, or after a backfill or enrichment process updates many leads at once. Smaller windows create more jobs, each downloading and processing less data.
+
 ## Supported sync modes
 
 The Marketo source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
@@ -99,6 +111,10 @@ This connector syncs the following streams from Marketo:
 
 The Leads stream schema includes all fields from the static schema (standard Marketo fields) plus any custom fields discovered through the Marketo `leads/describe.json` API. Not all standard fields defined in the static schema exist in every Marketo instance. Unavailable fields still appear in the schema for consistency but always contain `null` values in synced records, because only fields confirmed by the `leads/describe.json` endpoint are requested in bulk export API calls. If you select fields that are not available in your Marketo instance's describe endpoint, those fields are silently excluded from the export request to prevent Marketo API error 1003 ("Invalid fields").
 
+### Stalled requests and timeouts
+
+Starting in version 2.1.1, every request to Marketo uses a 30-second connection timeout and a 300-second read timeout. The read timeout applies to the gap between chunks of a response, not to the total download time, so bulk export files can still take as long as they need as long as Marketo keeps sending data. If a connection stalls, the request fails and Airbyte retries it, instead of the sync hanging indefinitely. Repeated timeout errors in your sync logs usually point to network problems between Airbyte and Marketo, rather than a configuration issue.
+
 ### Program Tokens stream performance
 
 The Program Tokens stream makes one API call per program in your Marketo instance. If you have a large number of programs, this stream may take longer to sync and consume more of your daily API quota.
@@ -113,6 +129,8 @@ Marketo enforces the following API limits:
 - **Bulk extract quota**: 500 MB per day, shared between leads and activities. Resets at midnight CST.
 
 The Leads and Activities streams use the [Marketo Bulk Extract API](https://experienceleague.adobe.com/en/docs/marketo-developer/marketo/rest/bulk-extract/bulk-extract), which is subject to the bulk extract quota rather than the daily API call quota. If the bulk extract quota is exceeded, the connector stops replicating data until the quota resets.
+
+For large incremental Leads catch-up syncs, reduce [**Bulk Export Window in Days**](#advanced-configuration) to split the `updatedAt` cursor range into smaller Bulk Extract jobs. This helps you avoid very large export files after external processes update a large share of your leads.
 
 All other streams use the standard REST API, which counts against the daily API call quota.
 
@@ -141,6 +159,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 2.1.2 | 2026-08-27 | [85097](https://github.com/airbytehq/airbyte/pull/85097) | Handle numeric and other non-string values for boolean-typed fields in activity streams instead of failing the sync. |
+| 2.1.1 | 2026-07-27 | [80926](https://github.com/airbytehq/airbyte/pull/80926) | Configure HTTP streaming and read timeouts for Marketo requests to detect stalled connections. |
+| 2.1.0 | 2026-07-27 | [78362](https://github.com/airbytehq/airbyte/pull/78362) | Expose Bulk Export Window in Days so large incremental Marketo syncs can use smaller Bulk Extract jobs. |
 | 2.0.1 | 2026-06-04 | [78428](https://github.com/airbytehq/airbyte/pull/78428) | Stream Marketo bulk export downloads to reduce memory usage for large CSV exports. |
 | 2.0.0 | 2026-05-07 | [76892](https://github.com/airbytehq/airbyte/pull/76892) | Fix `leads` stream to filter Bulk Lead Extract on `updatedAt` so incremental syncs capture updates to pre-existing leads. See the [migration guide](/integrations/sources/marketo-migrations) for details. |
 | 1.6.2 | 2026-03-26 | [75461](https://github.com/airbytehq/airbyte/pull/75461) | Add sfdcId and sfdcName fields to programs stream schema |
