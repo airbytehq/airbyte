@@ -290,6 +290,29 @@ def test_streams_page_size(rate_limit_mock_response, requests_mock):
         else:
             assert stream.page_size == constants.DEFAULT_PAGE_SIZE
 
+    # The Reviews GraphQL query applies `first` at both the pull requests and the nested reviews
+    # level, so a page size of 100 asks GitHub for up to 100 * 100 nodes in a single request.
+    reviews = next(stream for stream in streams if stream.name == "reviews")
+    assert reviews.large_stream is True
+    assert reviews.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
+
+
+def test_reviews_uses_configured_large_stream_page_size(rate_limit_mock_response, requests_mock):
+    requests_mock.get("https://api.github.com/repos/airbytehq/airbyte", json={"full_name": "airbytehq/airbyte", "default_branch": "master"})
+    requests_mock.get(
+        "https://api.github.com/repos/airbytehq/airbyte/branches", json=[{"repository": "airbytehq/airbyte", "name": "master"}]
+    )
+
+    config = {
+        "credentials": {"access_token": "access_token"},
+        "repository": "airbytehq/airbyte",
+        "start_date": "1900-07-12T00:00:00Z",
+        "page_size_for_large_streams": 7,
+    }
+
+    reviews = next(stream for stream in SourceGithub().streams(config) if stream.name == "reviews")
+    assert reviews.page_size == 7
+
 
 @pytest.mark.parametrize(
     "config, expected",
