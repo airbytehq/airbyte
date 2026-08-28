@@ -1251,8 +1251,7 @@ schemas:
           - "null"
           - array
         items:
-          type: object
-          additionalProperties: true
+          type: string
       associated_account_ids:
         type:
           - "null"
@@ -1480,8 +1479,7 @@ schemas:
           - "null"
           - array
         items:
-          type: object
-          additionalProperties: true
+          type: string
       custom_fields:
         type:
           - "null"
