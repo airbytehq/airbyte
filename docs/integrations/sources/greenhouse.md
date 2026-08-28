@@ -120,7 +120,7 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 
 ## Limitations
 
-- **`job_posts`** includes job posts that were deleted in Greenhouse. Harvest v3 excludes deleted posts by default, and the connector asks for them explicitly so that deletions don't linger as stale rows. Filter on `active` downstream if you only want live posts.
+- **`job_posts`** includes job posts that were deleted in Greenhouse. Harvest v3 excludes deleted posts by default, and the connector requests both active and deleted posts. Filter on `active` downstream if you only want live posts.
 - **`eeoc`** replicates on `submitted_at`. A correction to an EEOC response after submission doesn't change `submitted_at`, so incremental syncs never re-read it. Refresh the stream if you need corrections to land.
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
