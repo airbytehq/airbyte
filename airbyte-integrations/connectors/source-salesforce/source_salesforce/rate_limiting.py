@@ -140,7 +140,7 @@ class SalesforceErrorHandler(ErrorHandler):
                 )
 
             if error_code == "INVALID_FIELD":
-                return self._handle_invalid_field(response, error_message)
+                return self._handle_invalid_field(error_message)
 
             if self._is_bulk_job_creation(response) and response.status_code in [
                 codes.FORBIDDEN,
@@ -174,7 +174,7 @@ class SalesforceErrorHandler(ErrorHandler):
             f"An error occurred: {response.content.decode()}",
         )
 
-    def _handle_invalid_field(self, response: requests.Response, error_message: str) -> ErrorResolution:
+    def _handle_invalid_field(self, error_message: str) -> ErrorResolution:
         """`INVALID_FIELD` means the org can no longer resolve a field the query asks for: the field was
         deleted or renamed, or field-level read access was revoked for the authenticated user. The
         selected fields come from the sObject describe, so this is a customer-side change rather than an
