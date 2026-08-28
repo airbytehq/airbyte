@@ -33,8 +33,11 @@ private val log = KotlinLogging.logger {}
 private const val COUNT_TOTAL_ALIAS = "total"
 private const val COLUMN_NAME_COLUMN = "column_name"
 
-/** PostgreSQL/Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
+/** Redshift SQL state for DEPENDENT_OBJECTS_STILL_EXIST. */
 private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
+
+/** Redshift SQL state for UNDEFINED_TABLE (relation does not exist). */
+private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
 
 @Singleton
 class RedshiftAirbyteClient(
@@ -47,7 +50,12 @@ class RedshiftAirbyteClient(
 
     override suspend fun createNamespace(namespace: String) {
         try {
-            execute(sqlGenerator.createNamespace(namespace))
+            // Skip CREATE SCHEMA when the schema already exists. On Redshift, CREATE SCHEMA
+            // IF NOT EXISTS still requires CREATE ON DATABASE even for an existing schema, so
+            // users with only USAGE+CREATE on a pre-created schema would fail check/sync.
+            if (!namespaceExists(namespace)) {
+                execute(sqlGenerator.createNamespace(namespace))
+            }
         } catch (e: SQLException) {
             // Swallow race condition where concurrent connections both try CREATE SCHEMA
             if (e.message?.contains("already exists") != true) {
@@ -108,11 +116,7 @@ class RedshiftAirbyteClient(
                 }
             }
         } catch (e: SQLException) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. " +
-                    "Count returning null to signal a missing table."
-            }
-            null
+            if (!isTableNotFoundException(e)) throw e else null
         }
 
     /**
@@ -127,11 +131,7 @@ class RedshiftAirbyteClient(
                 rs.next() && rs.getBoolean("not_empty")
             }
         } catch (e: SQLException) {
-            log.debug(e) {
-                "Table ${tableName.namespace}.${tableName.name} does not exist. " +
-                    "Returning null to signal a missing table."
-            }
-            null
+            if (!isTableNotFoundException(e)) throw e else null
         }
 
     override suspend fun getGenerationId(tableName: TableName): Long =
@@ -145,8 +145,7 @@ class RedshiftAirbyteClient(
                 }
             }
         } catch (e: SQLException) {
-            log.error(e) { "Failed to retrieve the generation ID for table $tableName" }
-            0L
+            if (!isTableNotFoundException(e)) throw e else 0L
         }
 
     override suspend fun discoverSchema(tableName: TableName): TableSchema {
@@ -213,14 +212,12 @@ class RedshiftAirbyteClient(
 
         log.info { "Summary of table alterations for ${tableName.namespace}.${tableName.name}:" }
         log.info { "  Added columns: ${columnChangeset.columnsToAdd}" }
-        log.info { "  Dropped columns: ${columnChangeset.columnsToDrop}" }
         log.info { "  Modified columns: ${columnChangeset.columnsToChange}" }
 
         execute(
             sqlGenerator.matchSchemas(
                 tableName = tableName,
                 columnsToAdd = columnChangeset.columnsToAdd,
-                columnsToRemove = columnChangeset.columnsToDrop,
                 columnsToModify = columnChangeset.columnsToChange
             )
         )
@@ -393,6 +390,9 @@ class RedshiftAirbyteClient(
             throw e
         }
     }
+
+    private fun isTableNotFoundException(e: SQLException): Boolean =
+        e.sqlState == SQLSTATE_UNDEFINED_TABLE
 
     /** Executes a SQL query and processes the [ResultSet] with the given [resultProcessor]. */
     private fun <T> executeQuery(query: String, resultProcessor: (ResultSet) -> T): T {

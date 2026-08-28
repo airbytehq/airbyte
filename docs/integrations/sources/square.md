@@ -77,6 +77,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                   |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------ |
+| 1.7.27 | 2026-08-18 | [84792](https://github.com/airbytehq/airbyte/pull/84792) | Update dependencies |
+| 1.7.26 | 2026-08-11 | [84144](https://github.com/airbytehq/airbyte/pull/84144) | Update dependencies |
+| 1.7.25 | 2026-08-04 | [83647](https://github.com/airbytehq/airbyte/pull/83647) | Update dependencies |
+| 1.7.24 | 2026-07-28 | [83144](https://github.com/airbytehq/airbyte/pull/83144) | Update dependencies |
+| 1.7.23 | 2026-07-21 | [82636](https://github.com/airbytehq/airbyte/pull/82636) | Update dependencies |
+| 1.7.22 | 2026-07-14 | [82047](https://github.com/airbytehq/airbyte/pull/82047) | Update dependencies |
+| 1.7.21 | 2026-06-30 | [81274](https://github.com/airbytehq/airbyte/pull/81274) | Update dependencies |
+| 1.7.20 | 2026-06-23 | [80667](https://github.com/airbytehq/airbyte/pull/80667) | Update dependencies |
 | 1.7.19 | 2026-06-16 | [80085](https://github.com/airbytehq/airbyte/pull/80085) | Update dependencies |
 | 1.7.18 | 2026-06-15 | [77704](https://github.com/airbytehq/airbyte/pull/77704) | Fix `orders` stream pagination — was silently capping at 500 records per location partition; now follows Square's `cursor` to fetch all pages |
 | 1.7.17 | 2026-06-09 | [79525](https://github.com/airbytehq/airbyte/pull/79525) | Update dependencies |

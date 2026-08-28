@@ -936,6 +936,12 @@ Classes
     `bot_profile: dict[str, typing.Any] | None`
     :   Bot profile information.
 
+    `channel_id: str | None`
+    :   Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: float | None`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
+
     `is_locked: bool | None`
     :   Whether the thread is locked.
 
@@ -980,6 +986,9 @@ Classes
 
     `user: str | None`
     :   User ID who sent the message.
+
+    `username: str | None`
+    :   Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
 
 <a id="ChannelPurpose"></a>
 
@@ -2618,8 +2627,11 @@ Classes
 
     ### Class variables
 
-    `include_archived_channels: bool`
+    `include_archived_channels: bool | None`
     :   Whether to include archived channels in the sync. When disabled (default), archived channels are excluded from the Slack API response, reducing the number of API calls for downstream streams such as channel_messages, threads, and channel_members.
+
+    `include_private_channels: bool | None`
+    :   Whether to read from private channels the bot is a member of. When disabled (default), only public channels are replicated.
 
     `join_channels: bool`
     :   Whether to automatically join public channels to sync messages.
@@ -2633,7 +2645,7 @@ Classes
     `start_date: str`
     :   UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ from which to start replicating data.
 
-    `threads_ignore_no_replies: bool`
+    `threads_ignore_no_replies: bool | None`
     :   When enabled, the threads stream will skip messages that have no replies, reducing the number of API calls. Disabled by default to make the Threads stream contain unthreaded messages in its records.
 
 <a id="SlackTokenAuthenticationAuthConfig"></a>
@@ -2830,6 +2842,12 @@ Classes
 
     `bot_id: str | None`
     :   Bot ID if message was sent by a bot.
+
+    `channel_id: str | None`
+    :   Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
+
+    `float_ts: float | None`
+    :   Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
 
     `is_locked: bool | None`
     :   Whether the thread is locked.
