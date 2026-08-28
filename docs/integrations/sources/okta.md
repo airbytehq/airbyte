@@ -1,61 +1,49 @@
 # Okta
 
-Okta is the complete identity solution for all your apps and people that’s universal, reliable, and easy
+The Okta source connector syncs identity data (users, groups, roles, and system logs) from your [Okta](https://www.okta.com/) organization.
 
 ## Prerequisites
 
-- Created Okta account with added application on [Add Application Page](https://okta-domain.okta.com/enduser/catalog) page. (change okta-domain to your domain received after complete registration)
-
-## Airbyte Open Source
-
-- Name
-- Okta-Domain
-- Start Date
-- Personal Api Token (look [here](https://developer.okta.com/docs/guides/find-your-domain/-/main/) to find it)
-
-## Airbyte Cloud
-
-- Name
-- Start Date
-- Client ID (received when application was added).
-- Client Secret (received when application was added).
-- Refresh Token (received when application was added)
+- An Okta organization and its domain. If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain. See [Find your Okta domain](https://developer.okta.com/docs/guides/find-your-domain/main/).
+- Credentials for one of the three supported authentication methods (see below). The credentials must belong to an administrator with permission to read the resources you want to sync. API tokens inherit the privilege level of the admin who creates them.
 
 ## Setup guide
 
-### Step 1: Set up Okta
+### Step 1: Set up authentication in Okta
 
-1. Create account on Okta by following link [signup](https://www.okta.com/free-trial/)
-2. Confirm your Email
-3. Choose authorization method (Application or SMS)
-4. Add application in your [Dashboard](https://okta-domain.okta.com/app/UserHome)
+The connector supports three authentication methods. All three work on both Airbyte Cloud and Airbyte Open Source.
 
-### For Airbyte Cloud:
+#### API Token
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for this connector.
-4. Add **Name**
-5. Add **Okta Domain** (If your Okta URL is `https://MY_DOMAIN.okta.com/`, then `MY_DOMAIN` is your Okta domain.)
-6. Add **Start date** (defaults to 7 days if no date is included)
-7. Choose the method of authentication
-8. If you select Token authentication - fill the field **Personal Api Token**
-9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
-10. If you select OAuth2.0 with private key authorization, create an Okta API Service app. Register the public JWK that corresponds to your PEM private key and grant the app every scope the connector will request. Fill in **Client ID** with the service app's client ID, **Key ID** with the registered JWK's `kid`, **Private Key** with the corresponding PEM private key, and **Scope** with the granted scopes separated by spaces.
-11. Click `Set up source`.
+Create an API token (SSWS token) in the Okta Admin Console under **Security > API > Tokens**. Record the token value when Okta displays it; you can't view it again later. See [Create an API token](https://developer.okta.com/docs/guides/create-an-api-token/main/).
 
-### For Airbyte Open Source:
+Okta API tokens expire after 30 days of inactivity. If you restrict API calls to a network zone, make sure requests from Airbyte are allowed.
 
-1. Go to local Airbyte page.
-2. Use API token from requirements and Okta [domain](https://developer.okta.com/docs/guides/find-your-domain/-/main/).
-3. Go to local Airbyte page.
-4. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-5. On the Set up the source page select **Okta** from the Source type dropdown.
-6. Add **Name**
-7. Add **Okta-Domain**
-8. Add **Start date**
-9. Paste all data to required fields fill the fields **Client ID**, **Client Secret**, **Refresh Token**
-10. Click `Set up source`.
+#### OAuth 2.0
+
+Provide the **Client ID**, **Client Secret**, and a current **Refresh Token** for an OAuth 2.0 web app integration in your Okta org. The connector uses the refresh token to obtain new access tokens when they expire.
+
+#### OAuth 2.0 with private key
+
+Create an [API service app](https://developer.okta.com/docs/guides/implement-oauth-for-okta-serviceapp/main/) in your Okta org, register the public JSON Web Key (JWK) that corresponds to your PEM private key, and grant the app the [OAuth 2.0 scopes](https://developer.okta.com/docs/api/oauth2) for the resources you plan to sync (for example, `okta.users.read`, `okta.groups.read`, `okta.roles.read`, and `okta.logs.read`). You need:
+
+- **Client ID**: the service app's client ID.
+- **Key ID**: the `kid` of the registered JWK.
+- **Private key**: the corresponding private key in PEM format.
+- **Scope**: the granted scopes, separated by spaces.
+
+### Step 2: Set up the Okta source in Airbyte
+
+1. Log in to your Airbyte Cloud or Airbyte Open Source account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for the connector.
+4. Enter your **Okta domain**. Enter only the domain part: if your Okta URL is `https://MY_DOMAIN.okta.com/`, enter `MY_DOMAIN`.
+5. Enter a **Start Date** in the format `YYYY-MM-DDTHH:MM:SSZ`. Data before this date isn't replicated. If you leave this field empty, the connector syncs data from the last 7 days only.
+6. Choose an authentication method and fill in its fields:
+   - **API Token**: enter your **Personal API Token**.
+   - **OAuth2.0**: enter your **Client ID**, **Client Secret**, and **Refresh Token**.
+   - **OAuth 2.0 with private key**: enter your **Client ID**, **Key ID**, **Private key**, and **Scope**.
+7. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -64,21 +52,23 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 - Full Refresh
 - Incremental
 
-## Supported Streams
+## Supported streams
 
-- [Users](https://developer.okta.com/docs/reference/api/users/#list-users)
-- [User Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-user)
-- [Groups](https://developer.okta.com/docs/reference/api/groups/#list-groups)
-- [Group Members](https://developer.okta.com/docs/reference/api/groups/#list-group-members)
-- [Group Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-group)
-- [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started)
-- [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles)
-- [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions)
-- [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets)
+| Stream | Incremental | Notes |
+|:-------|:------------|:------|
+| [Users](https://developer.okta.com/docs/reference/api/users/#list-users) | Yes | Cursor: `lastUpdated` |
+| [User Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-user) | No | Roles assigned to each user |
+| [Groups](https://developer.okta.com/docs/reference/api/groups/#list-groups) | Yes | Cursor: `lastUpdated` |
+| [Group Members](https://developer.okta.com/docs/reference/api/groups/#list-group-members) | No | Members of each group |
+| [Group Role Assignments](https://developer.okta.com/docs/reference/api/roles/#list-roles-assigned-to-a-group) | No | Roles assigned to each group |
+| [System Log](https://developer.okta.com/docs/reference/api/system-log/#get-started) | Yes | Cursor: `published` |
+| [Custom Roles](https://developer.okta.com/docs/reference/api/roles/#list-roles) | No |  |
+| [Permissions](https://developer.okta.com/docs/reference/api/roles/#list-permissions) | No | Permissions of each custom role |
+| [Resource Sets](https://developer.okta.com/docs/reference/api/roles/#list-resource-sets) | No |  |
 
 ## Performance considerations
 
-The connector is restricted by normal Okta [requests limitation](https://developer.okta.com/docs/reference/rate-limits/).
+The connector is subject to standard Okta [rate limits](https://developer.okta.com/docs/reference/rate-limits/). Rate limits vary by endpoint and by your Okta subscription.
 
 ## IP allow list
 
@@ -89,11 +79,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                        |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
-| 0.3.23 | 2026-08-27 | [85169](https://github.com/airbytehq/airbyte/pull/85169) | Remove legacy main.py from poetry package includes to fix Docker image build |
+| Version | Date | Pull Request | Subject |
+| :------ | :--- | :----------- | :------ |
+| 0.3.23 | 2026-08-28 | [85169](https://github.com/airbytehq/airbyte/pull/85169) | Remove legacy main.py from poetry package includes to fix Docker image build |
 | 0.3.22 | 2026-08-26 | [85086](https://github.com/airbytehq/airbyte/pull/85086) | Support multiline input for private key |
-| 0.3.21 | 2025-02-24 | [54167](https://github.com/airbytehq/airbyte/pull/54167) | Remove stream_state interpolation |
+| 0.3.21 | 2025-02-25 | [54167](https://github.com/airbytehq/airbyte/pull/54167) | Remove stream_state interpolation |
 | 0.3.20 | 2025-02-01 | [52728](https://github.com/airbytehq/airbyte/pull/52728) | Update dependencies |
 | 0.3.19 | 2025-01-25 | [52469](https://github.com/airbytehq/airbyte/pull/52469) | Update dependencies |
 | 0.3.18 | 2025-01-18 | [51920](https://github.com/airbytehq/airbyte/pull/51920) | Update dependencies |
@@ -142,7 +132,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.4 | 2021-11-02 | [7584](https://github.com/airbytehq/airbyte/pull/7584) | Fix incremental params for log stream |
 | 0.1.3 | 2021-09-08 | [5905](https://github.com/airbytehq/airbyte/pull/5905) | Fix incremental stream defect |
 | 0.1.2 | 2021-07-01 | [4456](https://github.com/airbytehq/airbyte/pull/4456) | Fix infinite pagination in logs stream |
-| 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                   |
-| 0.1.0   | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563)   | Initial Release                                                                |
+| 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support |
+| 0.1.0 | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563) | Initial Release |
 
 </details>
