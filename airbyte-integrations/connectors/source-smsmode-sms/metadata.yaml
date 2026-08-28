@@ -26,6 +26,8 @@ data:
   releaseDate: 2026-06-15
   releaseStage: alpha
   supportLevel: community
+  connectorTestSuitesOptions:
+    - suite: unitTests
   documentationUrl: https://docs.airbyte.com/integrations/sources/smsmode-sms
   tags:
     - language:manifest-only

@@ -208,6 +208,14 @@ streams:
         type: JsonDecoder
       paginator:
         type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: pageSize
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
         pagination_strategy:
           type: PageIncrement
           page_size: 100

@@ -17,7 +17,7 @@ We recommend you use the Connector Builder to edit this connector.
 But, if you want to develop this connector locally, you can use the following steps.
 
 ### Environment Setup
-You will need `airbyte-ci` installed. You can find the documentation [here](airbyte-ci).
+For the repository's supported local-development tooling, see the [local connector development guide](../../../docs/platform/connector-development/local-connector-development.md).
 
 ### Build
 This will create a dev image (`source-smsmode-sms:dev`) that you can use to test the connector locally.
@@ -30,4 +30,3 @@ This will run the acceptance tests for the connector.
 ```bash
 airbyte-ci connectors --name=source-smsmode-sms test
 ```
-
