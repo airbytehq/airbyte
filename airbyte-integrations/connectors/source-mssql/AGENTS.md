@@ -132,6 +132,16 @@ directly.
   which routes Central through Google's mirror of it; pass the same
   script via `--init-script` when invoking `./gradlew` by hand, or set
   `E2E_GRADLE_MIRROR=0` to opt out of it inside `run.sh`.
+- **A CDC read returns records but no `_ab_cdc_cursor` values.** The
+  configured `cursor_field` of a CDC stream must be
+  `["_ab_cdc_cursor"]`, the stream's source-defined cursor. Bulk-CDK
+  resolves a configured cursor against the stream's data columns and the
+  CDK's global cursor only, so any other name — `_ab_cdc_lsn` included,
+  even though it is in the stream schema — resolves to null. On CDK
+  versions predating [#75636](https://github.com/airbytehq/airbyte/pull/75636)
+  (which is every `source-mssql` image up to and including `4.3.5`) an
+  unresolved cursor downgrades the stream to full refresh, and the run
+  looks green while never exercising CDC.
 - **`prettier` reformats your committed JSON catalog.** The Format Check
   CI job runs `prettier`, which collapses short JSON arrays onto one
   line. Run `pnpm prettier --write airbyte-integrations/connectors/source-mssql/.agents`
