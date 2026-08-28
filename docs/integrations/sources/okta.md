@@ -35,7 +35,7 @@ Create an [API service app](https://developer.okta.com/docs/guides/implement-oau
 ### Step 2: Set up the Okta source in Airbyte
 
 1. Log in to your Airbyte Cloud or Airbyte Open Source account.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **Okta** from the Source type dropdown and enter a name for the connector.
 4. Enter your **Okta domain**. Enter only the domain part: if your Okta URL is `https://MY_DOMAIN.okta.com/`, enter `MY_DOMAIN`. The connector always calls `https://{domain}.okta.com`, so if your org uses a custom domain, enter its underlying `okta.com` subdomain rather than the custom hostname. Orgs reachable only on other Okta hosts (such as `okta-emea.com` or `oktapreview.com`) aren't supported.
 5. Enter a **Start Date** in the format `YYYY-MM-DDTHH:MM:SSZ`. Data before this date isn't replicated. If you leave this field empty, the connector syncs data from the last 7 days only.
