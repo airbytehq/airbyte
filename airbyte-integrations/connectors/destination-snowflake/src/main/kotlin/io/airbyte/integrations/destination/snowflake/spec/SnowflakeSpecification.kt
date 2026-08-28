@@ -165,7 +165,8 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
     JsonSubTypes.Type(
         value = UsernamePasswordAuthSpecification::class,
         name = "Username and Password"
-    )
+    ),
+    JsonSubTypes.Type(value = OAuthSpecification::class, name = "OAuth2.0")
 )
 sealed class CredentialsSpecification(
     @Suppress("PropertyName") @param:JsonProperty("auth_type") val auth_type: Type
@@ -174,6 +175,7 @@ sealed class CredentialsSpecification(
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("Key Pair Authentication"),
         USERNAME_PASSWORD("Username and Password"),
+        OAUTH("OAuth2.0"),
     }
 }
 
@@ -205,6 +207,26 @@ class UsernamePasswordAuthSpecification(
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val password: String = ""
 ) : CredentialsSpecification(Type.USERNAME_PASSWORD)
+
+@JsonSchemaTitle("OAuth2.0")
+class OAuthSpecification(
+    @get:JsonSchemaTitle("Client ID")
+    @get:JsonProperty("client_id")
+    @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
+    val clientId: String = "",
+    @get:JsonSchemaTitle("Client Secret")
+    @get:JsonProperty("client_secret")
+    @get:JsonSchemaInject(json = """{"order": 1, "airbyte_secret": true}""")
+    val clientSecret: String = "",
+    @get:JsonSchemaTitle("Refresh Token")
+    @get:JsonProperty("refresh_token")
+    @get:JsonSchemaInject(json = """{"order": 2, "airbyte_secret": true}""")
+    val refreshToken: String = "",
+    @get:JsonSchemaTitle("Access Token")
+    @get:JsonProperty("access_token")
+    @get:JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true}""")
+    val accessToken: String? = null,
+) : CredentialsSpecification(Type.OAUTH)
 
 enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),

@@ -23,6 +23,7 @@ internal const val AUTH_TYPE_PROPERTY = "\"auth_type\""
 
 internal const val CREDENTIALS_PROPERTY = "\"credentials\""
 internal const val PASSWORD_PROPERTY = "\"password\""
+internal const val REFRESH_TOKEN_PROPERTY = "\"refresh_token\""
 
 internal val CREDENTIALS_REGEX = """$CREDENTIALS_PROPERTY\s*:\s*\{\s*([^}]*)""".toRegex()
 internal val PASSWORD_REGEX = """$PASSWORD_PROPERTY\s*:\s*"([^"}]*)""".toRegex()
@@ -47,7 +48,9 @@ internal fun migrationMissingAuthType(json: String): String {
     return result?.let {
         val credentials = result.groupValues[1]
         val authType =
-            if (credentials.contains(PASSWORD_PROPERTY))
+            if (credentials.contains(REFRESH_TOKEN_PROPERTY))
+                CredentialsSpecification.Type.OAUTH.authTypeName
+            else if (credentials.contains(PASSWORD_PROPERTY))
                 CredentialsSpecification.Type.USERNAME_PASSWORD.authTypeName
             else CredentialsSpecification.Type.PRIVATE_KEY.authTypeName
         json.replace(

@@ -37,6 +37,13 @@ data class UsernamePasswordAuthConfiguration(
     val password: String,
 ) : AuthTypeConfiguration
 
+data class OAuthAuthConfiguration(
+    val clientId: String,
+    val clientSecret: String,
+    val refreshToken: String,
+    val accessToken: String?,
+) : AuthTypeConfiguration
+
 @Singleton
 class SnowflakeConfigurationFactory :
     DestinationConfigurationFactory<SnowflakeSpecification, SnowflakeConfiguration> {
@@ -60,6 +67,16 @@ class SnowflakeConfigurationFactory :
                     val usernamePasswordAuthSpec =
                         pojo.credentials as UsernamePasswordAuthSpecification
                     UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
+                }
+                is OAuthSpecification -> {
+                    @Suppress("USELESS_CAST")
+                    val oauthSpec = pojo.credentials as OAuthSpecification
+                    OAuthAuthConfiguration(
+                        oauthSpec.clientId,
+                        oauthSpec.clientSecret,
+                        oauthSpec.refreshToken,
+                        oauthSpec.accessToken,
+                    )
                 }
                 null -> {
                     UsernamePasswordAuthConfiguration("")

@@ -144,7 +144,7 @@ Make sure the database and schema have the `USAGE` privilege.
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
 Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
-username/password or key pair authentication:
+username/password, key pair, or OAuth 2.0 authentication:
 
 ### Login and Password
 
@@ -168,6 +168,11 @@ username/password or key pair authentication:
 ### Key pair authentication
 
 <KeypairExample/>
+
+### OAuth 2.0 authentication
+
+Select **OAuth2.0** as the authentication method and complete the authorization flow in the Airbyte
+UI. Airbyte refreshes the OAuth access token automatically throughout the sync.
 
 ## Output schema
 
@@ -329,6 +334,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.2.0           | 2026-08-28 | [#0000](https://github.com/airbytehq/airbyte/pull/0000)   | Add OAuth 2.0 authentication support                                                                                                                                                   |
 | 4.1.2           | 2026-08-24 | [84979](https://github.com/airbytehq/airbyte/pull/84979)   | Upgrade CDK to 1.0.25 (prevents truncate-refresh retries from replacing a populated table with an empty one)                                                                            |
 | 4.1.1           | 2026-08-18 | [76313](https://github.com/airbytehq/airbyte/pull/76313)   | Handle ANSI reserved keywords as column names by prefixing with underscore                                                                                                             |
 | 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
