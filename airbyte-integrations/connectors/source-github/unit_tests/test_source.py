@@ -151,8 +151,9 @@ def test_check_connection_repos_and_org_repos(rate_limit_mock_response, requests
     status = check_source("airbyte/test airbyte/test2 airbytehq/* org/*")
     assert not status.message
     assert status.status == Status.SUCCEEDED
-    # One quota-status call, two org wildcard expansions, and two explicit repo validations
-    assert requests_mock.call_count == 5
+    # One quota-status call, two owner-type lookups, two org wildcard expansions, and two
+    # explicit repo validations
+    assert requests_mock.call_count == 7
 
 
 def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
@@ -162,8 +163,26 @@ def test_check_connection_org_only(rate_limit_mock_response, requests_mock):
     status = check_source("airbytehq/*")
     assert not status.message
     assert status.status == Status.SUCCEEDED
-    # One quota-status call and one request to resolve organization repos
-    assert requests_mock.call_count == 2
+    # One quota-status call, one owner-type lookup, and one request to resolve organization repos
+    assert requests_mock.call_count == 3
+
+
+def test_check_connection_user_wildcard(rate_limit_mock_response, requests_mock):
+    """A wildcard entry naming a user account must pass `check`. It used to fail with "Some of
+    the provided repositories couldn't be found." because resolution only ever asked
+    `GET /orgs/{owner}/repos`, which 404s for a user (#67626)."""
+    requests_mock.get("https://api.github.com/users/octocat", json={"login": "octocat", "type": "User"})
+    requests_mock.get(
+        "https://api.github.com/users/octocat/repos",
+        json=[{"full_name": "octocat/hello-world", "updated_at": "2020-01-01T00:00:00Z"}],
+    )
+
+    status = check_source("octocat/*")
+
+    assert not status.message
+    assert status.status == Status.SUCCEEDED
+    # One quota-status call, one owner-type lookup, and one user repo listing
+    assert requests_mock.call_count == 3
 
 
 @responses.activate

@@ -1,6 +1,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 
 import os
+import re
 import shutil
 
 import pytest
@@ -27,3 +28,12 @@ def rate_limit_mock_response(requests_mock):
         }
     }
     requests_mock.get("https://api.github.com/rate_limit", json=rate_limit_response)
+    # Every wildcard entry (`owner/*`) costs one `GET /users/{owner}` to learn whether the
+    # owner is an organization or a user, because the two have different repo-listing
+    # endpoints. Answering "organization" by default keeps the org path the default in these
+    # tests; a test about user-owned wildcards registers its own `users/{login}` response,
+    # and requests_mock gives precedence to the later registration.
+    requests_mock.get(
+        re.compile(r"^https://api\.github\.com/users/[^/]+$"),
+        json=lambda request, context: {"login": request.url.rsplit("/", 1)[-1], "type": "Organization"},
+    )

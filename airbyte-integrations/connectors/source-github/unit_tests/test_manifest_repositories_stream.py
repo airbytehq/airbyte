@@ -127,6 +127,32 @@ def test_org_404_is_skipped_and_sync_completes(rate_limit_mock_response, request
     assert statuses[-1] == "COMPLETE"
 
 
+def test_user_wildcard_lists_the_user_repositories(rate_limit_mock_response, requests_mock):
+    """`owner/*` for a user account lists through `GET /users/{owner}/repos`. The org endpoint
+    404s for a user, so this stream used to emit nothing at all for such a config (#67626)."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["octocat/*"]}
+    requests_mock.get("https://api.github.com/users/octocat", json={"login": "octocat", "type": "User"})
+    requests_mock.get(
+        "https://api.github.com/users/octocat/repos",
+        json=[_repo(1, "octocat/hello-world"), _repo(2, "octocat/spoon-knife")],
+    )
+    org_listing = requests_mock.get("https://api.github.com/orgs/octocat/repos", status_code=404, json={"message": "Not Found"})
+
+    records, statuses, error = _read(config)
+
+    assert error is None
+    assert sorted(set(_names(records))) == ["octocat/hello-world", "octocat/spoon-knife"]
+    # The synthetic `organization` field holds the owner login for either owner type, as the
+    # legacy Python transform did.
+    assert {record["organization"] for record in records} == {"octocat"}
+    assert statuses[-1] == "COMPLETE"
+    assert org_listing.call_count == 0
+    for request in [request for request in requests_mock.request_history if request.path == "/users/octocat/repos"]:
+        assert request.qs["per_page"] == ["100"]
+        assert request.qs["sort"] == ["updated"]
+        assert request.qs["direction"] == ["desc"]
+
+
 def test_explicit_repo_404_is_skipped_and_sync_completes(rate_limit_mock_response, requests_mock):
     """A deleted explicit repo 404s during partition generation and must be skipped, not fail the sync."""
     config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/compose", "ghost/deleted-repo"]}

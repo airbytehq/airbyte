@@ -3,6 +3,7 @@
 #
 
 import logging
+import re
 import time
 from unittest.mock import patch
 
@@ -13,9 +14,21 @@ from airbyte_cdk.sources.declarative.concurrent_declarative_source import Concur
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
+def _mock_owner_types(requests_mock, api_url="https://api.github.com"):
+    """Wildcard owner resolution asks `GET /users/{owner}` for the account type, so every
+    wildcard config needs that endpoint mocked. Organization is the answer these tests expect
+    unless one registers its own response for that owner — requests_mock gives precedence to the
+    later registration. Same default as conftest's `rate_limit_mock_response`."""
+    requests_mock.get(
+        re.compile(rf"^{re.escape(api_url)}/users/[^/]+$"),
+        json=lambda request, context: {"login": request.url.rsplit("/", 1)[-1], "type": "Organization"},
+    )
+
+
 def _mock_rate_limit(requests_mock, api_url="https://api.github.com"):
     quota = {"remaining": 5000, "reset": int(time.time()) + 3600, "limit": 5000}
     requests_mock.get(f"{api_url}/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
+    _mock_owner_types(requests_mock, api_url)
 
 
 def _resolve(config):
@@ -132,6 +145,7 @@ def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
     reset_at = int(time.time()) + 3600
     quota = {"remaining": 5000, "reset": reset_at, "limit": 5000}
     requests_mock.get("https://api.github.com/rate_limit", json={"resources": {"core": dict(quota), "graphql": dict(quota)}})
+    _mock_owner_types(requests_mock)
     requests_mock.get(
         "https://api.github.com/orgs/org/repos",
         [
@@ -249,6 +263,7 @@ def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_m
     `unavailable_status_codes: [404]` seeds the token untracked instead (CDK #1121)."""
     api_url = "https://github.example.com/api/v3"
     requests_mock.get(f"{api_url}/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
+    _mock_owner_types(requests_mock, api_url)
     requests_mock.get(
         f"{api_url}/orgs/org/repos",
         json=[{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}],
@@ -266,6 +281,7 @@ def test_rate_limit_404_on_github_dot_com_is_not_swallowed_into_a_broken_sync(re
     always meant — the org does not exist — and resolution yields nothing rather than pretending
     it succeeded."""
     requests_mock.get("https://api.github.com/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
+    _mock_owner_types(requests_mock)
     requests_mock.get("https://api.github.com/orgs/org/repos", status_code=404, json={"message": "Not Found"})
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
 
@@ -369,6 +385,88 @@ def test_resolution_wildcard_orgs(requests_mock):
 
     assert repositories == ["docker/compose", "docker/docker-py"]
     assert organizations == ["docker"]
+
+
+def test_resolution_wildcard_orgs_never_touches_the_user_listing(requests_mock):
+    """The organization path must stay on `GET /orgs/{org}/repos`: it is the only listing that
+    includes the private repos the token can see, while `GET /users/{org}/repos` answers for an
+    organization too but with public repos only."""
+    _mock_rate_limit(requests_mock)
+    org_listing = requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        json=[{"full_name": "docker/docker-py", "owner": {"login": "docker"}}],
+    )
+    user_listing = requests_mock.get("https://api.github.com/users/docker/repos", json=[])
+
+    organizations, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repositories": ["docker/*"]})
+
+    assert (organizations, repositories) == (["docker"], ["docker/docker-py"])
+    assert org_listing.call_count == 1
+    assert user_listing.call_count == 0
+
+
+def test_resolution_wildcard_user(requests_mock):
+    """A wildcard entry may name a user account, which `GET /orgs/{owner}/repos` answers with a
+    404 — so `owner/*` resolved to nothing at all for every user-owned account (#67626). The
+    owner type from `GET /users/{owner}` picks the listing endpoint:
+    https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repositories-for-a-user
+    """
+    _mock_rate_limit(requests_mock)
+    requests_mock.get("https://api.github.com/users/octocat", json={"id": 1, "login": "octocat", "type": "User"})
+    user_listing = requests_mock.get(
+        "https://api.github.com/users/octocat/repos",
+        json=[
+            {"full_name": "octocat/hello-world", "owner": {"login": "octocat", "type": "User"}},
+            {"full_name": "octocat/spoon-knife", "owner": {"login": "octocat", "type": "User"}},
+        ],
+    )
+    org_listing = requests_mock.get("https://api.github.com/orgs/octocat/repos", status_code=404, json={"message": "Not Found"})
+
+    organizations, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repositories": ["octocat/*"]})
+
+    assert repositories == ["octocat/hello-world", "octocat/spoon-knife"]
+    # A user is not an organization: every org-scoped stream would 404 on this login.
+    assert organizations == []
+    assert user_listing.call_count == 1
+    assert org_listing.call_count == 0
+
+
+def test_resolution_wildcard_user_honours_the_pattern(requests_mock):
+    """The wildcard pattern filter applies to the user listing exactly as it does to the org one."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get("https://api.github.com/users/octocat", json={"login": "octocat", "type": "User"})
+    requests_mock.get(
+        "https://api.github.com/users/octocat/repos",
+        json=[
+            {"full_name": "octocat/source-github", "owner": {"login": "octocat"}},
+            {"full_name": "octocat/destination-postgres", "owner": {"login": "octocat"}},
+        ],
+    )
+
+    _, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repositories": ["octocat/source-*"]})
+
+    assert repositories == ["octocat/source-github"]
+
+
+def test_resolution_mixed_org_and_user_wildcards(requests_mock):
+    """One config can hold both, and each owner is routed on its own type."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get("https://api.github.com/users/octocat", json={"login": "octocat", "type": "User"})
+    requests_mock.get(
+        "https://api.github.com/orgs/airbytehq/repos",
+        json=[{"full_name": "airbytehq/airbyte", "owner": {"login": "airbytehq"}}],
+    )
+    requests_mock.get(
+        "https://api.github.com/users/octocat/repos",
+        json=[{"full_name": "octocat/hello-world", "owner": {"login": "octocat"}}],
+    )
+
+    organizations, repositories = _resolve(
+        {"credentials": {"personal_access_token": "test_token"}, "repositories": ["airbytehq/*", "octocat/*"]}
+    )
+
+    assert repositories == ["airbytehq/airbyte", "octocat/hello-world"]
+    assert organizations == ["airbytehq"]
 
 
 def test_resolution_mixed_explicit_and_wildcard(requests_mock):
