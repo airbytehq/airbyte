@@ -124,8 +124,9 @@ directly.
   `start-backend.sh` sets this). Without Agent, Debezium silently sees
   an empty change table.
 - **A `:dockerBuildx` build dies partway through dependency
-  resolution with HTTP 429.** Maven Central rate-limits unauthenticated
-  clients per source IP, and a cold connector build resolves enough
+  resolution with HTTP 429.** Maven Central limits consumption per
+  egress path rather than per client (reads are anonymous, so no
+  credential avoids it), and a cold connector build resolves enough
   artifacts to trip it on any shared-egress machine. `run.sh` builds
   `:dev` with
   [`fixtures/gradle/maven-mirror-init.gradle`](.agents/skills/source-mssql-e2e-tests/fixtures/gradle/maven-mirror-init.gradle),

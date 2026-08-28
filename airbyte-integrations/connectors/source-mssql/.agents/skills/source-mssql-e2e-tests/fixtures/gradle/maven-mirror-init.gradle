@@ -1,18 +1,26 @@
 // Gradle init script that routes Maven Central traffic through Google's
 // read-only Central mirror.
 //
-// Why: repo.maven.apache.org rate-limits unauthenticated clients per source
-// IP with HTTP 429. Shared-egress build machines (Devin VMs, anything behind
-// one NAT) trip that limit on a cold Gradle cache, and `:dockerBuildx` for a
-// Kotlin/bulk-CDK connector resolves enough artifacts to trip it reliably —
-// the build fails partway through dependency resolution, several minutes in,
-// and retrying does not help because the limit is per-IP, not per-request.
+// Why: Central applies consumption limits per egress path rather than per
+// client identity — reads are anonymous, so there are no credentials to
+// present — and answers HTTP 429 once the aggregate traffic it sees from one
+// path crosses a threshold (https://central.sonatype.org/faq/429-error/).
+// Build machines behind a single NAT (Devin VMs, anything sharing a gateway)
+// hit that on a cold Gradle cache: `:dockerBuildx` for a Kotlin/bulk-CDK
+// connector resolves enough artifacts to trip it reliably, failing several
+// minutes into dependency resolution, and retrying does not help.
 //
-// The mirror serves the same artifacts (Google syncs it from Central) and is
-// not rate-limited, so the remap is behaviour-preserving: nothing here adds a
-// repository that could supply a *different* artifact for a coordinate that
-// Central also has, and the substitution is by URL, so a build that never
-// talks to Central is unaffected.
+// Sonatype's own remedy is to consolidate through a caching proxy instead of
+// pulling from Central directly. This script is the stopgap form of that,
+// pointing at Google's public mirror; the durable fix is an Airbyte-operated
+// proxy, already anticipated by the `TODO: add airbyte-controlled proxy repos
+// here` in the root settings.gradle, which would retire this file.
+//
+// The mirror serves the same artifacts (Google syncs it from Central), so the
+// remap is behaviour-preserving: nothing here adds a repository that could
+// supply a *different* artifact for a coordinate that Central also has, and
+// the substitution is by URL, so a build that never talks to Central is
+// unaffected.
 //
 // Applied automatically by run.sh when it builds airbyte/source-mssql:dev.
 // Set E2E_GRADLE_MIRROR=0 to skip it (e.g. to reproduce a resolution failure

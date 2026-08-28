@@ -243,8 +243,9 @@ fi
 if [[ "$TEST_VERSION" == "dev" ]] && { [[ "$BUILD" == true ]] \
   || ! docker image inspect "airbyte/$CONNECTOR:dev" >/dev/null 2>&1; }; then
   REPO_ROOT="$(git -C "$SKILL_DIR" rev-parse --show-toplevel)"
-  # Maven Central 429s unauthenticated clients per source IP, which a cold
-  # connector build trips reliably on shared-egress machines. The init script
+  # Maven Central 429s once aggregate traffic from one egress path crosses
+  # its consumption limit, which a cold connector build trips reliably on
+  # shared-egress machines; no client credential avoids it. The init script
   # remaps Central to Google's mirror of it; see its header for why that is
   # behaviour-preserving. E2E_GRADLE_MIRROR=0 opts out.
   GRADLE_MIRROR_ARGS=()
