@@ -8,7 +8,7 @@ This page contains the setup guide and reference information for the [PokéAPI](
 
 ## Overview
 
-The PokéAPI source retrieves one Pokémon resource from the [PokéAPI REST API](https://pokeapi.co/docs/v2#pokemon) for each sync. Use it primarily for tutorials, testing, and demonstrations.
+The PokéAPI source retrieves one Pokémon resource from the [PokéAPI REST API](https://pokeapi.co/docs/v2#pokemon) for each sync. It reads from `https://pokeapi.co/api/v2/pokemon/{pokemon_name}`, where `pokemon_name` is the Pokémon you select when you configure the source. Use the connector primarily for tutorials, testing, and demonstrations.
 
 ## Prerequisites
 
@@ -28,9 +28,9 @@ The connector supports full refresh syncs. It doesn't support incremental syncs.
 
 This source provides one stream:
 
-| Stream | Description |
-| :--- | :--- |
-| `pokemon` | One record containing details for the configured Pokémon, including its abilities, base stats, forms, held items, moves, sprites, and types. |
+| Stream | Primary key | Description |
+| :--- | :--- | :--- |
+| `pokemon` | `id` | One record containing details for the configured Pokémon, including its abilities, base stats, cries, forms, held items, moves, sprites, and types. The record also includes `past_abilities` and `past_stats`, which describe abilities and base stats the Pokémon had in earlier game generations. |
 
 ## Limitations
 
@@ -60,6 +60,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.69 | 2026-08-24 | [84977](https://github.com/airbytehq/airbyte/pull/84977) | Add missing `cries`, `past_abilities`, and `past_stats` fields to the `pokemon` stream schema |
+| 0.3.68 | 2026-08-18 | [84696](https://github.com/airbytehq/airbyte/pull/84696) | Update dependencies |
+| 0.3.67 | 2026-08-13 | [84389](https://github.com/airbytehq/airbyte/pull/84389) | No-op version bump to validate the new autopilot release-immediately checkbox workflow |
+| 0.3.66 | 2026-08-11 | [84043](https://github.com/airbytehq/airbyte/pull/84043) | Update dependencies |
+| 0.3.65 | 2026-08-04 | [83560](https://github.com/airbytehq/airbyte/pull/83560) | Update dependencies |
 | 0.3.64 | 2026-07-28 | [83032](https://github.com/airbytehq/airbyte/pull/83032) | Update dependencies |
 | 0.3.63 | 2026-07-21 | [82557](https://github.com/airbytehq/airbyte/pull/82557) | Update dependencies |
 | 0.3.62 | 2026-07-14 | [81961](https://github.com/airbytehq/airbyte/pull/81961) | Update dependencies |
