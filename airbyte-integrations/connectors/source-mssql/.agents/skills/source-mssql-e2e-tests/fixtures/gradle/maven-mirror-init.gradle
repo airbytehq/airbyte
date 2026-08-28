@@ -49,10 +49,8 @@ settingsEvaluated { settings ->
                     repo.setUrl(MIRROR)
                 }
             }
-    } catch (ignored) {
-        // Not every Gradle version exposes this at this point in the
-        // lifecycle; the allprojects block below still covers per-project
-        // repositories, which is where the bulk of resolution happens.
+    } catch (remapException) {
+        logger.warn("Could not apply the settings-level Maven Central remap; project-level repositories are still remapped, but Central may still be contacted and HTTP 429s remain possible: ${remapException.message}")
     }
 }
 

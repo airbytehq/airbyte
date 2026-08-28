@@ -252,7 +252,7 @@ if [[ "$TEST_VERSION" == "dev" ]] && { [[ "$BUILD" == true ]] \
     GRADLE_MIRROR_ARGS=(--init-script "$SKILL_DIR/fixtures/gradle/maven-mirror-init.gradle")
   fi
   echo "[run] building airbyte/$CONNECTOR:dev from the current checkout" >&2
-  "$REPO_ROOT/gradlew" ${GRADLE_MIRROR_ARGS[@]+"${GRADLE_MIRROR_ARGS[@]}"} \
+  "$REPO_ROOT/gradlew" "${GRADLE_MIRROR_ARGS[@]}" \
     ":airbyte-integrations:connectors:$CONNECTOR:dockerBuildx" \
     --configure-on-demand
 fi
