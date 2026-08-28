@@ -36,6 +36,8 @@ Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Gr
 - `harvest:user_roles:list`
 - `harvest:users:list`
 
+The Greenhouse user who approves the consent flow must be a Site Admin. Harvest v3 rejects requests to its list endpoints from any other user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled.
+
 ## Set up the Greenhouse connector in Airbyte
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
@@ -44,7 +46,8 @@ Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Gr
 4. Enter the name for the Greenhouse connector.
 5. Select **OAuth**, enter the **OAuth client ID** and **OAuth client secret**, then click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token.
 6. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
-7. If your deployment does not surface **Authenticate**, open the Greenhouse authorization URL with your client ID, registered redirect URI, and the scopes above, then exchange the returned code within one minute:
+7. Optionally change **Number of concurrent threads**. The connector syncs with 2 threads by default and accepts 1 to 8. All threads share one Greenhouse rate limit, so raise this only if your Greenhouse account can absorb more API traffic, and lower it to 1 if syncs fail with rate-limit errors.
+8. If your deployment does not surface **Authenticate**, open the Greenhouse authorization URL with your client ID, registered redirect URI, and the scopes above, then exchange the returned code within one minute:
    1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
    2. Exchange the `code` query parameter:
 
@@ -53,7 +56,7 @@ Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Gr
       ```
 
    3. Copy `refresh_token` from the response into the **Refresh token** field.
-8. Click **Set up source**.
+9. Click **Set up source**.
 
 :::warning
 Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
@@ -69,6 +72,8 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 - [Incremental - Append + Deduped](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append-deduped)
 
 ## Supported Streams
+
+Incremental streams use `updated_at` as their cursor, except **EEOC**, which uses `submitted_at`. **Activity Feed**, **Demographic Answer Options For Question**, **Demographic Questions For Question Set**, **Job Openings**, and **User Permissions** read the IDs they need from a parent stream, so those streams cover your full Greenhouse history regardless of the **Start date** you configure.
 
 - [Activity Feed](https://harvestdocs.greenhouse.io/reference/get_v3-notes)
 - [Applications](https://harvestdocs.greenhouse.io/reference/get_v3-applications) \(Incremental\)
@@ -107,7 +112,16 @@ The Greenhouse source connector supports the following [sync modes](https://docs
 
 ## Performance considerations
 
-The Greenhouse connector should not run into Greenhouse API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+Greenhouse [rate limits](https://harvestdocs.greenhouse.io/docs/api-rate-limiting) Harvest v3 in fixed 30-second windows. Each response reports your remaining allowance in `X-RateLimit-Remaining` and the time the current window resets in `X-RateLimit-Reset`. Greenhouse doesn't publish a fixed request ceiling for Harvest v3, and it applies different allowances to custom and partner integrations, so the connector holds itself to a conservative 50 requests per window, tracks those headers, and waits for the `Retry-After` interval when Greenhouse returns `429`. Because every thread draws on the same window, syncing many streams at a high **Number of concurrent threads** is a common cause of rate-limit errors. Lower that value before [creating an issue](https://github.com/airbytehq/airbyte/issues) about rate limits.
+
+The connector requests 500 records per page, the Harvest v3 maximum, and then follows the cursor links Greenhouse returns, so large accounts still page through many requests per stream.
+
+## Limitations
+
+- **EEOC** replicates on `submitted_at`. A correction to an EEOC response after submission doesn't change `submitted_at`, so incremental syncs never re-read it. Refresh the stream if you need corrections to land.
+- **Custom Field Options** reads every custom field option in your account, which makes it a superset of **Degrees**, **Disciplines**, and **Schools**. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
+- **Users** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
+- **Rejection Reasons** includes the default reasons Greenhouse ships with, not only the ones your organization added.
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
@@ -124,7 +138,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.0 | 2026-08-27 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
+| 1.0.0 | 2026-08-28 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-11 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
 | 0.7.33 | 2026-08-11 | [83956](https://github.com/airbytehq/airbyte/pull/83956) | Update dependencies |
