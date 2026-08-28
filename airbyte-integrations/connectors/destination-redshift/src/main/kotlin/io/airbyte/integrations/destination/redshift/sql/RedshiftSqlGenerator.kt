@@ -48,12 +48,13 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun createNamespace(namespace: String): String =
         "CREATE SCHEMA IF NOT EXISTS ${quoteIdentifier(namespace)};"
 
-    /** Generates a query to check if a schema exists via `information_schema.schemata`. */
+    /** Generates a query to check if a schema exists via `svv_all_schemas`. */
     fun namespaceExists(namespace: String): String =
         """
             |SELECT EXISTS(
-            |    SELECT 1 FROM information_schema.schemata
-            |    WHERE schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
+            |    SELECT 1 FROM svv_all_schemas
+            |    WHERE database_name = current_database()
+            |    AND schema_name = '${RedshiftSqlEscapeUtils.escapeSqlString(namespace)}'
             |)
         """.trimMargin()
 

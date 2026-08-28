@@ -53,6 +53,8 @@ class RedshiftAirbyteClient(
             // Skip CREATE SCHEMA when the schema already exists. On Redshift, CREATE SCHEMA
             // IF NOT EXISTS still requires CREATE ON DATABASE even for an existing schema, so
             // users with only USAGE+CREATE on a pre-created schema would fail check/sync.
+            // Use svv_all_schemas (not information_schema.schemata) — Redshift only lists
+            // owned schemas in information_schema, so granted-but-not-owned schemas are missed.
             if (!namespaceExists(namespace)) {
                 execute(sqlGenerator.createNamespace(namespace))
             }
