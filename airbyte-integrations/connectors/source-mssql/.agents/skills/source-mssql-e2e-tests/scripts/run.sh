@@ -15,16 +15,25 @@
 # only ever one ordering to maintain.
 #
 # Usage:
-#   run.sh [--command=all] [--fixture=PATH]… [--test-version=dev]
-#          [--control-version=TAG] [--reset=none|fixture|backend]
-#          [--skip-read] [--step-name=NAME] [--catalog=PATH]
-#          [--state=PATH] [--sync-mode=full_refresh|incremental]
-#          [--cursor-field=NAME] [--streams=a,b] [--config-template=PATH]
+#   run.sh [--command=all] [--fixture=PATH]… [--skip-fixtures]
+#          [--test-version=dev] [--control-version=TAG]
+#          [--reset=none|fixture|backend] [--skip-read]
+#          [--step-name=NAME] [--catalog=PATH] [--state=PATH]
+#          [--sync-mode=full_refresh|incremental] [--cursor-field=NAME]
+#          [--streams=a,b] [--config-template=PATH]
 #          [--expect-test=pass|fail] [--expect-control=pass|fail]
 #          [--min-records=N] [--min-states=N]
-#          [--expect-match=<channel>:<regex>[:N]]…
-#          [--forbid-match=<channel>:<regex>]…
+#          [--expect-match=[<command>:]<channel>:<regex>[:N]]…
+#          [--forbid-match=[<command>:]<channel>:<regex>]…
 #          [--build] [--keep-backend] [-- extra airbyte-ops args…]
+#
+#   --skip-fixtures runs the sweep against whatever state the backend
+#           already has, without applying any fixtures. Used by
+#           multi-phase driver scripts on the second/later `run.sh`
+#           invocation, when re-applying the initial fixture would wipe
+#           the intermediate state a preceding phase established. Fails
+#           if any `--fixture=` is also passed (either apply fixtures
+#           or skip them — asking for both is a caller bug).
 #
 #   --state passes a saved state file to the read step as
 #           `--state-path`. Meant for multi-phase drivers: a first
@@ -35,12 +44,18 @@
 #   --expect-*, --min-*, --expect-match, --forbid-match declaratively
 #          gate the run's exit code, replacing the `grep -q '…' || exit 1`
 #          boilerplate driver scripts currently hand-roll. All
-#          assertions apply to the target-side read step's artifacts;
-#          --expect-control gates the control sweep's overall verdict
-#          under --control-version (only useful in comparison modes).
-#          Channels: stdout | stderr | any. Match-count defaults to 1.
-#          Any expectation failure exits non-zero regardless of the
-#          command-level verdicts.
+#          assertions apply to target-side artifacts; --expect-control
+#          gates the control sweep's overall verdict under
+#          --control-version (only useful in comparison modes).
+#          Match-spec grammar: [<command>:]<channel>:<regex>[:N] where
+#          <command> ∈ spec|check|discover|read (defaults to read if
+#          omitted) and <channel> ∈ stdout|stderr|any. `check:stderr:…`
+#          reads target's check step; a bare `stderr:…` reads target's
+#          read step, unchanged from prior behavior. Match-count
+#          defaults to 1. --min-records / --min-states are read-step
+#          only (they count RECORD / STATE envelopes, which are
+#          read-specific). Any expectation failure exits non-zero
+#          regardless of the command-level verdicts.
 #
 #   --command   all (default) runs the sweep; a single command
 #               (spec|check|discover|read) runs just that one.
@@ -94,6 +109,7 @@ export REPRO_OUT
 
 COMMAND="all"
 FIXTURES=()
+SKIP_FIXTURES=false
 TEST_VERSION="dev"
 CONTROL_VERSION_ARG=""
 RESET="none"
@@ -133,6 +149,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --command=*)         COMMAND="${1#*=}" ;;
     --fixture=*)         FIXTURES+=("${1#*=}") ;;
+    --skip-fixtures)     SKIP_FIXTURES=true ;;
     --test-version=*)    TEST_VERSION="${1#*=}" ;;
     --control-version=*) CONTROL_VERSION_ARG="${1#*=}" ;;
     --reset=*)           RESET="${1#*=}" ;;
@@ -153,7 +170,7 @@ while [[ $# -gt 0 ]]; do
     --build)             BUILD=true ;;
     --keep-backend)      KEEP_BACKEND=true ;;
     --)                  shift; EXTRA_ARGS=("$@"); break ;;
-    -h|--help)           sed -n '2,86p' "${BASH_SOURCE[0]}"; exit 0 ;;
+    -h|--help)           sed -n '2,100p' "${BASH_SOURCE[0]}"; exit 0 ;;
     *) echo "[run] unknown argument: $1" >&2; exit 2 ;;
   esac
   shift
@@ -211,7 +228,11 @@ fi
 PER_IMAGE_SWEEPS=false
 [[ -n "$CONTROL_VERSION_ARG" && "$RESET" != none ]] && PER_IMAGE_SWEEPS=true
 
-if [[ ${#FIXTURES[@]} -eq 0 ]]; then
+if [[ "$SKIP_FIXTURES" == true && ${#FIXTURES[@]} -gt 0 ]]; then
+  echo "[run] --skip-fixtures + --fixture= is inconsistent (either apply fixtures or skip them)" >&2
+  exit 2
+fi
+if [[ "$SKIP_FIXTURES" != true && ${#FIXTURES[@]} -eq 0 ]]; then
   FIXTURES=("$SKILL_DIR/fixtures/sql/00-init-base.sql")
 fi
 if [[ -z "$STEP_NAME" ]]; then
@@ -237,6 +258,7 @@ cleanup() {
 trap cleanup EXIT
 
 apply_fixtures() {
+  [[ "$SKIP_FIXTURES" == true ]] && return 0
   for fixture in "${FIXTURES[@]}"; do
     "$SCRIPTS/apply-sql.sh" "$fixture"
   done
@@ -405,31 +427,48 @@ else
   sweep
 fi
 
-# The read step's artifact directory on the target side. Under
-# --reset=fixture|backend the split is at $ARTIFACTS_DIR/{control,target}/;
-# under airbyte-ops's comparison mode it's at $ARTIFACTS_DIR/read/{control,target}/;
-# under single-version there's no split.
-target_read_dir() {
+# The artifact directory for one protocol command on the target side.
+# Under --reset=fixture|backend the split is at
+# $ARTIFACTS_DIR/{control,target}/<cmd>/; under airbyte-ops's comparison
+# mode it's at $ARTIFACTS_DIR/<cmd>/{control,target}/; under
+# single-version there's no split. target_read_dir stays as a thin
+# convenience for the read-scoped assertions (--min-records / --min-states).
+target_command_dir() {
+  local cmd="$1"
   if [[ "$PER_IMAGE_SWEEPS" == true ]]; then
-    echo "$ARTIFACTS_DIR/target/read"
-  elif [[ -d "$ARTIFACTS_DIR/read/target" ]]; then
-    echo "$ARTIFACTS_DIR/read/target"
+    echo "$ARTIFACTS_DIR/target/$cmd"
+  elif [[ -d "$ARTIFACTS_DIR/$cmd/target" ]]; then
+    echo "$ARTIFACTS_DIR/$cmd/target"
   else
-    echo "$ARTIFACTS_DIR/read"
+    echo "$ARTIFACTS_DIR/$cmd"
   fi
 }
+target_read_dir() { target_command_dir read; }
 
-# Split a `<channel>:<regex>[:N]` spec into three lines: channel, regex,
-# count. Count defaults to 1 unless the last colon-separated field
-# parses as a positive integer, in which case it is stripped off. This
-# lets a regex contain colons — only a trailing `:N` is claimed.
+# Split a `[<command>:]<channel>:<regex>[:N]` spec into four lines:
+# command, channel, regex, count. The command prefix is optional and
+# defaults to `read`. Because <command> ∈ {spec,check,discover,read}
+# and <channel> ∈ {stdout,stderr,any} don't overlap, disambiguation is
+# purely on the first colon-separated field. Count defaults to 1 unless
+# the last colon-separated field parses as a positive integer, in
+# which case it is stripped off. This lets a regex contain colons —
+# only a trailing `:N` is claimed, and only leading `<command>:` /
+# `<channel>:` prefixes are recognized.
 parse_match_spec() {
   local spec="$1"
   local first_colon="${spec%%:*}"
+  local command=read
+  case "$first_colon" in
+    spec|check|discover|read)
+      command="$first_colon"
+      spec="${spec#*:}"
+      first_colon="${spec%%:*}"
+      ;;
+  esac
   case "$first_colon" in
     stdout|stderr|any) ;;
     *)
-      echo "[run] --expect-match / --forbid-match channel must be stdout|stderr|any (got '$first_colon' in '$spec')" >&2
+      echo "[run] --expect-match / --forbid-match first field must be a channel (stdout|stderr|any) or a command (spec|check|discover|read) followed by a channel — got '$first_colon' in '$1'" >&2
       return 2
       ;;
   esac
@@ -439,19 +478,19 @@ parse_match_spec() {
     regex="${BASH_REMATCH[1]}"
     count="${BASH_REMATCH[2]}"
   fi
-  printf '%s\n%s\n%d\n' "$first_colon" "$regex" "$count"
+  printf '%s\n%s\n%s\n%d\n' "$command" "$first_colon" "$regex" "$count"
 }
 
-# Count occurrences of a regex against the target read's stdout/stderr.
+# Count occurrences of a regex against a command's target-side artifacts.
 # grep -c returns 1 (with count 0) when nothing matches, which set -e
 # would abort on — hence the `|| true`.
 count_matches_in_channel() {
-  local channel="$1" regex="$2" read_dir="$3" total=0 count
+  local channel="$1" regex="$2" cmd_dir="$3" total=0 count
   local -a files=()
   case "$channel" in
-    stdout) files=("$read_dir/stdout.txt") ;;
-    stderr) files=("$read_dir/stderr.txt") ;;
-    any)    files=("$read_dir/stdout.txt" "$read_dir/stderr.txt") ;;
+    stdout) files=("$cmd_dir/stdout.txt") ;;
+    stderr) files=("$cmd_dir/stderr.txt") ;;
+    any)    files=("$cmd_dir/stdout.txt" "$cmd_dir/stderr.txt") ;;
   esac
   for f in "${files[@]}"; do
     [[ -f "$f" ]] || continue
@@ -518,21 +557,23 @@ apply_expectations() {
     fi
   fi
 
-  local spec channel regex count actual parsed
+  local spec command channel regex count actual parsed cmd_dir
   for spec in ${EXPECT_MATCHES[@]+"${EXPECT_MATCHES[@]}"}; do
     parsed="$(parse_match_spec "$spec")" || exit $?
-    { read -r channel; read -r regex; read -r count; } <<<"$parsed"
-    actual="$(count_matches_in_channel "$channel" "$regex" "$read_dir")"
+    { read -r command; read -r channel; read -r regex; read -r count; } <<<"$parsed"
+    cmd_dir="$(target_command_dir "$command")"
+    actual="$(count_matches_in_channel "$channel" "$regex" "$cmd_dir")"
     if (( actual < count )); then
-      EXPECTATION_FAILURES+=("--expect-match=$spec (got $actual of $count required)")
+      EXPECTATION_FAILURES+=("--expect-match=$spec (got $actual of $count required in $command)")
     fi
   done
   for spec in ${FORBID_MATCHES[@]+"${FORBID_MATCHES[@]}"}; do
     parsed="$(parse_match_spec "$spec")" || exit $?
-    { read -r channel; read -r regex; read -r _count; } <<<"$parsed"
-    actual="$(count_matches_in_channel "$channel" "$regex" "$read_dir")"
+    { read -r command; read -r channel; read -r regex; read -r _count; } <<<"$parsed"
+    cmd_dir="$(target_command_dir "$command")"
+    actual="$(count_matches_in_channel "$channel" "$regex" "$cmd_dir")"
     if (( actual > 0 )); then
-      EXPECTATION_FAILURES+=("--forbid-match=$spec (matched $actual times)")
+      EXPECTATION_FAILURES+=("--forbid-match=$spec (matched $actual times in $command)")
     fi
   done
 }
