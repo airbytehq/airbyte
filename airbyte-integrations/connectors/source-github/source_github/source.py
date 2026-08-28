@@ -2,6 +2,7 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 import logging
+import re
 from os import getenv
 from typing import Any, Iterator, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import urlparse
@@ -275,6 +276,41 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             pass
         elif config.get("repository"):
             config["repositories"] = set(filter(None, config["repository"].split(" ")))
+
+        return self._split_repository_exclusions(config)
+
+    @staticmethod
+    def _split_repository_exclusions(config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        """Move `!`-prefixed exclusion selectors out of `repositories` into `excluded_repositories`.
+
+        Every config-derived manifest expression keeps seeing positives only, so none of them
+        needs `!` awareness: `wildcard_organizations` would otherwise enumerate an org literally
+        named `!org`, and `repository_stats_stream`'s partition values would request
+        `GET /repos/!org/repo`.
+
+        Explicit `org/repo` entries matched by an exclusion are dropped here rather than filtered
+        after the fact, because `repository_stats_stream` turns every remaining entry into a
+        `GET /repos/{org}/{repo}` call: dropping them is what makes an excluded repository cost
+        no request at all. Wildcard-expanded repos can only be filtered per record, which
+        `wildcard_repository_filter` in the manifest does; it translates globs the same way as
+        below (`*` -> `.*`, anchored at both ends), so the two agree by construction.
+
+        Only touches the config when at least one exclusion is present, which keeps this a no-op
+        for every pre-existing config and makes repeated calls idempotent (the callers transform
+        the same dict more than once).
+        """
+        selectors = list(config.get("repositories") or [])
+        excluded = [selector.removeprefix("!") for selector in selectors if selector.startswith("!")]
+        if excluded:
+            # `.` is deliberately not escaped: the include half of `wildcard_repository_filter`
+            # (and the pre-migration Python resolver before it) has always treated it as "any
+            # character", and one glob dialect for both halves beats a more precise exclusion
+            # that disagrees with the inclusion next to it.
+            excluded_pattern = re.compile("|".join(f"({selector.replace('*', '.*')})" for selector in excluded))
+            config["excluded_repositories"] = excluded
+            config["repositories"] = [
+                selector for selector in selectors if not selector.startswith("!") and not excluded_pattern.fullmatch(selector)
+            ]
 
         return config
 
