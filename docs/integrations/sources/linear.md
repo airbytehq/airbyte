@@ -140,6 +140,18 @@ Before `0.3.0` the connector didn't request archived records, so Linear left the
 - Streams you sync in full refresh mode return all archived records on the next sync. In an established workspace this can be a large one-time increase in volume.
 - Streams you sync incrementally return an archived record only when its `updatedAt` value is later than the stream's cursor. Records Linear archives from now on qualify; records archived before the upgrade usually don't, because their `updatedAt` predates the cursor. To pick those up, [refresh the stream](https://docs.airbyte.com/platform/operator-guides/refreshes).
 
+### Date and timestamp columns
+
+Starting with connector version `1.0.0`, the connector declares `date` and `date-time` formats on Linear's temporal fields, so destinations create date and timestamp columns for them instead of strings. `issues.dueDate`, `projects.startDate`, `projects.targetDate`, `project_milestones.targetDate`, `initiatives.targetDate`, and `issue_history.fromDueDate` and `toDueDate` become date columns, because Linear stores them as calendar dates with no time. Every other temporal field, including `createdAt`, `updatedAt`, and `archivedAt`, becomes a timestamp column.
+
+This changes existing column types in your destination. Refresh the source schema and clear the affected streams after upgrading, and update downstream models that cast these columns from strings. See the [Linear migration guide](/integrations/sources/linear-migrations#upgrading-to-100).
+
+### Fields Linear deprecated
+
+Version `1.0.0` stops requesting fields Linear has deprecated: `users.inviteHash`, `users.calendarHash`, `teams.inviteHash`, `teams.private`, `teams.markedAsDuplicateWorkflowState` (and the derived `teams.markedAsDuplicateWorkflowStateId`), and `customer_statuses.type`. Those columns stop receiving values after you upgrade.
+
+The `teams` stream carries `visibility` in place of `private`. It's a string rather than a boolean, with three values: `public` for teams every workspace member can see, `private` for teams only their own members can see, and `restricted` for a non-private team inside a private team's boundary. A `restricted` team isn't private, so write downstream logic as `visibility = 'private'` rather than treating anything that isn't `public` as private.
+
 ## Limitations & Troubleshooting
 
 ### Rate limiting
@@ -213,7 +225,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
-| 1.0.0 | 2026-08-27 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Type all date and datetime fields and remove deprecated Linear fields from the `users`, `teams` and `customer_statuses` queries. |
+| 1.0.0 | 2026-08-28 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Breaking: declare `date` and `date-time` formats on every temporal field, and drop the fields Linear deprecated in the `users`, `teams`, and `customer_statuses` queries (`teams.visibility` replaces `teams.private`). See the [migration guide](/integrations/sources/linear-migrations#upgrading-to-100). |
 | 0.4.0 | 2026-08-27 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
 | 0.3.0 | 2026-08-26 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Sync archived records in every stream and declare `archivedAt` (plus `trashed` on `issues` and `projects`) in the stream schemas |
