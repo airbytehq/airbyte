@@ -235,6 +235,14 @@ def test_check_config_repository():
         "airbyte*/airbyte",
         "airbytehq/airbyte-test/master-branch",
         "https://github.com/airbytehq/airbyte",
+        # The `!` is only a prefix of the whole selector, so a doubled or misplaced one is
+        # rejected by the items pattern.
+        "!!airbytehq/airbyte",
+        "airbytehq/!airbyte",
+        # A lone exclusion selects nothing, which `contains` rejects rather than letting `check`
+        # report a repository that could not be found.
+        "!airbytehq/airbyte",
+        "!airbytehq/a*",
     ]
 
     config["repositories"] = []
@@ -252,6 +260,14 @@ def test_check_config_repository():
         config["repositories"] = [repos]
         with pytest.raises(AirbyteTracedException):
             assert check_with_fresh_source(config)
+
+    # Exclusions are accepted alongside at least one inclusion, and rejected without one.
+    config["repositories"] = ["airbytehq/*", "!airbytehq/airbyte", "!airbytehq/a*"]
+    assert check_with_fresh_source(config)
+
+    config["repositories"] = ["!airbytehq/airbyte", "!airbytehq/a*"]
+    with pytest.raises(AirbyteTracedException):
+        assert check_with_fresh_source(config)
 
 
 @responses.activate

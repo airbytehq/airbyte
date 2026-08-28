@@ -410,6 +410,133 @@ def test_resolution_wildcard_pattern_filtering(requests_mock):
     assert "org/destination-postgres" not in repositories
 
 
+def test_resolution_excludes_wildcard_expanded_repositories(requests_mock):
+    """A `!` selector drops repos the wildcard expansion produced, so `org/*` keeps discovering
+    newly created repos instead of being replaced by a static allow-list."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        json=[
+            {"full_name": "docker/docker-py", "owner": {"login": "docker"}},
+            {"full_name": "docker/compose", "owner": {"login": "docker"}},
+            {"full_name": "docker/hub", "owner": {"login": "docker"}},
+        ],
+    )
+
+    organizations, repositories = _resolve(
+        {
+            "credentials": {"personal_access_token": "test_token"},
+            "repositories": ["docker/*", "!docker/compose", "!docker/docker-*"],
+        }
+    )
+
+    assert repositories == ["docker/hub"]
+    assert organizations == ["docker"]
+
+
+def test_resolution_never_requests_an_excluded_explicit_repository(requests_mock):
+    """An excluded explicit entry must cost no request at all. `repository_stats_stream` turns
+    every entry left in `repositories` into a `GET /repos/{name}`, so the exclusion has to be
+    applied to the config before resolution rather than to the resolved list afterwards."""
+    _mock_rate_limit(requests_mock)
+    excluded = requests_mock.get(
+        "https://api.github.com/repos/airbytehq/integration-test",
+        json={"full_name": "airbytehq/integration-test", "organization": {"login": "airbytehq"}},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/docker/hub",
+        json={"full_name": "docker/hub", "organization": {"login": "docker"}},
+    )
+
+    organizations, repositories = _resolve(
+        {
+            "credentials": {"personal_access_token": "test_token"},
+            "repositories": ["airbytehq/integration-test", "docker/hub", "!airbytehq/integration-*"],
+        }
+    )
+
+    assert repositories == ["docker/hub"]
+    assert organizations == ["docker"]
+    assert excluded.call_count == 0
+
+
+def test_resolution_never_requests_a_bang_prefixed_path(requests_mock):
+    """`!` selectors are moved out of `repositories` before any manifest expression sees them.
+    Otherwise `wildcard_organizations` would enumerate an org literally named `!other` and
+    `repository_stats_stream` would fetch `/repos/!docker/compose`."""
+    _mock_rate_limit(requests_mock)
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        json=[{"full_name": "docker/hub", "owner": {"login": "docker"}}],
+    )
+
+    organizations, repositories = _resolve(
+        {
+            "credentials": {"personal_access_token": "test_token"},
+            "repositories": ["docker/*", "!docker/compose", "!other/*"],
+        }
+    )
+
+    assert repositories == ["docker/hub"]
+    assert organizations == ["docker"]
+    assert listing.call_count == 1
+    assert [request.path for request in requests_mock.request_history if "!" in request.path] == []
+
+
+@pytest.mark.parametrize(
+    "included",
+    [pytest.param("docker/*", id="same_selector"), pytest.param("docker/hub*", id="narrower_selector")],
+)
+def test_resolution_excluding_a_whole_org_costs_no_request(requests_mock, included):
+    """An exclusion that matches an inclusion *selector* cancels it, so `!org/*` skips the org
+    listing entirely instead of fetching every page only to filter all of it away. Sound because
+    the spec only allows an exact or a prefix exclusion: if the selector's literal text matches
+    the exclusion glob, so does every repository the selector could expand to."""
+    _mock_rate_limit(requests_mock)
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        json=[
+            {"full_name": "docker/hub", "owner": {"login": "docker"}},
+            {"full_name": "docker/compose", "owner": {"login": "docker"}},
+        ],
+    )
+
+    organizations, repositories = _resolve(
+        {"credentials": {"personal_access_token": "test_token"}, "repositories": [included, "!docker/*"]}
+    )
+
+    assert repositories == []
+    assert organizations == []
+    assert listing.call_count == 0
+
+
+@pytest.mark.parametrize(
+    "exclusion, expected",
+    [
+        pytest.param("!org/repo", ["org/repo-fork"], id="exact_exclusion_is_anchored_at_both_ends"),
+        pytest.param("!org/repo*", [], id="prefix_exclusion_covers_both"),
+        # GitHub repository names preserve case and its own lookups are case-insensitive, but the
+        # inclusion half of `wildcard_repository_filter` (and the pre-migration Python resolver
+        # before it) has always matched case-sensitively. Exclusions follow that precedent rather
+        # than introducing a second dialect inside one config field.
+        pytest.param("!ORG/REPO", ["org/repo", "org/repo-fork"], id="matching_is_case_sensitive"),
+    ],
+)
+def test_resolution_exclusion_glob_semantics(requests_mock, exclusion, expected):
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/orgs/org/repos",
+        json=[
+            {"full_name": "org/repo", "owner": {"login": "org"}},
+            {"full_name": "org/repo-fork", "owner": {"login": "org"}},
+        ],
+    )
+
+    _, repositories = _resolve({"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*", exclusion]})
+
+    assert repositories == expected
+
+
 def test_resolution_skip_404_repo(requests_mock):
     """Explicit repos that 404 are skipped with a warning instead of failing resolution."""
     _mock_rate_limit(requests_mock)

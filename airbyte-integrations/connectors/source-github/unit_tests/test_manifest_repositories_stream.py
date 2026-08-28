@@ -450,6 +450,39 @@ def test_record_filter_explicit_only_config_emits_all_org_repos(rate_limit_mock_
     assert repo_stats and repo_stats[0].qs["per_page"] == ["100"]
 
 
+def test_record_filter_drops_excluded_repositories(rate_limit_mock_response, requests_mock):
+    """Exclusions have to reach the emitted stream too, not only partition resolution: the
+    `repositories` stream lists the org itself, so a repo excluded from every other stream would
+    otherwise still show up here."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["airbytehq/*", "!airbytehq/archived-*"]}
+    requests_mock.get(
+        "https://api.github.com/orgs/airbytehq/repos",
+        json=[_repo(1, "airbytehq/airbyte"), _repo(2, "airbytehq/archived-connectors")],
+    )
+
+    records, _, error = _read(config)
+
+    assert error is None
+    assert sorted(set(_names(records))) == ["airbytehq/airbyte"]
+
+
+def test_record_filter_exclusion_applies_without_any_wildcard(rate_limit_mock_response, requests_mock):
+    """With no wildcard the include half passes every repo of the explicit repos' orgs (the legacy
+    `Repositories(pattern=None)` behavior), so the exclusion clause is the only thing narrowing
+    the output."""
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["docker/compose", "!docker/docker-py"]}
+    requests_mock.get("https://api.github.com/repos/docker/compose", json=_repo(2, "docker/compose", org="docker"))
+    requests_mock.get(
+        "https://api.github.com/orgs/docker/repos",
+        json=[_repo(2, "docker/compose"), _repo(3, "docker/docker-py")],
+    )
+
+    records, _, error = _read(config)
+
+    assert error is None
+    assert sorted(set(_names(records))) == ["docker/compose"]
+
+
 def test_null_start_date_falls_back_to_epoch(rate_limit_mock_response, requests_mock):
     """A present-but-null `start_date` (reachable via the API/Terraform) must fall back to the
     epoch rather than reaching the cursor as the string "None" and aborting the stream."""
