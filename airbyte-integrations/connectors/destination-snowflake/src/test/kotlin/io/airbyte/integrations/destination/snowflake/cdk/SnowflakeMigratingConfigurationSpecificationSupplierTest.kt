@@ -5,9 +5,11 @@
 package io.airbyte.integrations.destination.snowflake.cdk
 
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.snowflake.spec.CredentialsSpecification
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthSpecification
 import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
+import io.airbyte.integrations.destination.snowflake.spec.OAuthSpecification
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthSpecification
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -17,6 +19,31 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
+
+    @Test
+    fun testCredentialsWithMissingAuthTypeOAuth() {
+        val json =
+            """
+            {
+              "credentials": {
+                "client_id": "test-client-id",
+                "client_secret": "test-client-secret",
+                "refresh_token": "test-refresh-token"
+              }
+            }
+            """.trimIndent()
+
+        val migratedJson = migrateJson(json)
+        assertEquals(
+            CredentialsSpecification.Type.OAUTH.authTypeName,
+            Jsons.readTree(migratedJson).path("credentials").path("auth_type").asText(),
+        )
+
+        val spec =
+            SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json).get()
+        assertEquals(CredentialsSpecification.Type.OAUTH, spec.credentials?.auth_type)
+        assertEquals(OAuthSpecification::class.java, spec.credentials?.javaClass)
+    }
 
     @Test
     fun testCredentialsWithMissingAuthType() {

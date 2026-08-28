@@ -11,8 +11,8 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
-import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.auth.SnowflakeOAuthTokenProvider
+import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.OAuthAuthConfiguration
@@ -22,6 +22,7 @@ import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthCo
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
@@ -61,8 +62,10 @@ internal const val JSON_FORMAT = "JSON"
 internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
 internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 
+private val logger = KotlinLogging.logger {}
+
 @Factory
-class SnowflakeBeanFactory {
+open class SnowflakeBeanFactory {
 
     @Singleton
     fun tempTableNameGenerator(
@@ -114,13 +117,7 @@ class SnowflakeBeanFactory {
     ): HikariDataSource {
         val oauthTokenProvider =
             (snowflakeConfiguration.authType as? OAuthAuthConfiguration)?.let { auth ->
-                SnowflakeOAuthTokenProvider(
-                    host = snowflakeConfiguration.host,
-                    clientId = auth.clientId,
-                    clientSecret = auth.clientSecret,
-                    refreshToken = auth.refreshToken,
-                    httpClient = HttpClient.newHttpClient(),
-                )
+                createOAuthTokenProvider(snowflakeConfiguration, auth)
             }
         val snowflakeJdbcUrl =
             "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
@@ -212,26 +209,37 @@ class SnowflakeBeanFactory {
         val hikariDataSource = HikariDataSource(datasourceConfig)
         oauthTokenProvider?.let { tokenProvider ->
             Executors.newSingleThreadScheduledExecutor { runnable ->
-                Thread(runnable, "snowflake-oauth-token-refresh").apply { isDaemon = true }
-            }.scheduleAtFixedRate(
-                {
-                    try {
-                        hikariDataSource.hikariConfigMXBean.setPassword(tokenProvider.getAccessToken())
-                    } catch (e: Exception) {
-                        Logger.getLogger(SnowflakeBeanFactory::class.java.name).log(
-                            Level.WARNING,
-                            "Failed to refresh Snowflake OAuth access token",
-                            e,
-                        )
-                    }
-                },
-                5,
-                5,
-                TimeUnit.MINUTES,
-            )
+                    Thread(runnable, "snowflake-oauth-token-refresh").apply { isDaemon = true }
+                }
+                .scheduleAtFixedRate(
+                    {
+                        try {
+                            hikariDataSource.hikariConfigMXBean.setPassword(
+                                tokenProvider.getAccessToken()
+                            )
+                        } catch (e: Exception) {
+                            logger.warn(e) { "Failed to refresh Snowflake OAuth access token" }
+                        }
+                    },
+                    5,
+                    5,
+                    TimeUnit.MINUTES,
+                )
         }
         return hikariDataSource
     }
+
+    internal open fun createOAuthTokenProvider(
+        snowflakeConfiguration: SnowflakeConfiguration,
+        auth: OAuthAuthConfiguration,
+    ): SnowflakeOAuthTokenProvider =
+        SnowflakeOAuthTokenProvider(
+            host = snowflakeConfiguration.host,
+            clientId = auth.clientId,
+            clientSecret = auth.clientSecret,
+            refreshToken = auth.refreshToken,
+            httpClient = HttpClient.newHttpClient(),
+        )
 
     @Singleton
     @Named("snowflakePrivateKeyFileName")

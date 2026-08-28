@@ -56,8 +56,9 @@ class SnowflakeConfigurationSupplierSpecificationFactory(
                         )
                 )
         return extendSpecification(
-            ConnectorSpecification()
-                .withConnectionSpecification(configJsonObjectSupplier.jsonSchema)
-        ).withAdvancedAuth(advancedAuth)
+                ConnectorSpecification()
+                    .withConnectionSpecification(configJsonObjectSupplier.jsonSchema)
+            )
+            .withAdvancedAuth(advancedAuth)
     }
 }

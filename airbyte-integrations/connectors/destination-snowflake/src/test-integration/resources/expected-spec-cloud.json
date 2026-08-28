@@ -105,6 +105,46 @@
             }
           },
           "required" : [ "auth_type", "password" ]
+        }, {
+          "title" : "OAuth2.0",
+          "type" : "object",
+          "additionalProperties" : true,
+          "properties" : {
+            "auth_type" : {
+              "type" : "string",
+              "enum" : [ "OAuth2.0" ],
+              "default" : "OAuth2.0"
+            },
+            "client_id" : {
+              "type" : "string",
+              "description" : "Enter your application's Client ID",
+              "title" : "Client ID",
+              "order" : 0,
+              "airbyte_secret" : true
+            },
+            "client_secret" : {
+              "type" : "string",
+              "description" : "Enter your application's Client secret",
+              "title" : "Client Secret",
+              "order" : 1,
+              "airbyte_secret" : true
+            },
+            "refresh_token" : {
+              "type" : "string",
+              "description" : "Enter your application's Refresh Token",
+              "title" : "Refresh Token",
+              "order" : 2,
+              "airbyte_secret" : true
+            },
+            "access_token" : {
+              "type" : "string",
+              "description" : "Enter your application's Access Token",
+              "title" : "Access Token",
+              "order" : 3,
+              "airbyte_secret" : true
+            }
+          },
+          "required" : [ "auth_type", "client_id", "client_secret", "refresh_token" ]
         } ],
         "description" : "Determines the type of authentication that should be used.",
         "title" : "Authorization Method",
@@ -183,5 +223,58 @@
   "supportsIncremental" : true,
   "supportsNormalization" : false,
   "supportsDBT" : false,
-  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ]
+  "supported_destination_sync_modes" : [ "overwrite", "append", "append_dedup" ],
+  "advanced_auth" : {
+    "auth_flow_type" : "oauth2.0",
+    "predicate_key" : [ "credentials", "auth_type" ],
+    "predicate_value" : "OAuth2.0",
+    "oauth_config_specification" : {
+      "oauth_user_input_from_connector_config_specification" : {
+        "type" : "object",
+        "properties" : {
+          "host" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "host" ]
+          }
+        }
+      },
+      "complete_oauth_output_specification" : {
+        "type" : "object",
+        "properties" : {
+          "access_token" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "credentials", "access_token" ]
+          },
+          "refresh_token" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "credentials", "refresh_token" ]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification" : {
+        "type" : "object",
+        "properties" : {
+          "client_id" : {
+            "type" : "string"
+          },
+          "client_secret" : {
+            "type" : "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification" : {
+        "type" : "object",
+        "properties" : {
+          "client_id" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "credentials", "client_id" ]
+          },
+          "client_secret" : {
+            "type" : "string",
+            "path_in_connector_config" : [ "credentials", "client_secret" ]
+          }
+        }
+      }
+    }
+  }
 }

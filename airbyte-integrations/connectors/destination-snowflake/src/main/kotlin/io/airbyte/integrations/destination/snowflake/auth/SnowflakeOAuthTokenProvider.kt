@@ -4,9 +4,11 @@
 
 package io.airbyte.integrations.destination.snowflake.auth
 
+import com.fasterxml.jackson.core.JsonProcessingException
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.util.Jsons
+import java.io.IOException
 import java.net.URI
 import java.net.URLEncoder
 import java.net.http.HttpClient
@@ -17,7 +19,7 @@ import java.time.Duration
 import java.util.Base64
 import java.util.concurrent.TimeUnit
 
-class SnowflakeOAuthTokenProvider(
+open class SnowflakeOAuthTokenProvider(
     host: String,
     private val clientId: String,
     private val clientSecret: String,
@@ -31,11 +33,12 @@ class SnowflakeOAuthTokenProvider(
     private var accessTokenExpiresAtMillis = 0L
 
     @Synchronized
-    fun getAccessToken(): String {
+    open fun getAccessToken(): String {
         val now = System.currentTimeMillis()
         val cachedToken = accessToken
-        if (cachedToken != null &&
-            now < accessTokenExpiresAtMillis - TOKEN_EXPIRY_SAFETY_MARGIN_MILLIS
+        if (
+            cachedToken != null &&
+                now < accessTokenExpiresAtMillis - TOKEN_EXPIRY_SAFETY_MARGIN_MILLIS
         ) {
             return cachedToken
         }
@@ -60,7 +63,7 @@ class SnowflakeOAuthTokenProvider(
             } catch (e: InterruptedException) {
                 Thread.currentThread().interrupt()
                 throw TransientErrorException("Snowflake OAuth token refresh was interrupted", e)
-            } catch (e: java.io.IOException) {
+            } catch (e: IOException) {
                 throw TransientErrorException("Snowflake OAuth token refresh failed", e)
             }
 
@@ -78,9 +81,9 @@ class SnowflakeOAuthTokenProvider(
         val responseJson =
             try {
                 Jsons.readTree(response.body())
-            } catch (e: Exception) {
+            } catch (e: JsonProcessingException) {
                 throw TransientErrorException("Snowflake OAuth token response was invalid", e)
-        }
+            }
         val refreshedToken = responseJson.path("access_token").asText(null)
         if (refreshedToken.isNullOrBlank()) {
             throw TransientErrorException(
@@ -95,9 +98,7 @@ class SnowflakeOAuthTokenProvider(
     }
 
     private fun String.toHttpsHost(): String =
-        if (startsWith("http://", ignoreCase = true) ||
-            startsWith("https://", ignoreCase = true)
-        ) {
+        if (startsWith("http://", ignoreCase = true) || startsWith("https://", ignoreCase = true)) {
             this
         } else {
             "https://$this"

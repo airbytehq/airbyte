@@ -69,8 +69,7 @@ class SnowflakeConfigurationFactory :
                     UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
                 }
                 is OAuthSpecification -> {
-                    @Suppress("USELESS_CAST")
-                    val oauthSpec = pojo.credentials as OAuthSpecification
+                    @Suppress("USELESS_CAST") val oauthSpec = pojo.credentials as OAuthSpecification
                     OAuthAuthConfiguration(
                         oauthSpec.clientId,
                         oauthSpec.clientSecret,

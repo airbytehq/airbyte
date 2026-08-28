@@ -211,18 +211,22 @@ class UsernamePasswordAuthSpecification(
 @JsonSchemaTitle("OAuth2.0")
 class OAuthSpecification(
     @get:JsonSchemaTitle("Client ID")
+    @get:JsonPropertyDescription("Enter your application's Client ID")
     @get:JsonProperty("client_id")
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val clientId: String = "",
     @get:JsonSchemaTitle("Client Secret")
+    @get:JsonPropertyDescription("Enter your application's Client secret")
     @get:JsonProperty("client_secret")
     @get:JsonSchemaInject(json = """{"order": 1, "airbyte_secret": true}""")
     val clientSecret: String = "",
     @get:JsonSchemaTitle("Refresh Token")
+    @get:JsonPropertyDescription("Enter your application's Refresh Token")
     @get:JsonProperty("refresh_token")
     @get:JsonSchemaInject(json = """{"order": 2, "airbyte_secret": true}""")
     val refreshToken: String = "",
     @get:JsonSchemaTitle("Access Token")
+    @get:JsonPropertyDescription("Enter your application's Access Token")
     @get:JsonProperty("access_token")
     @get:JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true}""")
     val accessToken: String? = null,

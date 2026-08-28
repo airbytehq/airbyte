@@ -6,13 +6,16 @@ package io.airbyte.integrations.destination.snowflake
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
+import io.airbyte.integrations.destination.snowflake.auth.SnowflakeOAuthTokenProvider
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.CdcDeletionMode
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.OAuthAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import java.io.File
 import java.io.StringWriter
+import java.net.http.HttpClient
 import java.nio.charset.StandardCharsets
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -32,6 +35,55 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 internal class SnowflakeBeanFactoryTest {
+
+    @Test
+    fun testCreateSnowflakeDataSourceOAuthAuth() {
+        val token = "test-access-token"
+        val snowflakeConfiguration =
+            snowflakeConfiguration(
+                authType =
+                    OAuthAuthConfiguration(
+                        clientId = "test-client-id",
+                        clientSecret = "test-client-secret",
+                        refreshToken = "test-refresh-token",
+                        accessToken = null,
+                    )
+            )
+        val factory =
+            object : SnowflakeBeanFactory() {
+                override fun createOAuthTokenProvider(
+                    snowflakeConfiguration: SnowflakeConfiguration,
+                    auth: OAuthAuthConfiguration,
+                ): SnowflakeOAuthTokenProvider =
+                    object :
+                        SnowflakeOAuthTokenProvider(
+                            host = snowflakeConfiguration.host,
+                            clientId = auth.clientId,
+                            clientSecret = auth.clientSecret,
+                            refreshToken = auth.refreshToken,
+                            httpClient = HttpClient.newHttpClient(),
+                        ) {
+                        override fun getAccessToken() = token
+                    }
+            }
+
+        val dataSource =
+            factory.snowflakeDataSource(
+                snowflakeConfiguration = snowflakeConfiguration,
+                airbyteEdition = "COMMUNITY",
+            )
+        try {
+            assertEquals(
+                "oauth",
+                (dataSource as HikariConfig)
+                    .dataSourceProperties[DATA_SOURCE_PROPERTY_AUTHENTICATOR]
+            )
+            assertEquals(snowflakeConfiguration.username, dataSource.username)
+            assertEquals(token, dataSource.password)
+        } finally {
+            dataSource.close()
+        }
+    }
 
     @Test
     fun testSnowflakePrivateKeyParserSupportsSnowflakeEncryptedKeyFormat() {
@@ -202,7 +254,7 @@ internal class SnowflakeBeanFactoryTest {
     }
 
     private fun snowflakeConfiguration(
-        authType: KeyPairAuthConfiguration,
+        authType: io.airbyte.integrations.destination.snowflake.spec.AuthTypeConfiguration,
     ): SnowflakeConfiguration =
         SnowflakeConfiguration(
             host = "test-account.test-host",
