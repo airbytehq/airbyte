@@ -32,10 +32,14 @@ import org.bouncycastle.openssl.PKCS8Generator
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter
 import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.parallel.Isolated
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
+@Isolated
 internal class SnowflakeBeanFactoryTest {
 
     @Test
@@ -53,24 +57,44 @@ internal class SnowflakeBeanFactoryTest {
             )
         mockkConstructor(SnowflakeOAuthTokenProvider::class)
         every { anyConstructed<SnowflakeOAuthTokenProvider>().getAccessToken() } returns token
-
-        val dataSource =
-            SnowflakeBeanFactory()
-                .snowflakeDataSource(
-                    snowflakeConfiguration = snowflakeConfiguration,
-                    airbyteEdition = "COMMUNITY",
-                )
         try {
-            assertEquals(
-                "oauth",
-                (dataSource as HikariConfig)
-                    .dataSourceProperties[DATA_SOURCE_PROPERTY_AUTHENTICATOR]
-            )
-            assertEquals(snowflakeConfiguration.username, dataSource.username)
-            assertEquals(token, dataSource.password)
+            val dataSource =
+                SnowflakeBeanFactory()
+                    .snowflakeDataSource(
+                        snowflakeConfiguration = snowflakeConfiguration,
+                        airbyteEdition = "COMMUNITY",
+                    )
+            try {
+                assertTrue(waitForOAuthRefreshThread(expectedAlive = true))
+                assertEquals(
+                    "oauth",
+                    (dataSource as HikariConfig)
+                        .dataSourceProperties[DATA_SOURCE_PROPERTY_AUTHENTICATOR]
+                )
+                assertEquals(snowflakeConfiguration.username, dataSource.username)
+                assertEquals(token, dataSource.password)
+            } finally {
+                dataSource.close()
+            }
         } finally {
-            dataSource.close()
             unmockkConstructor(SnowflakeOAuthTokenProvider::class)
+        }
+        assertFalse(waitForOAuthRefreshThread(expectedAlive = false))
+    }
+
+    private fun waitForOAuthRefreshThread(expectedAlive: Boolean): Boolean {
+        repeat(100) {
+            val isAlive =
+                Thread.getAllStackTraces().keys.any {
+                    it.name == "snowflake-oauth-token-refresh" && it.isAlive
+                }
+            if (isAlive == expectedAlive) {
+                return isAlive
+            }
+            Thread.sleep(10)
+        }
+        return Thread.getAllStackTraces().keys.any {
+            it.name == "snowflake-oauth-token-refresh" && it.isAlive
         }
     }
 

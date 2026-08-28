@@ -212,27 +212,10 @@ class SnowflakeBeanFactory {
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_ABORT_DETACHED_QUERY, "true")
             }
 
-        val hikariDataSource = HikariDataSource(datasourceConfig)
-        oauthTokenProvider?.let { tokenProvider ->
-            Executors.newSingleThreadScheduledExecutor { runnable ->
-                    Thread(runnable, "snowflake-oauth-token-refresh").apply { isDaemon = true }
-                }
-                .scheduleAtFixedRate(
-                    {
-                        try {
-                            hikariDataSource.hikariConfigMXBean.setPassword(
-                                tokenProvider.getAccessToken()
-                            )
-                        } catch (e: Exception) {
-                            logger.warn(e) { "Failed to refresh Snowflake OAuth access token" }
-                        }
-                    },
-                    5,
-                    5,
-                    TimeUnit.MINUTES,
-                )
+        return oauthTokenProvider?.let { tokenProvider ->
+            OAuthHikariDataSource(datasourceConfig, tokenProvider)
         }
-        return hikariDataSource
+            ?: HikariDataSource(datasourceConfig)
     }
 
     @Singleton
@@ -267,5 +250,34 @@ class SnowflakeBeanFactory {
                 maxBufferedAggregates = 6,
             )
         }
+    }
+}
+
+private class OAuthHikariDataSource(
+    datasourceConfig: HikariConfig,
+    tokenProvider: SnowflakeOAuthTokenProvider,
+) : HikariDataSource(datasourceConfig) {
+    private val refreshExecutor =
+        Executors.newSingleThreadScheduledExecutor { runnable ->
+            Thread(runnable, "snowflake-oauth-token-refresh").apply { isDaemon = true }
+        }
+    private val refreshFuture =
+        refreshExecutor.scheduleAtFixedRate(
+            {
+                try {
+                    hikariConfigMXBean.setPassword(tokenProvider.getAccessToken())
+                } catch (e: Exception) {
+                    logger.warn(e) { "Failed to refresh Snowflake OAuth access token" }
+                }
+            },
+            5,
+            5,
+            TimeUnit.MINUTES,
+        )
+
+    override fun close() {
+        refreshFuture.cancel(false)
+        refreshExecutor.shutdownNow()
+        super.close()
     }
 }
