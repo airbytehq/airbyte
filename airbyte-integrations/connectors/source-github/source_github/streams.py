@@ -111,6 +111,9 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        # The CDK IGNORE action logs and then hands the non-2xx response straight to
+        # parse_response, and GitHub answers errors with a JSON object rather than an array.
+        # Every override below that does not delegate here repeats this guard.
         if not response.ok:
             return
         for record in response.json():  # GitHub puts records in an array.
@@ -152,6 +155,10 @@ class GithubStreamABC(HttpStream, ABC):
             if not hasattr(e, "_exception") or getattr(e._exception, "response", None) is None:
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
+                # A plain 404 no longer reaches here: it resolves to IGNORE and is logged with
+                # stream and URL context by GithubStreamABCErrorHandler. This branch still covers
+                # a 404 that arrived with `X-RateLimit-Remaining: 0`, which is classified
+                # RATE_LIMITED and surfaces wrapped once the retry budget runs out.
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
                 if isinstance(self, Organizations):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
@@ -184,6 +191,12 @@ class GithubStreamABC(HttpStream, ABC):
                         f"GitHub message: {api_message!r}"
                     )
             elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
+                # Only reachable now via rate-limit retry exhaustion: a plain 401 resolves to
+                # FAIL, and the AirbyteTracedException the CDK raises for FAIL wraps no
+                # response, so the guard above re-raises before reaching here. A 401 that also
+                # carries `X-RateLimit-Remaining: 0` is classified RATE_LIMITED, retried, and
+                # arrives here wrapped once the budget runs out. The same hint is in
+                # GITHUB_DEFAULT_ERROR_MAPPING[401] for the fail-fast path.
                 api_message = (e._exception.response.json() or {}).get("message", "")
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
                     self.logger.error(
@@ -302,8 +315,9 @@ class GithubStream(GithubStreamABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        if not response.ok or is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
+        if is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
             # The CDK IGNORE action still calls parse_response; guard against non-array error bodies.
+            # `response.ok` itself is covered by the base implementation this delegates to.
             return
         yield from super().parse_response(
             response=response,

@@ -63,6 +63,29 @@ def test_check_start_date(config, expected, rate_limit_mock_response, requests_m
     assert status == expected
 
 
+def test_check_fails_when_the_only_repository_is_not_found(rate_limit_mock_response, requests_mock):
+    """`check` resolves repositories through the manifest partition routers, where 404 is IGNORE.
+
+    Skipping the 404 must not turn into a passing check: with no repository left to resolve,
+    `check_connection` has to fail with the actionable name/format message. This is the guard on
+    the Python-side `404 -> IGNORE` change, which shares the same intent as the manifest filter.
+    """
+    requests_mock.get(
+        "https://api.github.com/repos/airbyte/deleted",
+        status_code=404,
+        json={"message": "Not Found"},
+    )
+
+    source = SourceGithub()
+    status, message = source.check_connection(
+        logger=logging.getLogger("airbyte"),
+        config={"access_token": "test_token", "repository": "airbyte/deleted"},
+    )
+
+    assert status is False
+    assert "couldn't be found" in message
+
+
 @pytest.mark.parametrize(
     "api_url, deployment_env, expected_message",
     (

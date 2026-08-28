@@ -19,11 +19,21 @@ logger = logging.getLogger("airbyte")
 
 
 GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
+    # FAIL rather than RETRY: retrying cannot help. `HttpClient._send` re-signs the request on
+    # every attempt after the first, but `RateLimitedMultipleTokenAuthenticator` only advances
+    # `_active_token` when that token's quota is spent, and a rejected credential has full quota,
+    # so all five retries go to the same dead token. The manifest half of this connector (and
+    # therefore `check`) already fails 401 through the CDK default mapping.
+    #
+    # This message carries the Personal Access Token hint that `GithubStreamABC.read_records`
+    # used to log: with FAIL the CDK raises an AirbyteTracedException that carries no wrapped
+    # response, so that handler can no longer classify a 401.
     401: ErrorResolution(
         response_action=ResponseAction.FAIL,
         failure_type=FailureType.config_error,
         error_message=(
-            "GitHub returned 401 Unauthorized. Your token may be invalid, expired, or revoked. "
+            "GitHub returned 401 Unauthorized. The configured token is invalid, expired or revoked - "
+            "a Personal Access Token may need to be renewed. "
             "Please verify the token in the connector configuration."
         ),
     ),
@@ -37,13 +47,15 @@ GITHUB_DEFAULT_ERROR_MAPPING = DEFAULT_ERROR_MAPPING | {
             "See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api"
         ),
     ),
+    # IGNORE rather than RETRY: a GitHub 404 is deterministic (missing repo/org, a user with no
+    # team membership), so the five retries were pure waste. This matches the `404 -> IGNORE`
+    # filter the manifest half already ships, which `check_connection` relies on to skip an
+    # unreachable repository and then fail with an actionable message when none resolve.
+    # No `error_message` here on purpose: `GithubStreamABCErrorHandler` builds the skip message
+    # per stream so it can name the stream and the URL, which a static mapping cannot.
     404: ErrorResolution(
         response_action=ResponseAction.IGNORE,
         failure_type=FailureType.config_error,
-        error_message=(
-            "GitHub returned 404 Not Found. The requested resource does not exist, may have been deleted, "
-            "or the configured token may lack access to it. Skipping."
-        ),
     ),
     409: ErrorResolution(
         response_action=ResponseAction.RETRY,
@@ -158,6 +170,22 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     ),
                 )
 
+            if response_or_exception.status_code == requests.codes.NOT_FOUND:
+                # Builds the message GITHUB_DEFAULT_ERROR_MAPPING[404] deliberately leaves empty.
+                # On IGNORE the CDK logs `error_message` and nothing else (http_client.py
+                # `_handle_error_resolution`), and the Airbyte log formatter emits `%(message)s`
+                # only, so the stream name has to be inside the string or it is lost. The URL
+                # stands in for the slice: it carries the organization, repository, team and user.
+                return ErrorResolution(
+                    response_action=ResponseAction.IGNORE,
+                    failure_type=FailureType.config_error,
+                    error_message=(
+                        f"Skipping `{self.stream.name}` for '{response_or_exception.url}': "
+                        f"GitHub returned 404 Not Found. The resource may not exist, may have been deleted, "
+                        f"or the configured token may lack access to it."
+                    ),
+                )
+
             if is_conflict_with_empty_repository(response_or_exception=response_or_exception):
                 log_message = (
                     f"Skipping `{self.stream.name}` for this repository: GitHub returned 409 Conflict "
@@ -236,6 +264,22 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
             self.stream.page_size = (
                 constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM if self.stream.large_stream else constants.DEFAULT_PAGE_SIZE
             )
+
+            if response_or_exception.status_code == requests.codes.NOT_FOUND:
+                # Must not inherit the REST `404 -> IGNORE` skip. `/graphql` exists on every
+                # deployment, so a 404 here means `api_url` does not point at a GraphQL endpoint
+                # (a common GitHub Enterprise misconfiguration) rather than a missing resource.
+                # Skipping it would also hand every GraphQL stream an error envelope, and their
+                # `parse_response` implementations index `response.json()["data"]` unguarded.
+                return ErrorResolution(
+                    response_action=ResponseAction.FAIL,
+                    failure_type=FailureType.config_error,
+                    error_message=(
+                        f"GitHub returned 404 Not Found for the GraphQL endpoint used by stream "
+                        f"`{self.stream.name}`. Check the API URL in the connector configuration: "
+                        f"on GitHub Enterprise the GraphQL endpoint is served from a different path than REST."
+                    ),
+                )
 
             if self._safe_json_get_errors(response_or_exception):
                 return ErrorResolution(

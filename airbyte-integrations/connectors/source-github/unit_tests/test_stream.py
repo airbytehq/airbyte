@@ -341,6 +341,42 @@ def test_error_handler_410_unknown_body_returns_fail():
     assert result.failure_type == FailureType.config_error
 
 
+def _mock_404_response(url):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.NOT_FOUND
+    response_mock.headers = {}
+    response_mock.url = url
+    response_mock.text = '{"message": "Not Found"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+    return response_mock
+
+
+def test_error_handler_404_ignores_with_stream_and_url_context():
+    """The static mapping cannot name the stream, and the CDK logs nothing but `error_message` on
+    IGNORE, so the handler has to build the skip message itself."""
+    stream = RepositoryStats(repositories=["org/missing"], page_size_for_large_streams=30)
+
+    result = stream.get_error_handler().interpret_response(_mock_404_response("https://api.github.com/repos/org/missing"))
+
+    assert result.response_action == ResponseAction.IGNORE
+    assert "Skipping `repository_stats`" in result.error_message
+    assert "repos/org/missing" in result.error_message
+
+
+def test_error_handler_404_on_graphql_fails_instead_of_skipping():
+    """`/graphql` exists everywhere, so a 404 there means `api_url` is wrong rather than a
+    missing resource. Skipping it would also feed an error envelope to the GraphQL streams'
+    `parse_response`/`next_page_token`, which index `response.json()["data"]` unguarded."""
+    stream = Reviews(repositories=["org/repo"], page_size_for_large_streams=30, start_date="2021-01-01T00:00:00Z")
+
+    result = stream.get_error_handler().interpret_response(_mock_404_response("https://api.github.com/graphql"))
+
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert "API URL" in result.error_message
+
+
 @patch("time.sleep")
 def test_retry_after_rate_limit(time_mock, requests_mock):
     """
@@ -404,7 +440,13 @@ def test_read_records_404_message_for_repository_stream(time_mock, caplog, reque
     )
 
     list(read_full_refresh(stream))
-    assert any("GitHub returned 404 Not Found" in msg for msg in caplog.messages)
+    # 404 resolves to IGNORE, so the skip is logged by GithubStreamABCErrorHandler rather than by
+    # read_records. The stream name and the slice (via the URL) must survive that move.
+    assert any(
+        "Skipping `tags` for" in msg and "org/missing-repo" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
+    )
+    # IGNORE, not RETRY: a GitHub 404 is deterministic, so the five retries were pure waste.
+    assert requests_mock.call_count == 1
 
 
 @patch("time.sleep")
@@ -522,7 +564,7 @@ def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
 
 
 @patch("time.sleep")
-def test_stream_teams_404(time_mock, requests_mock):
+def test_stream_teams_404(time_mock, caplog, requests_mock):
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)
 
@@ -535,6 +577,9 @@ def test_stream_teams_404(time_mock, requests_mock):
     assert list(read_full_refresh(stream)) == []
     assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org_name/teams?per_page=100"
+    # `Teams.parse_response` does not delegate to the base implementation, so it carries its own
+    # `response.ok` guard; without it the IGNOREd error object would be iterated as records.
+    assert any("Skipping `teams` for" in msg and "org_name" in msg for msg in caplog.messages)
 
 
 @patch("time.sleep")
@@ -571,9 +616,16 @@ def test_stream_organizations_read(requests_mock):
 
 
 @patch("time.sleep")
-def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
-    """Replaces the deleted test_stream_repositories_401: GithubStreamABC.read_records still logs
-    the PAT-renewal hint on 401 and re-raises, for every stream still on the Python path."""
+def test_stream_401_fails_fast_with_pat_renewal_hint(time_mock, requests_mock):
+    """A 401 fails on the first response instead of retrying five times.
+
+    Retrying could only help if the retry landed on a different credential, and it cannot:
+    `HttpClient._send` re-signs the request on every attempt, but
+    `RateLimitedMultipleTokenAuthenticator._acquire_call` keeps the same `_active_token` while
+    that token's quota is healthy, which a rejected credential's is. So the PAT-renewal hint
+    moved from `read_records` (which never sees a FAIL, since the CDK raises without wrapping the
+    response) into GITHUB_DEFAULT_ERROR_MAPPING[401].
+    """
     stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
 
     requests_mock.get(
@@ -582,10 +634,31 @@ def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
         json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
     )
 
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+
+    assert requests_mock.call_count == 1
+    assert "GitHub returned 401 Unauthorized" in exc_info.value.message
+    assert "Personal Access Token may need to be renewed" in exc_info.value.message
+    assert exc_info.value.failure_type == FailureType.config_error
+
+
+@patch("time.sleep")
+def test_stream_401_with_exhausted_rate_limit_still_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
+    """A 401 that also reports an exhausted quota is classified RATE_LIMITED, not FAIL, so it is
+    retried and reaches `read_records` wrapped. That branch must keep logging the hint."""
+    stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
+
+    requests_mock.get(
+        "https://api.github.com/orgs/org1/members",
+        status_code=requests.codes.UNAUTHORIZED,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+        headers={"X-RateLimit-Remaining": "0", "Retry-After": "0"},
+    )
+
     with pytest.raises(AirbyteTracedException):
         list(read_full_refresh(stream))
 
-    # 1 initial attempt + GithubStreamABC.max_retries (5), matching GITHUB_DEFAULT_ERROR_MAPPING[401] = RETRY.
     assert requests_mock.call_count == 6
     assert any(
         "GitHub authentication failed (HTTP 401) for stream" in message and "Personal Access Token may need to be renewed" in message
@@ -1812,7 +1885,16 @@ def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_res
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
     ]
-    assert any("GitHub returned 404 Not Found" in msg for msg in caplog.messages)
+    # Master logged "Syncing `TeamMemberships` stream for organization `org1`, team `team2` and
+    # user `login3` isn't available" from read_records. With 404 -> IGNORE that branch is no
+    # longer reached, so the same organization/team/user context has to come from the handler's
+    # message, which carries the request URL.
+    assert any(
+        "Skipping `team_memberships` for" in msg
+        and "orgs/org1/teams/team2/memberships/login3" in msg
+        and "GitHub returned 404 Not Found" in msg
+        for msg in caplog.messages
+    )
 
 
 def test_stream_commit_comment_reactions_incremental_read(requests_mock):
