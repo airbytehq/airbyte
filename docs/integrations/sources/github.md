@@ -59,7 +59,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
    - **For Airbyte Open Source:** Authenticate with **Personal Access Token**. To generate a personal access token, log into [GitHub](https://github.com) and then generate a [personal access token](https://github.com/settings/tokens). Enter your GitHub personal access token. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with `,`.
    <!-- /env:oss -->
 
-6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
+6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. To sync every repository owned by an organization, use `airbytehq/*`. A user account works the same way, e.g. `octocat/*` - note that for a user only public repositories are listed.
 
    :::caution
    Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
@@ -259,6 +259,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.0 | 2026-08-28 | [83319](https://github.com/airbytehq/airbyte/pull/83319) | Expand `owner/*` for user-owned accounts, not organizations only |
 | 2.2.0 | 2026-08-27 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |
 | 2.1.42 | 2026-08-25 | [85011](https://github.com/airbytehq/airbyte/pull/85011) | Update dependencies |
 | 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
