@@ -37,7 +37,11 @@ data:
             alias: airbyte-connector-testing-secret-store
   connectorType: destination
   definitionId: 716ca874-520b-4902-9f80-9fad66754b89
-  dockerImageTag: 0.3.54
+  # TK: the exact release version is not settled yet. 0.4.0 is a best guess (minor bump
+  # because this is a breaking change on a pre-1.0.0 connector) and must be updated —
+  # here, in `releases.breakingChanges`, in the changelog, and in the migration guide —
+  # once the real release version is known.
+  dockerImageTag: 0.4.0
   dockerRepository: airbyte/destination-s3-data-lake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-data-lake
   githubIssueLabel: destination-s3-data-lake
@@ -46,6 +50,20 @@ data:
   name: S3 Data Lake
   releaseStage: alpha
   releases:
+    breakingChanges:
+      # TK: version and upgradeDeadline are placeholders — update both when the release
+      # version and date are settled (destinations require at least one month of lead time).
+      0.4.0:
+        message:
+          'This version writes the nested fields of `_airbyte_meta` (`sync_id`, `changes`, and the
+          members of `changes`) as optional rather than required Iceberg fields, so external catalog
+          consumers such as BigQuery Omni can read Airbyte-written Iceberg tables. Existing tables are
+          migrated in place on the next sync; no user action is required to upgrade. This upgrade cannot
+          be rolled back: once a table''s `_airbyte_meta` fields are optional, earlier connector versions
+          fail with `Schema evolution for column "_airbyte_meta" ... is not allowed`. See the
+          [migration guide](https://docs.airbyte.com/integrations/destinations/s3-data-lake-migrations)
+          before pinning back to an older version.'
+        upgradeDeadline: "2026-10-01"
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot
