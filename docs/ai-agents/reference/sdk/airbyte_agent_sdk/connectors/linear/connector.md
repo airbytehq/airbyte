@@ -697,17 +697,13 @@ Classes
         - group_issue_history: 
         - icon: 
         - id: 
-        - invite_hash: 
         - issue_count: 
         - issue_estimation_allow_zero: 
         - issue_estimation_extended: 
         - issue_estimation_type: 
         - key: 
-        - marked_as_duplicate_workflow_state: 
-        - marked_as_duplicate_workflow_state_id: 
         - name: 
         - parent_team_id: 
-        - private: 
         - require_priority_to_leave_triage: 
         - scim_managed: 
         - set_issue_sort_order_on_state_change: 
@@ -716,6 +712,7 @@ Classes
         - triage_issue_state_id: 
         - upcoming_cycle_count: 
         - updated_at: 
+        - visibility: 
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
@@ -780,7 +777,6 @@ Classes
         - guest: 
         - id: 
         - initials: 
-        - invite_hash: 
         - is_me: 
         - last_seen: 
         - name: 
