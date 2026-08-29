@@ -171,7 +171,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.1.13 | 2026-08-29 | [PR_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_PLACEHOLDER) | Retry transient TikTok API error 51002 |
+| 5.1.13 | 2026-08-29 | [85187](https://github.com/airbytehq/airbyte/pull/85187) | Retry transient TikTok API error 51002 |
 | 5.1.12 | 2026-08-18 | [84765](https://github.com/airbytehq/airbyte/pull/84765) | Update dependencies |
 | 5.1.11 | 2026-08-12 | [84290](https://github.com/airbytehq/airbyte/pull/84290) | Widen retry budget and retry transient TikTok API errors 51041 and 51004 |
 | 5.1.10 | 2026-08-11 | [84199](https://github.com/airbytehq/airbyte/pull/84199) | Retry transient TikTok API error 50000 |
