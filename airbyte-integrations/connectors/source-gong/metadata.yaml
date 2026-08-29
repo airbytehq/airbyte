@@ -1,4 +1,8 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.gong.io
+      - app.gong.io
   ab_internal:
     ql: 300
     sl: 200
