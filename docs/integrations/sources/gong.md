@@ -18,17 +18,21 @@ The connection test validates connectivity by reading the `users` stream, so the
 
 ## Setup guide
 
-### Step 1: Authenticate with Gong
+## Set up Gong
 
-You can authenticate to Gong using one of two methods:
+You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
+
+### For Airbyte Cloud:
 
 <!-- env:cloud -->
-
-**For Airbyte Cloud:**
 
 - **OAuth 2.0 (recommended)**. Click **Authenticate your Gong account** to sign in through Gong's OAuth flow. This method handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
 
 <!-- /env:cloud -->
+
+- **API Key**. Alternatively, authenticate with an access key and access key secret, generated as described in the Open Source section below.
+
+### For Airbyte Open Source:
 
 - **API Key**. Authenticate using an access key and access key secret. To generate credentials:
   1. Log in to your Gong account as a technical administrator.
@@ -38,7 +42,7 @@ You can authenticate to Gong using one of two methods:
 
   For more details, see the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api).
 
-### Step 2: Configure the connector
+### Configure the connector
 
 <FieldAnchor field="start_date">
 
@@ -61,7 +65,7 @@ The Gong source connector supports the following [sync modes](https://docs.airby
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 This source syncs the following streams:
 
