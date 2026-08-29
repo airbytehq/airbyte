@@ -95,6 +95,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 2.0.0 | 2026-08-29 | [85186](https://github.com/airbytehq/airbyte/pull/85186) | Remove twelve always-null scheduled-interview columns from the `interviews` stream; scheduling data is available in `interview_schedules` |
 | 1.2.0 | 2026-08-29 | [85183](https://github.com/airbytehq/airbyte/pull/85183) | Declare the interview definition fields `interview.list` actually returns on the `interviews` stream, and request non-shared (job-specific) interviews |
 | 1.1.0 | 2026-08-25 | [84392](https://github.com/airbytehq/airbyte/pull/84392) | Add application history stream |
 | 1.0.1 | 2026-08-25 | [84405](https://github.com/airbytehq/airbyte/pull/84405) | Send the pagination page size using Ashby's documented `limit` field instead of the undocumented `per_page` field |
