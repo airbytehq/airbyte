@@ -105,6 +105,7 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 
 | Version | Date       | Pull Request                                             | Subject                                |
 |:--------| :--------- | :------------------------------------------------------- | :------------------------------------- |
+| 0.3.0 | 2026-08-29 | [85191](https://github.com/airbytehq/airbyte/pull/85191) | Rewrite as V2 Java/Kotlin DirectLoad connector with S3 staging and SQL generator |
 | 0.2.41 | 2026-10-07 | [88246](https://github.com/airbytehq/airbyte/pull/88246) | Add missing `destination_firebolt.run` entrypoint module so the connector image starts with the shared python-connector Dockerfile |
 | 0.2.40 | 2025-05-24 | [59866](https://github.com/airbytehq/airbyte/pull/59866) | Update dependencies |
 | 0.2.39 | 2025-05-03 | [59316](https://github.com/airbytehq/airbyte/pull/59316) | Update dependencies |
