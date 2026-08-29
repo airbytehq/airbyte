@@ -2,8 +2,12 @@
 
 import json
 from unittest import TestCase
+from unittest.mock import patch
 
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import (
+    ConstantBackoffStrategy,
+)
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
@@ -37,3 +41,23 @@ class TestCreativeAssetsPortfolios(TestCase):
 
         output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
         assert len(output.records) == 2
+
+    @HttpMocker()
+    def test_retries_51002(self, http_mocker: HttpMocker):
+        mock_advertisers_slices(http_mocker, self.config())
+
+        http_mocker.get(
+            HttpRequest(
+                url=f"https://business-api.tiktok.com/open_api/v1.3/creative/portfolio/list/?page_size=100&advertiser_id=872746382648",
+            ),
+            [
+                HttpResponse(body=json.dumps({"code": 51002, "message": "internal error"}), status_code=200),
+                HttpResponse(body=json.dumps(find_template(self.stream_name, __file__)), status_code=200),
+            ],
+        )
+
+        with patch.object(ConstantBackoffStrategy, "backoff_time", return_value=0):
+            output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
+
+        assert len(output.records) == 2
+        assert not output.errors
