@@ -206,6 +206,7 @@ class FireboltSqlGenerator {
      * Generates a transaction to evolve the table schema.
      * For now this only adds missing columns; type coercions are left as a later TODO.
      */
+    @Suppress("UNUSED_PARAMETER")
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
