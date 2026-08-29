@@ -1327,17 +1327,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `groupIssueHistory` | `boolean` |  |
 | `icon` | `string` |  |
 | `id` | `string` |  |
-| `inviteHash` | `string` |  |
 | `issueCount` | `number` |  |
 | `issueEstimationAllowZero` | `boolean` |  |
 | `issueEstimationExtended` | `boolean` |  |
 | `issueEstimationType` | `string` |  |
 | `key` | `string` |  |
-| `markedAsDuplicateWorkflowState` | `object` |  |
-| `markedAsDuplicateWorkflowStateId` | `string` |  |
 | `name` | `string` |  |
 | `parentTeamId` | `string` |  |
-| `private` | `boolean` |  |
 | `requirePriorityToLeaveTriage` | `boolean` |  |
 | `scimManaged` | `boolean` |  |
 | `setIssueSortOrderOnStateChange` | `string` |  |
@@ -1346,6 +1342,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `triageIssueStateId` | `string` |  |
 | `upcomingCycleCount` | `number` |  |
 | `updatedAt` | `string` |  |
+| `visibility` | `string` |  |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1378,17 +1375,13 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].groupIssueHistory` | `boolean` |  |
 | `data[].icon` | `string` |  |
 | `data[].id` | `string` |  |
-| `data[].inviteHash` | `string` |  |
 | `data[].issueCount` | `number` |  |
 | `data[].issueEstimationAllowZero` | `boolean` |  |
 | `data[].issueEstimationExtended` | `boolean` |  |
 | `data[].issueEstimationType` | `string` |  |
 | `data[].key` | `string` |  |
-| `data[].markedAsDuplicateWorkflowState` | `object` |  |
-| `data[].markedAsDuplicateWorkflowStateId` | `string` |  |
 | `data[].name` | `string` |  |
 | `data[].parentTeamId` | `string` |  |
-| `data[].private` | `boolean` |  |
 | `data[].requirePriorityToLeaveTriage` | `boolean` |  |
 | `data[].scimManaged` | `boolean` |  |
 | `data[].setIssueSortOrderOnStateChange` | `string` |  |
@@ -1397,6 +1390,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].triageIssueStateId` | `string` |  |
 | `data[].upcomingCycleCount` | `number` |  |
 | `data[].updatedAt` | `string` |  |
+| `data[].visibility` | `string` |  |
 
 </details>
 
@@ -1779,7 +1773,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `guest` | `boolean` |  |
 | `id` | `string` |  |
 | `initials` | `string` |  |
-| `inviteHash` | `string` |  |
 | `isMe` | `boolean` |  |
 | `lastSeen` | `string` |  |
 | `name` | `string` |  |
@@ -1810,7 +1803,6 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].guest` | `boolean` |  |
 | `data[].id` | `string` |  |
 | `data[].initials` | `string` |  |
-| `data[].inviteHash` | `string` |  |
 | `data[].isMe` | `boolean` |  |
 | `data[].lastSeen` | `string` |  |
 | `data[].name` | `string` |  |
