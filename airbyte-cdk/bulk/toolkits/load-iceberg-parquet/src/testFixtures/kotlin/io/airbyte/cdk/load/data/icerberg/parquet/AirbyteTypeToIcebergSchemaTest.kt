@@ -265,7 +265,8 @@ class AirbyteTypeToIcebergSchemaTest {
                             ObjectType(
                                 linkedMapOf(
                                     "sync_id" to FieldType(StringType, false),
-                                    "changes" to FieldType(ArrayType(FieldType(metaChanges, false)), false),
+                                    "changes" to
+                                        FieldType(ArrayType(FieldType(metaChanges, false)), false),
                                 ),
                             ),
                             false,

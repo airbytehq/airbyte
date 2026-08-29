@@ -229,10 +229,18 @@ class IcebergTypesComparator {
                 // For all fields in existing, ensure there's a matching field in incoming
                 for ((name, existingField) in existingStructFields) {
                     val incomingField = incomingStructFields[name] ?: return false
-                    if (!ignoreNullability && existingField.isOptional != incomingField.isOptional) {
+                    if (
+                        !ignoreNullability && existingField.isOptional != incomingField.isOptional
+                    ) {
                         return false
                     }
-                    if (!typesAreEqual(incomingField.type(), existingField.type(), ignoreNullability)) {
+                    if (
+                        !typesAreEqual(
+                            incomingField.type(),
+                            existingField.type(),
+                            ignoreNullability
+                        )
+                    ) {
                         return false
                     }
                 }
