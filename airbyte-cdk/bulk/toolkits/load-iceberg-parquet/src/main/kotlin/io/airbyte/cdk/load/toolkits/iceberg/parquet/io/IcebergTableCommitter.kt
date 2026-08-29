@@ -21,6 +21,7 @@ object IcebergTableCommitter {
         writeResult: WriteResult,
         plannedSnapshotId: Long,
         fullySupersededDataFiles: Set<DataFile>,
+        deleteIndex: DeleteIndexState? = null,
     ) {
         synchronized(commitLocks.computeIfAbsent("${table.name()}::$branch") { Any() }) {
             if (fullySupersededDataFiles.isNotEmpty()) {
@@ -53,6 +54,13 @@ object IcebergTableCommitter {
                     .validateFromSnapshot(rewriteSnapshotId)
                     .commit()
                 transaction.commitTransaction()
+                publishDeleteIndex(
+                    table,
+                    branch,
+                    writeResult,
+                    deleteIndex,
+                    DeleteIndexState.removedLocations(fullySupersededDataFiles),
+                )
             } else if (
                 writeResult.deleteFiles().isNotEmpty() ||
                     (writeResult.dataFiles().isNotEmpty() &&
@@ -70,12 +78,31 @@ object IcebergTableCommitter {
                 writeResult.dataFiles().forEach(delta::addRows)
                 writeResult.deleteFiles().forEach(delta::addDeletes)
                 delta.commit()
+                publishDeleteIndex(table, branch, writeResult, deleteIndex, emptySet())
             } else if (writeResult.dataFiles().isNotEmpty()) {
                 val append = table.newAppend().toBranch(branch)
                 writeResult.dataFiles().forEach(append::appendFile)
                 append.commit()
             }
         }
+    }
+
+    /**
+     * Publishes the deletion-vector index for the snapshot the commit just created.
+     *
+     * This runs inside the commit lock so the index always describes a snapshot this writer
+     * produced, and after the data commit so a failure to write the index cannot fail the sync.
+     */
+    private fun publishDeleteIndex(
+        table: Table,
+        branch: String,
+        writeResult: WriteResult,
+        deleteIndex: DeleteIndexState?,
+        removedDataFileLocations: Set<String>,
+    ) {
+        if (deleteIndex == null || !deleteIndex.enabled) return
+        val snapshotId = table.refs()[branch]?.snapshotId() ?: return
+        deleteIndex.publish(table, snapshotId, writeResult, removedDataFileLocations)
     }
 
     private fun registeredDeletes(

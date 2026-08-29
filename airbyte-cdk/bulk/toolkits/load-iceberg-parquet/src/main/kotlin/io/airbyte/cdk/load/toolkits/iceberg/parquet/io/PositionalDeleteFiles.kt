@@ -17,6 +17,7 @@ import org.apache.iceberg.io.OutputFileFactory
 class PositionalDeleteFiles(
     private val writerFactory: GenericFileWriterFactory,
     private val outputFileFactory: OutputFileFactory,
+    private val deleteIndex: DeleteIndexState? = null,
 ) {
     fun writeAll(
         locations: Sequence<PositionalDeleteResolver.RowLocation>,
@@ -65,6 +66,7 @@ class PositionalDeleteFiles(
                 delete.set(location.path, location.position)
                 writer.writer.referencedDataFiles().add(location.path.toString())
                 writer.writer.write(delete)
+                deleteIndex?.recordDeleted(key, location.position)
                 writer.lastPath = location.path.toString()
                 writer.lastPosition = location.position
             }

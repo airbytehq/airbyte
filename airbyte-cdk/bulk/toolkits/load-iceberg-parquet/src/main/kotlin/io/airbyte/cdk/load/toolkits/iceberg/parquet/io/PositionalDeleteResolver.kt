@@ -38,7 +38,8 @@ class PositionalDeleteResolver(
             state,
             allowWholeFileSupersession = allowWholeFileSupersession,
         )
-    private val deleteFiles = PositionalDeleteFiles(writerFactory, outputFileFactory)
+    private val deleteFiles =
+        PositionalDeleteFiles(writerFactory, outputFileFactory, state.deleteIndex)
 
     val dataFilesOpened: Int
         get() = finder.dataFilesOpened
