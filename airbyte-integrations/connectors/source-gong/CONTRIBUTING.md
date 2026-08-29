@@ -18,3 +18,14 @@ The Gong API exposes incremental filtering via `fromDateTime` on the calls and s
 ### Future incremental stream candidates
 
 - **No API date filter (2 streams):** `scorecards`, `users` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+
+## Error handling
+
+All requesters share the same response mappings, defined in `manifest.yaml` (`definitions.auth_error_filter`, `definitions.transient_error_filter`) and appended to each stream's error handler:
+
+| Response | Action | Failure type | Rationale |
+|---|---|---|---|
+| 404 / "No … found corresponding to the provided filters" | IGNORE (empty stream) | — | Gong signals an empty result set as 404. Warning: a key whose user lacks call visibility gets a byte-identical 404, so a misconfigured key looks like an empty source; this is indistinguishable server-side. |
+| 401, 403 | FAIL | `config_error` | Invalid, expired, or scope-limited credentials. Surfaced with an actionable message instead of a raw exception. |
+| 429, 500, 502, 503, 504 | RETRY | `transient_error` | Backoff honors the `Retry-After` header (`WaitTimeFromHeader`). Retry-After can reach hours when the 10,000 requests/day quota is exhausted, which is why `maxSecondsBetweenMessages` is 86400. |
+| Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all FAIL filter is deliberately omitted: `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s, so a match-anything rule would fail successful requests. |
