@@ -1081,60 +1081,47 @@ streams:
             type:
               - "null"
               - string
-          applicationId:
+          title:
             type:
               - "null"
               - string
-          interviewScheduleId:
+          externalTitle:
             type:
               - "null"
               - string
-          interviewStageId:
+          type:
             type:
               - "null"
               - string
-          status:
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          isDebrief:
+            type:
+              - "null"
+              - boolean
+          isFeedbackRequired:
+            type:
+              - "null"
+              - boolean
+          isFeedbackRequested:
+            type:
+              - "null"
+              - boolean
+          instructionsHtml:
             type:
               - "null"
               - string
-          createdAt:
+          instructionsPlain:
             type:
               - "null"
               - string
-            format: date-time
-          updatedAt:
+          jobId:
             type:
               - "null"
               - string
-            format: date-time
-          cancelledAt:
-            type:
-              - "null"
-              - string
-            format: date-time
-          startTime:
-            type:
-              - "null"
-              - string
-            format: date-time
-          endTime:
-            type:
-              - "null"
-              - string
-            format: date-time
-          feedbackLink:
-            type:
-              - "null"
-              - string
-          interviewerUserIds:
-            type:
-              - "null"
-              - array
-            items:
-              type:
-                - "null"
-                - string
-          meetingLink:
+          feedbackFormDefinitionId:
             type:
               - "null"
               - string
