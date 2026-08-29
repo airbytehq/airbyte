@@ -34,6 +34,8 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -81,6 +83,8 @@ definitions:
                   - type: HttpResponseFilter
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -144,6 +148,8 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             contentSelector:
               context: "Extended"
@@ -261,6 +267,8 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -309,6 +317,8 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -377,6 +387,8 @@ definitions:
                     action: IGNORE
                     http_codes:
                       - 404
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             filter:
               # stream_partition.call_id is a list of up to `group_size` call
@@ -446,6 +458,28 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/callTranscripts"
+  auth_error_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes:
+      - 401
+      - 403
+    error_message: >-
+      Gong rejected the request as unauthorized. Verify that the Access Key and
+      Access Key Secret (or OAuth credentials) are valid and active, and that
+      the Gong user who created them has API access and visibility into the
+      requested data.
+  transient_error_filter:
+    type: HttpResponseFilter
+    action: RETRY
+    failure_type: transient_error
+    http_codes:
+      - 429
+      - 500
+      - 502
+      - 503
+      - 504
   base_requester:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
