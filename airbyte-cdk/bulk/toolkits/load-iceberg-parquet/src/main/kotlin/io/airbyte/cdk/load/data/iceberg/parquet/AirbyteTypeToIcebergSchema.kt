@@ -30,7 +30,11 @@ import org.apache.iceberg.types.Types.NestedField
 
 class AirbyteTypeToIcebergSchema {
 
-    fun convert(airbyteSchema: AirbyteType, stringifyObjects: Boolean): Type {
+    fun convert(
+        airbyteSchema: AirbyteType,
+        stringifyObjects: Boolean,
+        forceOptional: Boolean = false,
+    ): Type {
         return when (airbyteSchema) {
             is ObjectType -> {
                 if (stringifyObjects) {
@@ -39,17 +43,17 @@ class AirbyteTypeToIcebergSchema {
                     Types.StructType.of(
                         *airbyteSchema.properties.entries
                             .map { (name, field) ->
-                                if (field.nullable) {
+                                if (forceOptional || field.nullable) {
                                     NestedField.optional(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects)
+                                        convert(field.type, stringifyObjects, forceOptional)
                                     )
                                 } else {
                                     NestedField.required(
                                         UUID.randomUUID().hashCode(),
                                         name,
-                                        convert(field.type, stringifyObjects)
+                                        convert(field.type, stringifyObjects, forceOptional)
                                     )
                                 }
                             }
@@ -58,8 +62,8 @@ class AirbyteTypeToIcebergSchema {
                 }
             }
             is ArrayType -> {
-                val convert = convert(airbyteSchema.items.type, stringifyObjects)
-                if (airbyteSchema.items.nullable) {
+                val convert = convert(airbyteSchema.items.type, stringifyObjects, forceOptional)
+                if (forceOptional || airbyteSchema.items.nullable) {
                     return Types.ListType.ofOptional(UUID.randomUUID().hashCode(), convert)
                 }
                 return Types.ListType.ofRequired(UUID.randomUUID().hashCode(), convert)
@@ -84,7 +88,7 @@ class AirbyteTypeToIcebergSchema {
                 if (airbyteSchema.options.size == 1) {
                     return Types.ListType.ofOptional(
                         UUID.randomUUID().hashCode(),
-                        convert(airbyteSchema.options.first(), stringifyObjects)
+                        convert(airbyteSchema.options.first(), stringifyObjects, forceOptional)
                     )
                 }
                 // We stringify nontrivial unions
@@ -113,7 +117,11 @@ fun ObjectType.toIcebergSchema(primaryKeys: List<List<String>>): Schema {
                 // Iceberg identifier fields (float/double are disallowed as identifiers).
                 Types.StringType.get()
             } else {
-                icebergTypeConverter.convert(field.type, stringifyObjects = stringifyObjects)
+                icebergTypeConverter.convert(
+                    field.type,
+                    stringifyObjects = stringifyObjects,
+                    forceOptional = name == Meta.COLUMN_NAME_AB_META,
+                )
             }
         fields.add(
             NestedField.builder()

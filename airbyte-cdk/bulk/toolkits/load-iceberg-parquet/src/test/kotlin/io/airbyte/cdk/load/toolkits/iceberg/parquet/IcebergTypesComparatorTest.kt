@@ -142,6 +142,53 @@ class IcebergTypesComparatorTest {
     }
 
     @Test
+    fun testNestedNewlyOptionalColumn() {
+        val existingSchema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), false),
+                    ),
+                    false,
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), true),
+                    ),
+                    false,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
+
+        assertThat(diff.newlyOptionalColumns).containsExactly("_airbyte_meta~sync_id")
+        assertThat(diff.updatedDataTypes).isEmpty()
+    }
+
+    @Test
+    fun testNestedOptionalColumnWithNoChange() {
+        val schema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), true),
+                    ),
+                    false,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(schema, schema)
+
+        assertThat(diff.newlyOptionalColumns).isEmpty()
+    }
+
+    @Test
     fun testTimestampTypeWithZoneVersusWithoutZone() {
         val existingSchema =
             buildSchema(
@@ -198,7 +245,7 @@ class IcebergTypesComparatorTest {
     }
 
     @Test
-    fun testListTypeElementOptionalityChanged() {
+    fun testListTypeElementOptionalityIsNotATypeChange() {
         val existingSchema =
             buildSchema(
                 field(
@@ -225,8 +272,7 @@ class IcebergTypesComparatorTest {
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
-        // This appears as a type update because list element optionality changed
-        assertThat(diff.updatedDataTypes).containsExactly("values")
+        assertThat(diff.updatedDataTypes).isEmpty()
         assertThat(diff.newColumns).isEmpty()
         assertThat(diff.removedColumns).isEmpty()
         assertThat(diff.newlyOptionalColumns).isEmpty()

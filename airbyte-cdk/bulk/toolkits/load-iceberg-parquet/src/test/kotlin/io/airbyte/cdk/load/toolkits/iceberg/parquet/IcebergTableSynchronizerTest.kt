@@ -184,6 +184,41 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
+    fun `test nested newly optional columns use dotted paths`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        Types.NestedField.required(2, "sync_id", Types.StringType.get()),
+                    ),
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.required(
+                    1,
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        Types.NestedField.optional(2, "sync_id", Types.StringType.get()),
+                    ),
+                ),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
+
+        verify { mockUpdateSchema.makeColumnOptional("_airbyte_meta.sync_id") }
+        verify(exactly = 0) { mockUpdateSchema.makeColumnOptional("_airbyte_meta~sync_id") }
+    }
+
+    @Test
     fun `test add new columns - top level`() {
         val existingSchema =
             buildSchema(Types.NestedField.required(1, "id", Types.IntegerType.get()))

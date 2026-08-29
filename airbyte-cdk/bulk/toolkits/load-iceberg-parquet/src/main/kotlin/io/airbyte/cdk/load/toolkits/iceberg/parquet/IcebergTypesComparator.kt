@@ -135,10 +135,10 @@ class IcebergTypesComparator {
                     diff.updatedDataTypes.add(fqName)
                 }
 
-                // Check if it changed from required to optional at top-level
+                // Check if it changed from required to optional
                 val wasRequired = !existingField.isOptional
                 val isNowOptional = incomingField.isOptional
-                if (parentPath.isNullOrBlank() && wasRequired && isNowOptional) {
+                if (wasRequired && isNowOptional) {
                     diff.newlyOptionalColumns.add(fqName)
                 }
 
@@ -202,8 +202,7 @@ class IcebergTypesComparator {
                 }
                 val sameElementType =
                     typesAreEqual(incomingType.elementType(), existingType.elementType())
-                sameElementType &&
-                    (existingType.isElementOptional == incomingType.isElementOptional)
+                sameElementType
             }
             Type.TypeID.STRUCT -> {
                 val incomingStructFields =
@@ -214,7 +213,6 @@ class IcebergTypesComparator {
                 // For all fields in existing, ensure there's a matching field in incoming
                 for ((name, existingField) in existingStructFields) {
                     val incomingField = incomingStructFields[name] ?: return false
-                    if (existingField.isOptional != incomingField.isOptional) return false
                     if (!typesAreEqual(incomingField.type(), existingField.type())) return false
                 }
                 // If there are extra fields in `incoming`, that doesn't mean they're "unequal" per

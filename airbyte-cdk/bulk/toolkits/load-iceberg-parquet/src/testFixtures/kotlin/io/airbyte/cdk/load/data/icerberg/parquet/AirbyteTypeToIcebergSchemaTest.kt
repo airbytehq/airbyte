@@ -7,6 +7,7 @@ package io.airbyte.cdk.load.data.icerberg.parquet
 import io.airbyte.cdk.load.data.*
 import io.airbyte.cdk.load.data.iceberg.parquet.AirbyteTypeToIcebergSchema
 import io.airbyte.cdk.load.data.iceberg.parquet.toIcebergSchema
+import io.airbyte.cdk.load.message.Meta
 import io.airbyte.protocol.models.Jsons
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Assertions.*
@@ -243,5 +244,50 @@ class AirbyteTypeToIcebergSchemaTest {
         val identifierFieldIds = schema.identifierFieldIds()
         assertEquals(1, identifierFieldIds.size)
         assertTrue(identifierFieldIds.contains(idColumn.fieldId()))
+    }
+
+    @Test
+    fun `toIcebergSchema makes nested metadata fields optional`() {
+        val metaChanges =
+            ObjectType(
+                linkedMapOf(
+                    "field" to FieldType(StringType, false),
+                    "change" to FieldType(StringType, false),
+                    "reason" to FieldType(StringType, false),
+                ),
+            )
+        val objectType =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, false),
+                    Meta.COLUMN_NAME_AB_META to
+                        FieldType(
+                            ObjectType(
+                                linkedMapOf(
+                                    "sync_id" to FieldType(StringType, false),
+                                    "changes" to FieldType(ArrayType(FieldType(metaChanges, false)), false),
+                                ),
+                            ),
+                            false,
+                        ),
+                ),
+            )
+
+        val schema = objectType.toIcebergSchema(mutableListOf(mutableListOf("id")))
+        val metaField = schema.findField(Meta.COLUMN_NAME_AB_META)!!
+        val metaType = metaField.type().asStructType()
+        val changesField = metaType.field("changes")!!
+        val changesType = changesField.type().asListType()
+        val changeElementType = changesType.elementType().asStructType()
+
+        assertFalse(metaField.isOptional)
+        assertTrue(metaType.field("sync_id")!!.isOptional)
+        assertTrue(changesField.isOptional)
+        assertTrue(changesType.isElementOptional)
+        assertTrue(changeElementType.field("field")!!.isOptional)
+        assertTrue(changeElementType.field("change")!!.isOptional)
+        assertTrue(changeElementType.field("reason")!!.isOptional)
+        assertFalse(schema.findField("id")!!.isOptional)
+        assertTrue(schema.identifierFieldNames().contains("id"))
     }
 }

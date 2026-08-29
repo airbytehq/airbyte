@@ -166,7 +166,9 @@ class IcebergTableSynchronizer(
         }
 
         // 3) Mark columns newly optional
-        diff.newlyOptionalColumns.forEach { columnName -> update.makeColumnOptional(columnName) }
+        diff.newlyOptionalColumns.forEach { columnName ->
+            update.makeColumnOptional(columnName.replace(PARENT_CHILD_SEPARATOR, '.'))
+        }
 
         // 4) Add new columns, sorted by nesting depth (so that parents are created before children)
         val sortedNewColumns =
