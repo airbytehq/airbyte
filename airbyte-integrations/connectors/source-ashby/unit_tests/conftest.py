@@ -27,5 +27,5 @@ sys.path.append(str(_SOURCE_FOLDER_PATH))
 
 def get_source(config: Mapping[str, Any], state: Optional[Any] = None) -> YamlDeclarativeSource:
     catalog = CatalogBuilder().build()
-    state = StateBuilder().build() if not state else state
+    state = state if state is not None else StateBuilder().build()
     return YamlDeclarativeSource(path_to_yaml=str(_YAML_FILE_PATH), catalog=catalog, config=config, state=state)
