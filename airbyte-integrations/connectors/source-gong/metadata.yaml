@@ -37,6 +37,13 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
   releaseStage: generally_available
+  suggestedStreams:
+    streams:
+      - calls
+      - extensiveCalls
+      - callTranscripts
+      - users
+      - answeredScorecards
   remoteRegistries:
     pypi:
       enabled: false
