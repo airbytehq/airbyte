@@ -1024,9 +1024,6 @@ Classes
     `id: str | None`
     :   The type of the None singleton.
 
-    `invite_hash: str | None`
-    :   The type of the None singleton.
-
     `issue_count: float | None`
     :   The type of the None singleton.
 
@@ -1042,12 +1039,6 @@ Classes
     `key: str | None`
     :   The type of the None singleton.
 
-    `marked_as_duplicate_workflow_state: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
-    `marked_as_duplicate_workflow_state_id: str | None`
-    :   The type of the None singleton.
-
     `model_config`
     :   The type of the None singleton.
 
@@ -1055,9 +1046,6 @@ Classes
     :   The type of the None singleton.
 
     `parent_team_id: str | None`
-    :   The type of the None singleton.
-
-    `private: bool | None`
     :   The type of the None singleton.
 
     `require_priority_to_leave_triage: bool | None`
@@ -1082,6 +1070,9 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: str | None`
+    :   The type of the None singleton.
+
+    `visibility: str | None`
     :   The type of the None singleton.
 
 <a id="UsersSearchData"></a>
@@ -1133,9 +1124,6 @@ Classes
     :   The type of the None singleton.
 
     `initials: str | None`
-    :   The type of the None singleton.
-
-    `invite_hash: str | None`
     :   The type of the None singleton.
 
     `is_me: bool | None`

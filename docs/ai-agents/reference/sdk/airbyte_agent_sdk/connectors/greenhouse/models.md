@@ -452,70 +452,136 @@ Classes
 
     ### Class variables
 
-    `answers: list[dict[str, typing.Any]] | None`
+    `agency_note_id: int | None`
     :   The type of the None singleton.
 
-    `applied_at: str | None`
-    :   The type of the None singleton.
-
-    `attachments: list[airbyte_agent_sdk.connectors.greenhouse.models.Attachment] | None`
+    `answers: list[airbyte_agent_sdk.connectors.greenhouse.models.ApplicationAnswersItem | None] | None`
     :   The type of the None singleton.
 
     `candidate_id: int | None`
     :   The type of the None singleton.
 
-    `credited_to: dict[str, typing.Any] | None`
+    `coordinator_id: int | None`
     :   The type of the None singleton.
 
-    `current_stage: dict[str, typing.Any] | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | None`
+    `custom_fields: dict[str, airbyte_agent_sdk.connectors.greenhouse.models.ApplicationCustomFields] | None`
     :   The type of the None singleton.
 
     `id: int | None`
     :   The type of the None singleton.
 
-    `job_post_id: int | None`
+    `job_id: int | None`
     :   The type of the None singleton.
 
-    `jobs: list[dict[str, typing.Any]] | None`
+    `job_interview_stage_id: int | None`
+    :   The type of the None singleton.
+
+    `job_post_id: int | None`
     :   The type of the None singleton.
 
     `last_activity_at: str | None`
     :   The type of the None singleton.
 
-    `location: dict[str, typing.Any] | None`
+    `location_address: str | None`
     :   The type of the None singleton.
 
     `model_config`
     :   The type of the None singleton.
 
+    `needs_decision: bool | None`
+    :   The type of the None singleton.
+
     `prospect: bool | None`
     :   The type of the None singleton.
 
-    `prospect_detail: dict[str, typing.Any] | None`
+    `prospective_job_ids: list[int | None] | None`
     :   The type of the None singleton.
 
-    `prospective_department: dict[str, typing.Any] | None`
+    `recruiter_id: int | None`
     :   The type of the None singleton.
 
-    `prospective_office: dict[str, typing.Any] | None`
+    `referrer_id: int | None`
     :   The type of the None singleton.
 
     `rejected_at: str | None`
     :   The type of the None singleton.
 
-    `rejection_details: dict[str, typing.Any] | None`
+    `rejection_reason_id: int | None`
     :   The type of the None singleton.
 
-    `rejection_reason: dict[str, typing.Any] | None`
+    `source_id: int | None`
     :   The type of the None singleton.
 
-    `source: dict[str, typing.Any] | None`
+    `stage_id: int | None`
+    :   The type of the None singleton.
+
+    `stage_name: str | None`
     :   The type of the None singleton.
 
     `status: str | None`
+    :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   The type of the None singleton.
+
+<a id="ApplicationAnswersItem"></a>
+
+`ApplicationAnswersItem(**data: Any)`
+:   Nested schema for Application.answers_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `answer: str | None`
+    :   Candidate's free-text answer to the question.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `question: str | None`
+    :   Application-form question the candidate answered.
+
+<a id="ApplicationCustomFields"></a>
+
+`ApplicationCustomFields(**data: Any)`
+:   Nested schema for Application.custom_fields
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="ApplicationsListResultMeta"></a>
@@ -560,73 +626,85 @@ Classes
 
     ### Class variables
 
+    `agency_note_id: int | None`
+    :   Id of the note created when the candidate was submitted by an agency, or `null` if the application did not come through an agency.
+
     `answers: list[typing.Any] | None`
-    :   Answers provided in the application.
-
-    `applied_at: str | None`
-    :   Timestamp when the candidate applied.
-
-    `attachments: list[typing.Any] | None`
-    :   Attachments uploaded with the application.
+    :   Free-text answers the candidate provided on the job post application form. Each entry pairs the question text with the candidate's answer.
 
     `candidate_id: int | None`
-    :   Unique identifier for the candidate.
+    :   Id of the candidate (person) this application belongs to.
 
-    `credited_to: dict[str, typing.Any] | None`
-    :   Information about the employee who credited the application.
+    `coordinator_id: int | None`
+    :   Id of the user assigned as coordinator on the application's job, or `null` when unassigned.
 
-    `current_stage: dict[str, typing.Any] | None`
-    :   Current stage of the application process.
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 applications record.
+
+    `custom_fields: dict[str, typing.Any] | None`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: int | None`
-    :   Unique identifier for the application.
+    :   Id from the Greenhouse v3 applications record.
+
+    `job_id: int | None`
+    :   Id of the job this application is on. `null` for jobless prospect applications.
+
+    `job_interview_stage_id: int | None`
+    :   Id of the job interview stage definition (see `GET /v3/job_interview_stages`) the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
 
     `job_post_id: int | None`
-    :   The type of the None singleton.
-
-    `jobs: list[typing.Any] | None`
-    :   Jobs applied for by the candidate.
+    :   Id of the job post the candidate applied through, or `null` if the application was created internally rather than from a posted role.
 
     `last_activity_at: str | None`
-    :   Timestamp of the last activity on the application.
+    :   Timestamp of the most recent activity on this application (notes, emails, stage changes, etc.), in ISO 8601.
 
-    `location: str | None`
-    :   Location related to the application.
+    `location_address: str | None`
+    :   Free-form location string captured on the application (typically from the job post's location question).
 
     `model_config`
     :   The type of the None singleton.
 
+    `needs_decision: bool | None`
+    :   `true` when the application is waiting on a hiring-team decision (scorecard completion, advance/reject, etc.) in its current stage.
+
     `prospect: bool | None`
-    :   Status of the application prospect.
+    :   `true` for prospect applications (sourced candidates not yet attached to a single job), `false` for candidate applications on a specific job.
 
-    `prospect_detail: dict[str, typing.Any] | None`
-    :   Details related to the application prospect.
+    `prospective_job_ids: list[typing.Any] | None`
+    :   For prospect applications, the ids of jobs the prospect is being considered for. Empty for non-prospect applications and for jobless prospects.
 
-    `prospective_department: str | None`
-    :   Prospective department for the candidate.
+    `recruiter_id: int | None`
+    :   Id of the user assigned as recruiter on the application's job, or `null` when unassigned.
 
-    `prospective_office: str | None`
-    :   Prospective office for the candidate.
+    `referrer_id: int | None`
+    :   Id of the referrer who credited this application, or `null` if there was no referral. References a referrer, not a Greenhouse user.
 
     `rejected_at: str | None`
-    :   Timestamp when the application was rejected.
+    :   Timestamp the application was rejected, in ISO 8601. `null` for applications that have not been rejected.
 
-    `rejection_details: dict[str, typing.Any] | None`
-    :   Details related to the application rejection.
+    `rejection_reason_id: int | None`
+    :   Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason, or has not been rejected.
 
-    `rejection_reason: dict[str, typing.Any] | None`
-    :   Reason for the application rejection.
+    `source_id: int | None`
+    :   Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
 
-    `source: dict[str, typing.Any] | None`
-    :   Source of the application.
+    `stage_id: int | None`
+    :   Id of the interview stage the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
+
+    `stage_name: str | None`
+    :   Display name of the candidate's current interview stage on this application.
 
     `status: str | None`
-    :   Status of the application.
+    :   Lifecycle status of the application. `in_process` for active candidates, `rejected` for rejected applications, `hired` once an offer is closed and the hire endpoint has fired, and `converted` for prospect applications that have been promoted to a candidate application via `convert_to_candidate`.
+
+    `updated_at: str | None`
+    :   Updated at from the Greenhouse v3 applications record.
 
 <a id="Attachment"></a>
 
 `Attachment(**data: Any)`
-:   File attachment (resume, cover letter, etc.)
+:   File associated with a Greenhouse application
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -641,10 +719,19 @@ Classes
 
     ### Class variables
 
+    `application_id: int | None`
+    :   The type of the None singleton.
+
+    `candidate_id: int | None`
+    :   The type of the None singleton.
+
     `created_at: str | None`
     :   The type of the None singleton.
 
     `filename: str | None`
+    :   The type of the None singleton.
+
+    `id: int | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -653,7 +740,34 @@ Classes
     `type_: str | None`
     :   The type of the None singleton.
 
+    `updated_at: str | None`
+    :   The type of the None singleton.
+
     `url: str | None`
+    :   The type of the None singleton.
+
+<a id="AttachmentsListResultMeta"></a>
+
+`AttachmentsListResultMeta(**data: Any)`
+:   Metadata for attachments.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next: str | None`
     :   The type of the None singleton.
 
 <a id="Candidate"></a>
@@ -674,13 +788,7 @@ Classes
 
     ### Class variables
 
-    `addresses: list[dict[str, typing.Any]] | None`
-    :   The type of the None singleton.
-
-    `application_ids: list[int] | None`
-    :   The type of the None singleton.
-
-    `attachments: list[airbyte_agent_sdk.connectors.greenhouse.models.Attachment] | None`
+    `addresses: list[airbyte_agent_sdk.connectors.greenhouse.models.CandidateAddressesItem | None] | None`
     :   The type of the None singleton.
 
     `can_email: bool | None`
@@ -689,16 +797,13 @@ Classes
     `company: str | None`
     :   The type of the None singleton.
 
-    `coordinator: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
     `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | None`
+    `custom_fields: dict[str, airbyte_agent_sdk.connectors.greenhouse.models.CandidateCustomFields] | None`
     :   The type of the None singleton.
 
-    `email_addresses: list[dict[str, typing.Any]] | None`
+    `email_addresses: list[airbyte_agent_sdk.connectors.greenhouse.models.CandidateEmailAddressesItem | None] | None`
     :   The type of the None singleton.
 
     `first_name: str | None`
@@ -707,31 +812,34 @@ Classes
     `id: int | None`
     :   The type of the None singleton.
 
-    `is_private: bool | None`
-    :   The type of the None singleton.
-
-    `last_activity: str | None`
+    `last_activity_at: str | None`
     :   The type of the None singleton.
 
     `last_name: str | None`
     :   The type of the None singleton.
 
+    `linked_user_ids: list[int | None] | None`
+    :   The type of the None singleton.
+
     `model_config`
     :   The type of the None singleton.
 
-    `phone_numbers: list[dict[str, typing.Any]] | None`
+    `phone_numbers: list[airbyte_agent_sdk.connectors.greenhouse.models.CandidatePhoneNumbersItem | None] | None`
     :   The type of the None singleton.
 
-    `photo_url: str | None`
+    `preferred_name: str | None`
     :   The type of the None singleton.
 
-    `recruiter: dict[str, typing.Any] | None`
+    `private: bool | None`
     :   The type of the None singleton.
 
-    `social_media_addresses: list[dict[str, typing.Any]] | None`
+    `social_media_addresses: list[airbyte_agent_sdk.connectors.greenhouse.models.CandidateSocialMediaAddressesItem | None] | None`
     :   The type of the None singleton.
 
-    `tags: list[str] | None`
+    `tags: list[str | None] | None`
+    :   The type of the None singleton.
+
+    `time_zone: str | None`
     :   The type of the None singleton.
 
     `title: str | None`
@@ -740,7 +848,169 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
-    `website_addresses: list[dict[str, typing.Any]] | None`
+    `website_addresses: list[airbyte_agent_sdk.connectors.greenhouse.models.CandidateWebsiteAddressesItem | None] | None`
+    :   The type of the None singleton.
+
+<a id="CandidateAddressesItem"></a>
+
+`CandidateAddressesItem(**data: Any)`
+:   Nested schema for Candidate.addresses_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: str | None`
+    :   The type of the None singleton.
+
+<a id="CandidateCustomFields"></a>
+
+`CandidateCustomFields(**data: Any)`
+:   Nested schema for Candidate.custom_fields
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: typing.Any | None`
+    :   The type of the None singleton.
+
+<a id="CandidateEmailAddressesItem"></a>
+
+`CandidateEmailAddressesItem(**data: Any)`
+:   Nested schema for Candidate.email_addresses_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: str | None`
+    :   The type of the None singleton.
+
+<a id="CandidatePhoneNumbersItem"></a>
+
+`CandidatePhoneNumbersItem(**data: Any)`
+:   Nested schema for Candidate.phone_numbers_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: str | None`
+    :   The type of the None singleton.
+
+<a id="CandidateSocialMediaAddressesItem"></a>
+
+`CandidateSocialMediaAddressesItem(**data: Any)`
+:   Nested schema for Candidate.social_media_addresses_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `value: str | None`
+    :   The type of the None singleton.
+
+<a id="CandidateWebsiteAddressesItem"></a>
+
+`CandidateWebsiteAddressesItem(**data: Any)`
+:   Nested schema for Candidate.website_addresses_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: str | None`
     :   The type of the None singleton.
 
 <a id="CandidatesListResultMeta"></a>
@@ -786,85 +1056,67 @@ Classes
     ### Class variables
 
     `addresses: list[typing.Any] | None`
-    :   Candidate's addresses
-
-    `application_ids: list[typing.Any] | None`
-    :   List of application IDs
-
-    `applications: list[typing.Any] | None`
-    :   An array of all applications made by candidates.
-
-    `attachments: list[typing.Any] | None`
-    :   Attachments related to the candidate
+    :   Postal addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `home`, `work`, or `other`.
 
     `can_email: bool | None`
-    :   Indicates if candidate can be emailed
+    :   Whether this candidate has consented to receive email communication from your organization.
 
     `company: str | None`
-    :   Company where the candidate is associated
-
-    `coordinator: str | None`
-    :   Coordinator assigned to the candidate
+    :   Candidate's current company, as entered on their profile.
 
     `created_at: str | None`
-    :   Date and time of creation
+    :   Created at from the Greenhouse v3 candidates record.
 
     `custom_fields: dict[str, typing.Any] | None`
-    :   Custom fields associated with the candidate
-
-    `educations: list[typing.Any] | None`
-    :   List of candidate's educations
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `email_addresses: list[typing.Any] | None`
-    :   Candidate's email addresses
-
-    `employments: list[typing.Any] | None`
-    :   List of candidate's employments
+    :   Email addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `work`, or `other`.
 
     `first_name: str | None`
-    :   Candidate's first name
+    :   First name from the Greenhouse v3 candidates record.
 
     `id: int | None`
-    :   Candidate's ID
+    :   Id from the Greenhouse v3 candidates record.
 
-    `is_private: bool | None`
-    :   Indicates if the candidate's data is private
-
-    `keyed_custom_fields: dict[str, typing.Any] | None`
-    :   Keyed custom fields associated with the candidate
-
-    `last_activity: str | None`
-    :   Details of the last activity related to the candidate
+    `last_activity_at: str | None`
+    :   Timestamp of the most recent activity on any of the candidate's applications (notes, emails, stage changes, etc.), in ISO 8601.
 
     `last_name: str | None`
-    :   Candidate's last name
+    :   Last name from the Greenhouse v3 candidates record.
+
+    `linked_user_ids: list[typing.Any] | None`
+    :   Ids of Greenhouse users linked to this candidate (employees represented by both a user record and a candidate record).
 
     `model_config`
     :   The type of the None singleton.
 
     `phone_numbers: list[typing.Any] | None`
-    :   Candidate's phone numbers
+    :   Phone numbers on the candidate's profile. Each entry pairs the `value` with a `type` such as `mobile`, `home`, `work`, `skype`, or `other`.
 
-    `photo_url: str | None`
-    :   URL of the candidate's profile photo
+    `preferred_name: str | None`
+    :   Preferred or chosen name the candidate goes by, when different from their legal first name.
 
-    `recruiter: str | None`
-    :   Recruiter assigned to the candidate
+    `private: bool | None`
+    :   If true, the candidate is restricted to users with `View Private Candidates` access. Defaults to `false`.
 
     `social_media_addresses: list[typing.Any] | None`
-    :   Candidate's social media addresses
+    :   Social media handles or URLs on the candidate's profile. Social entries are untyped — only the `value` is returned.
 
     `tags: list[typing.Any] | None`
-    :   Tags associated with the candidate
+    :   Candidate tag names applied to this candidate within your organization.
+
+    `time_zone: str | None`
+    :   Candidate's time zone as a Rails-style identifier (for example `Eastern Time (US & Canada)`).
 
     `title: str | None`
-    :   Candidate's title (e.g., Mr., Mrs., Dr.)
+    :   Candidate's current job title, as entered on their profile.
 
     `updated_at: str | None`
-    :   Date and time of last update
+    :   Updated at from the Greenhouse v3 candidates record.
 
     `website_addresses: list[typing.Any] | None`
-    :   List of candidate's website addresses
+    :   Personal websites or portfolio URLs on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `company`, `portfolio`, `blog`, or `other`.
 
 <a id="Department"></a>
 
@@ -884,10 +1136,7 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: list[str] | None`
-    :   The type of the None singleton.
-
-    `child_ids: list[int] | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
     `external_id: str | None`
@@ -902,10 +1151,10 @@ Classes
     `name: str | None`
     :   The type of the None singleton.
 
-    `parent_department_external_id: str | None`
+    `parent_id: int | None`
     :   The type of the None singleton.
 
-    `parent_id: int | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="DepartmentsListResultMeta"></a>
@@ -950,34 +1199,31 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: list[typing.Any] | None`
-    :   External IDs of child departments associated with this department.
-
-    `child_ids: list[typing.Any] | None`
-    :   Unique IDs of child departments associated with this department.
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 departments record.
 
     `external_id: str | None`
-    :   External ID of this department.
+    :   Partner-supplied identifier for the department, typically the matching id from an HRIS or other external system. Free-form string and `null` when no external id has been set.
 
     `id: int | None`
-    :   Unique ID of this department.
+    :   Id from the Greenhouse v3 departments record.
 
     `model_config`
     :   The type of the None singleton.
 
     `name: str | None`
-    :   Name of the department.
-
-    `parent_department_external_id: str | None`
-    :   External ID of the parent department of this department.
+    :   Display name of the department (e.g. `Engineering`, `Marketing`).
 
     `parent_id: int | None`
-    :   Unique ID of the parent department of this department.
+    :   Id of the parent department in the organization's department tree. `null` for top-level departments. References another `/v3/departments` row.
+
+    `updated_at: str | None`
+    :   Updated at from the Greenhouse v3 departments record.
 
 <a id="GreenhouseAuthConfig"></a>
 
 `GreenhouseAuthConfig(**data: Any)`
-:   Harvest API Key Authentication
+:   Greenhouse OAuth 2.0
     
     Create a new model by parsing and validating input data from keyword arguments.
     
@@ -992,11 +1238,20 @@ Classes
 
     ### Class variables
 
-    `api_key: str`
-    :   Your Greenhouse Harvest API Key from the Dev Center
+    `access_token: str | None`
+    :   Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)
+
+    `client_id: str`
+    :   Client ID from the Greenhouse OAuth application
+
+    `client_secret: str`
+    :   Client secret from the Greenhouse OAuth application
 
     `model_config`
     :   The type of the None singleton.
+
+    `refresh_token: str`
+    :   Refresh token generated through the Greenhouse OAuth consent flow
 
 <a id="GreenhouseCheckResult"></a>
 
@@ -1087,13 +1342,14 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Application], ApplicationsListResultMeta]
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Attachment], AttachmentsListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Candidate], CandidatesListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Department], DepartmentsListResultMeta]
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Interview], InterviewsListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[JobPost], JobPostsListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Job], JobsListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Offer], OffersListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Office], OfficesListResultMeta]
-    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[ScheduledInterview], ScheduledInterviewsListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Source], SourcesListResultMeta]
     * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[User], UsersListResultMeta]
 
@@ -1129,6 +1385,51 @@ Classes
 <a id="ApplicationsListResult"></a>
 
 `ApplicationsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`GreenhouseExecuteResultWithMeta[list[Attachment], AttachmentsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="AttachmentsListResult"></a>
+
+`AttachmentsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -1219,6 +1520,51 @@ Classes
 <a id="DepartmentsListResult"></a>
 
 `DepartmentsListResult(**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+`GreenhouseExecuteResultWithMeta[list[Interview], InterviewsListResultMeta](**data: Any)`
+:   Response envelope with data and metadata.
+    
+    Used for actions that return both data and metadata (e.g., pagination info).
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta
+    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResult
+    * pydantic.main.BaseModel
+    * typing.Generic
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="InterviewsListResult"></a>
+
+`InterviewsListResult(**data: Any)`
 :   Response envelope with data and metadata.
     
     Used for actions that return both data and metadata (e.g., pagination info).
@@ -1417,51 +1763,6 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
-`GreenhouseExecuteResultWithMeta[list[ScheduledInterview], ScheduledInterviewsListResultMeta](**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-<a id="ScheduledInterviewsListResult"></a>
-
-`ScheduledInterviewsListResult(**data: Any)`
-:   Response envelope with data and metadata.
-    
-    Used for actions that return both data and metadata (e.g., pagination info).
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta
-    * airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResult
-    * pydantic.main.BaseModel
-    * typing.Generic
-
 `GreenhouseExecuteResultWithMeta[list[Source], SourcesListResultMeta](**data: Any)`
 :   Response envelope with data and metadata.
     
@@ -1552,6 +1853,102 @@ Classes
     * pydantic.main.BaseModel
     * typing.Generic
 
+<a id="Interview"></a>
+
+`Interview(**data: Any)`
+:   Greenhouse interview object
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `all_day_end_on: str | None`
+    :   The type of the None singleton.
+
+    `all_day_start_on: str | None`
+    :   The type of the None singleton.
+
+    `application_id: int | None`
+    :   The type of the None singleton.
+
+    `availability_received_at: str | None`
+    :   The type of the None singleton.
+
+    `created_at: str | None`
+    :   The type of the None singleton.
+
+    `ends_at: str | None`
+    :   The type of the None singleton.
+
+    `external_event_id: str | None`
+    :   The type of the None singleton.
+
+    `id: int | None`
+    :   The type of the None singleton.
+
+    `job_id: int | None`
+    :   The type of the None singleton.
+
+    `job_interview_id: int | None`
+    :   The type of the None singleton.
+
+    `location: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `organizer_id: int | None`
+    :   The type of the None singleton.
+
+    `scheduled_at: str | None`
+    :   The type of the None singleton.
+
+    `starts_at: str | None`
+    :   The type of the None singleton.
+
+    `status: str | None`
+    :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   The type of the None singleton.
+
+    `video_conferencing_url: str | None`
+    :   The type of the None singleton.
+
+<a id="InterviewsListResultMeta"></a>
+
+`InterviewsListResultMeta(**data: Any)`
+:   Metadata for interviews.Action.LIST operation
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `next: str | None`
+    :   The type of the None singleton.
+
 <a id="Job"></a>
 
 `Job(**data: Any)`
@@ -1576,19 +1973,22 @@ Classes
     `confidential: bool | None`
     :   The type of the None singleton.
 
+    `copied_from_id: int | None`
+    :   The type of the None singleton.
+
     `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | None`
+    `custom_fields: dict[str, airbyte_agent_sdk.connectors.greenhouse.models.JobCustomFields] | None`
     :   The type of the None singleton.
 
-    `departments: list[dict[str, typing.Any] | None] | None`
-    :   The type of the None singleton.
-
-    `hiring_team: dict[str, typing.Any] | None`
+    `department_id: int | None`
     :   The type of the None singleton.
 
     `id: int | None`
+    :   The type of the None singleton.
+
+    `is_template: bool | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -1600,13 +2000,10 @@ Classes
     `notes: str | None`
     :   The type of the None singleton.
 
-    `offices: list[dict[str, typing.Any]] | None`
+    `office_ids: list[int | None] | None`
     :   The type of the None singleton.
 
     `opened_at: str | None`
-    :   The type of the None singleton.
-
-    `openings: list[dict[str, typing.Any]] | None`
     :   The type of the None singleton.
 
     `requisition_id: str | None`
@@ -1616,6 +2013,36 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: str | None`
+    :   The type of the None singleton.
+
+<a id="JobCustomFields"></a>
+
+`JobCustomFields(**data: Any)`
+:   Nested schema for Job.custom_fields
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="JobPost"></a>
@@ -1648,7 +2075,7 @@ Classes
     `demographic_question_set_id: int | None`
     :   The type of the None singleton.
 
-    `external: bool | None`
+    `featured: bool | None`
     :   The type of the None singleton.
 
     `first_published_at: str | None`
@@ -1663,25 +2090,103 @@ Classes
     `internal_content: str | None`
     :   The type of the None singleton.
 
+    `job_board_id: int | None`
+    :   The type of the None singleton.
+
     `job_id: int | None`
+    :   The type of the None singleton.
+
+    `language: str | None`
     :   The type of the None singleton.
 
     `live: bool | None`
     :   The type of the None singleton.
 
-    `location: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
     `model_config`
     :   The type of the None singleton.
 
-    `questions: list[dict[str, typing.Any]] | None`
+    `public_url: str | None`
+    :   The type of the None singleton.
+
+    `questions: list[airbyte_agent_sdk.connectors.greenhouse.models.JobPostQuestionsItem | None] | None`
     :   The type of the None singleton.
 
     `title: str | None`
     :   The type of the None singleton.
 
     `updated_at: str | None`
+    :   The type of the None singleton.
+
+<a id="JobPostQuestionsItem"></a>
+
+`JobPostQuestionsItem(**data: Any)`
+:   Nested schema for JobPost.questions_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `answer_type: str | None`
+    :   Input type the candidate uses to answer. `short_text` and `long_text` are free-text inputs, `single_select` and `multi_select` use the `options` array, `boolean` is a yes/no, `attachment` accepts a file upload, and `hidden` is set programmatically without rendering a field.
+
+    `description: str | None`
+    :   Help text shown below the question label to give candidates additional context. `null` when no help text is set.
+
+    `id: int | None`
+    :   Id of the question. `null` for default questions that are rendered from configuration rather than persisted per post (e.g. the built-in `first_name` field).
+
+    `label: str | None`
+    :   Human-readable label rendered above the input on the application form.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Stable form-field name used when submitting an application (e.g. `question_42` for a custom question, `first_name` for a default field). Use this when mapping responses back to a question.
+
+    `options: list[airbyte_agent_sdk.connectors.greenhouse.models.JobPostQuestionsItemOptionsItem | None] | None`
+    :   Selectable answer options for `single_select` and `multi_select` questions. Empty for other answer types.
+
+    `private: bool | None`
+    :   If `true`, answers to this question are visible only to users with explicit access (e.g. private notes, API-only questions). Defaults to `false`.
+
+    `required: bool | None`
+    :   If `true`, the candidate must answer this question to submit the application. `null` for default questions whose required-ness is driven by board-level configuration.
+
+<a id="JobPostQuestionsItemOptionsItem"></a>
+
+`JobPostQuestionsItemOptionsItem(**data: Any)`
+:   Nested schema for JobPostQuestionsItem.options_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: int | None`
+    :   Id of the option, stable across edits to the option label.
+
+    `label: str | None`
+    :   Human-readable text shown to the candidate for this option.
+
+    `model_config`
     :   The type of the None singleton.
 
 <a id="JobPostsListResultMeta"></a>
@@ -1727,52 +2232,58 @@ Classes
     ### Class variables
 
     `active: bool | None`
-    :   Flag indicating if the job post is active or not.
+    :   If `true`, the post has not been deleted. Deleted posts are excluded by default; pass `active=false` on the list endpoint to retrieve them.
 
     `content: str | None`
-    :   Content or description of the job post.
+    :   HTML body of the post shown to candidates on the job board. For internal posts this returns the `internal_content` instead. Sanitized server-side — only a limited element/attribute allowlist (including `iframe`, `video`, `source`) survives. `null` while the post is still being scaffolded.
 
     `created_at: str | None`
-    :   Date and time when the job post was created.
+    :   Created at from the Greenhouse v3 job posts record.
 
     `demographic_question_set_id: int | None`
-    :   ID of the demographic question set associated with the job post.
+    :   Id of the demographic question set surfaced to candidates on this post for diversity, equity, and inclusion (DE&I) reporting. `null` when the post does not collect demographic data.
 
-    `external: bool | None`
-    :   Flag indicating if the job post is external or not.
+    `featured: bool | None`
+    :   If `true`, the post is currently featured on the organization's internal job board and surfaces in the weekly internal-jobs email. Only internal posts can be featured, and at most three can be featured at a time.
 
     `first_published_at: str | None`
-    :   Date and time when the job post was first published.
+    :   Timestamp the post first transitioned to `live`, in ISO 8601. `null` for posts that have never been published.
 
     `id: int | None`
-    :   Unique identifier of the job post.
+    :   Id from the Greenhouse v3 job posts record.
 
     `internal: bool | None`
-    :   Flag indicating if the job post is internal or not.
+    :   If `true`, the post lives on an internal job board and is visible only to existing employees signed in to the internal board. If `false`, the post is external and lives on a public-facing `job_board`. Set by the board the post is associated with at create time.
 
     `internal_content: str | None`
-    :   Internal content or description of the job post.
+    :   HTML body shown on the internal job board when the post is also configured as internal. `null` for external-only posts. Same sanitization rules as `content`.
+
+    `job_board_id: int | None`
+    :   Id of the `job_board` this post is published to. Resolves to either an external (careers site, syndicated board) or internal job board depending on `internal`. Each post belongs to exactly one board at a time.
 
     `job_id: int | None`
-    :   ID of the job associated with the job post.
+    :   Id of the parent job (requisition) this post belongs to. A single job can have multiple posts; the job is the source of truth for the hiring team, openings, and interview plan.
+
+    `language: str | None`
+    :   ISO 639-1 locale of the post, used to render the candidate-facing application form in the matching language (e.g. `en`, `fr`, `ja`). `null` when no locale has been chosen.
 
     `live: bool | None`
-    :   Flag indicating if the job post is live or not.
-
-    `location: dict[str, typing.Any] | None`
-    :   Details about the job post location.
+    :   If `true`, the post is published (`job_application_status` is `live`) and its job board is also live. A post on an unpublished board is **not** `live` — its `public_url` returns a 404 until the board is enabled.
 
     `model_config`
     :   The type of the None singleton.
 
+    `public_url: str | None`
+    :   Canonical public URL of the post on its job board, including the `gh_jid` tracking parameter. `null` when the post has no associated job board or the board has no public URL configured.
+
     `questions: list[typing.Any] | None`
-    :   List of questions related to the job post.
+    :   Application form questions presented to candidates on this post, including default questions (resume, cover letter, basic info) and any custom questions configured by the hiring team. Ordered as they appear on the form.
 
     `title: str | None`
-    :   Title or headline of the job post.
+    :   Public-facing title shown to candidates on the job board (e.g. `Senior Backend Engineer, Remote`). Distinct from the internal `job.name` — a single job can have several posts with different titles, one per board, language, or geography.
 
     `updated_at: str | None`
-    :   Date and time when the job post was last updated.
+    :   Updated at from the Greenhouse v3 job posts record.
 
 <a id="JobsListResultMeta"></a>
 
@@ -1817,61 +2328,52 @@ Classes
     ### Class variables
 
     `closed_at: str | None`
-    :   The date and time the job was closed
+    :   Timestamp the job most recently transitioned to `closed`, in ISO 8601. `null` for jobs that are still `open` or `draft`.
 
     `confidential: bool | None`
-    :   Indicates if the job details are confidential
+    :   If `true`, the job is restricted to users explicitly granted access on the Hiring Team. The legacy Confidential Jobs feature has been sunset — this flag cannot be set on new jobs and is preserved for jobs that already had it enabled.
 
     `copied_from_id: int | None`
-    :   The ID of the job from which this job was copied
+    :   Id of the job (typically a template) this job was copied from on creation. `null` when the job was not created from another job.
 
     `created_at: str | None`
-    :   The date and time the job was created
+    :   Created at from the Greenhouse v3 jobs record.
 
     `custom_fields: dict[str, typing.Any] | None`
-    :   Custom fields related to the job
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `departments: list[typing.Any] | None`
-    :   Departments associated with the job
-
-    `hiring_team: dict[str, typing.Any] | None`
-    :   Members of the hiring team for the job
+    `department_id: int | None`
+    :   Id of the department this job is assigned to. `null` when no department is set.
 
     `id: int | None`
-    :   Unique ID of the job
+    :   Id from the Greenhouse v3 jobs record.
 
     `is_template: bool | None`
-    :   Indicates if the job is a template
-
-    `keyed_custom_fields: dict[str, typing.Any] | None`
-    :   Keyed custom fields related to the job
+    :   If `true`, this job is a template used as the source for new jobs rather than a real requisition. Templates do not accept applications; reference them via `template_job_id` on `POST /v3/jobs`.
 
     `model_config`
     :   The type of the None singleton.
 
     `name: str | None`
-    :   Name of the job
+    :   Internal job title shown to the hiring team in Greenhouse (e.g. `Senior Backend Engineer`). Distinct from the external-facing title on each `job_post`.
 
     `notes: str | None`
-    :   Additional notes or comments about the job
+    :   Internal HTML notes about the job, surfaced to the hiring team in the Greenhouse UI. Not exposed on public job posts.
 
-    `offices: list[typing.Any] | None`
-    :   Offices associated with the job
+    `office_ids: list[typing.Any] | None`
+    :   Ids of the offices this job is assigned to. A job can span multiple offices; empty array or `null` when no offices are set.
 
     `opened_at: str | None`
-    :   The date and time the job was opened
-
-    `openings: list[typing.Any] | None`
-    :   Openings associated with the job
+    :   Timestamp the job first transitioned to `open`, in ISO 8601. `null` while the job is still in `draft`.
 
     `requisition_id: str | None`
-    :   ID associated with the job requisition
+    :   Partner-supplied external identifier for the requisition (e.g. an HRIS or ATS code). Free-form string, not unique across the organization, and `null` when no external id has been set.
 
     `status: str | None`
-    :   Current status of the job
+    :   Lifecycle status of the job. `draft` while it is being scaffolded, `open` once it has at least one open opening, and `closed` after every opening is closed. A job moves to `closed` automatically when its last open opening is closed via `PATCH /v3/openings/{id}`.
 
     `updated_at: str | None`
-    :   The date and time the job was last updated
+    :   Updated at from the Greenhouse v3 jobs record.
 
 <a id="Offer"></a>
 
@@ -1900,7 +2402,7 @@ Classes
     `created_at: str | None`
     :   The type of the None singleton.
 
-    `custom_fields: dict[str, typing.Any] | None`
+    `custom_fields: dict[str, airbyte_agent_sdk.connectors.greenhouse.models.OfferCustomFields] | None`
     :   The type of the None singleton.
 
     `id: int | None`
@@ -1912,16 +2414,16 @@ Classes
     `model_config`
     :   The type of the None singleton.
 
-    `opening: dict[str, typing.Any] | None`
+    `opening_id: int | None`
     :   The type of the None singleton.
 
     `resolved_at: str | None`
     :   The type of the None singleton.
 
-    `sent_at: str | None`
+    `sent_on: str | None`
     :   The type of the None singleton.
 
-    `starts_at: str | None`
+    `starts_on: str | None`
     :   The type of the None singleton.
 
     `status: str | None`
@@ -1931,6 +2433,36 @@ Classes
     :   The type of the None singleton.
 
     `version: int | None`
+    :   The type of the None singleton.
+
+<a id="OfferCustomFields"></a>
+
+`OfferCustomFields(**data: Any)`
+:   Nested schema for Offer.custom_fields
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: typing.Any | None`
     :   The type of the None singleton.
 
 <a id="OffersListResultMeta"></a>
@@ -1976,49 +2508,46 @@ Classes
     ### Class variables
 
     `application_id: int | None`
-    :   Unique identifier for the application associated with the offer
+    :   Id of the application this offer is extended on. Every offer belongs to exactly one application; the offer is voided if the application is rejected or deleted.
 
     `candidate_id: int | None`
-    :   Unique identifier for the candidate associated with the offer
+    :   Id of the candidate (person) receiving this offer. Resolved through the offer's application.
 
     `created_at: str | None`
-    :   Timestamp indicating when the offer was created
+    :   Created at from the Greenhouse v3 offers record.
 
     `custom_fields: dict[str, typing.Any] | None`
-    :   Additional custom fields related to the offer
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: int | None`
-    :   Unique identifier for the offer
+    :   Id from the Greenhouse v3 offers record.
 
     `job_id: int | None`
-    :   Unique identifier for the job associated with the offer
-
-    `keyed_custom_fields: dict[str, typing.Any] | None`
-    :   Keyed custom fields associated with the offer
+    :   Id of the job this offer's application is on.
 
     `model_config`
     :   The type of the None singleton.
 
-    `opening: dict[str, typing.Any] | None`
-    :   Details about the job opening
+    `opening_id: int | None`
+    :   Id of the specific opening this offer is being extended for. `null` when the offer has not yet been linked to an opening.
 
     `resolved_at: str | None`
-    :   Timestamp indicating when the offer was resolved
+    :   Timestamp the offer was resolved (`Accepted` or `Rejected`), in ISO 8601. Date updates submitted through `PATCH /v3/offers/{id}` are normalized to noon UTC on the supplied date. `null` while the offer is still `Created` or has been superseded as `Deprecated` without a resolution.
 
-    `sent_at: str | None`
-    :   Timestamp indicating when the offer was sent
+    `sent_on: str | None`
+    :   Date the offer was sent to the candidate, in ISO 8601 (YYYY-MM-DD). `null` until the offer has been sent.
 
-    `starts_at: str | None`
-    :   Timestamp indicating when the offer starts
+    `starts_on: str | None`
+    :   Candidate's proposed start date, in ISO 8601 (YYYY-MM-DD). `null` when no start date has been set on the offer.
 
     `status: str | None`
-    :   Status of the offer
+    :   Lifecycle status of the offer. `Created` for offers still being drafted or pending approval, `Accepted` once the candidate accepts, `Rejected` if declined or withdrawn, and `Deprecated` for superseded prior versions (a new offer version replaces an earlier one with this status).
 
     `updated_at: str | None`
-    :   Timestamp indicating when the offer was last updated
+    :   Updated at from the Greenhouse v3 offers record.
 
     `version: int | None`
-    :   Version of the offer data
+    :   Revision number of this offer within its application. Greenhouse creates a new offer row (incrementing `version`) whenever a tracked field on an existing offer changes — typically `starts_on`, `opening_id`, or a custom field configured to trigger a new version. Pair with `current_only=true` to filter the list endpoint down to the latest version per application.
 
 <a id="Office"></a>
 
@@ -2038,10 +2567,7 @@ Classes
 
     ### Class variables
 
-    `child_ids: list[int] | None`
-    :   The type of the None singleton.
-
-    `child_office_external_ids: list[str] | None`
+    `created_at: str | None`
     :   The type of the None singleton.
 
     `external_id: str | None`
@@ -2050,7 +2576,7 @@ Classes
     `id: int | None`
     :   The type of the None singleton.
 
-    `location: dict[str, typing.Any] | None`
+    `location: str | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2062,10 +2588,10 @@ Classes
     `parent_id: int | None`
     :   The type of the None singleton.
 
-    `parent_office_external_id: str | None`
+    `primary_in_house_contact_user_id: int | None`
     :   The type of the None singleton.
 
-    `primary_contact_user_id: int | None`
+    `updated_at: str | None`
     :   The type of the None singleton.
 
 <a id="OfficesListResultMeta"></a>
@@ -2110,119 +2636,32 @@ Classes
 
     ### Class variables
 
-    `child_ids: list[typing.Any] | None`
-    :   IDs of child offices associated with this office
-
-    `child_office_external_ids: list[typing.Any] | None`
-    :   External IDs of child offices associated with this office
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 offices record.
 
     `external_id: str | None`
-    :   Unique identifier for this office in the external system
+    :   Stable identifier supplied by the customer or HRIS for cross-system reconciliation. `null` when no external id has been set. Available when the `org_structure_external_id` product flag is enabled.
 
     `id: int | None`
-    :   Unique identifier for this office in the API system
+    :   Id from the Greenhouse v3 offices record.
 
-    `location: dict[str, typing.Any] | None`
-    :   Location details of this office
+    `location: str | None`
+    :   Free-form physical location string for the office (e.g. `New York, NY, USA`). `null` for offices that have no location set, including most remote offices.
 
     `model_config`
     :   The type of the None singleton.
 
     `name: str | None`
-    :   Name of the office
+    :   Display name of the office (e.g. `San Francisco`, `Remote (US)`). Unique among active offices in the same organization.
 
     `parent_id: int | None`
-    :   ID of the parent office, if this office is a branch office
+    :   Id of the parent office when offices are organized hierarchically. `null` for top-level offices. References another `/v3/offices` row in the same organization.
 
-    `parent_office_external_id: str | None`
-    :   External ID of the parent office in the external system
-
-    `primary_contact_user_id: int | None`
-    :   User ID of the primary contact person for this office
-
-<a id="ScheduledInterview"></a>
-
-`ScheduledInterview(**data: Any)`
-:   Greenhouse scheduled interview object
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `application_id: int | None`
-    :   The type of the None singleton.
-
-    `created_at: str | None`
-    :   The type of the None singleton.
-
-    `end: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
-    `external_event_id: str | None`
-    :   The type of the None singleton.
-
-    `id: int | None`
-    :   The type of the None singleton.
-
-    `interview: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
-    `interviewers: list[dict[str, typing.Any]] | None`
-    :   The type of the None singleton.
-
-    `location: str | None`
-    :   The type of the None singleton.
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `organizer: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
-    `start: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
-    `status: str | None`
-    :   The type of the None singleton.
+    `primary_in_house_contact_user_id: int | None`
+    :   Id of the Greenhouse user designated as the office's primary internal contact, typically the local recruiting lead. References a `/v3/users` row. `null` when no contact has been assigned.
 
     `updated_at: str | None`
-    :   The type of the None singleton.
-
-    `video_conferencing_url: str | None`
-    :   The type of the None singleton.
-
-<a id="ScheduledInterviewsListResultMeta"></a>
-
-`ScheduledInterviewsListResultMeta(**data: Any)`
-:   Metadata for scheduled_interviews.Action.LIST operation
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `next: str | None`
-    :   The type of the None singleton.
+    :   Updated at from the Greenhouse v3 offices record.
 
 <a id="Source"></a>
 
@@ -2242,6 +2681,9 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   The type of the None singleton.
+
     `id: int | None`
     :   The type of the None singleton.
 
@@ -2251,8 +2693,38 @@ Classes
     `name: str | None`
     :   The type of the None singleton.
 
-    `type_: dict[str, typing.Any] | None`
+    `type_: airbyte_agent_sdk.connectors.greenhouse.models.SourceType | None`
     :   The type of the None singleton.
+
+    `updated_at: str | None`
+    :   The type of the None singleton.
+
+<a id="SourceType"></a>
+
+`SourceType(**data: Any)`
+:   The sourcing strategy this source rolls up to — the broader category used for reporting. Sources are grouped under sourcing strategies such as `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`, `Company marketing`, `In person event`, `MyGreenhouse`, and `Other`. Use the strategy when aggregating candidate volume by channel; use the source itself when reporting on a specific channel within that category.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: int | None`
+    :   Id of the sourcing strategy. References the same strategy across all sources in the organization that roll up to it.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   Display name of the sourcing strategy used in Greenhouse reporting (e.g. `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`).
 
 <a id="SourcesListResultMeta"></a>
 
@@ -2296,17 +2768,23 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 sources record.
+
     `id: int | None`
-    :   The unique identifier for the source.
+    :   Id from the Greenhouse v3 sources record.
 
     `model_config`
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The name of the source.
+    :   Display name of the source as recruiters see it in Greenhouse (e.g. `LinkedIn (Prospecting)`, `Indeed`, `Referral`, `Internal Applicant`, or a custom agency name). For organization-specific sources this is the label the org configured; for global Greenhouse sources it is the standard public name.
 
     `type_: dict[str, typing.Any] | None`
-    :   Type of the data source
+    :   The sourcing strategy this source rolls up to — the broader category used for reporting. Sources are grouped under sourcing strategies such as `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`, `Company marketing`, `In person event`, `MyGreenhouse`, and `Other`. Use the strategy when aggregating candidate volume by channel; use the source itself when reporting on a specific channel within that category.
+
+    `updated_at: str | None`
+    :   Updated at from the Greenhouse v3 sources record.
 
 <a id="User"></a>
 
@@ -2326,16 +2804,22 @@ Classes
 
     ### Class variables
 
+    `agency_id: int | None`
+    :   The type of the None singleton.
+
     `created_at: str | None`
     :   The type of the None singleton.
 
-    `departments: list[dict[str, typing.Any]] | None`
+    `custom_fields: dict[str, airbyte_agent_sdk.connectors.greenhouse.models.UserCustomFields] | None`
     :   The type of the None singleton.
 
-    `disabled: bool | None`
+    `deactivated: bool | None`
     :   The type of the None singleton.
 
-    `emails: list[str] | None`
+    `department_ids: list[int | None] | None`
+    :   The type of the None singleton.
+
+    `emails: list[str | None] | None`
     :   The type of the None singleton.
 
     `employee_id: str | None`
@@ -2347,10 +2831,16 @@ Classes
     `id: int | None`
     :   The type of the None singleton.
 
+    `interviewer_tags: list[airbyte_agent_sdk.connectors.greenhouse.models.UserInterviewerTagsItem | None] | None`
+    :   The type of the None singleton.
+
+    `job_title: str | None`
+    :   The type of the None singleton.
+
     `last_name: str | None`
     :   The type of the None singleton.
 
-    `linked_candidate_ids: list[int] | None`
+    `linked_candidate_ids: list[int | None] | None`
     :   The type of the None singleton.
 
     `model_config`
@@ -2359,16 +2849,73 @@ Classes
     `name: str | None`
     :   The type of the None singleton.
 
-    `offices: list[dict[str, typing.Any]] | None`
+    `office_ids: list[int | None] | None`
     :   The type of the None singleton.
 
-    `primary_email_address: str | None`
+    `primary_email: str | None`
     :   The type of the None singleton.
 
     `site_admin: bool | None`
     :   The type of the None singleton.
 
     `updated_at: str | None`
+    :   The type of the None singleton.
+
+<a id="UserCustomFields"></a>
+
+`UserCustomFields(**data: Any)`
+:   Nested schema for User.custom_fields
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `type_: str | None`
+    :   The type of the None singleton.
+
+    `value: typing.Any | None`
+    :   The type of the None singleton.
+
+<a id="UserInterviewerTagsItem"></a>
+
+`UserInterviewerTagsItem(**data: Any)`
+:   Nested schema for User.interviewer_tags_item
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: int | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
     :   The type of the None singleton.
 
 <a id="UsersListResultMeta"></a>
@@ -2413,47 +2960,59 @@ Classes
 
     ### Class variables
 
+    `agency_id: int | None`
+    :   Id of the staffing agency this user belongs to, when the user is an external agency recruiter rather than an employee of your organization. `null` for in-house users.
+
     `created_at: str | None`
-    :   The date and time when the user account was created.
+    :   Created at from the Greenhouse v3 users record.
 
-    `departments: list[typing.Any] | None`
-    :   List of departments associated with users
+    `custom_fields: dict[str, typing.Any] | None`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `disabled: bool | None`
-    :   Indicates whether the user account is disabled.
+    `deactivated: bool | None`
+    :   Whether the user has been deactivated. Deactivated users cannot sign in or be assigned to new jobs, but their historical activity (notes, scorecards, emails) is preserved. Toggle via `POST /v3/users/{id}/deactivate` and `POST /v3/users/{id}/activate`.
+
+    `department_ids: list[typing.Any] | None`
+    :   Ids of the departments this user is assigned to. Used to scope future job permissions and to filter the user list by department. Empty when the user is not pinned to any department.
 
     `emails: list[typing.Any] | None`
-    :   Email addresses of the users
+    :   All email addresses on the user's account, including the primary address and any additional verified addresses.
 
     `employee_id: str | None`
-    :   Employee identifier for the user.
+    :   Partner-supplied external employee identifier, typically the user's HRIS or payroll id. Free-form string; not unique across organizations and `null` when no employee id has been set.
 
     `first_name: str | None`
-    :   The first name of the user.
+    :   First name from the Greenhouse v3 users record.
 
     `id: int | None`
-    :   Unique identifier for the user.
+    :   Id from the Greenhouse v3 users record.
+
+    `interviewer_tags: list[typing.Any] | None`
+    :   Interviewer tags applied to this user — the labeled skill or panel groupings (e.g. `Senior Engineer`, `Bar Raiser`) used to suggest qualified interviewers when building an interview plan. Each entry pairs the tag's `id` with its `name`.
+
+    `job_title: str | None`
+    :   Free-form job title set on the user's Greenhouse profile (e.g. `Senior Recruiter`). Not synchronized with any HRIS title.
 
     `last_name: str | None`
-    :   The last name of the user.
+    :   Last name from the Greenhouse v3 users record.
 
     `linked_candidate_ids: list[typing.Any] | None`
-    :   IDs of candidates linked to the user.
+    :   Ids of candidate records linked to this user. Populated when an employee is represented by both a user record (for Greenhouse access) and a candidate record (for past or internal applications).
 
     `model_config`
     :   The type of the None singleton.
 
     `name: str | None`
-    :   The full name of the user.
+    :   Concatenation of `first_name` and `last_name` rendered as a single display string. Provided for convenience; partners that need either component should read `first_name`/`last_name` directly.
 
-    `offices: list[typing.Any] | None`
-    :   List of office locations where users are based
+    `office_ids: list[typing.Any] | None`
+    :   Ids of the offices this user is assigned to. Used to scope future job permissions and to filter the user list by office. Empty when the user is not pinned to any office.
 
-    `primary_email_address: str | None`
-    :   The primary email address of the user.
+    `primary_email: str | None`
+    :   Primary email address on the user's account. Sign-in identifier and the address Greenhouse uses for outbound mail; additional verified addresses are not surfaced here. Service accounts (integration/ISU users) have no email and are excluded from this endpoint by default; when included via `show_service_accounts=true`, their `primary_email` is an empty string.
 
     `site_admin: bool | None`
-    :   Indicates whether the user is a site administrator.
+    :   Whether the user holds the Site Admin role. Site admins have unrestricted access to every non-confidential job and to organization-level settings. Demote a site admin to a Basic user with `POST /v3/users/{id}/revoke_permissions`.
 
     `updated_at: str | None`
-    :   The date and time when the user account was last updated.
+    :   Updated at from the Greenhouse v3 users record.

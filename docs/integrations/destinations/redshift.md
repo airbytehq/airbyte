@@ -75,9 +75,10 @@ ON SCHEMA airbyte_schema TO airbyte_user;
 
 6. Verify the script ran successfully in the Query Editor.
 
-NOTE: Our integration automatically creates the necessary schemas in your Redshift database. To enable this, ensure the
-connection user has `CREATE` privileges on the database. If you prefer to create schemas manually, grant `USAGE` and
-`CREATE` privileges on those schemas to the Airbyte user.
+NOTE: Our integration can automatically create schemas in your Redshift database. That path requires `CREATE`
+privileges on the database (`GRANT CREATE ON DATABASE`). If you prefer to pre-create schemas manually, grant only
+`USAGE` and `CREATE` on those schemas to the Airbyte user — the connector skips `CREATE SCHEMA` when the configured
+schema already exists, so database-level `CREATE` is not required in that case.
 
 ### Step 2: Set up S3 staging
 
@@ -286,6 +287,7 @@ This is by design for performance reasons.
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                                                          |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.7   | 2026-08-18 | [84459](https://github.com/airbytehq/airbyte/pull/84459)   | Skip CREATE SCHEMA when the configured schema already exists so check/sync work with schema-only grants                                                                                                          |
 | 4.0.6   | 2026-08-06 | [82274](https://github.com/airbytehq/airbyte/pull/82274)   | Set ColumnDropBehavior.RETAIN: stop dropping columns during schema evolution                                                                                                                                     |
 | 4.0.5   | 2026-08-04 | [83700](https://github.com/airbytehq/airbyte/pull/83700)   | Ignore NULL primary key records during dedup insert for performance; revert NULL-safe PK matching to plain equijoin                                                                                              |
 | 4.0.4   | 2026-07-29 | [83245](https://github.com/airbytehq/airbyte/pull/83245)   | fix: use NULL-safe primary key matching in upsert to prevent silent mismatches when PK columns contain NULL values                                                                                               |
