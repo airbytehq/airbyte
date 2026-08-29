@@ -2,7 +2,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 4e8c9fa0-3634-499b-b948-11581b5c3efa
-  dockerImageTag: 1.2.0
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-ashby
   githubIssueLabel: source-ashby
   icon: ashby.svg
@@ -47,6 +47,14 @@ data:
       type: authentication_guide
   releases:
     breakingChanges:
+      2.0.0:
+        message: "This release removes twelve always-null columns from the `interviews` stream (`applicationId`, `interviewScheduleId`, `interviewStageId`, `status`, `createdAt`, `updatedAt`, `cancelledAt`, `startTime`, `endTime`, `feedbackLink`, `interviewerUserIds`, and `meetingLink`). Ashby's `/interview.list` endpoint returns interview definitions and never populated these scheduling fields; the equivalent data is available in the `interview_schedules` stream. Users syncing the `interviews` stream must refresh the stream's schema after upgrading, and may need to recreate the destination table on data-lake destinations such as S3 Data Lake and Iceberg. See the migration guide for details."
+        upgradeDeadline: "2026-09-15"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - interviews
       1.0.0:
         message: "This release declares item schemas for ten previously-untyped array columns across the `applications`, `candidates`, and `jobs` streams (`customFields`, `hiringTeam`, `emailAddresses`, `fileHandles`, `phoneNumbers`, `socialLinks`, and `tags`). This re-types those columns on data-lake destinations such as S3 Data Lake and Iceberg. Users must refresh the affected streams or recreate the affected tables after upgrading."
         upgradeDeadline: "2026-09-01"
