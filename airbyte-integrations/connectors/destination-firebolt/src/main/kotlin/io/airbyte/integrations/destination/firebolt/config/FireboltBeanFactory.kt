@@ -12,12 +12,12 @@ import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.integrations.destination.firebolt.client.FireboltAirbyteClient
 import io.airbyte.integrations.destination.firebolt.connect.S3Connect
 import io.airbyte.integrations.destination.firebolt.sql.FireboltSqlGenerator
-import software.amazon.awssdk.services.s3.S3Client
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import software.amazon.awssdk.services.s3.S3Client
 
 /** Micronaut factory for creating and wiring Firebolt destination beans. */
 @Factory
@@ -74,17 +74,17 @@ class FireboltBeanFactory {
 
     private fun buildJdbcUrl(config: FireboltConfiguration): String {
         val base = "jdbc:firebolt:${config.database}"
-        val params = mutableListOf(
-            "client_id=${encode(config.clientId)}",
-            "client_secret=${encode(config.clientSecret)}",
-            "account=${encode(config.account)}",
-        )
+        val params =
+            mutableListOf(
+                "client_id=${encode(config.clientId)}",
+                "client_secret=${encode(config.clientSecret)}",
+                "account=${encode(config.account)}",
+            )
         config.engine?.let { params.add("engine=${encode(it)}") }
         config.host?.let { params.add("host=${encode(it)}") }
         config.jdbcUrlParams?.let { params.add(it) }
         return "$base?${params.joinToString("&")}"
     }
 
-    private fun encode(value: String): String =
-        URLEncoder.encode(value, StandardCharsets.UTF_8)
+    private fun encode(value: String): String = URLEncoder.encode(value, StandardCharsets.UTF_8)
 }

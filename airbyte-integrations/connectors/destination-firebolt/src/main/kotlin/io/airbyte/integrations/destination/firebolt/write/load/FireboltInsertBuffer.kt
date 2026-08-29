@@ -28,9 +28,7 @@ private const val CSV_WRITER_BUFFER_SIZE = 1024 * 1024 // 1 MB
 
 private val EXTENDED_PLACEHOLDER_PATTERN = Regex("""\{(date:.+?|timestamp:.+?)\}""")
 
-/**
- * Buffers records into a gzip-compressed CSV file and flushes them to Firebolt via S3 staging.
- */
+/** Buffers records into a gzip-compressed CSV file and flushes them to Firebolt via S3 staging. */
 class FireboltInsertBuffer(
     private val tableName: TableName,
     val columns: List<String>,

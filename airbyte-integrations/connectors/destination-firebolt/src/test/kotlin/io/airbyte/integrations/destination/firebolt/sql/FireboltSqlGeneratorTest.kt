@@ -9,13 +9,11 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.data.FieldType
-import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.mockk.every
 import io.mockk.mockk
-
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -81,12 +79,18 @@ internal class FireboltSqlGeneratorTest {
 
     @Test
     fun `createTable includes meta and user columns`() {
-        val sql = sqlGenerator.createTable(
-            stream = mockAppendStream(
-                finalSchema = mapOf("id" to ColumnType("bigint", false), "name" to ColumnType("text", true))
-            ),
-            tableName = TableName(namespace = "my_schema", name = "my_table")
-        )
+        val sql =
+            sqlGenerator.createTable(
+                stream =
+                    mockAppendStream(
+                        finalSchema =
+                            mapOf(
+                                "id" to ColumnType("bigint", false),
+                                "name" to ColumnType("text", true)
+                            )
+                    ),
+                tableName = TableName(namespace = "my_schema", name = "my_table")
+            )
         assertTrue(sql.contains("CREATE TABLE IF NOT EXISTS"))
         assertTrue(sql.contains(""""_airbyte_raw_id" text"""))
         assertTrue(sql.contains(""""_airbyte_extracted_at" timestamptz"""))
@@ -100,10 +104,11 @@ internal class FireboltSqlGeneratorTest {
     fun `upsertTable requires a primary key`() {
         assertThrows(IllegalArgumentException::class.java) {
             sqlGenerator.upsertTable(
-                stream = mockDedupeStream(
-                    finalSchema = mapOf("id" to ColumnType("bigint", false)),
-                    primaryKey = emptyList(),
-                ),
+                stream =
+                    mockDedupeStream(
+                        finalSchema = mapOf("id" to ColumnType("bigint", false)),
+                        primaryKey = emptyList(),
+                    ),
                 sourceTableName = TableName(namespace = "my_schema", name = "source"),
                 targetTableName = TableName(namespace = "my_schema", name = "target"),
             )
@@ -114,11 +119,16 @@ internal class FireboltSqlGeneratorTest {
     fun `upsertTable generates a MERGE with dedup and update conditions`() {
         val sql =
             sqlGenerator.upsertTable(
-                stream = mockDedupeStream(
-                    finalSchema = mapOf("id" to ColumnType("bigint", false), "value" to ColumnType("text", true)),
-                    primaryKey = listOf(listOf("id")),
-                    cursor = listOf("value"),
-                ),
+                stream =
+                    mockDedupeStream(
+                        finalSchema =
+                            mapOf(
+                                "id" to ColumnType("bigint", false),
+                                "value" to ColumnType("text", true)
+                            ),
+                        primaryKey = listOf(listOf("id")),
+                        cursor = listOf("value"),
+                    ),
                 sourceTableName = TableName(namespace = "my_schema", name = "source"),
                 targetTableName = TableName(namespace = "my_schema", name = "target"),
             )
