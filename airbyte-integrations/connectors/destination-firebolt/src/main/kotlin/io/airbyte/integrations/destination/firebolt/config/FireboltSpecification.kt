@@ -45,25 +45,36 @@ open class FireboltSpecification : ConfigurationSpecification() {
     val database: String = ""
 
     @get:JsonSchemaTitle("Engine")
-    @get:JsonPropertyDescription("The Firebolt engine name. If not provided, the default engine is used.")
+    @get:JsonPropertyDescription(
+        "The Firebolt engine name. If not provided, the default engine is used."
+    )
     @get:JsonProperty("engine")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 4}""")
     val engine: String? = null
 
     @get:JsonSchemaTitle("Host")
-    @get:JsonPropertyDescription("Optional Firebolt API host. Leave blank for the default endpoint.")
+    @get:JsonPropertyDescription(
+        "Optional Firebolt API host. Leave blank for the default endpoint."
+    )
     @get:JsonProperty("host")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 5}""")
     val host: String? = null
 
     @get:JsonSchemaTitle("Default Schema")
-    @get:JsonPropertyDescription("The default schema tables are written to if the source does not specify a namespace.")
+    @get:JsonPropertyDescription(
+        "The default schema tables are written to if the source does not specify a namespace."
+    )
     @get:JsonProperty("schema")
-    @get:JsonSchemaInject(json = """{"group": "connection", "order": 6, "examples": ["public"], "default": "public"}""")
+    @get:JsonSchemaInject(
+        json =
+            """{"group": "connection", "order": 6, "examples": ["public"], "default": "public"}"""
+    )
     val schema: String = "public"
 
     @get:JsonSchemaTitle("JDBC URL Params")
-    @get:JsonPropertyDescription("Additional properties to pass to the JDBC URL string as key=value pairs separated by '&'.")
+    @get:JsonPropertyDescription(
+        "Additional properties to pass to the JDBC URL string as key=value pairs separated by '&'."
+    )
     @get:JsonProperty("jdbc_url_params")
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 7}""")
     val jdbcUrlParams: String? = null

@@ -21,7 +21,9 @@ data class S3StagingConfiguration(
     val s3BucketName: String = "",
     @JsonProperty("s3_bucket_path")
     @get:JsonSchemaTitle("S3 Bucket Path")
-    @get:JsonPropertyDescription("The directory under the S3 bucket where data will be written. If not provided, defaults to the root directory.")
+    @get:JsonPropertyDescription(
+        "The directory under the S3 bucket where data will be written. If not provided, defaults to the root directory."
+    )
     @get:JsonSchemaInject(json = """{"order": 1, "examples":["data_sync/test"]}""")
     val s3BucketPath: String? = null,
     @JsonProperty("s3_bucket_region")
@@ -34,7 +36,9 @@ data class S3StagingConfiguration(
     val s3BucketRegion: String = "",
     @JsonProperty("access_key_id")
     @get:JsonSchemaTitle("S3 Access Key Id")
-    @get:JsonPropertyDescription("The access key ID for the S3 staging bucket. Airbyte requires Read and Write permissions.")
+    @get:JsonPropertyDescription(
+        "The access key ID for the S3 staging bucket. Airbyte requires Read and Write permissions."
+    )
     @get:JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true}""")
     val accessKeyId: String = "",
     @JsonProperty("secret_access_key")
@@ -52,7 +56,9 @@ data class S3StagingConfiguration(
     val fileNamePattern: String? = null,
     @JsonProperty("purge_staging_data")
     @get:JsonSchemaTitle("Purge Staging Files and Tables")
-    @get:JsonPropertyDescription("Whether to delete the staging files from S3 after completing the sync.")
+    @get:JsonPropertyDescription(
+        "Whether to delete the staging files from S3 after completing the sync."
+    )
     @get:JsonSchemaInject(json = """{"order": 6, "default": true}""")
     val purgeStagingData: Boolean? = true,
 )

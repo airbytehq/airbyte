@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Disabled
 /**
  * Airbyte V2 basic-functionality acceptance test for the Firebolt destination.
  *
- * This follows the standard CDK destination acceptance test pattern. It is disabled
- * by default because it requires a real Firebolt cluster plus S3 staging credentials
- * in `src/test-integration/resources/secrets/test_cluster.json`.
+ * This follows the standard CDK destination acceptance test pattern. It is disabled by default
+ * because it requires a real Firebolt cluster plus S3 staging credentials in
+ * `src/test-integration/resources/secrets/test_cluster.json`.
  */
 const val CONFIG_PATH = "src/test-integration/resources/secrets/test_cluster.json"
 

@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnType
 import io.airbyte.cdk.load.component.ColumnTypeChange
-import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_EXTRACTED_AT
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
@@ -31,7 +30,8 @@ class FireboltSqlGenerator {
         internal val META_COLUMNS: Map<String, ColumnType> =
             linkedMapOf(
                 COLUMN_NAME_AB_RAW_ID to ColumnType(FireboltDataType.TEXT.typeName, false),
-                COLUMN_NAME_AB_EXTRACTED_AT to ColumnType(FireboltDataType.TIMESTAMPTZ.typeName, false),
+                COLUMN_NAME_AB_EXTRACTED_AT to
+                    ColumnType(FireboltDataType.TIMESTAMPTZ.typeName, false),
                 COLUMN_NAME_AB_META to ColumnType(FireboltDataType.TEXT.typeName, false),
                 COLUMN_NAME_AB_GENERATION_ID to ColumnType(FireboltDataType.BIGINT.typeName, false),
             )
@@ -67,16 +67,16 @@ class FireboltSqlGenerator {
 
         val columnDeclarations =
             buildList {
-                metaColumns.forEach { (columnName, columnType) ->
-                    val nullability = if (columnType.nullable) "" else " NOT NULL"
-                    add("    ${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+                    metaColumns.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("    ${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+                    }
+                    userColumns.forEach { (columnName, columnType) ->
+                        val nullability = if (columnType.nullable) "" else " NOT NULL"
+                        add("    ${quoteIdentifier(columnName)} ${columnType.type}$nullability")
+                    }
                 }
-                userColumns.forEach { (columnName, columnType) ->
-                    val nullability = if (columnType.nullable) "" else " NOT NULL"
-                    add("    ${quoteIdentifier(columnName)} ${columnType.type}$nullability")
-                }
-            }
-            .joinToString(",\n")
+                .joinToString(",\n")
 
         return """
             |CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} (
@@ -124,7 +124,11 @@ class FireboltSqlGenerator {
      * The source is first deduplicated by primary key, keeping the latest row by cursor then
      * extracted_at. CDC hard deletes are applied when _ab_cdc_deleted_at is present.
      */
-    fun upsertTable(stream: DestinationStream, sourceTableName: TableName, targetTableName: TableName): String {
+    fun upsertTable(
+        stream: DestinationStream,
+        sourceTableName: TableName,
+        targetTableName: TableName
+    ): String {
         val importType = stream.tableSchema.importType as Dedupe
 
         if (importType.primaryKey.isEmpty()) {
@@ -153,30 +157,28 @@ class FireboltSqlGenerator {
                 |WHERE _airbyte_row_num = 1
             """.trimMargin()
 
-        val onCondition = primaryKeyColumns.joinToString(" AND ") { pk ->
-            "t.$pk = s.$pk"
-        }
+        val onCondition = primaryKeyColumns.joinToString(" AND ") { pk -> "t.$pk = s.$pk" }
 
         val matchedClauses =
             buildList {
-                if (cdcHardDeleteEnabled) {
-                    add(
-                        """
+                    if (cdcHardDeleteEnabled) {
+                        add(
+                            """
                             |WHEN MATCHED AND s.$DELETED_AT_COLUMN_NAME IS NOT NULL THEN DELETE
                         """.trimMargin()
-                    )
-                }
-                val cursorComparison = cursorColumn?.let {
-                    buildCursorComparison(it, "t", "s")
-                } ?: "t.$EXTRACTED_AT_COLUMN_NAME < s.$EXTRACTED_AT_COLUMN_NAME"
-                add(
-                    """
+                        )
+                    }
+                    val cursorComparison =
+                        cursorColumn?.let { buildCursorComparison(it, "t", "s") }
+                            ?: "t.$EXTRACTED_AT_COLUMN_NAME < s.$EXTRACTED_AT_COLUMN_NAME"
+                    add(
+                        """
                         |WHEN MATCHED AND ($cursorComparison) THEN
                         |    UPDATE SET *
                     """.trimMargin()
-                )
-            }
-            .joinToString("\n")
+                    )
+                }
+                .joinToString("\n")
 
         val notMatchedClause =
             if (cdcHardDeleteEnabled) {
@@ -203,8 +205,8 @@ class FireboltSqlGenerator {
     }
 
     /**
-     * Generates a transaction to evolve the table schema.
-     * For now this only adds missing columns; type coercions are left as a later TODO.
+     * Generates a transaction to evolve the table schema. For now this only adds missing columns;
+     * type coercions are left as a later TODO.
      */
     @Suppress("UNUSED_PARAMETER")
     fun matchSchemas(
@@ -279,7 +281,11 @@ class FireboltSqlGenerator {
     private fun getCursorColumnNameQuoted(stream: DestinationStream): String? =
         stream.tableSchema.getCursor().firstOrNull()?.let { quoteIdentifier(it) }
 
-    private fun buildCursorComparison(cursorColumn: String, targetAlias: String, sourceAlias: String): String =
+    private fun buildCursorComparison(
+        cursorColumn: String,
+        targetAlias: String,
+        sourceAlias: String
+    ): String =
         """
             |$targetAlias.$cursorColumn < $sourceAlias.$cursorColumn
             |    OR ($targetAlias.$cursorColumn = $sourceAlias.$cursorColumn AND $targetAlias.$EXTRACTED_AT_COLUMN_NAME < $sourceAlias.$EXTRACTED_AT_COLUMN_NAME)

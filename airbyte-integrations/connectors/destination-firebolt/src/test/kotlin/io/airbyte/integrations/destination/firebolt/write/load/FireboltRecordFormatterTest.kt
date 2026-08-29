@@ -7,9 +7,9 @@ package io.airbyte.integrations.destination.firebolt.write.load
 import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.IntegerValue
 import io.airbyte.cdk.load.data.StringValue
+import java.math.BigInteger
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import java.math.BigInteger
 
 internal class FireboltRecordFormatterTest {
 
@@ -17,10 +17,11 @@ internal class FireboltRecordFormatterTest {
     fun `formats records in column order and emits empty strings for missing columns`() {
         val formatter = FireboltRecordFormatter(columns = listOf("id", "name", "missing"))
 
-        val record: Map<String, AirbyteValue> = mapOf(
-            "id" to IntegerValue(BigInteger.valueOf(42)),
-            "name" to StringValue("hello"),
-        )
+        val record: Map<String, AirbyteValue> =
+            mapOf(
+                "id" to IntegerValue(BigInteger.valueOf(42)),
+                "name" to StringValue("hello"),
+            )
 
         val result = formatter.format(record)
 
