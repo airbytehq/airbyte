@@ -76,6 +76,12 @@ The connector requests history one application at a time, and `application.listH
 
 If Ashby returns an `application_not_found` error for an application, which happens when the application is deleted or your API key can't access it, the connector skips that application's history, logs the Ashby request ID, and continues. It retries HTTP 429 and 5xx responses. Any other error fails the sync.
 
+The `interviews` stream returns interview definitions, which are the interview types configured in your Ashby account, such as a technical phone screen. It doesn't return scheduled interviews. Each record carries the definition's `title`, `externalTitle`, instructions, feedback settings, and `feedbackFormDefinitionId`. For interviews that were actually scheduled, along with their times and interviewers, use `interview_schedules`.
+
+Starting in version 1.2.0, the connector sends `includeNonSharedInterviews: true`, so definitions that belong to a single job sync alongside shared ones. Use `jobId` to tell them apart: it holds the job the definition belongs to, and is null for shared definitions, which can be scheduled against any job. The connector leaves Ashby's `includeArchived` parameter at its default of `false`, so archived definitions aren't synced.
+
+Version 1.2.0 also declared the fields `interview.list` returns, which the schema previously omitted. Refresh the source schema and enable the new columns in your connection to replicate them. The stream keeps declaring twelve fields that describe a scheduled interview rather than a definition: `applicationId`, `interviewScheduleId`, `interviewStageId`, `status`, `createdAt`, `updatedAt`, `cancelledAt`, `startTime`, `endTime`, `interviewerUserIds`, `meetingLink`, and `feedbackLink`. Ashby's `interview.list` endpoint doesn't return them, so those columns are always null. They stay in the schema so that removing them can be released as a breaking change later.
+
 ## Performance considerations
 
 Ashby doesn't publish a rate limit for the `.list` endpoints this connector reads, and the connector reads one stream at a time, so syncs are unlikely to be throttled. Ashby's rate limits apply per organization, so an API key shared with other integrations has less headroom. To protect that shared headroom, the connector limits itself to 100 requests per minute against `application.listHistory`, the one endpoint it calls at least once per application. The connector applies no request budget to any other endpoint, though Ashby's per-organization limits still apply everywhere.
