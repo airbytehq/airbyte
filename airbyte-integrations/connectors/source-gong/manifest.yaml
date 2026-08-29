@@ -112,6 +112,7 @@ definitions:
           datetime: >-
             {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -215,6 +216,7 @@ definitions:
           datetime: >-
             {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
           type: RequestOption
           inject_into: body_json
@@ -341,6 +343,7 @@ definitions:
           datetime: >-
             {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
           type: RequestOption
           inject_into: body_json
@@ -426,6 +429,7 @@ definitions:
           datetime: >-
             {{ config.start_date or '1970-01-01T00:00:00Z' }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         is_client_side_incremental: true
         global_substream_cursor: true
       transformations:
@@ -608,6 +612,17 @@ spec:
         minimum: 1
         maximum: 10
         order: 2
+      lookback_window_days:
+        type: integer
+        title: Lookback Window (days)
+        description: >-
+          Number of days to subtract from the saved state cursor at the start
+          of each incremental sync. Use this to re-sync calls and scorecards
+          that were updated after they were first replicated. The default of 0
+          syncs strictly forward from the saved state.
+        default: 0
+        minimum: 0
+        order: 3
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
