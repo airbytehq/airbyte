@@ -8,7 +8,6 @@ import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.TimeUnit
 import kotlin.system.measureTimeMillis
 import org.apache.hadoop.conf.Configuration
 import org.apache.iceberg.FileContent
@@ -21,7 +20,6 @@ import org.apache.iceberg.data.GenericRecord
 import org.apache.iceberg.hadoop.HadoopCatalog
 import org.apache.iceberg.types.Types
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 
 /**
@@ -29,7 +27,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
  * correctness test, and off unless `RUN_DELETE_INDEX_BENCHMARK` is set:
  *
  * ```
- * RUN_DELETE_INDEX_BENCHMARK=1 ./gradlew \
+ * RUN_DELETE_INDEX_BENCHMARK=1 ./gradlew -PJunitMethodExecutionTimeout=30m \
  *   :airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-iceberg-parquet:test \
  *   --tests '*DeleteIndexBenchmark*'
  * ```
@@ -58,7 +56,6 @@ class DeleteIndexBenchmark {
     )
 
     @Test
-    @Timeout(value = 30, unit = TimeUnit.MINUTES)
     fun benchmark() {
         val shapes =
             listOf(
@@ -71,20 +68,32 @@ class DeleteIndexBenchmark {
                 Shape("40 flushes, 40 syncs, hot files", 4, 500, 40, 20, 0.25, 1),
                 Shape("40 flushes, 40 syncs, uniform", 4, 500, 40, 20, 1.0, 1),
             )
+        val repetitions = 3
+        val runs =
+            (1..repetitions).flatMap {
+                shapes.flatMap { shape ->
+                    listOf(false, true).map { indexed ->
+                        Triple(shape.name, indexed, run(shape, indexed))
+                    }
+                }
+            }
         val rows = mutableListOf<String>()
         rows.add(
             "| shape | index | files opened | rows scanned | delete files read | " +
-                "delete files | delete bytes | wall ms |"
+                "delete files | delete bytes | median wall ms of $repetitions |"
         )
         rows.add("| --- | --- | --- | --- | --- | --- | --- | --- |")
         shapes.forEach { shape ->
             listOf(false, true).forEach { indexed ->
-                val result = run(shape, indexed)
+                val results =
+                    runs.filter { it.first == shape.name && it.second == indexed }.map { it.third }
+                val result = results.first()
+                val medianWallTime = results.map { it.wallTimeMillis }.sorted()[results.size / 2]
                 rows.add(
                     "| ${shape.name} | ${if (indexed) "on" else "off"} | " +
                         "${result.dataFilesOpened} | ${result.rowsScanned} | " +
                         "${result.positionDeleteFilesRead} | ${result.deleteFiles} | " +
-                        "${result.deleteFileBytes} | ${result.wallTimeMillis} |"
+                        "${result.deleteFileBytes} | $medianWallTime |"
                 )
             }
         }
