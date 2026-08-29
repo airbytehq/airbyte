@@ -59,6 +59,7 @@ _RETRYABLE_400_STATUS_CODES = {
     codes.too_many_requests,
 }
 _NO_SUCH_COLUMN_PATTERN = re.compile(r"No such column '(?P<field>[^']+)' on entity")
+_BULK_COMPOUND_DATA_ERROR_MESSAGE = "Selecting compound data not supported in Bulk Query"
 
 logger = logging.getLogger("airbyte")
 
@@ -139,7 +140,7 @@ class SalesforceErrorHandler(ErrorHandler):
                     ),
                 )
 
-            if error_code == "INVALID_FIELD":
+            if error_code == "INVALID_FIELD" and error_message != _BULK_COMPOUND_DATA_ERROR_MESSAGE:
                 return self._handle_invalid_field(error_message)
 
             if self._is_bulk_job_creation(response) and response.status_code in [
@@ -217,7 +218,7 @@ class SalesforceErrorHandler(ErrorHandler):
         #        updated query: "Select Name, (Select Subject,ActivityType from ActivityHistories) from Contact"
         #    The second variant forces customisation for every case (ActivityHistory, ActivityHistories etc).
         #    And the main problem is these subqueries doesn't support CSV response format.
-        if error_message == "Selecting compound data not supported in Bulk Query" or (
+        if error_message == _BULK_COMPOUND_DATA_ERROR_MESSAGE or (
             error_code == "INVALIDENTITY" and "is not supported by the Bulk API" in error_message
         ):
             logger.error(

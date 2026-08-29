@@ -372,6 +372,18 @@ class SalesforceErrorHandlerTest(TestCase):
         assert resolution.response_action == ResponseAction.FAIL
         assert resolution.failure_type == FailureType.config_error
 
+    def test_given_invalid_field_compound_data_error_on_job_creation_when_interpret_response_then_raise_bulk_not_supported(
+        self,
+    ) -> None:
+        response = self._create_response(
+            "POST",
+            self._url_for_job_creation(),
+            400,
+            [{"errorCode": "INVALID_FIELD", "message": "Selecting compound data not supported in Bulk Query"}],
+        )
+        with pytest.raises(BulkNotSupportedException):
+            self._error_handler.interpret_response(response)
+
     def test_given_txn_security_metering_error_when_interpret_response_then_raise_config_error(self) -> None:
         response = self._create_response(
             "GET",
