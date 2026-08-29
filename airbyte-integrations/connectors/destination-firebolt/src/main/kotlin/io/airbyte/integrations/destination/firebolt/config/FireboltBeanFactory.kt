@@ -10,7 +10,9 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.integrations.destination.firebolt.client.FireboltAirbyteClient
+import io.airbyte.integrations.destination.firebolt.connect.S3Connect
 import io.airbyte.integrations.destination.firebolt.sql.FireboltSqlGenerator
+import software.amazon.awssdk.services.s3.S3Client
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -48,8 +50,16 @@ class FireboltBeanFactory {
     fun fireboltAirbyteClient(
         dataSource: HikariDataSource,
         sqlGenerator: FireboltSqlGenerator,
+        s3Client: S3Client,
     ): FireboltAirbyteClient {
-        return FireboltAirbyteClient(dataSource, sqlGenerator)
+        return FireboltAirbyteClient(dataSource, sqlGenerator, s3Client)
+    }
+
+    /** Creates the S3 client for staging operations. */
+    @Singleton
+    @Requires(property = Operation.PROPERTY, notEquals = "spec")
+    fun s3Client(s3Connect: S3Connect): S3Client {
+        return s3Connect.createS3Client()
     }
 
     /** CDK dataflow aggregate publishing thresholds. */
