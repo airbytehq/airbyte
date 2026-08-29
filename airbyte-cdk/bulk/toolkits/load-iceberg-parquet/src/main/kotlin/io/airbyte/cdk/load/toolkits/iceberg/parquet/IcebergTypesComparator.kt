@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
+import io.airbyte.cdk.load.message.Meta
 import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
@@ -130,7 +131,11 @@ class IcebergTypesComparator {
                 // The column exists in both => check for type differences at top-level
                 if (
                     parentPath.isNullOrBlank() &&
-                        !typesAreEqual(incomingField.type(), existingField.type())
+                        !typesAreEqual(
+                            incomingField.type(),
+                            existingField.type(),
+                            ignoreNullability = fieldName == Meta.COLUMN_NAME_AB_META,
+                        )
                 ) {
                     diff.updatedDataTypes.add(fqName)
                 }
@@ -171,10 +176,15 @@ class IcebergTypesComparator {
      *
      * @param incomingType the type from the incoming schema.
      * @param existingType the type from the existing schema.
+     * @param ignoreNullability whether nested field and list element nullability should be ignored.
      * @return `true` if they are effectively the same type, `false` otherwise.
      * @throws IllegalArgumentException if an unsupported or unmapped Iceberg type is encountered.
      */
-    fun typesAreEqual(incomingType: Type, existingType: Type): Boolean {
+    fun typesAreEqual(
+        incomingType: Type,
+        existingType: Type,
+        ignoreNullability: Boolean = false,
+    ): Boolean {
         if (existingType.typeId() != incomingType.typeId()) return false
 
         return when (val typeId = existingType.typeId()) {
@@ -201,8 +211,14 @@ class IcebergTypesComparator {
                     "Expected LIST types, but received $existingType and $incomingType."
                 }
                 val sameElementType =
-                    typesAreEqual(incomingType.elementType(), existingType.elementType())
-                sameElementType
+                    typesAreEqual(
+                        incomingType.elementType(),
+                        existingType.elementType(),
+                        ignoreNullability,
+                    )
+                sameElementType &&
+                    (ignoreNullability ||
+                        existingType.isElementOptional == incomingType.isElementOptional)
             }
             Type.TypeID.STRUCT -> {
                 val incomingStructFields =
@@ -213,7 +229,12 @@ class IcebergTypesComparator {
                 // For all fields in existing, ensure there's a matching field in incoming
                 for ((name, existingField) in existingStructFields) {
                     val incomingField = incomingStructFields[name] ?: return false
-                    if (!typesAreEqual(incomingField.type(), existingField.type())) return false
+                    if (!ignoreNullability && existingField.isOptional != incomingField.isOptional) {
+                        return false
+                    }
+                    if (!typesAreEqual(incomingField.type(), existingField.type(), ignoreNullability)) {
+                        return false
+                    }
                 }
                 // If there are extra fields in `incoming`, that doesn't mean they're "unequal" per
                 // se —

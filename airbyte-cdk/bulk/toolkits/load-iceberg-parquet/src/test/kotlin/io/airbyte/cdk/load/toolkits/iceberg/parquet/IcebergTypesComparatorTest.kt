@@ -245,7 +245,7 @@ class IcebergTypesComparatorTest {
     }
 
     @Test
-    fun testListTypeElementOptionalityIsNotATypeChange() {
+    fun testNonMetaListTypeElementOptionalityIsATypeChange() {
         val existingSchema =
             buildSchema(
                 field(
@@ -272,10 +272,55 @@ class IcebergTypesComparatorTest {
 
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
-        assertThat(diff.updatedDataTypes).isEmpty()
+        assertThat(diff.updatedDataTypes).containsExactly("values")
         assertThat(diff.newColumns).isEmpty()
         assertThat(diff.removedColumns).isEmpty()
         assertThat(diff.newlyOptionalColumns).isEmpty()
+    }
+
+    @Test
+    fun testMetaNestedAndListElementOptionalityIsNotATypeChange() {
+        val existingSchema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), false),
+                        field(
+                            "changes",
+                            Types.ListType.ofRequired(
+                                102,
+                                Types.StringType.get(),
+                            ),
+                            false,
+                        ),
+                    ),
+                    false,
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), true),
+                        field(
+                            "changes",
+                            Types.ListType.ofOptional(
+                                102,
+                                Types.StringType.get(),
+                            ),
+                            false,
+                        ),
+                    ),
+                    false,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
+
+        assertThat(diff.updatedDataTypes).isEmpty()
+        assertThat(diff.newlyOptionalColumns).containsExactly("_airbyte_meta~sync_id")
     }
 
     @Test
