@@ -15,7 +15,6 @@ import io.airbyte.cdk.load.component.TableSchemaEvolutionClient
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
-import io.airbyte.integrations.destination.firebolt.sql.FireboltSqlEscapeUtils
 import io.airbyte.integrations.destination.firebolt.sql.FireboltSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -134,7 +133,8 @@ class FireboltAirbyteClient(
             return TableSchema(emptyMap())
         }
 
-        val hasAllAirbyteColumns = columnsInDb.keys.containsAll(FireboltSqlGenerator.META_COLUMNS.keys)
+        val hasAllAirbyteColumns =
+            columnsInDb.keys.containsAll(FireboltSqlGenerator.META_COLUMNS.keys)
         if (!hasAllAirbyteColumns) {
             val message =
                 """
@@ -272,7 +272,7 @@ class FireboltAirbyteClient(
      * Executes a SQL statement (DDL or DML) against Firebolt.
      *
      * @param logStatement set to false for statements that contain secrets (e.g. COPY FROM with
-     *   inline AWS credentials) to prevent plaintext credentials from appearing in logs.
+     * inline AWS credentials) to prevent plaintext credentials from appearing in logs.
      */
     internal fun execute(query: String, logStatement: Boolean = true) {
         if (logStatement) {
