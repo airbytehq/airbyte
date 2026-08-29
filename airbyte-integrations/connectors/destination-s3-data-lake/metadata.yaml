@@ -64,6 +64,7 @@ data:
           [migration guide](https://docs.airbyte.com/integrations/destinations/s3-data-lake-migrations)
           before pinning back to an older version.'
         upgradeDeadline: "2026-10-01"
+        deadlineAction: "auto_upgrade"
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot
