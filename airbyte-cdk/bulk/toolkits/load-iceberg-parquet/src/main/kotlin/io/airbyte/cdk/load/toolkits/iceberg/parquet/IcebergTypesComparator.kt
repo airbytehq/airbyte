@@ -92,7 +92,7 @@ class IcebergTypesComparator {
             parentPath = null,
             incomingType = incomingSchema.asStruct(),
             existingType = existingSchema.asStruct(),
-            diff = diff
+            diff = diff,
         )
 
         val incomingIdentifierNames = incomingSchema.identifierFieldNames().toSet()
@@ -114,7 +114,8 @@ class IcebergTypesComparator {
         parentPath: String?,
         incomingType: Types.StructType,
         existingType: Types.StructType,
-        diff: ColumnDiff
+        diff: ColumnDiff,
+        relaxNestedNullability: Boolean = false,
     ) {
         val incomingFieldsByName = incomingType.fields().associateBy { it.name() }
         val existingFieldsByName = existingType.fields().associateBy { it.name() }
@@ -153,8 +154,38 @@ class IcebergTypesComparator {
                         parentPath = fqName,
                         incomingType = incomingField.type().asStructType(),
                         existingType = existingField.type().asStructType(),
-                        diff = diff
+                        diff = diff,
+                        relaxNestedNullability =
+                            fieldName == Meta.COLUMN_NAME_AB_META || relaxNestedNullability,
                     )
+                }
+
+                // If both are lists, compare element optionality and recurse into element structs.
+                if (
+                    relaxNestedNullability &&
+                        incomingField.type().isListType &&
+                        existingField.type().isListType
+                ) {
+                    val incomingList = incomingField.type().asListType()
+                    val existingList = existingField.type().asListType()
+                    val elementPath = fullyQualifiedName(fqName, "element")
+
+                    if (!existingList.isElementOptional && incomingList.isElementOptional) {
+                        diff.newlyOptionalColumns.add(elementPath)
+                    }
+
+                    if (
+                        incomingList.elementType().isStructType &&
+                            existingList.elementType().isStructType
+                    ) {
+                        compareStructFields(
+                            parentPath = elementPath,
+                            incomingType = incomingList.elementType().asStructType(),
+                            existingType = existingList.elementType().asStructType(),
+                            diff = diff,
+                            relaxNestedNullability = true,
+                        )
+                    }
                 }
             }
         }
