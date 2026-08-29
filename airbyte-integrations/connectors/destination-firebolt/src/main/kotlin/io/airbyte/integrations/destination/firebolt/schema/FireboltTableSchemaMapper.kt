@@ -28,7 +28,6 @@ import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.firebolt.config.FireboltConfiguration
 import io.airbyte.integrations.destination.firebolt.sql.FireboltDataType
-import io.airbyte.integrations.destination.firebolt.sql.FireboltSqlEscapeUtils
 import jakarta.inject.Singleton
 
 /** Maps Airbyte stream schemas to Firebolt table names, column names, and column types. */
@@ -58,21 +57,17 @@ class FireboltTableSchemaMapper(
                 IntegerType -> FireboltDataType.BIGINT.typeName
                 NumberType -> FireboltDataType.DOUBLE_PRECISION.typeName
                 StringType -> FireboltDataType.TEXT.typeName
-
                 DateType -> FireboltDataType.DATE.typeName
                 TimeTypeWithoutTimezone,
                 TimeTypeWithTimezone -> FireboltDataType.TEXT.typeName
                 TimestampTypeWithoutTimezone -> FireboltDataType.TIMESTAMP.typeName
                 TimestampTypeWithTimezone -> FireboltDataType.TIMESTAMPTZ.typeName
-
                 is ArrayType,
                 ArrayTypeWithoutSchema,
                 is UnknownType -> FireboltDataType.TEXT.typeName
-
                 is ObjectType,
                 ObjectTypeWithEmptySchema,
                 ObjectTypeWithoutSchema -> FireboltDataType.JSON.typeName
-
                 is UnionType -> {
                     val union = fieldType.type as UnionType
                     val nonNull = union.options.filter { it !is UnknownType }
@@ -87,6 +82,5 @@ class FireboltTableSchemaMapper(
         return ColumnType(fireboltType, fieldType.nullable)
     }
 
-    private fun String.toCompatibleName(): String =
-        this
+    private fun String.toCompatibleName(): String = this
 }
