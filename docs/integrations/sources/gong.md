@@ -12,6 +12,10 @@ This page contains the setup guide and reference information for the [Gong](http
 - For OAuth 2.0 authentication: the following API scopes must be granted: `api:calls:read:basic`, `api:calls:read:extensive`, `api:calls:read:transcript`, `api:users:read`, `api:stats:scorecards`, `api:stats:interaction`, `api:settings:scorecards:read`
 - For API Key authentication: an access key and access key secret generated from the Gong API settings, with the same scopes listed above
 
+:::note
+The connection test validates connectivity by reading the `users` stream, so the `api:users:read` scope is always required — even if you only intend to sync call or scorecard streams. Without it, setting up the source fails with an unauthorized error. Credentials also inherit the data visibility of the Gong user who created them: a key whose user can't see certain calls silently returns fewer (or zero) records rather than an error.
+:::
+
 ## Setup guide
 
 ### Step 1: Authenticate with Gong
