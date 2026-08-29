@@ -189,6 +189,100 @@ class IcebergTypesComparatorTest {
     }
 
     @Test
+    fun `test nested list element and fields become optional`() {
+        val existingSchema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), false),
+                        field(
+                            "changes",
+                            Types.ListType.ofRequired(
+                                3,
+                                Types.StructType.of(
+                                    field("field", Types.StringType.get(), false),
+                                    field("change", Types.StringType.get(), false),
+                                    field("reason", Types.StringType.get(), false),
+                                ),
+                            ),
+                            false,
+                        ),
+                    ),
+                    false,
+                ),
+            )
+        val incomingSchema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), true),
+                        field(
+                            "changes",
+                            Types.ListType.ofOptional(
+                                3,
+                                Types.StructType.of(
+                                    field("field", Types.StringType.get(), true),
+                                    field("change", Types.StringType.get(), true),
+                                    field("reason", Types.StringType.get(), true),
+                                ),
+                            ),
+                            true,
+                        ),
+                    ),
+                    false,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(incomingSchema, existingSchema)
+
+        assertThat(diff.newlyOptionalColumns)
+            .containsExactlyInAnyOrder(
+                "_airbyte_meta~sync_id",
+                "_airbyte_meta~changes",
+                "_airbyte_meta~changes~element",
+                "_airbyte_meta~changes~element~field",
+                "_airbyte_meta~changes~element~change",
+                "_airbyte_meta~changes~element~reason",
+            )
+        assertThat(diff.updatedDataTypes).isEmpty()
+        assertThat(diff.removedColumns).isEmpty()
+    }
+
+    @Test
+    fun `test nested optional list element and fields have no diff`() {
+        val schema =
+            buildSchema(
+                field(
+                    "_airbyte_meta",
+                    Types.StructType.of(
+                        field("sync_id", Types.StringType.get(), true),
+                        field(
+                            "changes",
+                            Types.ListType.ofOptional(
+                                3,
+                                Types.StructType.of(
+                                    field("field", Types.StringType.get(), true),
+                                    field("change", Types.StringType.get(), true),
+                                    field("reason", Types.StringType.get(), true),
+                                ),
+                            ),
+                            true,
+                        ),
+                    ),
+                    false,
+                ),
+            )
+
+        val diff = comparator.compareSchemas(schema, schema)
+
+        assertThat(diff.newlyOptionalColumns).isEmpty()
+        assertThat(diff.updatedDataTypes).isEmpty()
+        assertThat(diff.removedColumns).isEmpty()
+    }
+
+    @Test
     fun testTimestampTypeWithZoneVersusWithoutZone() {
         val existingSchema =
             buildSchema(
@@ -320,7 +414,11 @@ class IcebergTypesComparatorTest {
         val diff = comparator.compareSchemas(incomingSchema, existingSchema)
 
         assertThat(diff.updatedDataTypes).isEmpty()
-        assertThat(diff.newlyOptionalColumns).containsExactly("_airbyte_meta~sync_id")
+        assertThat(diff.newlyOptionalColumns)
+            .containsExactlyInAnyOrder(
+                "_airbyte_meta~sync_id",
+                "_airbyte_meta~changes~element",
+            )
     }
 
     @Test

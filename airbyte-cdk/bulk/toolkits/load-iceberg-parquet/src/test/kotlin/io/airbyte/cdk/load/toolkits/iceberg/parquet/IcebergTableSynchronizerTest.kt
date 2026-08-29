@@ -219,6 +219,107 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
+    fun `test nested list element paths apply to a real schema`() {
+        val warehousePath = Files.createTempDirectory("iceberg-test-warehouse")
+        try {
+            val catalog = HadoopCatalog(Configuration(), warehousePath.toString())
+            val tableId = TableIdentifier.of("db", "nested_optional")
+            val existingSchema =
+                buildSchema(
+                    Types.NestedField.required(
+                        1,
+                        "_airbyte_meta",
+                        Types.StructType.of(
+                            Types.NestedField.required(2, "sync_id", Types.StringType.get()),
+                            Types.NestedField.required(
+                                3,
+                                "changes",
+                                Types.ListType.ofRequired(
+                                    4,
+                                    Types.StructType.of(
+                                        Types.NestedField.required(
+                                            5,
+                                            "field",
+                                            Types.StringType.get()
+                                        ),
+                                        Types.NestedField.required(
+                                            6,
+                                            "change",
+                                            Types.StringType.get()
+                                        ),
+                                        Types.NestedField.required(
+                                            7,
+                                            "reason",
+                                            Types.StringType.get()
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+            val table = createTableWithoutSortOrder(catalog, tableId, existingSchema)
+            val incomingSchema =
+                buildSchema(
+                    Types.NestedField.required(
+                        1,
+                        "_airbyte_meta",
+                        Types.StructType.of(
+                            Types.NestedField.optional(2, "sync_id", Types.StringType.get()),
+                            Types.NestedField.optional(
+                                3,
+                                "changes",
+                                Types.ListType.ofOptional(
+                                    4,
+                                    Types.StructType.of(
+                                        Types.NestedField.optional(
+                                            5,
+                                            "field",
+                                            Types.StringType.get()
+                                        ),
+                                        Types.NestedField.optional(
+                                            6,
+                                            "change",
+                                            Types.StringType.get()
+                                        ),
+                                        Types.NestedField.optional(
+                                            7,
+                                            "reason",
+                                            Types.StringType.get()
+                                        ),
+                                    ),
+                                ),
+                            ),
+                        ),
+                    ),
+                )
+
+            val result =
+                createRealSynchronizer()
+                    .maybeApplySchemaChanges(
+                        table,
+                        incomingSchema,
+                        ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+                    )
+
+            assertThat(result.pendingUpdates).isEmpty()
+            table.refresh()
+            assertThat(table.schema().findField("_airbyte_meta.sync_id").isOptional).isTrue()
+            assertThat(table.schema().findField("_airbyte_meta.changes").isOptional).isTrue()
+            assertThat(table.schema().findField("_airbyte_meta.changes.element").isOptional)
+                .isTrue()
+            assertThat(table.schema().findField("_airbyte_meta.changes.element.field").isOptional)
+                .isTrue()
+            assertThat(table.schema().findField("_airbyte_meta.changes.element.change").isOptional)
+                .isTrue()
+            assertThat(table.schema().findField("_airbyte_meta.changes.element.reason").isOptional)
+                .isTrue()
+        } finally {
+            warehousePath.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
     fun `test top-level column names containing separator remain literal`() {
         val existingSchema =
             buildSchema(
@@ -499,6 +600,52 @@ class IcebergTableSynchronizerTest {
         val incomingStructType =
             Types.StructType.of(
                 Types.NestedField.optional(2, "nested", Types.LongType.get()),
+            )
+        val existingSchema =
+            buildSchema(Types.NestedField.optional(1, "user_info", existingStructType))
+        val incomingSchema =
+            buildSchema(Types.NestedField.optional(1, "user_info", incomingStructType))
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.OVERWRITE
+        )
+
+        verify { mockUpdateSchema.deleteColumn("user_info") }
+        verify { mockUpdateSchema.addColumn("user_info", incomingStructType) }
+        verify(exactly = 0) { mockUpdateSchema.makeColumnOptional(any()) }
+    }
+
+    @Test
+    fun `test overwrite skips nested list element optionality for replaced column`() {
+        val existingStructType =
+            Types.StructType.of(
+                Types.NestedField.required(
+                    2,
+                    "items",
+                    Types.ListType.ofRequired(
+                        3,
+                        Types.StructType.of(
+                            Types.NestedField.required(4, "field", Types.IntegerType.get()),
+                        ),
+                    ),
+                ),
+            )
+        val incomingStructType =
+            Types.StructType.of(
+                Types.NestedField.required(
+                    2,
+                    "items",
+                    Types.ListType.ofOptional(
+                        3,
+                        Types.StructType.of(
+                            Types.NestedField.optional(4, "field", Types.LongType.get()),
+                        ),
+                    ),
+                ),
             )
         val existingSchema =
             buildSchema(Types.NestedField.optional(1, "user_info", existingStructType))
