@@ -491,6 +491,34 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
+    fun `test overwrite skips nested optionality for replaced column`() {
+        val existingStructType =
+            Types.StructType.of(
+                Types.NestedField.required(2, "nested", Types.IntegerType.get()),
+            )
+        val incomingStructType =
+            Types.StructType.of(
+                Types.NestedField.optional(2, "nested", Types.LongType.get()),
+            )
+        val existingSchema =
+            buildSchema(Types.NestedField.optional(1, "user_info", existingStructType))
+        val incomingSchema =
+            buildSchema(Types.NestedField.optional(1, "user_info", incomingStructType))
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.OVERWRITE
+        )
+
+        verify { mockUpdateSchema.deleteColumn("user_info") }
+        verify { mockUpdateSchema.addColumn("user_info", incomingStructType) }
+        verify(exactly = 0) { mockUpdateSchema.makeColumnOptional(any()) }
+    }
+
+    @Test
     fun `test overwrite with replaced column as identifier field defers identifier update`() {
         // Simulates the scenario where a PK column's type changes (e.g. Double -> String)
         // and the column is also an identifier field. Iceberg's requireColumn() fails for
