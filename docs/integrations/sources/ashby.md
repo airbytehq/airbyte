@@ -95,7 +95,8 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
-| 1.2.0 | 2026-08-29 | [85182](https://github.com/airbytehq/airbyte/pull/85182) | Fix `interviews` stream schema: declare the fields actually returned by `interview.list` (interview definitions) instead of interview-event fields that were always null |
+| 1.2.1 | 2026-08-29 | [85182](https://github.com/airbytehq/airbyte/pull/85182) | Remove interview-event fields from the `interviews` stream schema that `interview.list` never returns (the columns were always null) |
+| 1.2.0 | 2026-08-29 | [85183](https://github.com/airbytehq/airbyte/pull/85183) | Declare the interview definition fields `interview.list` actually returns on the `interviews` stream, and request non-shared (job-specific) interviews |
 | 1.1.0 | 2026-08-25 | [84392](https://github.com/airbytehq/airbyte/pull/84392) | Add application history stream |
 | 1.0.1 | 2026-08-25 | [84405](https://github.com/airbytehq/airbyte/pull/84405) | Send the pagination page size using Ashby's documented `limit` field instead of the undocumented `per_page` field |
 | 1.0.0 | 2026-08-18 | [84274](https://github.com/airbytehq/airbyte/pull/84274) | Breaking: declare documented API fields across stream schemas, including element schemas for previously untyped array columns. Data-lake users must refresh the affected streams, then recreate the affected tables if a sync still fails. See the [migration guide](/integrations/sources/ashby-migrations). |

@@ -1050,6 +1050,8 @@ streams:
           password: "{{ config['api_key'] }}"
         path: /interview.list
         http_method: POST
+        request_body_json:
+          includeNonSharedInterviews: true
       record_selector:
         type: RecordSelector
         extractor:
