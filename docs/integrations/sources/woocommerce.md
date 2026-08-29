@@ -33,10 +33,10 @@ For more details, see the [WooCommerce REST API authentication documentation](ht
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
 3. Select **WooCommerce** from the Source type dropdown and enter a name for the connector.
-4. Enter the **Consumer key** and **Consumer secret** from Step 1.
+4. Enter the consumer key from Step 1 into the **Customer Key** field, and the consumer secret into the **Customer Secret** field.
 5. Enter the **Shop Name**. For `https://EXAMPLE.com`, the shop name is `EXAMPLE.com`.
 6. Choose the **Start Date** to begin syncing data from.
-7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
+7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 5. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
 
 <!-- /env:cloud -->
 <!-- env:oss -->
@@ -46,10 +46,10 @@ For more details, see the [WooCommerce REST API authentication documentation](ht
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources**, then click **+ New source**.
 3. Select **WooCommerce** from the Source type dropdown and enter a name for the connector.
-4. Enter the **Consumer key** and **Consumer secret** from Step 1.
+4. Enter the consumer key from Step 1 into the **Customer Key** field, and the consumer secret into the **Customer Secret** field.
 5. Enter the **Shop Name**. For `https://EXAMPLE.com`, the shop name is `EXAMPLE.com`.
 6. Choose the **Start Date** to begin syncing data from.
-7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 4. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
+7. (Optional) Adjust the **Number of Concurrent Threads** to control sync parallelism. The default is 5. Higher values can speed up syncs but may cause rate limiting depending on your hosting provider. Valid range: 2-12.
 <!-- /env:oss -->
 
 ## Supported sync modes
@@ -113,6 +113,11 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 |:--------| :--------- |:---------------------------------------------------------|:-----------------------------------------------------------------------|
+| 0.5.49 | 2026-08-25 | [85030](https://github.com/airbytehq/airbyte/pull/85030) | Skip product attributes whose WooCommerce taxonomy no longer exists instead of failing the sync |
+| 0.5.48 | 2026-08-18 | [84829](https://github.com/airbytehq/airbyte/pull/84829) | Update dependencies |
+| 0.5.47 | 2026-08-11 | [84188](https://github.com/airbytehq/airbyte/pull/84188) | Update dependencies |
+| 0.5.46 | 2026-08-04 | [83676](https://github.com/airbytehq/airbyte/pull/83676) | Update dependencies |
+| 0.5.45 | 2026-07-28 | [83185](https://github.com/airbytehq/airbyte/pull/83185) | Update dependencies |
 | 0.5.44 | 2026-07-21 | [82669](https://github.com/airbytehq/airbyte/pull/82669) | Update dependencies |
 | 0.5.43 | 2026-07-14 | [82068](https://github.com/airbytehq/airbyte/pull/82068) | Update dependencies |
 | 0.5.42 | 2026-06-30 | [81312](https://github.com/airbytehq/airbyte/pull/81312) | Update dependencies |
@@ -130,7 +135,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.5.32 | 2026-03-10 | [74674](https://github.com/airbytehq/airbyte/pull/74674) | Update dependencies |
 | 0.5.31 | 2026-02-24 | [73889](https://github.com/airbytehq/airbyte/pull/73889) | Update dependencies |
 | 0.5.30 | 2026-02-10 | [72988](https://github.com/airbytehq/airbyte/pull/72988) | Update dependencies |
-| 0.5.29 | 2026-02-03 | [72658](https://github.com/airbytehq/airbyte/pull/72658) | Update dependencies |
+| 0.5.29 | 2026-02-06 | [72658](https://github.com/airbytehq/airbyte/pull/72658) | Update dependencies |
 | 0.5.28 | 2026-01-20 | [72054](https://github.com/airbytehq/airbyte/pull/72054) | Update dependencies |
 | 0.5.27 | 2026-01-14 | [71438](https://github.com/airbytehq/airbyte/pull/71438) | Update dependencies |
 | 0.5.26 | 2025-12-19 | [70708](https://github.com/airbytehq/airbyte/pull/70708) | Update dependencies |
@@ -154,7 +159,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.5.8 | 2025-06-28 | [62259](https://github.com/airbytehq/airbyte/pull/62259) | Update dependencies |
 | 0.5.7 | 2025-06-21 | [61763](https://github.com/airbytehq/airbyte/pull/61763) | Update dependencies |
 | 0.5.6 | 2025-06-15 | [61474](https://github.com/airbytehq/airbyte/pull/61474) | Update dependencies |
-| 0.5.5 | 2025-05-31 | [51438](https://github.com/airbytehq/airbyte/pull/51438) | Update dependencies |
+| 0.5.5 | 2025-06-04 | [51438](https://github.com/airbytehq/airbyte/pull/51438) | Update dependencies |
 | 0.5.4 | 2024-12-28 | [50800](https://github.com/airbytehq/airbyte/pull/50800) | Update dependencies |
 | 0.5.3 | 2024-12-21 | [50335](https://github.com/airbytehq/airbyte/pull/50335) | Update dependencies |
 | 0.5.2 | 2024-12-14 | [49382](https://github.com/airbytehq/airbyte/pull/49382) | Update dependencies |

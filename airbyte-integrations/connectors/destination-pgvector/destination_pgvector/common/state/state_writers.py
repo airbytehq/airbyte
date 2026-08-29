@@ -5,10 +5,13 @@
 from __future__ import annotations
 
 import abc
+import json
 from typing import TYPE_CHECKING
 
+from airbyte_cdk.models import AirbyteStateMessageSerializer
+
 if TYPE_CHECKING:
-    from airbyte_cdk.models.airbyte_protocol import AirbyteStateMessage
+    from airbyte_cdk.models import AirbyteStateMessage
 
 
 class StateWriterBase(abc.ABC):
@@ -35,4 +38,4 @@ class StdOutStateWriter(StateWriterBase):
         state_message: AirbyteStateMessage,
     ) -> None:
         """Save or 'write' a state artifact."""
-        print(state_message.json())
+        print(json.dumps(AirbyteStateMessageSerializer.dump(state_message)))
