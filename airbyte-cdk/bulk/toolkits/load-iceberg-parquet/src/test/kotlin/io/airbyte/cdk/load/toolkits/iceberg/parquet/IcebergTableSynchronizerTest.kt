@@ -219,6 +219,29 @@ class IcebergTableSynchronizerTest {
     }
 
     @Test
+    fun `test top-level column names containing separator remain literal`() {
+        val existingSchema =
+            buildSchema(
+                Types.NestedField.required(1, "column~name", Types.StringType.get()),
+            )
+        val incomingSchema =
+            buildSchema(
+                Types.NestedField.optional(1, "column~name", Types.StringType.get()),
+            )
+
+        every { mockTable.schema() } returns existingSchema
+
+        synchronizer.maybeApplySchemaChanges(
+            mockTable,
+            incomingSchema,
+            ColumnTypeChangeBehavior.SAFE_SUPERTYPE
+        )
+
+        verify { mockUpdateSchema.makeColumnOptional("column~name") }
+        verify(exactly = 0) { mockUpdateSchema.makeColumnOptional("column.name") }
+    }
+
+    @Test
     fun `test add new columns - top level`() {
         val existingSchema =
             buildSchema(Types.NestedField.required(1, "id", Types.IntegerType.get()))
