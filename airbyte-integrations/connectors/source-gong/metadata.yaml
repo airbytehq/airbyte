@@ -1,7 +1,7 @@
 data:
   ab_internal:
-    ql: 100
-    sl: 100
+    ql: 300
+    sl: 200
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   connectorSubtype: api
@@ -31,12 +31,12 @@ data:
               - "extensiveCalls"
     rolloutConfiguration:
       enableProgressiveRollout: false
-  releaseStage: alpha
+  releaseStage: generally_available
   remoteRegistries:
     pypi:
       enabled: false
       packageName: airbyte-source-gong
-  supportLevel: community
+  supportLevel: certified
   tags:
     - cdk:low-code
     - language:manifest-only
