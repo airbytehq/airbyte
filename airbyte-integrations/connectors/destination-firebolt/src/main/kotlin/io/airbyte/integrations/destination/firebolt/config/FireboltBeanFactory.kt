@@ -10,6 +10,7 @@ import io.airbyte.cdk.Operation
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.integrations.destination.firebolt.client.FireboltAirbyteClient
+import io.airbyte.integrations.destination.firebolt.sql.FireboltSqlGenerator
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
@@ -44,8 +45,11 @@ class FireboltBeanFactory {
     /** Creates the Firebolt SQL client. */
     @Singleton
     @Requires(property = Operation.PROPERTY, notEquals = "spec")
-    fun fireboltAirbyteClient(dataSource: HikariDataSource): FireboltAirbyteClient {
-        return FireboltAirbyteClient(dataSource)
+    fun fireboltAirbyteClient(
+        dataSource: HikariDataSource,
+        sqlGenerator: FireboltSqlGenerator,
+    ): FireboltAirbyteClient {
+        return FireboltAirbyteClient(dataSource, sqlGenerator)
     }
 
     /** CDK dataflow aggregate publishing thresholds. */
