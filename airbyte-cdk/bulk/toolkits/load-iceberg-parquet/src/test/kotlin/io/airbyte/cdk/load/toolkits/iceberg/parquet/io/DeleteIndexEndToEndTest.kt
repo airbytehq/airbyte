@@ -224,7 +224,7 @@ class DeleteIndexEndToEndTest {
         /** Truncates the index blobs so reading them fails. */
         fun corruptIndex() {
             indexStatisticsFiles().forEach { file ->
-                Path.of(java.net.URI.create("file:${file.path()}").path).toFile().writeText("")
+                Path.of(file.path().removePrefix("file:")).toFile().writeText("")
             }
         }
 

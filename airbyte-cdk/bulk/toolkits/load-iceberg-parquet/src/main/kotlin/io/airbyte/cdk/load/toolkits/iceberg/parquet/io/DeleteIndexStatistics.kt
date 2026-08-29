@@ -60,7 +60,7 @@ object DeleteIndexStatistics {
     fun coveredDeletesDigest(deleteFiles: Iterable<ContentFile<*>>): String {
         val digest = MessageDigest.getInstance("SHA-256")
         deleteFiles
-            .map { "${it.location()}:${it.recordCount()}" }
+            .map { "${it.location()}:${it.recordCount()}\u0000" }
             .sorted()
             .forEach { digest.update(it.toByteArray(Charsets.UTF_8)) }
         return digest.digest().joinToString("") { "%02x".format(it) }
