@@ -3,13 +3,13 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 # S3 Data Lake Migration Guide
 
 <!--
-TK: the version headings below use 0.4.0 as a best guess. Update them, the `breakingChanges`
+TK: the version headings below use 0.3.54 as a best guess. Update them, the `unsafeDowngrades`
 entry in `metadata.yaml`, and the changelog once the real release version is settled.
 -->
 
-## Upgrading to 0.4.0
+## Upgrading to 0.3.54
 
-Version 0.4.0 writes the nested fields of the `_airbyte_meta` column — `sync_id`, `changes`, and the
+Version 0.3.54 writes the nested fields of the `_airbyte_meta` column — `sync_id`, `changes`, and the
 `field`, `change`, and `reason` members of each `changes` entry — as **optional** Iceberg fields
 instead of required ones.
 
@@ -26,15 +26,15 @@ those consumers without changing any data.
 All users of this destination. The change applies to the `_airbyte_meta` column of every stream; no
 other column's nullability changes, and no record values change.
 
-### Steps to upgrade
+### Upgrading
 
-None. Existing tables are migrated in place on the first sync after the upgrade: the connector
+No user action is required to upgrade. Existing tables are migrated in place on the first sync after the upgrade: the connector
 detects the required nested fields on the live table and relaxes them, with no table recreation, no
 data rewrite, and no full refresh. Newly created tables get optional nested fields from the start.
 
-### This upgrade cannot be rolled back
+### Downgrading
 
-Once a table has been migrated, connector versions earlier than this release **cannot write to it**.
+Downgrading past version 0.3.54 is unsafe. Once a table has been migrated, connector versions earlier than this release **cannot write to it**.
 Older versions still declare the nested `_airbyte_meta` fields as required, and Iceberg does not
 allow optional → required evolution, so the sync fails at schema evolution time with:
 
