@@ -24,6 +24,10 @@ import java.sql.ResultSet
 import java.sql.SQLException
 import java.util.concurrent.ConcurrentHashMap
 import javax.sql.DataSource
+import software.amazon.awssdk.core.sync.RequestBody
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest
+import software.amazon.awssdk.services.s3.model.PutObjectRequest
 
 private val log = KotlinLogging.logger {}
 
@@ -35,6 +39,7 @@ private const val COLUMN_NAME_COLUMN = "column_name"
 class FireboltAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: FireboltSqlGenerator,
+    private val s3Client: S3Client,
 ) : TableOperationsClient, TableSchemaEvolutionClient {
 
     private val describeTableCache = ConcurrentHashMap<TableName, List<String>>()
@@ -200,15 +205,32 @@ class FireboltAirbyteClient(
         )
     }
 
-    /** Upload raw bytes to S3. Not yet implemented. */
+    /** Upload raw bytes to S3. */
     fun uploadToS3(bucket: String, key: String, bytes: ByteArray) {
-        TODO("S3 upload implementation pending")
+        val request =
+            PutObjectRequest.builder()
+                .bucket(bucket)
+                .key(key)
+                .contentLength(bytes.size.toLong())
+                .contentType("application/gzip")
+                .build()
+        s3Client.putObject(request, RequestBody.fromBytes(bytes))
     }
 
-    /** Delete an S3 object. Not yet implemented. */
+    /** Delete an S3 object. */
     fun deleteFromS3(bucket: String, key: String) {
-        TODO("S3 delete implementation pending")
+        val request = DeleteObjectRequest.builder().bucket(bucket).key(key).build()
+        s3Client.deleteObject(request)
     }
+
+    /**
+     * Returns the column names of the given table in ordinal order (matching the physical column
+     * layout). Used by the S3 staging dataflow to build CSV headers.
+     */
+    fun describeTable(tableName: TableName): List<String> =
+        describeTableCache.getOrPut(tableName) {
+            getColumnsFromDbForDiscovery(tableName).keys.toList()
+        }
 
     // ================================================================
     // Internal helpers
