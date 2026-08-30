@@ -15272,8 +15272,8 @@ spec:
         description: >-
           Number of concurrent threads used to sync streams. Higher values can
           speed up syncs but consume more of the QuickBooks API quota, which
-          Intuit caps at 10 concurrent requests per second and 500 requests per
-          minute for a single realm.
+          Intuit caps at 500 requests per minute and 10 concurrent requests for
+          a single realm.
     additionalProperties: true
 metadata:
   autoImportSchema:

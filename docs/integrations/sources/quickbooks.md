@@ -103,7 +103,7 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 
 ## Performance considerations
 
-Intuit throttles the QuickBooks Online API at 500 requests per minute and 10 concurrent requests per second for a single realm (company). That quota is shared with everything else touching the realm, including the QuickBooks UI and other applications.
+Intuit throttles the QuickBooks Online API for a single realm (company) at 500 requests per minute, and allows at most 10 concurrent requests. That quota is shared with everything else touching the realm, including the QuickBooks UI and other applications.
 
 The connector paces itself below those ceilings: it caps outgoing requests at 8 per second and 300 per minute, and syncs streams with 4 concurrent threads by default. You can change the thread count with the optional **Number of Concurrent Threads** (`num_workers`) setting, up to a maximum of 10. Raising it speeds up syncs but consumes more of the realm's quota; lower it if other applications hit rate limits while a sync is running.
 

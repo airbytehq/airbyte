@@ -14,7 +14,7 @@ Intuit's [published limits](https://help.developer.intuit.com/s/article/API-call
 | Limit | Scope | Applies here |
 | --- | --- | --- |
 | 500 requests / minute | realm ID | Yes |
-| 10 concurrent requests / second | realm ID + app | Yes |
+| 10 concurrent requests | realm ID + app | Yes |
 | 40 batch requests / minute | realm ID | No — this connector issues no batch requests |
 
 The configured rates are `8` per `PT1S` and `300` per `PT1M`, with `max_concurrency: 10` and a
@@ -33,8 +33,9 @@ Why below the published ceilings:
 Why two rates instead of one 300/min rate: `MovingWindowCallRatePolicy` enforces a *moving*
 window, so a single coarse rate permits the whole minute's quota to be spent in a burst and
 then blocks for the rest of the window. Layering a per-second rate under the per-minute rate
-keeps the request stream smooth, and the per-second rate also keeps in-flight requests under
-Intuit's 10-concurrent-per-second ceiling regardless of how `num_workers` is set.
+keeps the request stream smooth, and the per-second rate also bounds how many requests can be
+in flight at once, staying under Intuit's 10-concurrent-request ceiling regardless of how
+`num_workers` is set.
 
 `ratelimit_reset_header` is deliberately left unset. `HttpAPIBudget.get_reset_ts_from_response`
 passes the header value straight to `datetime.fromtimestamp()`, which is only correct for epoch
