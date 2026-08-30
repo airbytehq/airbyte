@@ -332,6 +332,8 @@ The `merge_on_read_delete_encoding` option controls the delete encoding for Dedu
 
 Two experimental options tune how positional deletes are written. `suppress_deleted_positions` (default enabled) reads prior positional delete files so each position is deleted at most once; disabling it writes a delete for every physical copy of a row, which skips those reads but grows the delete-file population. `index_positional_deletes` (default disabled) publishes a deletion-vector index as Iceberg statistics so later flushes can skip reading prior delete files. Delete files remain the source of truth in every combination, and readers see identical table contents.
 
+The experimental `max_records_per_flush` option caps how many records accumulate before a batch is written. Batches also flush on `flush_batch_size_mb` and on a staleness deadline, so whichever limit is reached first wins. Larger batches write fewer, larger files and reduce the repeated data-file reads positional deletes perform, at the cost of holding more records in memory.
+
 ### Number-type primary keys
 
 When a primary key field has the Airbyte `Number` type, the connector stores it as an Iceberg `StringType` instead of `DoubleType`. This preserves deduplication correctness (Iceberg identifier fields don't support `DoubleType`), but means that ordering and comparison on these columns is lexicographic, not numeric (e.g., `"9" > "10"`). Downstream queries that assume numeric comparison on these fields may need adjustment.

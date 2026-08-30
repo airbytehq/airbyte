@@ -248,6 +248,14 @@
         "default" : false,
         "order" : 11,
         "airbyte_hidden" : true
+      },
+      "max_records_per_flush" : {
+        "type" : "integer",
+        "description" : "Experimental. The maximum number of records accumulated before a batch is written to Iceberg. Flushes also trigger on the batch size in megabytes and on a staleness deadline, so the first limit reached wins. Larger values write fewer, larger files and reduce repeated work for Dedupe streams using positional deletes, at the cost of holding more records in memory.",
+        "title" : "Max Records Per Flush",
+        "default" : 10000000000,
+        "order" : 12,
+        "airbyte_hidden" : true
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]

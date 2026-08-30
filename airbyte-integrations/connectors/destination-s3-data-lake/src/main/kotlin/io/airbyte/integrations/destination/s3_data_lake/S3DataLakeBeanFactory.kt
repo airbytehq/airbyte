@@ -26,11 +26,13 @@ class S3DataLakeBeanFactory {
     @Singleton
     fun aggregatePublishingConfig(config: S3DataLakeConfiguration): AggregatePublishingConfig {
         val batchSize = config.resolvedFlushBatchSizeBytes
+        val maxRecords = config.resolvedMaxRecordsPerFlush
         log.info {
-            "Configured flush batch size: $batchSize bytes (${batchSize / 1024 / 1024} MiB)"
+            "Configured flush batch size: $batchSize bytes (${batchSize / 1024 / 1024} MiB), " +
+                "max records per flush: $maxRecords"
         }
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 10_000_000_000L,
+            maxRecordsPerAgg = maxRecords,
             maxEstBytesPerAgg = batchSize,
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,

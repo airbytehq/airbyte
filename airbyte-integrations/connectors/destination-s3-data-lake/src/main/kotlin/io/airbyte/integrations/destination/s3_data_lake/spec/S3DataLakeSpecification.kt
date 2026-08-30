@@ -119,6 +119,18 @@ class S3DataLakeSpecification :
     @get:JsonProperty("index_positional_deletes", required = false)
     @get:JsonSchemaInject(json = """{"default":false,"order":11,"airbyte_hidden":true}""")
     val indexPositionalDeletes: Boolean? = null
+
+    @get:JsonSchemaTitle("Max Records Per Flush")
+    @get:JsonPropertyDescription(
+        "Experimental. The maximum number of records accumulated before a batch is written to " +
+            "Iceberg. Flushes also trigger on the batch size in megabytes and on a staleness " +
+            "deadline, so the first limit reached wins. Larger values write fewer, larger files " +
+            "and reduce repeated work for Dedupe streams using positional deletes, at the cost of " +
+            "holding more records in memory."
+    )
+    @get:JsonProperty("max_records_per_flush", required = false)
+    @get:JsonSchemaInject(json = """{"default":10000000000,"order":12,"airbyte_hidden":true}""")
+    val maxRecordsPerFlush: Long? = null
 }
 
 enum class MergeOnReadDeleteEncoding(@get:JsonValue val value: String) {
