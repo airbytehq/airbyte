@@ -15,6 +15,8 @@ This page contains the setup guide and reference information for the [Amazon Ads
 - Start Date (Optional)
 - Profile IDs (Optional)
 - Marketplace IDs (Optional)
+- Look Back Window (Optional)
+- Number of concurrent threads (Optional)
 
 ## Setup guide
 
@@ -46,7 +48,8 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 9. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 10. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 11. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
-12. Click **Set up source**.
+12. **Number of concurrent threads (Optional)** controls how many report requests the connector runs in parallel. Defaults to 14, with a minimum of 2 and a maximum of 20. See [Rate limits](#rate-limits) before you change it.
+13. Click **Set up source**.
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -63,7 +66,8 @@ To use the [Amazon Ads API](https://advertising.amazon.com/API/docs/en-us), you 
 8. **Profile IDs (Optional)** you want to fetch data for. The Amazon Ads source connector supports only profiles with seller and vendor type, profiles with agency type will be ignored. See [docs](https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles) for more details.
 9. **Marketplace IDs (Optional)** you want to fetch data for. _Note: If Profile IDs are also selected, profiles will be selected if they match the Profile ID **OR** the Marketplace ID._
 10. **Look Back Window (Optional)** is the number of days the connector re-syncs on each run to capture late-arriving data. Defaults to 3. Increase this value if your reports frequently receive delayed updates.
-11. Click **Set up source**.
+11. **Number of concurrent threads (Optional)** controls how many report requests the connector runs in parallel. Defaults to 14, with a minimum of 2 and a maximum of 20. See [Rate limits](#rate-limits) before you change it.
+12. Click **Set up source**.
 <!-- /env:oss -->
 
 :::note
@@ -190,9 +194,11 @@ The Amazon Ads API uses dynamic rate limiting that varies by region and system l
 
 **Adjusting Concurrency Settings:**
 
-If you experience rate limiting errors (429 status codes) during syncs, decrease the "Number of concurrent threads" setting in your connector configuration to reduce the load on the API.
+The **Number of concurrent threads** setting defaults to 14 and accepts values from 2 to 20.
 
-If you need better sync performance and are not experiencing rate limiting errors, you can increase the "Number of concurrent threads" setting (up to a maximum of 20) to improve throughput.
+If you experience rate limiting errors (429 status codes) during syncs, decrease this setting to reduce the load on the API.
+
+If you need better sync performance and are not experiencing rate limiting errors, increase it to improve throughput.
 
 ### Data type map
 
@@ -216,7 +222,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 9.1.1 | 2026-08-24 | [84981](https://github.com/airbytehq/airbyte/pull/84981) | Bump base image to source-declarative-manifest 7.28.2 |
+| 9.1.1 | 2026-08-26 | [84981](https://github.com/airbytehq/airbyte/pull/84981) | Bump base image to source-declarative-manifest 7.28.2 |
 | 9.1.0 | 2026-08-20 | [83744](https://github.com/airbytehq/airbyte/pull/83744) | Add `sponsored_brands_ads` (`POST /sb/v4/ads/list`), `sponsored_brands_ads_report_stream`, and `sponsored_brands_ads_report_stream_daily`; request the full documented column set for the `sbCampaigns`, `sbAdGroup`, and `sbAds` report types, which restores the removed V2 `sponsored_brands_video_report_stream` video metrics in full on `sbCampaigns`, all but `viewClickThroughRate` (V2 `vctr`) on `sbAds`, and all but `viewClickThroughRate` and `viewableImpressions` on `sbAdGroup` — Amazon's report-type pages do not list those columns for those report types, and the V2 keyword grain has no V3 equivalent (see [Identifying Sponsored Brands Video campaigns](#identifying-sponsored-brands-video-campaigns)); add `goal`, `isMultiAdGroupsEnabled`, `kpi`, `siteRestrictions`, and `targetedPGDealId` to the `sponsored_brands_campaigns` schema; retry throttling and server errors on the entity streams instead of treating them as an empty page. All changes are additive — refresh the source schema in each connection to pick up the new fields. |
 | 9.0.7 | 2026-08-11 | [83379](https://github.com/airbytehq/airbyte/pull/83379) | Update dependencies |
 | 9.0.6 | 2026-07-28 | [82817](https://github.com/airbytehq/airbyte/pull/82817) | Update dependencies |
@@ -233,7 +239,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 8.1.0 | 2026-06-02 | [78487](https://github.com/airbytehq/airbyte/pull/78487) | Added Sponsored Brands campaign and ad group report streams with spend and performance metrics. |
 | 8.0.4 | 2026-06-02 | [78596](https://github.com/airbytehq/airbyte/pull/78596) | Update dependencies |
 | 8.0.3 | 2026-05-18 | [78162](https://github.com/airbytehq/airbyte/pull/78162) | Promoted release candidate to GA |
-| 8.0.3-rc.2 | 2026-05-12 | [78055](https://github.com/airbytehq/airbyte/pull/78055) | Concurrency tuning iteration 2: bump default `num_workers` from 12 to 14 for progressive rollout |
+| 8.0.3-rc.2 | 2026-05-13 | [78055](https://github.com/airbytehq/airbyte/pull/78055) | Concurrency tuning iteration 2: bump default `num_workers` from 12 to 14 for progressive rollout |
 | 8.0.3-rc.1 | 2026-05-11 | [78010](https://github.com/airbytehq/airbyte/pull/78010) | Concurrency tuning iteration 1: bump default `num_workers` from 10 to 12 for progressive rollout |
 | 8.0.2 | 2026-05-05 | [77660](https://github.com/airbytehq/airbyte/pull/77660) | Skip profiles without Amazon Attribution access on attribution report performance streams instead of failing the sync |
 | 8.0.1 | 2026-04-28 | [77149](https://github.com/airbytehq/airbyte/pull/77149) | Update dependencies |

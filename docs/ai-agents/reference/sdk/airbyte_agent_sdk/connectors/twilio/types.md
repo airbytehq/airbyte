@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsAnyCondition"></a>
@@ -89,10 +89,24 @@ Classes
     `uri: Any`
     :   The URI for accessing the account resource
 
+<a id="AccountsArrayContainsCondition"></a>
+
+`AccountsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.AccountsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AccountsContainsCondition"></a>
 
 `AccountsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -333,7 +347,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AccountsOrCondition"></a>
@@ -355,7 +369,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsSearchFilter"></a>
@@ -404,7 +418,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.AccountsEqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsGteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLtCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsLteCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsInCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsNotCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAndCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsOrCondition | airbyte_agent_sdk.connectors.twilio.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.AccountsSortFilter]`
@@ -513,7 +527,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AddressesAnyCondition"></a>
@@ -582,10 +596,24 @@ Classes
     `verified: Any`
     :   Whether the address has been verified
 
+<a id="AddressesArrayContainsCondition"></a>
+
+`AddressesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.AddressesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AddressesContainsCondition"></a>
 
 `AddressesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -841,7 +869,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition`
     :   The type of the None singleton.
 
 <a id="AddressesOrCondition"></a>
@@ -863,7 +891,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AddressesSearchFilter"></a>
@@ -921,7 +949,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.AddressesEqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesGteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLtCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesLteCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesInCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesNotCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAndCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesOrCondition | airbyte_agent_sdk.connectors.twilio.types.AddressesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.AddressesSortFilter]`
@@ -1071,7 +1099,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsAnyCondition"></a>
@@ -1146,10 +1174,24 @@ Classes
     `to: Any`
     :   The phone number that received the call
 
+<a id="CallsArrayContainsCondition"></a>
+
+`CallsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.CallsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CallsContainsCondition"></a>
 
 `CallsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1425,7 +1467,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CallsOrCondition"></a>
@@ -1447,7 +1489,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CallsSearchFilter"></a>
@@ -1511,7 +1553,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.CallsEqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsGteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLtCondition | airbyte_agent_sdk.connectors.twilio.types.CallsLteCondition | airbyte_agent_sdk.connectors.twilio.types.CallsInCondition | airbyte_agent_sdk.connectors.twilio.types.CallsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.CallsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.CallsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.CallsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.CallsNotCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAndCondition | airbyte_agent_sdk.connectors.twilio.types.CallsOrCondition | airbyte_agent_sdk.connectors.twilio.types.CallsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.CallsSortFilter]`
@@ -1650,7 +1692,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConferencesAnyCondition"></a>
@@ -1707,10 +1749,24 @@ Classes
     `status: Any`
     :   The current status of the conference
 
+<a id="ConferencesArrayContainsCondition"></a>
+
+`ConferencesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ConferencesContainsCondition"></a>
 
 `ConferencesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1954,7 +2010,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ConferencesOrCondition"></a>
@@ -1976,7 +2032,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ConferencesSearchFilter"></a>
@@ -2022,7 +2078,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.ConferencesEqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesGteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLtCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesLteCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesInCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesNotCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAndCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesOrCondition | airbyte_agent_sdk.connectors.twilio.types.ConferencesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.ConferencesSortFilter]`
@@ -2125,7 +2181,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncomingPhoneNumbersAnyCondition"></a>
@@ -2185,10 +2241,24 @@ Classes
     `status: Any`
     :   Status of the phone number
 
+<a id="IncomingPhoneNumbersArrayContainsCondition"></a>
+
+`IncomingPhoneNumbersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IncomingPhoneNumbersContainsCondition"></a>
 
 `IncomingPhoneNumbersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2449,7 +2519,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition`
     :   The type of the None singleton.
 
 <a id="IncomingPhoneNumbersOrCondition"></a>
@@ -2471,7 +2541,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IncomingPhoneNumbersSearchFilter"></a>
@@ -2520,7 +2590,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNeqCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersGteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLtCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersLteCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersInCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersNotCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAndCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersOrCondition | airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.IncomingPhoneNumbersSortFilter]`
@@ -2629,7 +2699,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MessagesAnyCondition"></a>
@@ -2710,10 +2780,24 @@ Classes
     `to: Any`
     :   The phone number or recipient ID the message was sent to
 
+<a id="MessagesArrayContainsCondition"></a>
+
+`MessagesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.MessagesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="MessagesContainsCondition"></a>
 
 `MessagesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2995,7 +3079,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="MessagesOrCondition"></a>
@@ -3017,7 +3101,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MessagesSearchFilter"></a>
@@ -3087,7 +3171,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.MessagesEqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesGteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLtCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesLteCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesInCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesNotCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAndCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesOrCondition | airbyte_agent_sdk.connectors.twilio.types.MessagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.MessagesSortFilter]`
@@ -3238,7 +3322,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OutgoingCallerIdsAnyCondition"></a>
@@ -3292,10 +3376,24 @@ Classes
     `sid: Any`
     :   The unique identifier
 
+<a id="OutgoingCallerIdsArrayContainsCondition"></a>
+
+`OutgoingCallerIdsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OutgoingCallerIdsContainsCondition"></a>
 
 `OutgoingCallerIdsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3536,7 +3634,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition`
     :   The type of the None singleton.
 
 <a id="OutgoingCallerIdsOrCondition"></a>
@@ -3558,7 +3656,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OutgoingCallerIdsSearchFilter"></a>
@@ -3601,7 +3699,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsGteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLtCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsLteCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsInCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsNotCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAndCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsOrCondition | airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.OutgoingCallerIdsSortFilter]`
@@ -3698,7 +3796,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="QueuesAnyCondition"></a>
@@ -3758,10 +3856,24 @@ Classes
     `sid: Any`
     :   The unique identifier for the queue
 
+<a id="QueuesArrayContainsCondition"></a>
+
+`QueuesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.QueuesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="QueuesContainsCondition"></a>
 
 `QueuesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4008,7 +4120,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition`
     :   The type of the None singleton.
 
 <a id="QueuesOrCondition"></a>
@@ -4030,7 +4142,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="QueuesSearchFilter"></a>
@@ -4079,7 +4191,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.QueuesEqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNeqCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesGteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLtCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesLteCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesInCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesNotCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAndCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesOrCondition | airbyte_agent_sdk.connectors.twilio.types.QueuesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.QueuesSortFilter]`
@@ -4188,7 +4300,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RecordingsAnyCondition"></a>
@@ -4254,10 +4366,24 @@ Classes
     `status: Any`
     :   The status of the recording
 
+<a id="RecordingsArrayContainsCondition"></a>
+
+`RecordingsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="RecordingsContainsCondition"></a>
 
 `RecordingsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4510,7 +4636,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition`
     :   The type of the None singleton.
 
 <a id="RecordingsOrCondition"></a>
@@ -4532,7 +4658,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RecordingsSearchFilter"></a>
@@ -4587,7 +4713,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.RecordingsEqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsGteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLtCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsLteCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsInCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsNotCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAndCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsOrCondition | airbyte_agent_sdk.connectors.twilio.types.RecordingsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.RecordingsSortFilter]`
@@ -4708,7 +4834,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TranscriptionsAnyCondition"></a>
@@ -4771,10 +4897,24 @@ Classes
     `status: Any`
     :   The status of the transcription
 
+<a id="TranscriptionsArrayContainsCondition"></a>
+
+`TranscriptionsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TranscriptionsContainsCondition"></a>
 
 `TranscriptionsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5024,7 +5164,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TranscriptionsOrCondition"></a>
@@ -5046,7 +5186,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TranscriptionsSearchFilter"></a>
@@ -5098,7 +5238,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsGteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLtCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsLteCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsInCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsNotCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAndCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsOrCondition | airbyte_agent_sdk.connectors.twilio.types.TranscriptionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.TranscriptionsSortFilter]`
@@ -5213,7 +5353,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsageRecordsAnyCondition"></a>
@@ -5282,10 +5422,24 @@ Classes
     `usage_unit: Any`
     :   The unit of measurement for usage
 
+<a id="UsageRecordsArrayContainsCondition"></a>
+
+`UsageRecordsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsageRecordsContainsCondition"></a>
 
 `UsageRecordsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5524,7 +5678,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsageRecordsOrCondition"></a>
@@ -5546,7 +5700,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsageRecordsSearchFilter"></a>
@@ -5604,7 +5758,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNeqCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsGteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLtCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsLteCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsInCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsStartswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsEndswithCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsFuzzyCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsKeywordCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsArrayContainsCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsNotCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAndCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsOrCondition | airbyte_agent_sdk.connectors.twilio.types.UsageRecordsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.twilio.types.UsageRecordsSortFilter]`

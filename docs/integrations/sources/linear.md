@@ -15,29 +15,30 @@ This page contains the setup guide and reference information for the [Linear](ht
   - **OAuth 2.0 (Airbyte Cloud)**: A Linear workspace administrator account with permission to authorize the required workspace data. Airbyte supplies the OAuth application.
   - **OAuth 2.0 (Self-managed)**: A Linear OAuth application and its client ID and client secret. You also need a Linear workspace administrator account with permission to authorize the required workspace data, because the connector installs the app at the workspace level.
   - **API Key**: A Linear personal API key.
+- To sync the `customers`, `customer_needs`, `customer_statuses`, and `customer_tiers` streams: Linear's Customer Requests feature enabled in your workspace. OAuth connections also need the `customer:read` scope; API keys don't use scopes. See [Customer Requests streams](#customer-requests-streams).
 
 ## Setup guide
 
-### Step 1: Choose an authentication method
+## Set up Linear
 
 The Linear source connector supports OAuth 2.0 and API key authentication. Starting with connector version `0.2.19`, the setup form selects OAuth 2.0 by default.
 
-#### OAuth 2.0
+### OAuth 2.0
 
 1. If you use Airbyte Cloud, Airbyte supplies the OAuth application. If you use a self-managed deployment, create a [Linear OAuth application](https://linear.app/settings/api/applications/new).
 2. For a self-managed deployment, add the redirect callback URL shown during the Airbyte OAuth setup to the application's redirect URLs. Linear rejects authorization requests whose `redirect_uri` isn't registered on the app. Copy the application's client ID and client secret.
 3. In Airbyte, choose **OAuth 2.0**. For self-managed deployments, enter the client ID and client secret from your Linear application, then complete the authorization flow.
 4. Linear access tokens last 24 hours, and the connector refreshes them automatically. Each refresh returns a new refresh token, and the connector stores it in the source configuration. Linear rotates the refresh token on every exchange, so the previous token stops working apart from a short replay window that lets the connector retry an interrupted refresh.
 
-The connector requests the `read` and `customer:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
+The connector requests the `read`, `customer:read`, and `initiative:read` scopes and authorizes with Linear's [actor authorization](https://linear.app/developers/oauth-actor-authorization) (`actor=app`), so the authorization installs the app in the workspace instead of acting as the individual who approved it. Linear treats `customer:read` as an app-only scope and requires admin permissions to install an app, so a workspace admin has to complete the authorization.
 
 If your Airbyte deployment doesn't provide a browser-based OAuth flow, complete Linear's [authorization code flow](https://linear.app/developers/oauth-2-0-authentication) yourself and use the resulting refresh token:
 
-1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&state=<STATE>&scope=read,customer:read&actor=app&prompt=consent` in a browser and approve the app. Generate a random `state` value and verify it on the callback to protect against CSRF. The `prompt=consent` parameter forces Linear to show the consent screen. Linear redirects to your redirect URI with a `code` parameter.
+1. Open `https://linear.app/oauth/authorize?client_id=<CLIENT_ID>&redirect_uri=<REDIRECT_URI>&response_type=code&state=<STATE>&scope=read,customer:read,initiative:read&actor=app&prompt=consent` in a browser and approve the app. Generate a random `state` value and verify it on the callback to protect against CSRF. The `prompt=consent` parameter forces Linear to show the consent screen. Linear redirects to your redirect URI with a `code` parameter.
 2. Exchange the code for tokens by sending a form-encoded `POST` request to `https://api.linear.app/oauth/token` with `code`, `redirect_uri`, `client_id`, `client_secret`, and `grant_type=authorization_code`.
 3. Copy the `refresh_token` from the response into the connector configuration. The connector uses it to mint access tokens, which Linear expires after 24 hours. The first refresh replaces this token, so don't reuse the same value in another source or keep a copy to paste in later.
 
-#### API key
+### API key
 
 1. Log in to your [Linear](https://linear.app/) account.
 2. Navigate to **Settings** by clicking your workspace name in the sidebar.
@@ -50,7 +51,7 @@ The API key inherits your user's permissions in the workspace. The connector can
 
 For more information, see the [Linear GraphQL API documentation](https://linear.app/developers/graphql).
 
-### Step 2: Configure the Linear connector in Airbyte
+## Set up the Linear connector in Airbyte
 
 1. In the Airbyte UI, navigate to **Sources** and click **+ New source**.
 2. Select **Linear** from the list of available sources.
@@ -67,18 +68,18 @@ Existing connections that authenticated with a Linear API key continue to use AP
 
 The Linear source connector supports the following sync modes:
 
-- [Full Refresh - Overwrite](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---overwrite)
-- [Full Refresh - Append](https://docs.airbyte.com/cloud/core-concepts/#full-refresh---append)
-- [Incremental - Append](https://docs.airbyte.com/cloud/core-concepts/#incremental-append)
-- [Incremental - Append + Deduped](https://docs.airbyte.com/cloud/core-concepts/#incremental-append--deduped)
+- [Full Refresh - Overwrite](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-overwrite)
+- [Full Refresh - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append)
+- [Incremental - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped)
 
 Streams that support incremental sync use the `updatedAt` field as the cursor. The Start Date you set when configuring the connector is the lower bound for the first incremental sync. Subsequent syncs use the most recent `updatedAt` value from the previous sync as the new lower bound.
 
 That lower bound is inclusive, so a record whose `updatedAt` matches the stored cursor exactly is read again on the next sync. Overlap is also wider after a failed sync. Each stream gets its own cursor, and the connector advances a stream's cursor only once that stream finishes, so a stream interrupted by a failure re-reads everything updated since its own last successful run. Streams that finished before the failure keep their new cursor and aren't affected. In **Incremental - Append + Deduped** mode the destination collapses these repeats. In **Incremental - Append** mode they land as extra rows, so deduplicate on the primary key downstream if that matters to you.
 
-The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, and `customer_tiers`.
+The following streams are full-refresh only because the Linear GraphQL API doesn't expose a filter argument that the connector can use to request only updated records: `project_statuses`, `issue_relations`, `customer_statuses`, `customer_tiers`, and `initiative_to_projects`. `issue_history` is full-refresh only for a different reason: Linear exposes an issue's history only through that issue, so the connector reads it issue by issue. See [Issue history](#issue-history).
 
-## Supported streams
+## Supported Streams
 
 The Linear source connector supports the following streams. Streams marked as incremental use `updatedAt` as the cursor field.
 
@@ -91,11 +92,15 @@ The Linear source connector supports the following streams. Streams marked as in
 | `customer_statuses` | No | Status definitions for customer records. |
 | `customer_tiers` | No | Tier definitions for customer records. |
 | `cycles` | Yes | Cycles (sprints) for each team. |
+| `initiatives` | Yes | Strategic initiatives tracked across projects. |
+| `initiative_to_projects` | No | Relationships between initiatives and projects. |
+| `issue_history` | No | Changes made to issues over time. |
 | `issue_labels` | Yes | Labels that can be applied to issues. |
 | `issue_relations` | No | Relationships between issues (for example, blocks and duplicates). |
 | `issues` | Yes | Issues in every team. |
 | `project_milestones` | Yes | Milestones defined inside projects. |
 | `project_statuses` | No | Status definitions for projects. |
+| `project_updates` | Yes | Updates posted for projects. |
 | `projects` | Yes | Projects across all teams. |
 | `teams` | Yes | Teams in your Linear workspace. |
 | `users` | Yes | Users in your Linear workspace. |
@@ -113,16 +118,41 @@ Before `0.2.23`, if Linear refused a Customer Requests query, the connector repo
 
 See Linear's [Customer Requests documentation](https://linear.app/docs/customer-requests) for details.
 
+### Initiative streams
+
+The `initiatives` and `initiative_to_projects` streams need Linear's `initiative:read` scope. Connector version `0.4.0` requests it, but Linear grants scopes when you authorize, so OAuth sources created before `0.4.0` hold tokens without it. If either stream fails with `Invalid scope: initiative:read ... required for app user to read initiative data`, a workspace admin must re-authenticate the source in Sources > your source > Settings. API key sources are unaffected.
+
+### Issue history
+
+`issue_history` is the only stream the connector reads through a parent stream. On every sync it pages through all your issues, then sends a separate query for each issue to collect that issue's history entries, 50 entries per page. Two consequences:
+
+- Request volume and sync time scale with your issue count, not with how much changed since the last sync, and the queries count against the same hourly request and complexity budgets as every other stream. On a workspace with many issues, selecting this stream can slow every other stream in the connection. See [Rate limiting](#rate-limiting).
+- The stream has no cursor, so each sync returns the complete history again. Sync it in **Full Refresh - Overwrite** mode unless you have a reason to keep the repeats. In **Full Refresh - Append** mode, every sync appends another full copy.
+
+The connector reads the parent issues itself, so you don't need to select the `issues` stream to sync `issue_history`. Each history record carries an `issueId` field that the connector adds from the parent issue; Linear's own response doesn't include it. The primary key is `issueId` and `id` together.
+
 ### Archived records
 
-Linear hides archived records from API responses by default rather than deleting them, and it archives some records for you: completed issues, cycles, and projects are auto-archived over time. Deletion is a separate action, described below in [Limitations and troubleshooting](#limitations-and-troubleshooting). Starting with connector version `0.3.0`, every stream asks Linear for archived records, so they sync alongside active ones. Each record's `archivedAt` field holds the time Linear archived it, and is `null` while the record is active.
+Linear hides archived records from API responses by default rather than deleting them, and it archives some records for you: completed issues, cycles, and projects are auto-archived over time. Deletion is a separate action, described below in [Limitations & Troubleshooting](#limitations--troubleshooting). Starting with connector version `0.3.0`, every stream asks Linear for archived records, so they sync alongside active ones. Each record's `archivedAt` field holds the time Linear archived it, and is `null` while the record is active.
 
 Before `0.3.0` the connector didn't request archived records, so Linear left them out of every response and `archivedAt` was always `null`. Upgrading changes what your syncs return:
 
 - Streams you sync in full refresh mode return all archived records on the next sync. In an established workspace this can be a large one-time increase in volume.
 - Streams you sync incrementally return an archived record only when its `updatedAt` value is later than the stream's cursor. Records Linear archives from now on qualify; records archived before the upgrade usually don't, because their `updatedAt` predates the cursor. To pick those up, [refresh the stream](https://docs.airbyte.com/platform/operator-guides/refreshes).
 
-## Limitations and troubleshooting
+### Date and timestamp columns
+
+Starting with connector version `1.0.0`, the connector declares `date` and `date-time` formats on Linear's temporal fields, so destinations create date and timestamp columns for them instead of strings. `issues.dueDate`, `projects.startDate`, `projects.targetDate`, `project_milestones.targetDate`, `initiatives.targetDate`, `issue_history.fromDueDate`, and `issue_history.toDueDate` become date columns, because Linear stores them as calendar dates with no time. Every other temporal field, including `createdAt`, `updatedAt`, and `archivedAt`, becomes a timestamp column.
+
+This changes existing column types in your destination. Refresh the source schema and clear the affected streams after upgrading, and update downstream models that cast these columns from strings. See the [Linear migration guide](/integrations/sources/linear-migrations#upgrading-to-100).
+
+### Fields Linear deprecated
+
+Version `1.0.0` stops requesting fields Linear has deprecated: `users.inviteHash`, `users.calendarHash`, `teams.inviteHash`, `teams.private`, `teams.markedAsDuplicateWorkflowState` (and the derived `teams.markedAsDuplicateWorkflowStateId`), and `customer_statuses.type`. Those columns stop receiving values after you upgrade.
+
+The `teams` stream carries `visibility` in place of `private`. It's a string rather than a boolean, with three values: `public` for teams every workspace member can see, `private` for teams only their own members can see, and `restricted` for a non-private team inside a private team's boundary. A `restricted` team isn't private, so write downstream logic as `visibility = 'private'` rather than treating anything that isn't `public` as private.
+
+## Limitations & Troubleshooting
 
 ### Rate limiting
 
@@ -150,7 +180,7 @@ The connector retrieves only the data its credentials can see. With API key auth
 
 ### Deleted records aren't removed from your destination
 
-When you delete an issue or project in Linear, it moves to the team's **Recently deleted** tab for 30 days before Linear removes it permanently. The `issues` and `projects` streams carry a `trashed` field for this state, so you can filter these records out downstream. No other stream exposes `trashed`.
+When you delete an issue or project in Linear, it moves to the team's **Recently deleted** tab for 30 days before Linear removes it permanently. The `issues`, `projects`, `initiatives`, and `issue_history` streams carry a `trashed` field for this state, so you can filter these records out downstream. No other stream exposes `trashed`.
 
 Once Linear removes a record permanently, nothing in the API reports it, and Airbyte doesn't delete rows it has already written, so the row stays in your destination. If you need to find rows that no longer exist in Linear, compare a full refresh of the stream against your destination table.
 
@@ -168,11 +198,7 @@ Responses that contain both errors and usable records still sync. If Linear retu
 
 Request timeouts and Linear's 5xx responses are retried, so they only fail a sync if they persist. A rejected credential, denied access, or an invalid query fails immediately no matter which status code accompanies it.
 
-## IP allow list
-
-If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
-
-## Reference
+### Programmatic configuration
 
 This connector uses the [Linear GraphQL API](https://linear.app/developers/graphql). All API requests use the `https://api.linear.app/graphql` endpoint.
 
@@ -188,6 +214,10 @@ For programmatic configuration, use these parameter names:
 | `start_date` | No | UTC date and time in ISO 8601 format. Records updated before this date aren't replicated for streams that support incremental sync. If unset, defaults to two years before the first sync. |
 | `num_workers` | No | Number of worker threads used to read streams in parallel (default 4, range 1–10). Higher values speed up syncs but increase the risk of hitting rate limits. |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -195,6 +225,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | ------- | ---- | ------------ | ------- |
+| 1.0.0 | 2026-08-28 | [85095](https://github.com/airbytehq/airbyte/pull/85095) | Breaking: declare `date` and `date-time` formats on every temporal field, and drop the fields Linear deprecated in the `users`, `teams`, and `customer_statuses` queries (`teams.visibility` replaces `teams.private`). See the [migration guide](/integrations/sources/linear-migrations#upgrading-to-100). |
+| 0.4.0 | 2026-08-27 | [85056](https://github.com/airbytehq/airbyte/pull/85056) | Add initiatives, initiative-to-project relationships, project updates, and issue history streams |
 | 0.3.1 | 2026-08-26 | [85053](https://github.com/airbytehq/airbyte/pull/85053) | Add regression tests covering incremental cursor boundary behavior |
 | 0.3.0 | 2026-08-26 | [84950](https://github.com/airbytehq/airbyte/pull/84950) | Sync archived records in every stream and declare `archivedAt` (plus `trashed` on `issues` and `projects`) in the stream schemas |
 | 0.2.23 | 2026-08-25 | [84949](https://github.com/airbytehq/airbyte/pull/84949) | Classify Linear GraphQL errors: surface actionable config errors for invalid credentials, fail fast on invalid queries, and fail any response carrying a GraphQL `errors` array instead of reporting it as a successful empty stream |

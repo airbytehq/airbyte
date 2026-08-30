@@ -276,6 +276,10 @@ Responsibility for the connected-app setting depends on how you authenticate:
 - The pre-save **Test connection** button rotates the token but cannot persist the new one (the connection does not exist yet), so the just-entered token is invalidated. Complete the connection setup promptly after testing, and re-authenticate if a subsequent sync reports an authentication error.
 - Running a manual **check** concurrently with a sync on the same source can race two rotations and invalidate one. Avoid triggering a connection test while a sync is in progress.
 
+### OAuth authorization when PKCE is required
+
+Salesforce lets admins require the [Proof Key for Code Exchange (PKCE)](https://help.salesforce.com/s/articleView?id=xcloud.shr_security_require_proof_key_for_code_exchange_pkce.htm&type=5) extension for OAuth authorization flows, either org-wide or on the connected app. Before connector version 2.9.1, authorizing the connector in an org that requires PKCE failed because the authorization request sent no `code_challenge`. Starting in version 2.9.1, the connector sends a `code_challenge` (using the S256 method) in the authorization request and the matching `code_verifier` in the token exchange, so authorization works whether or not your org requires PKCE. No configuration changes are needed.
+
 ### Missing Records (Salesforce API Eventual Consistency)
 
 Salesforce does not guarantee that recently created or updated records are immediately available through its API. A record may have its `SystemModStamp` set, but the underlying transaction may not yet be committed. During an incremental sync, the connector can advance its cursor past such records, causing them to be permanently missed in subsequent syncs.
@@ -318,20 +322,21 @@ When extracting data through the Bulk API, the connector downloads results as CS
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.9.1 | 2026-08-27 | [85057](https://github.com/airbytehq/airbyte/pull/85057) | Send PKCE `code_challenge`/`code_challenge_method=S256` on the consent URL and `code_verifier` on the token exchange, so OAuth works in orgs that require PKCE |
 | 2.9.0 | 2026-08-25 | [82722](https://github.com/airbytehq/airbyte/pull/82722) | Add an optional end date for bounded incremental syncs |
 | 2.8.1 | 2026-08-05 | [82784](https://github.com/airbytehq/airbyte/pull/82784) | Fail fast when the refresh token is rejected instead of retrying the token endpoint from every stream |
-| 2.8.0 | 2026-07-17 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
+| 2.8.0 | 2026-07-23 | [80892](https://github.com/airbytehq/airbyte/pull/80892) | Persist rotated refresh token to support Salesforce OAuth Refresh Token Rotation (RTR) |
 | 2.7.26 | 2026-07-16 | [82225](https://github.com/airbytehq/airbyte/pull/82225) | Promoted release candidate to GA |
 | 2.7.26-rc.1 | 2026-07-14 | [81535](https://github.com/airbytehq/airbyte/pull/81535) | Use ordered `ConcurrentMessageRepository` so state checkpoints are emitted in-order with records, preventing data loss (cursor advancing past uncommitted records) when a sync is terminated ungracefully |
-| 2.7.25 | 2026-06-20 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
-| 2.7.24 | 2026-06-23 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Add optional `preserve_na_values` config toggle (default off) to keep 'NA'-like string values instead of converting them to null in Bulk API CSV parsing |
-| 2.7.23 | 2026-05-20 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
+| 2.7.25 | 2026-07-13 | [80307](https://github.com/airbytehq/airbyte/pull/80307) | Update cryptography to resolve CVEs (CVE-2026-26007, PYSEC-2026-35) |
+| 2.7.24 | 2026-07-09 | [80738](https://github.com/airbytehq/airbyte/pull/80738) | Add optional `preserve_na_values` config toggle (default off) to keep 'NA'-like string values instead of converting them to null in Bulk API CSV parsing |
+| 2.7.23 | 2026-05-21 | [78339](https://github.com/airbytehq/airbyte/pull/78339) | Add granular OAuth scopes (api, web, refresh_token, lightning) to consent URL |
 | 2.7.22 | 2026-04-28 | [76978](https://github.com/airbytehq/airbyte/pull/76978) | Bump airbyte-cdk to ^7.17.4 |
 | 2.7.21 | 2026-04-28 | [77132](https://github.com/airbytehq/airbyte/pull/77132) | Promoted release candidate to GA |
 | 2.7.21-rc.1 | 2026-04-21 | [76389](https://github.com/airbytehq/airbyte/pull/76389) | Fix bulk job slicing by bypassing deprecated DeclarativeStream.stream_slices() after CDK 7.13+ upgrade |
 | 2.7.20 | 2026-04-02 | [75201](https://github.com/airbytehq/airbyte/pull/75201) | Fix Bulk API INVALID_SESSION_ID by replacing static token provider with auto-refreshing SalesforceTokenProvider |
 | 2.7.19 | 2026-03-31 | [75579](https://github.com/airbytehq/airbyte/pull/75579) | Add `oauth_connector_input_specification` for declarative OAuth with sandbox/production URL switching |
-| 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | fix(source-salesforce): skip time-based slicing for full_refresh syncs (AI-Triage PR) |
+| 2.7.18 | 2026-02-25 | [73501](https://github.com/airbytehq/airbyte/pull/73501) | Skip time-based slicing for full refresh syncs |
 | 2.7.17 | 2026-02-11 | [73235](https://github.com/airbytehq/airbyte/pull/73235) | Make lookback window configurable to address Salesforce API eventual consistency |
 | 2.7.16 | 2025-10-29 | [69078](https://github.com/airbytehq/airbyte/pull/69078) | Promoting release candidate 2.7.16-rc.1 to a main version. |
 | 2.7.16-rc.1 | 2025-10-27 | [67509](https://github.com/airbytehq/airbyte/pull/67509) | Minor performance tuning |
