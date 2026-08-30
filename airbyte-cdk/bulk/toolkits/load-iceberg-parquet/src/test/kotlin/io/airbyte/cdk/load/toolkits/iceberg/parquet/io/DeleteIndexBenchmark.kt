@@ -125,6 +125,63 @@ class DeleteIndexBenchmark {
         Files.writeString(Path.of(System.getProperty("java.io.tmpdir"), "dv-benchmark.md"), report)
     }
 
+    /**
+     * Runs one shape at increasing row counts so the positional overhead can be read as an absolute
+     * cost per flush rather than a ratio. Small tables are dominated by per-file overhead, which
+     * tells us nothing about whether the cost holds steady or grows with volume.
+     *
+     * Separate from [benchmark] because it takes tens of minutes:
+     *
+     * ```
+     * RUN_DELETE_INDEX_BENCHMARK=1 RUN_DELETE_INDEX_SCALE_BENCHMARK=1 \
+     *   ./gradlew -PJunitMethodExecutionTimeout=180m \
+     *   :airbyte-cdk:bulk:toolkits:bulk-cdk-toolkit-load-iceberg-parquet:test \
+     *   --tests '*DeleteIndexBenchmark.scaleBenchmark*'
+     * ```
+     */
+    @Test
+    @EnabledIfEnvironmentVariable(named = "RUN_DELETE_INDEX_SCALE_BENCHMARK", matches = ".+")
+    fun scaleBenchmark() {
+        val flushes = 20
+        val shapes =
+            listOf(5_000, 50_000, 500_000).map { rowsPerDataFile ->
+                Shape(
+                    name = "${16 * rowsPerDataFile} rows, 16 files, $flushes flushes",
+                    dataFiles = 16,
+                    rowsPerDataFile = rowsPerDataFile,
+                    flushes = flushes,
+                    updatesPerFlush = 2_000,
+                    hotFileFraction = 0.25,
+                    flushesPerSync = flushes,
+                )
+            }
+        val rows = mutableListOf<String>()
+        rows.add(
+            "| shape | mode | rows scanned | delete files | delete bytes | wall ms | " +
+                "ms/flush | overhead vs equality ms/flush |"
+        )
+        rows.add("| --- | --- | --- | --- | --- | --- | --- | --- |")
+        shapes.forEach { shape ->
+            val baseline = run(shape, Mode.EQUALITY)
+            listOf(Mode.EQUALITY, Mode.NAIVE, Mode.OPTIMIZED, Mode.INDEXED).forEach { mode ->
+                val result = if (mode == Mode.EQUALITY) baseline else run(shape, mode)
+                val perFlush = result.wallTimeMillis / shape.flushes
+                val overhead = (result.wallTimeMillis - baseline.wallTimeMillis) / shape.flushes
+                rows.add(
+                    "| ${shape.name} | ${mode.name.lowercase()} | ${result.rowsScanned} | " +
+                        "${result.deleteFiles} | ${result.deleteFileBytes} | " +
+                        "${result.wallTimeMillis} | $perFlush | $overhead |"
+                )
+            }
+        }
+        val report = rows.joinToString("\n")
+        println("DELETE INDEX SCALE BENCHMARK\n$report")
+        Files.writeString(
+            Path.of(System.getProperty("java.io.tmpdir"), "dv-scale-benchmark.md"),
+            report,
+        )
+    }
+
     private fun run(shape: Shape, mode: Mode): Result {
         val warehouse = Files.createTempDirectory("delete-index-bench")
         try {
