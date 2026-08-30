@@ -60,6 +60,7 @@ class IcebergTableWriterFactory {
         positionalDeleteState: PositionalDeleteResolutionState? = null,
         maxTouchedKeys: Int = PositionalDeleteResolver.DEFAULT_MAX_TOUCHED_KEYS,
         allowWholeFileSupersession: Boolean = false,
+        suppressDeletedPositions: Boolean = true,
     ): BaseTaskWriter<Record> {
         assertGenerationIdSuffixIsOfValidFormat(generationId)
         val format =
@@ -98,6 +99,7 @@ class IcebergTableWriterFactory {
                     maxTouchedKeys = maxTouchedKeys,
                     state = resolutionState,
                     allowWholeFileSupersession = allowWholeFileSupersession,
+                    suppressDeletedPositions = suppressDeletedPositions,
                 )
             }
         val targetFileSize =

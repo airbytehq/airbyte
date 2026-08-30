@@ -36,10 +36,13 @@ class SupersededRowFinder(
     private val maxInValues: Int = MAX_IN_VALUES,
     private val maxSubRanges: Int = MAX_SUB_RANGES,
     private val allowWholeFileSupersession: Boolean = false,
+    private val suppressDeletedPositions: Boolean = true,
 ) {
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
     private val leadingField = identifierFields.first()
+
+    @Volatile private var indexEntries: Map<String, DeleteIndexStatistics.Entry> = emptyMap()
 
     val dataFilesOpened: Int
         get() = state.dataFilesOpened.get()
@@ -93,6 +96,13 @@ class SupersededRowFinder(
         state.positionDeleteIndexes.clear()
         state.unreadablePositionDeleteFiles.clear()
         state.positionDeleteFilesRead.set(0)
+        state.deleteIndex.beginFlush()
+        indexEntries =
+            if (suppressDeletedPositions) {
+                state.deleteIndex.entries(table, table.refs()[ref]?.snapshotId() ?: NO_SNAPSHOT)
+            } else {
+                emptyMap()
+            }
         return plannedFiles
             .asSequence()
             .sortedBy { it.file.location().toString() }
@@ -158,6 +168,20 @@ class SupersededRowFinder(
     }
 
     private fun positionDeleteIndex(planned: PlannedDataFile): PositionDeleteIndex? {
+        if (!suppressDeletedPositions) return null
+        val location = planned.file.location().toString()
+        val index = mergedPositionDeleteIndex(planned, location)
+        state.deleteIndex.observe(location, planned.file.recordCount(), planned.deletes, index)
+        return index
+    }
+
+    private fun mergedPositionDeleteIndex(
+        planned: PlannedDataFile,
+        location: String,
+    ): PositionDeleteIndex? {
+        indexedPositionDeletes(planned, location)?.let {
+            return it
+        }
         val positionDeletes =
             planned.deletes.filter { it.content() == FileContent.POSITION_DELETES }
         if (positionDeletes.isEmpty()) return null
@@ -188,6 +212,37 @@ class SupersededRowFinder(
             null
         } else {
             PositionDeleteIndexUtil.merge(indexes)
+        }
+    }
+
+    /**
+     * The already-deleted positions of [location] as published by a previous flush, or null when no
+     * entry still describes the file.
+     *
+     * Reading one bitmap replaces reading every prior delete file of the data file. Validation is
+     * strict: an entry that no longer matches the file's record count or the delete files this scan
+     * planned is discarded, so the caller reads delete files exactly as if no index existed.
+     */
+    private fun indexedPositionDeletes(
+        planned: PlannedDataFile,
+        location: String,
+    ): PositionDeleteIndex? {
+        val entry =
+            DeleteIndexStatistics.validEntry(
+                indexEntries[location],
+                location,
+                planned.file.recordCount(),
+                planned.deletes,
+            )
+                ?: return null
+        return try {
+            DeleteIndexStatistics.toIndex(entry)
+        } catch (e: Exception) {
+            logger.warn(e) {
+                "Unable to decode the delete index entry for $location; " +
+                    "this flush will read its prior delete files instead"
+            }
+            null
         }
     }
 
@@ -361,6 +416,7 @@ class SupersededRowFinder(
         // Eight is the largest count without a measurable elapsed-time penalty in the benchmark;
         // higher counts improve rows scanned in some cases but are slower in others.
         private const val MAX_SUB_RANGES = 8
+        private const val NO_SNAPSHOT = -1L
         private val logger = io.github.oshai.kotlinlogging.KotlinLogging.logger {}
     }
 }
