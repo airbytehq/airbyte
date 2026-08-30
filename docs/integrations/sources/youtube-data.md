@@ -134,7 +134,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.66 | 2026-08-30 | [PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PLACEHOLDER) | Sync each configured channel ID in a separate request for the videos and channel_comments streams, and surface invalid channel IDs as config errors |
+| 0.0.66 | 2026-08-30 | [85211](https://github.com/airbytehq/airbyte/pull/85211) | Sync each configured channel ID in a separate request for the videos and channel_comments streams, and surface invalid channel IDs as config errors |
 | 0.0.65 | 2026-08-18 | [84813](https://github.com/airbytehq/airbyte/pull/84813) | Update dependencies |
 | 0.0.64 | 2026-08-11 | [84181](https://github.com/airbytehq/airbyte/pull/84181) | Update dependencies |
 | 0.0.63 | 2026-08-04 | [83693](https://github.com/airbytehq/airbyte/pull/83693) | Update dependencies |
