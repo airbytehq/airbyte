@@ -26,7 +26,7 @@ _API_URL = "https://api.searchads.apple.com/api/v5"
 _CAMPAIGNS_URL = f"{_API_URL}/campaigns"
 
 
-def _read_stream(stream_name, requests_mock, *, expecting_exception=False):
+def _read_stream(stream_name, *, expecting_exception=False):
     catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
     return read(
         get_source(_CONFIG),
@@ -54,14 +54,14 @@ def test_oauth_400_invalid_client_is_configuration_error(requests_mock):
         json={"error": "invalid_client", "error_description": "The client authentication failed."},
     )
 
-    output = _read_stream("campaigns", requests_mock, expecting_exception=True)
+    output = _read_stream("campaigns", expecting_exception=True)
 
     error = output.errors[-1].trace.error
     assert error.failure_type == FailureType.config_error
     assert "HTTPError" not in error.message
 
 
-def test_stream_http_error_is_configuration_error(requests_mock, caplog):
+def test_stream_http_400_is_configuration_error(requests_mock, caplog):
     _register_token(requests_mock)
     requests_mock.get(
         _CAMPAIGNS_URL,
@@ -69,11 +69,11 @@ def test_stream_http_error_is_configuration_error(requests_mock, caplog):
         json={"error": "invalid_request"},
     )
 
-    output = _read_stream("campaigns", requests_mock, expecting_exception=True)
+    output = _read_stream("campaigns", expecting_exception=True)
 
     error = output.errors[-1].trace.error
     assert error.failure_type == FailureType.config_error
-    assert "Apple Ads rejected the request as invalid (HTTP 400)." in caplog.text
+    assert "Apple Ads rejected the request as invalid for the configured client_id, client_secret, or org_id." in caplog.text
 
 
 def test_stream_http_403_is_configuration_error(requests_mock, caplog):
@@ -84,11 +84,11 @@ def test_stream_http_403_is_configuration_error(requests_mock, caplog):
         json={"error": "forbidden"},
     )
 
-    output = _read_stream("campaigns", requests_mock, expecting_exception=True)
+    output = _read_stream("campaigns", expecting_exception=True)
 
     error = output.errors[-1].trace.error
     assert error.failure_type == FailureType.config_error
-    assert "Apple Ads denied access to the requested resource (HTTP 403)." in caplog.text
+    assert "Apple Ads denied access to the requested resource for the configured org_id." in caplog.text
 
 
 def test_stream_http_404_is_configuration_error(requests_mock, caplog):
@@ -99,11 +99,11 @@ def test_stream_http_404_is_configuration_error(requests_mock, caplog):
         json={"error": "not_found"},
     )
 
-    output = _read_stream("campaigns", requests_mock, expecting_exception=True)
+    output = _read_stream("campaigns", expecting_exception=True)
 
     error = output.errors[-1].trace.error
     assert error.failure_type == FailureType.config_error
-    assert "Apple Ads could not find the requested resource (HTTP 404)." in caplog.text
+    assert "Apple Ads could not find the requested resource for the configured org_id." in caplog.text
 
 
 def test_keywords_report_daily_ignores_missing_keyword_campaign(requests_mock):
@@ -115,7 +115,7 @@ def test_keywords_report_daily_ignores_missing_keyword_campaign(requests_mock):
         json={"error": {"errors": [{"message": "CAMPAIGN DOES NOT CONTAIN KEYWORD"}]}},
     )
 
-    output = _read_stream("keywords_report_daily", requests_mock)
+    output = _read_stream("keywords_report_daily")
 
     assert output.errors == []
     assert output.records == []
@@ -137,7 +137,7 @@ def test_401_refreshes_token_and_retries(requests_mock):
         ],
     )
 
-    output = _read_stream("campaigns", requests_mock)
+    output = _read_stream("campaigns")
 
     assert len(output.records) == 1
     assert requests_mock.call_count == 4

@@ -112,7 +112,7 @@ def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
     assert refresh_filters, f"{stream_name} must reactively refresh the OAuth token and retry on 401"
     for f in refresh_filters:
         assert f.get("failure_type") == "config_error"
-        assert "Apple Ads rejected the access token" in f.get("error_message", "")
+        assert f.get("error_message") == "Apple Ads rejected the access token for the configured client credentials."
 
 
 def test_ads_report_daily_request_body_slice_keys(manifest):

@@ -642,11 +642,7 @@ definitions:
       http_codes:
         - 401
       failure_type: config_error
-      error_message: >-
-        Apple Ads rejected the access token (HTTP 401). The connector refreshes the
-        token and retries; if the error persists, the `client_id` / `client_secret`
-        of the Apple Search Ads API user in the source configuration are invalid or
-        expired and must be re-generated in Apple Ads.
+      error_message: Apple Ads rejected the access token for the configured client credentials.
     transient_error:
       type: HttpResponseFilter
       action: RETRY
@@ -659,33 +655,21 @@ definitions:
       http_codes:
         - 400
       failure_type: config_error
-      error_message: >-
-        Apple Ads rejected the request as invalid (HTTP 400). This is usually caused
-        by expired or invalid API credentials, or by an organization id (`org_id`)
-        that the credentials cannot be used with. Verify `client_id`,
-        `client_secret` and `org_id` in the source configuration.
+      error_message: Apple Ads rejected the request as invalid for the configured client_id, client_secret, or org_id.
     forbidden:
       type: HttpResponseFilter
       action: FAIL
       http_codes:
         - 403
       failure_type: config_error
-      error_message: >-
-        Apple Ads denied access to the requested resource (HTTP 403). The API user
-        behind these credentials does not have permission for the configured
-        organization (`org_id`). Grant the API user access to that organization in
-        Apple Ads (Account Settings > User Management) or update `org_id`.
+      error_message: Apple Ads denied access to the requested resource for the configured org_id.
     not_found:
       type: HttpResponseFilter
       action: FAIL
       http_codes:
         - 404
       failure_type: config_error
-      error_message: >-
-        Apple Ads could not find the requested resource (HTTP 404). The configured
-        organization id (`org_id`) may be incorrect, or the campaign, ad group or
-        keyword being read was deleted in Apple Ads. Verify `org_id` in the source
-        configuration.
+      error_message: Apple Ads could not find the requested resource for the configured org_id.
   error_handler:
     type: DefaultErrorHandler
     backoff_strategies:
