@@ -115,6 +115,7 @@ internal class S3DataLakeAggregateFactoryTest {
             WriteResult.builder().addDataFiles(emptyList()).addDeleteFiles(emptyList()).build()
         val firstEntered = CountDownLatch(1)
         val releaseFirst = CountDownLatch(1)
+        val secondEntered = CountDownLatch(1)
         val secondCompleteCalls = AtomicInteger()
         val firstWriter: BaseTaskWriter<Record> = mockk {
             every { complete() } answers
@@ -128,6 +129,7 @@ internal class S3DataLakeAggregateFactoryTest {
         val secondWriter: BaseTaskWriter<Record> = mockk {
             every { complete() } answers
                 {
+                    secondEntered.countDown()
                     secondCompleteCalls.incrementAndGet()
                     result
                 }
@@ -158,8 +160,7 @@ internal class S3DataLakeAggregateFactoryTest {
         val firstFlush = CompletableFuture.runAsync { runBlocking { first.flush() } }
         assertThat(firstEntered.await(5, TimeUnit.SECONDS)).isTrue()
         val secondFlush = CompletableFuture.runAsync { runBlocking { second.flush() } }
-        Thread.sleep(100)
-        assertThat(secondCompleteCalls.get()).isZero()
+        assertThat(secondEntered.await(500, TimeUnit.MILLISECONDS)).isFalse()
 
         releaseFirst.countDown()
         firstFlush.get(5, TimeUnit.SECONDS)
