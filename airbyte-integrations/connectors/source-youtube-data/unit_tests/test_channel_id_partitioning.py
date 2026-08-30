@@ -86,8 +86,8 @@ def test_videos_partition_channel_ids_into_separate_requests():
 
     search_requests = [request for request in mocker.request_history if request.path == "/youtube/v3/search"]
     assert len(search_requests) == 2
-    assert sorted(_query(request, "channelId")[0] for request in search_requests) == sorted(_CHANNEL_IDS)
     assert all(len(_query(request, "channelId")) == 1 for request in search_requests)
+    assert sorted(_query(request, "channelId")[0] for request in search_requests) == sorted(_CHANNEL_IDS)
     assert [record.record.data["videoId"] for record in output.records] == ["video-1", "video-1"]
 
 
@@ -100,8 +100,8 @@ def test_channel_comments_partition_channel_ids_into_separate_requests():
 
     comment_requests = [request for request in mocker.request_history if request.path.lower() == "/youtube/v3/commentthreads"]
     assert len(comment_requests) == 2
-    assert sorted(_query(request, "allThreadsRelatedToChannelId")[0] for request in comment_requests) == sorted(_CHANNEL_IDS)
     assert all(len(_query(request, "allThreadsRelatedToChannelId")) == 1 for request in comment_requests)
+    assert sorted(_query(request, "allThreadsRelatedToChannelId")[0] for request in comment_requests) == sorted(_CHANNEL_IDS)
     assert all(_query(request, "part") == ["snippet,replies"] for request in comment_requests)
     assert len(output.records) == 2
 
@@ -155,7 +155,9 @@ def test_video_substreams_read_videos_from_each_channel(stream_name: str, child_
 
     child_requests = [request for request in mocker.request_history if request.path.lower() == f"/youtube/v3/{child_path}".lower()]
     assert len(child_requests) == 2
-    assert sorted(_query(request, "id" if stream_name == "video" else "videoId")[0] for request in child_requests) == [
+    child_param = "id" if stream_name == "video" else "videoId"
+    assert all(len(_query(request, child_param)) == 1 for request in child_requests)
+    assert sorted(_query(request, child_param)[0] for request in child_requests) == [
         "video-1",
         "video-2",
     ]
