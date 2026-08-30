@@ -105,7 +105,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.15 | 2026-08-30 | [PR_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_PLACEHOLDER) | Make `timezone` and `token_refresh_endpoint` optional, hide the connector-internal `token_refresh_endpoint` and `backoff_factor` fields, apply the documented `lookback_window` and `backoff_factor` defaults when they are omitted from the config, and require `token_refresh_endpoint` overrides to use `https://` (configs that currently point it at a plain `http://` proxy will need to be updated) |
+| 1.1.15 | 2026-08-30 | [85206](https://github.com/airbytehq/airbyte/pull/85206) | Make `timezone` and `token_refresh_endpoint` optional, hide the connector-internal `token_refresh_endpoint` and `backoff_factor` fields, apply the documented `lookback_window` and `backoff_factor` defaults when they are omitted from the config, and require `token_refresh_endpoint` overrides to use `https://` (configs that currently point it at a plain `http://` proxy will need to be updated) |
 | 1.1.14 | 2026-08-11 | [83830](https://github.com/airbytehq/airbyte/pull/83830) | Update dependencies |
 | 1.1.13 | 2026-08-04 | [83353](https://github.com/airbytehq/airbyte/pull/83353) | Update dependencies |
 | 1.1.12 | 2026-07-28 | [82825](https://github.com/airbytehq/airbyte/pull/82825) | Update dependencies |
