@@ -57,6 +57,15 @@ class FlushMemoryBenchmark {
 
         private const val MEGABYTE = 1024L * 1024L
 
+        /**
+         * Payload columns beyond the primary key, each holding [PAYLOAD_WIDTH] characters. Wide rows
+         * shift heap from the positional key state toward the Parquet column writers, so the row
+         * group size only matters once this is large.
+         */
+        private val PAYLOAD_COLUMNS = System.getProperty("payloadColumns", "1").toInt()
+
+        private val PAYLOAD_WIDTH = System.getProperty("payloadWidth", "7").toInt()
+
         @JvmStatic
         fun main(args: Array<String>) {
             val report = sweep()
@@ -73,7 +82,10 @@ class FlushMemoryBenchmark {
             // Stays under TouchedKeys.MAX_CURRENT_WRITES, which fails the flush outright.
             val rowsPerFlushes = listOf(10_000, 100_000, 400_000, 900_000)
             val rows = mutableListOf<String>()
-            rows.add("heap $heapMb MB, $DATA_FILES data files of $ROWS_PER_DATA_FILE rows")
+            rows.add(
+                "heap $heapMb MB, $DATA_FILES data files of $ROWS_PER_DATA_FILE rows, " +
+                    "$PAYLOAD_COLUMNS payload columns of $PAYLOAD_WIDTH chars"
+            )
             rows.add(
                 "| rows per flush | row group MB | live heap MB | peak heap MB | " +
                     "rows scanned (last batch) | files opened (last batch) | wall ms | outcome |"
@@ -232,20 +244,22 @@ class FlushMemoryBenchmark {
 
         private fun schema(): Schema =
             Schema(
-                listOf(
-                    Types.NestedField.required(1, "id", Types.StringType.get()),
-                    Types.NestedField.required(2, "name", Types.StringType.get()),
-                ),
+                listOf(Types.NestedField.required(1, "id", Types.StringType.get())) +
+                    (1..PAYLOAD_COLUMNS).map {
+                        Types.NestedField.required(it + 1, "name$it", Types.StringType.get())
+                    },
                 setOf(1),
             )
 
         private fun key(fileIndex: Int, rowIndex: Int): String =
             "key-${fileIndex * ROWS_PER_DATA_FILE + rowIndex}"
 
-        private fun record(id: String, name: String): GenericRecord =
-            GenericRecord.create(schema()).apply {
+        private fun record(id: String, name: String): GenericRecord {
+            val payload = name.padEnd(PAYLOAD_WIDTH, 'x').take(PAYLOAD_WIDTH)
+            return GenericRecord.create(schema()).apply {
                 setField("id", id)
-                setField("name", name)
+                (1..PAYLOAD_COLUMNS).forEach { setField("name$it", payload) }
             }
+        }
     }
 }
