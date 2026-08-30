@@ -116,6 +116,7 @@ class GcsDataLakeAggregate(
         }
 
         fun completeAndCommit() {
+            table.refresh()
             val plannedSnapshotId = table.refs()[stagingBranchName]?.snapshotId()
             val writeResult = writer.complete()
             if (plannedSnapshotId != null) {
