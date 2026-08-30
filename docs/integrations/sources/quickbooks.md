@@ -118,7 +118,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
-| 4.2.0-rc.1 | 2026-08-30 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Pace requests within Intuit's rate limits, sync streams concurrently, and add suggested streams |
+| 4.2.0-rc.1 | 2026-08-30 | [85208](https://github.com/airbytehq/airbyte/pull/85208) | Pace requests within Intuit's rate limits, sync streams concurrently, and add suggested streams |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
 | 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
 | 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
