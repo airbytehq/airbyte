@@ -103,7 +103,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.15 | 2026-08-30 | [<PR#>](https://github.com/airbytehq/airbyte/pull/<PR#>) | Surface Apple Ads authentication and 400/403/404 API failures as configuration errors with actionable messages |
+| 1.1.15 | 2026-08-30 | [85212](https://github.com/airbytehq/airbyte/pull/85212) | Surface Apple Ads authentication and 400/403/404 API failures as configuration errors with actionable messages |
 | 1.1.14 | 2026-08-11 | [83830](https://github.com/airbytehq/airbyte/pull/83830) | Update dependencies |
 | 1.1.13 | 2026-08-04 | [83353](https://github.com/airbytehq/airbyte/pull/83353) | Update dependencies |
 | 1.1.12 | 2026-07-28 | [82825](https://github.com/airbytehq/airbyte/pull/82825) | Update dependencies |

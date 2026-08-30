@@ -56,12 +56,12 @@ def test_oauth_400_invalid_client_is_configuration_error(requests_mock):
 
     output = _read_stream("campaigns", expecting_exception=True)
 
-    error = output.errors[-1].trace.error
+    error = output.errors[0].trace.error
     assert error.failure_type == FailureType.config_error
     assert "HTTPError" not in error.message
 
 
-def test_stream_http_400_is_configuration_error(requests_mock, caplog):
+def test_stream_http_400_is_configuration_error(requests_mock):
     _register_token(requests_mock)
     requests_mock.get(
         _CAMPAIGNS_URL,
@@ -71,12 +71,12 @@ def test_stream_http_400_is_configuration_error(requests_mock, caplog):
 
     output = _read_stream("campaigns", expecting_exception=True)
 
-    error = output.errors[-1].trace.error
+    error = output.errors[0].trace.error
     assert error.failure_type == FailureType.config_error
-    assert "Apple Ads rejected the request as invalid for the configured client_id, client_secret, or org_id." in caplog.text
+    assert error.message == "Apple Ads rejected the request as invalid for the configured client_id, client_secret, or org_id."
 
 
-def test_stream_http_403_is_configuration_error(requests_mock, caplog):
+def test_stream_http_403_is_configuration_error(requests_mock):
     _register_token(requests_mock)
     requests_mock.get(
         _CAMPAIGNS_URL,
@@ -86,12 +86,12 @@ def test_stream_http_403_is_configuration_error(requests_mock, caplog):
 
     output = _read_stream("campaigns", expecting_exception=True)
 
-    error = output.errors[-1].trace.error
+    error = output.errors[0].trace.error
     assert error.failure_type == FailureType.config_error
-    assert "Apple Ads denied access to the requested resource for the configured org_id." in caplog.text
+    assert error.message == "Apple Ads denied access to the requested resource for the configured org_id."
 
 
-def test_stream_http_404_is_configuration_error(requests_mock, caplog):
+def test_stream_http_404_is_configuration_error(requests_mock):
     _register_token(requests_mock)
     requests_mock.get(
         _CAMPAIGNS_URL,
@@ -101,9 +101,9 @@ def test_stream_http_404_is_configuration_error(requests_mock, caplog):
 
     output = _read_stream("campaigns", expecting_exception=True)
 
-    error = output.errors[-1].trace.error
+    error = output.errors[0].trace.error
     assert error.failure_type == FailureType.config_error
-    assert "Apple Ads could not find the requested resource for the configured org_id." in caplog.text
+    assert error.message == "Apple Ads could not find the requested resource for the configured org_id."
 
 
 def test_keywords_report_daily_ignores_missing_keyword_campaign(requests_mock):
