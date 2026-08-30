@@ -103,7 +103,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
-| 1.1.15 | 2026-08-30 | [0](https://github.com/airbytehq/airbyte/pull/0) | Fail fast with an actionable configuration error on Apple Ads authentication failures, and restore rate-limit handling for 429 responses |
+| 1.1.15 | 2026-08-30 | [85209](https://github.com/airbytehq/airbyte/pull/85209) | Fail fast with an actionable configuration error on Apple Ads authentication failures, and restore rate-limit handling for 429 responses |
 | 1.1.14 | 2026-08-11 | [83830](https://github.com/airbytehq/airbyte/pull/83830) | Update dependencies |
 | 1.1.13 | 2026-08-04 | [83353](https://github.com/airbytehq/airbyte/pull/83353) | Update dependencies |
 | 1.1.12 | 2026-07-28 | [82825](https://github.com/airbytehq/airbyte/pull/82825) | Update dependencies |
