@@ -44,23 +44,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handlers/default"
         record_selector:
           type: RecordSelector
           extractor:
@@ -104,23 +88,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handlers/default"
         record_selector:
           type: RecordSelector
           extractor:
@@ -174,23 +142,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handlers/default"
         record_selector:
           type: RecordSelector
           extractor:
@@ -251,25 +203,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handlers/reports"
         record_selector:
           type: RecordSelector
           extractor:
@@ -366,25 +300,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handlers/reports"
         record_selector:
           type: RecordSelector
           extractor:
@@ -490,28 +406,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: DefaultErrorHandler
-            max_retries: 10
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
-                  response.error.errors[0].message }}
-              - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
-                http_codes:
-                  - 401
-                failure_type: transient_error
-                error_message: Access token is expired.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handlers/keywords_reports"
         record_selector:
           type: RecordSelector
           extractor:
@@ -606,23 +501,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handlers/default"
         record_selector:
           type: RecordSelector
           extractor:
@@ -677,23 +556,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: DefaultErrorHandler
-            max_retries: 10
-            response_filters:
-              - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
-                http_codes:
-                  - 401
-                failure_type: transient_error
-                error_message: Access token is expired.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handlers/reports"
         record_selector:
           type: RecordSelector
           extractor:
@@ -772,6 +635,64 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ads_report_daily"
+  error_handlers:
+    # Apple returns 401 for any unauthenticated call, not only for an expired token,
+    # so only its transient expired-token response refreshes the OAuth token and retries.
+    # Any other 401 or 403 is a credential or permission problem and fails the sync.
+    default:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+      response_filters:
+        - type: HttpResponseFilter
+          action: REFRESH_TOKEN_THEN_RETRY
+          error_message_contains: "Expired Token"
+          error_message: Access token is expired.
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 401
+          failure_type: config_error
+          error_message: Apple Ads API authentication failed. Verify the Client ID, Client Secret, and Organization ID in the source configuration.
+        - type: HttpResponseFilter
+          action: FAIL
+          http_codes:
+            - 403
+          failure_type: config_error
+          error_message: Apple Ads API denied access to the requested resource. Verify the API user role and Organization ID in the source configuration.
+        - type: HttpResponseFilter
+          action: RATE_LIMITED
+          http_codes:
+            - 429
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 500
+            - 502
+            - 503
+            - 504
+    # Report endpoints are heavier and Apple throttles them harder, so they keep the
+    # higher retry budget and the configurable backoff factor they had before.
+    reports:
+      $ref: "#/definitions/error_handlers/default"
+      max_retries: 10
+      backoff_strategies:
+        - type: ExponentialBackoffStrategy
+          factor: "{{ config.backoff_factor }}"
+    # keywords_report_daily additionally ignores Apple's "campaign does not contain
+    # keyword" response, which is an empty result rather than a failure.
+    keywords_reports:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          max_retries: 10
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: >-
+                {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
+                response.error.errors[0].message }}
+        - $ref: "#/definitions/error_handlers/reports"
   base_requester:
     type: HttpRequester
     url_base: https://api.searchads.apple.com/api/v5
@@ -782,6 +703,17 @@ definitions:
       client_secret: "{{ config.client_secret }}"
       token_refresh_endpoint: "{{ config.get('token_refresh_endpoint', 'https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg') }}"
       refresh_request_body: {}
+      refresh_token_error_status_codes:
+        - 400
+        - 401
+      refresh_token_error_key: error
+      refresh_token_error_values:
+        - invalid_client
+        - invalid_grant
+        - invalid_request
+        - unauthorized_client
+        - invalid_scope
+        - unsupported_grant_type
 
 streams:
   - $ref: "#/definitions/streams/campaigns"

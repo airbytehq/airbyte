@@ -12,14 +12,15 @@ from pathlib import Path
 import pytest
 import yaml
 
+from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 
 
 @pytest.fixture(scope="module")
 def manifest():
-    with open(MANIFEST_PATH) as f:
-        return yaml.safe_load(f)
+    return ManifestReferenceResolver().preprocess_manifest(yaml.safe_load(MANIFEST_PATH.read_text()))
 
 
 def _get_stream_def(manifest, stream_name):
@@ -71,9 +72,9 @@ def test_ads_report_daily_no_keyword_error_predicate(manifest):
     """ads_report_daily must not contain the keyword-specific IGNORE
     predicate that was copy-pasted from keywords_report_daily."""
     stream = _get_stream_def(manifest, "ads_report_daily")
-    error_handler = stream["retriever"]["requester"].get("error_handler", {})
+    filters = _get_response_filters(stream)
 
-    for f in error_handler.get("response_filters", []):
+    for f in filters:
         predicate = f.get("predicate", "")
         assert "CAMPAIGN DOES NOT CONTAIN KEYWORD" not in predicate, "ads_report_daily must not contain keyword-specific error predicate"
 
@@ -81,9 +82,9 @@ def test_ads_report_daily_no_keyword_error_predicate(manifest):
 def test_keywords_report_daily_retains_keyword_predicate(manifest):
     """keywords_report_daily must keep the keyword-specific IGNORE predicate."""
     stream = _get_stream_def(manifest, "keywords_report_daily")
-    error_handler = stream["retriever"]["requester"].get("error_handler", {})
+    filters = _get_response_filters(stream)
 
-    has_predicate = any("CAMPAIGN DOES NOT CONTAIN KEYWORD" in f.get("predicate", "") for f in error_handler.get("response_filters", []))
+    has_predicate = any("CAMPAIGN DOES NOT CONTAIN KEYWORD" in f.get("predicate", "") for f in filters)
     assert has_predicate, "keywords_report_daily must retain the keyword-specific IGNORE predicate"
 
 
@@ -100,17 +101,24 @@ def test_keywords_report_daily_retains_keyword_predicate(manifest):
         pytest.param("ads_report_daily", id="ads_report_daily"),
     ],
 )
-def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
-    """Apple Ads may return 401 before the CDK's tracked token expiry."""
+def test_streams_refresh_token_only_on_apple_expired_token_401(manifest, stream_name):
+    """Apple Ads refreshes only for expired-token responses."""
     stream = _get_stream_def(manifest, stream_name)
     filters = _get_response_filters(stream)
 
-    refresh_filters = [f for f in filters if f.get("action") == "REFRESH_TOKEN_THEN_RETRY" and 401 in f.get("http_codes", [])]
+    refresh_filters = [
+        f for f in filters if f.get("action") == "REFRESH_TOKEN_THEN_RETRY" and f.get("error_message_contains") == "Expired Token"
+    ]
 
     assert refresh_filters, f"{stream_name} must reactively refresh the OAuth token and retry on 401"
-    for f in refresh_filters:
-        assert f.get("failure_type") == "transient_error"
-        assert f.get("error_message") == "Access token is expired."
+    refresh_filter = refresh_filters[0]
+    assert "http_codes" not in refresh_filter
+    assert refresh_filter.get("error_message") == "Access token is expired."
+
+    terminal_401_filters = [f for f in filters if f.get("action") == "FAIL" and 401 in f.get("http_codes", [])]
+    assert terminal_401_filters, f"{stream_name} must fail on non-expired 401 responses"
+    assert terminal_401_filters[0].get("failure_type") == "config_error"
+    assert filters.index(refresh_filter) < filters.index(terminal_401_filters[0])
 
 
 def test_ads_report_daily_request_body_slice_keys(manifest):
