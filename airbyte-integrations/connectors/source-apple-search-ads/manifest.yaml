@@ -269,7 +269,7 @@ definitions:
                       - 429
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+                    factor: "{{ config.get('backoff_factor', 5) }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -302,7 +302,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -384,7 +384,7 @@ definitions:
                       - 429
                 backoff_strategies:
                   - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+                    factor: "{{ config.get('backoff_factor', 5) }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -425,7 +425,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -511,7 +511,7 @@ definitions:
                   - 429
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+                factor: "{{ config.get('backoff_factor', 5) }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -552,7 +552,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -693,7 +693,7 @@ definitions:
                   - 429
             backoff_strategies:
               - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+                factor: "{{ config.get('backoff_factor', 5) }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -734,7 +734,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: P{{ config.get('lookback_window', 30) }}D
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -803,8 +803,6 @@ spec:
       - client_id
       - start_date
       - client_secret
-      - timezone
-      - token_refresh_endpoint
     properties:
       org_id:
         type: integer
@@ -866,6 +864,7 @@ spec:
         title: Exponential Backoff Factor
         default: 5
         pattern: ^(20|1[0-9]|[1-9])$
+        airbyte_hidden: true
         examples:
           - 10
       timezone:
@@ -882,11 +881,15 @@ spec:
       token_refresh_endpoint:
         type: string
         description: >-
-          Token Refresh Endpoint. You should override the default value in scenarios 
-          where it's required to proxy requests to Apple's token endpoint
+          Leave this empty unless you need to route token requests through a
+          proxy. The connector uses Apple's token endpoint by default, so this
+          override is only needed when outbound requests to Apple must go
+          through your own HTTPS endpoint.
         title: Token Refresh Endpoint
         default: >-
           https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
+        pattern: ^https://
+        airbyte_hidden: true
         order: 8
       num_workers:
         type: integer

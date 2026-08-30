@@ -7,6 +7,8 @@ This page contains the setup guide and reference information for the Apple Ads s
 - An Apple Ads account with an administrator who can invite users with API permissions.
 - Your Apple Ads organization id (`orgId`), shown in the Apple Ads UI. Each Airbyte source syncs data for a single `orgId`.
 - An OAuth client id and client secret generated for an API user (see Step 1 below).
+- A start date (`YYYY-MM-DD`) for the earliest report data you want to sync.
+- Optionally, the reporting time zone to use: `UTC` or `ORTZ` (Organization Time Zone). The connector defaults to `UTC`.
 
 ## Setup guide
 
@@ -28,9 +30,9 @@ The connector authenticates to the Apple Ads Campaign Management API using OAuth
 5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. If **End Date** is blank, Airbyte syncs up to today. Apple's reporting API limits how far back daily data is available; requests for dates outside the supported window return no data.
 6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`.
 7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
-8. For **Exponential Backoff Factor**, enter a value between 1 and 20. This controls how aggressively the connector backs off when Apple's API returns rate-limit (`429`) or server (`500`) errors. The default is 5; increase it for very large accounts that frequently hit rate limits.
+8. (Optional) **Exponential Backoff Factor** controls how aggressively the connector backs off when Apple's API returns rate-limit (`429`) or server (`500`) errors. The default is 5. It's hidden in the UI; set it through the API or Terraform if a very large account frequently hits rate limits.
 9. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
-10. (Optional) For **Token Refresh Endpoint**, override the default Apple OAuth token endpoint. Use this only if you proxy outbound requests; most users should leave it at the default.
+10. (Optional) **Token Refresh Endpoint** overrides Apple's OAuth token endpoint. Leave it unset unless you route token requests through your own HTTPS proxy. It's hidden in the UI; set it through the API or Terraform.
 11. Click **Set up source**.
 
 ## Supported sync modes
@@ -90,10 +92,10 @@ For programmatic configuration, use these parameter names:
 | `client_secret` | Yes | OAuth client secret for the Apple Ads API user. |
 | `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
 | `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
-| `timezone` | Yes | Reporting time zone. Valid values are `UTC` and `ORTZ`. |
+| `timezone` | No | Reporting time zone. Valid values are `UTC` and `ORTZ`. Defaults to `UTC`. |
 | `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
 | `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. |
-| `token_refresh_endpoint` | Yes | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
+| `token_refresh_endpoint` | No | OAuth token endpoint. Must use `https://`. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
 | `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
 ## Changelog
@@ -103,6 +105,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.15 | 2026-08-30 | [PR_PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PR_PLACEHOLDER) | Make `timezone` and `token_refresh_endpoint` optional, hide the connector-internal `token_refresh_endpoint` and `backoff_factor` fields, apply the documented `lookback_window` and `backoff_factor` defaults when they are omitted from the config, and require `token_refresh_endpoint` overrides to use `https://` (configs that currently point it at a plain `http://` proxy will need to be updated) |
 | 1.1.14 | 2026-08-11 | [83830](https://github.com/airbytehq/airbyte/pull/83830) | Update dependencies |
 | 1.1.13 | 2026-08-04 | [83353](https://github.com/airbytehq/airbyte/pull/83353) | Update dependencies |
 | 1.1.12 | 2026-07-28 | [82825](https://github.com/airbytehq/airbyte/pull/82825) | Update dependencies |
