@@ -27,7 +27,15 @@ data class GcsDataLakeConfiguration(
     val mergeOnReadDeleteEncoding: MergeOnReadDeleteEncoding = MergeOnReadDeleteEncoding.AUTOMATIC,
     val suppressDeletedPositions: Boolean = true,
     val indexPositionalDeletes: Boolean = false,
+    val maxRecordsPerFlush: Long? = null,
 ) : DestinationConfiguration() {
+
+    val resolvedMaxRecordsPerFlush: Long
+        get() {
+            val records = maxRecordsPerFlush ?: Defaults.MAX_RECORDS_PER_FLUSH
+            require(records > 0) { "max_records_per_flush must be positive, got $records" }
+            return records
+        }
 
     // Lazy-loaded credentials from service account JSON with proper OAuth scopes
     val googleCredentials: GoogleCredentials by lazy {
@@ -58,6 +66,10 @@ data class GcsDataLakeConfiguration(
                 }
             }
     }
+
+    object Defaults {
+        const val MAX_RECORDS_PER_FLUSH = 10_000_000_000L
+    }
 }
 
 @Singleton
@@ -79,6 +91,7 @@ class GcsDataLakeConfigurationFactory :
                     ?: MergeOnReadDeleteEncoding.AUTOMATIC,
             suppressDeletedPositions = pojo.suppressDeletedPositions ?: true,
             indexPositionalDeletes = pojo.indexPositionalDeletes ?: false,
+            maxRecordsPerFlush = pojo.maxRecordsPerFlush,
         )
     }
 }

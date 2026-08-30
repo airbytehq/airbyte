@@ -24,12 +24,13 @@ class GcsDataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
 
     @Singleton
-    fun aggregatePublishingConfig(): AggregatePublishingConfig {
-        log.info { "NOOP code change for CI to pick up" }
+    fun aggregatePublishingConfig(config: GcsDataLakeConfiguration): AggregatePublishingConfig {
+        val maxRecords = config.resolvedMaxRecordsPerFlush
+        log.info { "Configured max records per flush: $maxRecords" }
 
         // NOT speed mode
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 10_000_000_000L,
+            maxRecordsPerAgg = maxRecords,
             maxEstBytesPerAgg = 150_000_000L,
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,
