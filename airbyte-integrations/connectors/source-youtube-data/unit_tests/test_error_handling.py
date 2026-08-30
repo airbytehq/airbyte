@@ -6,7 +6,7 @@ import json
 from unittest.mock import patch
 
 from conftest import get_source
-from requests import Request, Response
+from requests import Request
 
 from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
@@ -47,18 +47,8 @@ def _http_response(body: dict, status_code: int = 200) -> HttpResponse:
     return HttpResponse(body=json.dumps(body), status_code=status_code)
 
 
-def _error_resolution(stream_name: str, body: dict, status_code: int):
-    response = Response()
-    response.status_code = status_code
-    response._content = json.dumps(body).encode()
-    source = get_source(_CONFIG)
-    stream = next(stream for stream in source.streams(_CONFIG) if stream.name == stream_name)
-    handler = stream._stream_partition_generator._partition_factory._retriever.requester.error_handler
-    return handler.interpret_response(response)
-
-
-def _assert_log_contains(output, message: str) -> None:
-    assert any(message in log.log.message for log in output.logs)
+def _assert_traced_error(output, failure_type: FailureType, message_substring: str) -> None:
+    assert any(error.trace.error.failure_type == failure_type and message_substring in error.trace.error.message for error in output.errors)
 
 
 @HttpMocker()
@@ -71,8 +61,7 @@ def test_quota_exceeded_emits_transient_error(http_mocker: HttpMocker):
     with patch("time.sleep"):
         output = _read_stream("videos")
 
-    _assert_log_contains(output, "YouTube Data API quota")
-    assert _error_resolution("videos", _error_body("quotaExceeded"), 403).failure_type == FailureType.transient_error
+    _assert_traced_error(output, FailureType.transient_error, "YouTube Data API quota")
 
 
 @HttpMocker()
@@ -85,8 +74,11 @@ def test_invalid_credentials_emits_config_error(http_mocker: HttpMocker):
     with patch("time.sleep"):
         output = _read_stream("videos")
 
-    _assert_log_contains(output, "Verify the API key or OAuth credentials in the source settings.")
-    assert _error_resolution("videos", {"error": {"code": 401}}, 401).failure_type == FailureType.config_error
+    _assert_traced_error(
+        output,
+        FailureType.config_error,
+        "Verify the API key or OAuth credentials in the source settings.",
+    )
 
 
 @HttpMocker()
@@ -99,8 +91,7 @@ def test_api_not_enabled_emits_config_error(http_mocker: HttpMocker):
     with patch("time.sleep"):
         output = _read_stream("videos")
 
-    _assert_log_contains(output, "Enable the API in that project.")
-    assert _error_resolution("videos", _error_body("accessNotConfigured"), 403).failure_type == FailureType.config_error
+    _assert_traced_error(output, FailureType.config_error, "Enable the API in that project.")
 
 
 @HttpMocker()

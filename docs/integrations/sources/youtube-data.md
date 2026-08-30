@@ -132,7 +132,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0.0.66 | 2026-08-30 | [TBD] | Classify YouTube API errors (invalid credentials, exhausted quota, disabled comments), retry rate-limited and server errors with exponential backoff, and pace requests with a quota-weighted API budget |
+| 0.0.66 | 2026-08-30 | [85210](https://github.com/airbytehq/airbyte/pull/85210) | Classify YouTube API errors (invalid credentials, exhausted quota, disabled comments), retry rate-limited and server errors with exponential backoff, and pace requests with a quota-weighted API budget |
 | 0.0.65 | 2026-08-18 | [84813](https://github.com/airbytehq/airbyte/pull/84813) | Update dependencies |
 | 0.0.64 | 2026-08-11 | [84181](https://github.com/airbytehq/airbyte/pull/84181) | Update dependencies |
 | 0.0.63 | 2026-08-04 | [83693](https://github.com/airbytehq/airbyte/pull/83693) | Update dependencies |
