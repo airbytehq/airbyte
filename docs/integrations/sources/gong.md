@@ -46,7 +46,7 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 
 <FieldAnchor field="start_date">
 
-- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector uses a default of two years before the sync runs. Set an explicit start date to reach further back or to limit the initial sync.
+- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call; set a start date to limit how far back the initial sync reaches.
 
 </FieldAnchor>
 
@@ -111,7 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
-| 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote to certified: add lookback window option, explicit auth/transient error handling, allowed hosts, heartbeat timeout, suggested streams, upgrade the base image, default the start date to two years ago when unset (previously all history), only treat Gong's "no results" 404 as an empty stream (other 404s now fail), and remove the `pointsOfInterest` field that Gong removed from `/v2/calls/extensive` in January 2025 |
+| 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
 | 1.3.5 | 2026-08-18 | [84600](https://github.com/airbytehq/airbyte/pull/84600) | Update dependencies |
 | 1.3.4 | 2026-08-11 | [83953](https://github.com/airbytehq/airbyte/pull/83953) | Update dependencies |
 | 1.3.3 | 2026-08-04 | [83474](https://github.com/airbytehq/airbyte/pull/83474) | Update dependencies |
