@@ -24,6 +24,7 @@ This connector uses the [YouTube Data API v3](https://developers.google.com/yout
 1. Go to [YouTube](https://www.youtube.com/) and navigate to the channel you want to sync.
 2. The Channel ID is in the URL: `https://www.youtube.com/channel/CHANNEL_ID`.
 3. Alternatively, you can find it in YouTube Studio under **Settings** > **Channel** > **Advanced settings**.
+Channel IDs start with `UC`; handles and usernames such as `@airbyte` are not accepted.
 
 <!-- env:cloud -->
 
@@ -132,6 +133,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.66 | 2026-08-30 | [PLACEHOLDER](https://github.com/airbytehq/airbyte/pull/PLACEHOLDER) | Sync each configured channel ID in a separate request for the videos and channel_comments streams, and surface invalid channel IDs as config errors |
 | 0.0.65 | 2026-08-18 | [84813](https://github.com/airbytehq/airbyte/pull/84813) | Update dependencies |
 | 0.0.64 | 2026-08-11 | [84181](https://github.com/airbytehq/airbyte/pull/84181) | Update dependencies |
 | 0.0.63 | 2026-08-04 | [83693](https://github.com/airbytehq/airbyte/pull/83693) | Update dependencies |
