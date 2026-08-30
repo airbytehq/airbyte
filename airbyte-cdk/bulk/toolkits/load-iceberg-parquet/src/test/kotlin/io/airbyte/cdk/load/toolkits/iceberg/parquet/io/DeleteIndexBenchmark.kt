@@ -23,9 +23,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 
 /**
- * Measures the three positional delete modes over the same workloads: naive, optimized, and
- * optimized with the deletion-vector index. Not a correctness test, and off unless
- * `RUN_DELETE_INDEX_BENCHMARK` is set:
+ * Measures the delete modes over the same workloads: equality deletes as the baseline, then naive,
+ * optimized, and optimized with the deletion-vector index positional deletes. Not a correctness
+ * test, and off unless `RUN_DELETE_INDEX_BENCHMARK` is set:
  *
  * ```
  * RUN_DELETE_INDEX_BENCHMARK=1 ./gradlew -PJunitMethodExecutionTimeout=30m \
@@ -36,10 +36,15 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 @EnabledIfEnvironmentVariable(named = "RUN_DELETE_INDEX_BENCHMARK", matches = ".+")
 class DeleteIndexBenchmark {
     /** The delete modes under measurement, in increasing order of optimization. */
-    enum class Mode(val suppressDeletedPositions: Boolean, val indexed: Boolean) {
-        NAIVE(suppressDeletedPositions = false, indexed = false),
-        OPTIMIZED(suppressDeletedPositions = true, indexed = false),
-        INDEXED(suppressDeletedPositions = true, indexed = true),
+    enum class Mode(
+        val positional: Boolean,
+        val suppressDeletedPositions: Boolean,
+        val indexed: Boolean,
+    ) {
+        EQUALITY(positional = false, suppressDeletedPositions = false, indexed = false),
+        NAIVE(positional = true, suppressDeletedPositions = false, indexed = false),
+        OPTIMIZED(positional = true, suppressDeletedPositions = true, indexed = false),
+        INDEXED(positional = true, suppressDeletedPositions = true, indexed = true),
     }
 
     data class Shape(
@@ -194,7 +199,10 @@ class DeleteIndexBenchmark {
                     tasks ->
                     tasks
                         .flatMap { task -> task.deletes() }
-                        .filter { it.content() == FileContent.POSITION_DELETES }
+                        .filter {
+                            it.content() == FileContent.POSITION_DELETES ||
+                                it.content() == FileContent.EQUALITY_DELETES
+                        }
                         .associateBy { it.location().toString() }
                 }
             return Result(
@@ -220,16 +228,21 @@ class DeleteIndexBenchmark {
         keys: List<String>,
     ) {
         val plannedSnapshotId = table.refs()[BRANCH]!!.snapshotId()
+        val importType = Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList())
         val writer =
-            writerFactory.create(
-                table,
-                "ab-generation-id-$generation-e",
-                Dedupe(primaryKey = listOf(listOf("id")), cursor = emptyList()),
-                schema,
-                positionalDeleteRef = BRANCH,
-                positionalDeleteState = state,
-                suppressDeletedPositions = mode.suppressDeletedPositions,
-            )
+            if (mode.positional) {
+                writerFactory.create(
+                    table,
+                    "ab-generation-id-$generation-e",
+                    importType,
+                    schema,
+                    positionalDeleteRef = BRANCH,
+                    positionalDeleteState = state,
+                    suppressDeletedPositions = mode.suppressDeletedPositions,
+                )
+            } else {
+                writerFactory.create(table, "ab-generation-id-$generation-e", importType, schema)
+            }
         keys.forEach { key ->
             writer.write(
                 RecordWrapper(record(schema, key, "updated-$generation"), Operation.UPDATE)
