@@ -32,8 +32,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
                   - $ref: "#/definitions/transient_error_filter"
         record_selector:
@@ -146,8 +145,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
                   - $ref: "#/definitions/transient_error_filter"
           request_body_json:
@@ -167,7 +165,6 @@ definitions:
                   structure: true
                   highlights: true
                   callOutcome: true
-                  pointsOfInterest: true
                   trackerOccurrences: true
                 parties: true
                 interaction:
@@ -265,8 +262,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
                   - $ref: "#/definitions/transient_error_filter"
         record_selector:
@@ -315,8 +311,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
                   - $ref: "#/definitions/transient_error_filter"
         record_selector:
@@ -385,8 +380,7 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
                   - $ref: "#/definitions/auth_error_filter"
                   - $ref: "#/definitions/transient_error_filter"
           request_body_json:
@@ -1128,36 +1122,6 @@ schemas:
                   type:
                     - number
                     - "null"
-          pointsOfInterest:
-            type:
-              - object
-              - "null"
-            properties:
-              actionItems:
-                type:
-                  - array
-                  - "null"
-                items:
-                  type:
-                    - object
-                    - "null"
-                  properties:
-                    snippet:
-                      type:
-                        - string
-                        - "null"
-                    snippetEndTime:
-                      type:
-                        - number
-                        - "null"
-                    snippetStartTime:
-                      type:
-                        - number
-                        - "null"
-                    speakerID:
-                      type:
-                        - string
-                        - "null"
           topics:
             type:
               - array

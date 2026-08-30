@@ -25,7 +25,8 @@ All requesters share the same response mappings, defined in `manifest.yaml` (`de
 
 | Response | Action | Failure type | Rationale |
 |---|---|---|---|
-| 404 / "No … found corresponding to the provided filters" | IGNORE (empty stream) | — | Gong signals an empty result set as 404. Warning: a key whose user lacks call visibility gets a byte-identical 404, so a misconfigured key looks like an empty source; this is indistinguishable server-side. |
+| 404 with "… found corresponding to the provided filters" | IGNORE (empty stream) | — | Gong signals an empty result set as a 404 with this message; only that 404 is treated as empty. Warning: a key whose user lacks call visibility gets a byte-identical 404, so a misconfigured key looks like an empty source; this is indistinguishable server-side. |
+| Any other 404 | FAIL (terminal) | `system_error` | CDK default mapping ("Not found. The requested resource was not found on the server."). Catches bad paths and removed resources instead of silently emptying the stream. |
 | 401, 403 | FAIL | `config_error` | Invalid, expired, or scope-limited credentials. Surfaced with an actionable message instead of a raw exception. |
 | 429, 500, 502, 503, 504 | RETRY | `transient_error` | Backoff honors the `Retry-After` header (`WaitTimeFromHeader`). Retry-After can reach hours when the 10,000 requests/day quota is exhausted, which is why `maxSecondsBetweenMessages` is 86400. |
 | Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all FAIL filter is deliberately omitted: `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s, so a match-anything rule would fail successful requests. |
