@@ -4,7 +4,7 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-Source QuickBooks is a manifest-only (declarative YAML) connector. There is no Python code in this directory — all behavior lives in `manifest.yaml` (28 streams). Do not edit `README.md`; it is a symlink to a shared file.
+Source QuickBooks is a manifest-only (declarative YAML) connector. There is no Python connector implementation — all connector behavior lives in `manifest.yaml` (28 streams); the only Python files are acceptance-test fixtures under `integration_tests/`. Do not edit `README.md`; it is a symlink to a shared file.
 
 ## Deletion patterns
 
@@ -40,6 +40,8 @@ Every stream uses `incremental_sync: DatetimeBasedCursor` with:
 - `step: P30D`, `cursor_granularity: PT0S`
 
 The real cursor value is nested at `MetaData.LastUpdatedTime`, so each stream declares a `transformations: AddFields` entry that copies `{{ record.MetaData.LastUpdatedTime }}` into a top-level `airbyte_cursor` field. `airbyte_cursor` is also declared in each stream's inline schema, so it lands in the destination as a real column.
+
+Note the intentional casing difference: the API response field is `MetaData.LastUpdatedTime` (used in the `AddFields` value), while the SQL-like query filters and `ORDER BY` use `Metadata.LastUpdatedTime`. QuickBooks queries accept the `Metadata` casing, so do not "fix" either spelling to match the other.
 
 Any newly added stream must replicate the same AddFields + schema-property pair to stay consistent.
 
