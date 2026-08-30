@@ -59,7 +59,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -233,7 +233,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -488,7 +488,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -838,7 +838,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1042,7 +1042,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1179,7 +1179,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1568,7 +1568,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -1924,7 +1924,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -2061,7 +2061,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -2350,7 +2350,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -2553,7 +2553,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -2991,7 +2991,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -3545,7 +3545,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -3745,7 +3745,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -4065,7 +4065,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -4189,7 +4189,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -4485,7 +4485,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -4933,7 +4933,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -5327,7 +5327,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -5676,7 +5676,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6113,7 +6113,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6241,7 +6241,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6417,7 +6417,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6604,7 +6604,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6752,7 +6752,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -6936,7 +6936,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -7100,7 +7100,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -7363,7 +7363,7 @@ definitions:
           type: DefaultPaginator
           pagination_strategy:
             type: OffsetIncrement
-            page_size: 5
+            page_size: "{{ (config.max_results or '200') | int }}"
       incremental_sync:
         type: DatetimeBasedCursor
         step: P30D
@@ -7648,7 +7648,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -7822,7 +7822,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -8077,7 +8077,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -8427,7 +8427,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -8631,7 +8631,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -8768,7 +8768,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9157,7 +9157,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9513,7 +9513,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9650,7 +9650,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -9939,7 +9939,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -10142,7 +10142,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -10580,7 +10580,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11134,7 +11134,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11334,7 +11334,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11654,7 +11654,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -11778,7 +11778,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -12074,7 +12074,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -12522,7 +12522,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -12916,7 +12916,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -13265,7 +13265,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -13702,7 +13702,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -13830,7 +13830,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14006,7 +14006,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14193,7 +14193,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14341,7 +14341,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14525,7 +14525,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14689,7 +14689,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -14952,7 +14952,7 @@ streams:
       type: DefaultPaginator
       pagination_strategy:
         type: OffsetIncrement
-        page_size: 5
+        page_size: "{{ (config.max_results or '200') | int }}"
   incremental_sync:
     type: DatetimeBasedCursor
     step: P30D
@@ -15164,6 +15164,24 @@ streams:
           type:
           - "null"
           - string
+# Rationale for the rates below (Intuit limits, headroom, and why two rates
+# instead of one) is documented in this connector's CONTRIBUTING.md.
+api_budget:
+  type: HTTPAPIBudget
+  status_codes_for_ratelimit_hit:
+  - 429
+  policies:
+  - type: MovingWindowCallRatePolicy
+    rates:
+    - limit: 8
+      interval: PT1S
+    - limit: 300
+      interval: PT1M
+    matchers: []
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 10
 spec:
   type: Spec
   connection_specification:
@@ -15244,6 +15262,18 @@ spec:
         title: Sandbox
         default: false
         description: Determines whether to use the sandbox or production environment.
+      num_workers:
+        type: integer
+        order: 9
+        title: Number of Concurrent Threads
+        default: 4
+        minimum: 1
+        maximum: 10
+        description: >-
+          Number of concurrent threads used to sync streams. Higher values can
+          speed up syncs but consume more of the QuickBooks API quota, which
+          Intuit caps at 10 concurrent requests per second and 500 requests per
+          minute for a single realm.
     additionalProperties: true
 metadata:
   autoImportSchema:
