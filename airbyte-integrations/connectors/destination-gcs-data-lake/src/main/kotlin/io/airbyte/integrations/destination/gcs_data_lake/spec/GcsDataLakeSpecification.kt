@@ -157,7 +157,8 @@ class GcsDataLakeSpecification : ConfigurationSpecification() {
             "Iceberg. Flushes also trigger on an estimated batch size in bytes and on a staleness " +
             "deadline, so the first limit reached wins. Larger values write fewer, larger files " +
             "and reduce repeated work for Dedupe streams using positional deletes, at the cost of " +
-            "holding more records in memory."
+            "holding more records in memory. Dedupe streams that use positional deletes " +
+            "reject flushes containing more than 1,000,000 distinct primary keys."
     )
     @get:JsonProperty("max_records_per_flush", required = false)
     @get:JsonSchemaInject(json = """{"default":10000000000,"order":12,"airbyte_hidden":true}""")
