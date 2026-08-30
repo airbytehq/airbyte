@@ -102,6 +102,7 @@ class S3DataLakeAggregate(
             writer.close()
         }
     }
+
     companion object {
         val commitLock: Any = Any()
     }
