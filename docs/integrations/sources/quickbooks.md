@@ -112,7 +112,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
-| 4.2.0 | 2026-08-30 | TBD | Automatically refresh the access token when it expires mid-sync, surface QuickBooks fault details in error messages, and make Token Expiry Date optional (managed automatically). |
+| 4.2.0 | 2026-08-30 | [85213](https://github.com/airbytehq/airbyte/pull/85213) | Automatically refresh the access token when it expires mid-sync, surface QuickBooks fault details in error messages, and make Token Expiry Date optional (managed automatically). |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
 | 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
 | 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
