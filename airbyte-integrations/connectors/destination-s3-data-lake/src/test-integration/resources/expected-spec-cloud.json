@@ -223,6 +223,31 @@
         "default" : 200,
         "order" : 8,
         "airbyte_hidden" : true
+      },
+      "merge_on_read_delete_encoding" : {
+        "type" : "string",
+        "enum" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL" ],
+        "description" : "The delete-file encoding used by Dedupe streams. AUTOMATIC currently uses equality deletes but may change in a future version. Choose EQUALITY to always use equality deletes, or POSITIONAL for readers that do not support equality-delete files.",
+        "title" : "Merge-on-Read Delete Encoding",
+        "default" : "AUTOMATIC",
+        "examples" : [ "AUTOMATIC", "EQUALITY", "POSITIONAL" ],
+        "order" : 9
+      },
+      "suppress_deleted_positions" : {
+        "type" : "boolean",
+        "description" : "Experimental. Only applies when positional deletes are in use. When enabled, prior positional delete files are consulted so that a position is deleted at most once. Disabling it writes a delete for every physical copy of a row, which avoids reading prior delete files at the cost of a larger delete-file population.",
+        "title" : "Suppress Already-Deleted Positions",
+        "default" : true,
+        "order" : 10,
+        "airbyte_hidden" : true
+      },
+      "index_positional_deletes" : {
+        "type" : "boolean",
+        "description" : "Experimental. Only applies when positional deletes are in use with suppression enabled. Publishes a deletion-vector index alongside the table as Iceberg statistics so later flushes can skip reading prior delete files. The index is an accelerator only; delete files remain the source of truth and readers are unaffected.",
+        "title" : "Index Positional Deletes",
+        "default" : false,
+        "order" : 11,
+        "airbyte_hidden" : true
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]
