@@ -172,7 +172,8 @@ definitions:
           path: search
           http_method: GET
           request_parameters:
-            channelId: "{{ config.channel_ids }}"
+            part: id
+            type: video
         record_selector:
           type: RecordSelector
           extractor:
@@ -196,6 +197,14 @@ definitions:
             page_size: 50
             cursor_value: "{{ response.nextPageToken }}"
             stop_condition: "{{ not response.get('nextPageToken') }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.channel_ids }}"
+          cursor_field: channel_id
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: channelId
       schema_loader:
         type: InlineSchemaLoader
         schema:
