@@ -708,6 +708,7 @@ class PositionalDeleteEndToEndTest {
             )
         assertThat(result.deleteFiles()).hasSize(1)
         assertThat(result.deleteFiles().single().content()).isEqualTo(FileContent.POSITION_DELETES)
+        assertThat(result.deleteFiles().single().location()).doesNotContain("data//")
         warehouse.toFile().deleteRecursively()
     }
 
