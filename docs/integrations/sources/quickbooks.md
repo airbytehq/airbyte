@@ -8,9 +8,9 @@ This page contains the setup guide and reference information for the QuickBooks 
 - [Intuit Developer account](https://developer.intuit.com/app/developer/qbo/docs/get-started) with an app created
 - **Client ID** and **Client Secret**: the credentials that identify your app. Obtain these from the Keys tab on the app profile under My Apps on the developer site. There are separate development and production versions of these keys.
 - **Refresh Token** and **Access Token**: the OAuth 2.0 tokens used to make authenticated requests. The easiest way to get these is Intuit's [OAuth 2.0 playground](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0-playground).
-- **Token Expiry Date**: the date-time when the access token should be refreshed.
+- **Token Expiry Date**: the date-time when the access token becomes invalid and should be refreshed.
 - **Realm ID**: the labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) of the company you want to replicate data for.
-- **Start Date**: the earliest date-time to replicate data from, as an RFC 3339 string, such as `2021-03-20T00:00:00Z`. Airbyte doesn't replicate data from before this date.
+- **Start Date**: the earliest date-time to replicate data from, as a UTC timestamp in the form `YYYY-MM-DDTHH:MM:SSZ`, such as `2021-03-20T00:00:00Z`. Offsets and fractional seconds aren't accepted. Airbyte doesn't replicate data from before this date.
 - **Sandbox**: whether to replicate data from Intuit's sandbox environment instead of production.
 
 ## Setup guide
