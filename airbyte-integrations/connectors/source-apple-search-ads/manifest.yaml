@@ -881,7 +881,7 @@ spec:
       token_refresh_endpoint:
         type: string
         description: >-
-          Leave this empty unless you need to route token requests through a
+          Leave this unset unless you need to route token requests through a
           proxy. The connector uses Apple's token endpoint by default, so this
           override is only needed when outbound requests to Apple must go
           through your own HTTPS endpoint.
