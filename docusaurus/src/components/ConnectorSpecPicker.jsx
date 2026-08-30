@@ -17,6 +17,24 @@ const toDocsHref = (documentationUrl) => {
   return documentationUrl;
 };
 
+const ConnectorIcon = ({ iconUrl, className }) => {
+  const [failed, setFailed] = useState(false);
+
+  if (!iconUrl || failed) {
+    return null;
+  }
+
+  return (
+    <img
+      className={className}
+      src={iconUrl}
+      alt=""
+      loading="lazy"
+      onError={() => setFailed(true)}
+    />
+  );
+};
+
 const CONNECTOR_TYPES = [
   { value: "all", label: "All" },
   { value: "source", label: "Sources" },
@@ -170,10 +188,11 @@ export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
                 }
                 onClick={() => setSelected(entry)}
               >
+                <ConnectorIcon
+                  iconUrl={entry.iconUrl}
+                  className={styles.resultIcon}
+                />
                 <span className={styles.resultName}>{entry.name}</span>
-                <span className={styles.resultType}>
-                  {entry.connector_type}
-                </span>
               </button>
             </li>
           ))}
@@ -182,12 +201,18 @@ export const ConnectorSpecPicker = ({ connectorType: fixedType, compact }) => {
 
       {selected && (
         <div className={styles.spec}>
-          {compact ? (
-            <p className={styles.compactName}>{selected.name}</p>
-          ) : (
-            <h2>{selected.name}</h2>
-          )}
-          <p>
+          <div className={styles.specHeading}>
+            <ConnectorIcon
+              iconUrl={selected.iconUrl}
+              className={styles.specIcon}
+            />
+            {compact ? (
+              <p className={styles.compactName}>{selected.name}</p>
+            ) : (
+              <h2 className={styles.specName}>{selected.name}</h2>
+            )}
+          </div>
+          <p className={styles.specMeta}>
             <code>{selected.dockerRepository}</code>
             {selected.documentationUrl && (
               <>

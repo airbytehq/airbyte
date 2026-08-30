@@ -1,16 +1,19 @@
 .lookup {
-  margin: 8px 0 4px;
+  margin: 12px 0 8px;
 }
 
 .toggle {
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--ifm-link-color);
+  padding: 6px 14px;
+  border: 1px solid var(--ifm-color-primary);
+  border-radius: var(--ifm-global-radius);
+  background-color: var(--ifm-color-primary);
+  color: var(--ifm-color-primary-contrast-background);
   font-size: inherit;
+  font-weight: 500;
   cursor: pointer;
 }
 
 .toggle:hover {
-  text-decoration: underline;
+  background-color: var(--ifm-color-primary-dark);
+  border-color: var(--ifm-color-primary-dark);
 }

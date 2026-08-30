@@ -102,6 +102,7 @@ async function main() {
       connector_type: connector.connector_type,
       dockerRepository: connector.dockerRepository,
       documentationUrl: connector.documentationUrl,
+      iconUrl: connector.iconUrl,
     };
 
     writeJson(

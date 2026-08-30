@@ -44,7 +44,7 @@
   max-height: 320px;
   overflow-y: auto;
   margin: 0 0 20px;
-  padding: 8px;
+  padding: 12px;
   list-style: none;
   border: 1px solid var(--ifm-table-border-color);
   border-radius: var(--ifm-global-radius);
@@ -53,8 +53,7 @@
 .result {
   display: flex;
   gap: 8px;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
   width: 100%;
   padding: 6px 8px;
   font-size: inherit;
@@ -83,9 +82,11 @@
   font-weight: bold;
 }
 
-.resultType {
-  font-size: 0.8em;
-  opacity: 0.7;
+.resultIcon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 
 .empty {
@@ -93,11 +94,33 @@
 }
 
 .spec {
-  padding-top: 8px;
-  border-top: 1px solid var(--ifm-table-border-color);
+  padding-top: 4px;
+}
+
+.specHeading {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.specIcon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.specName {
+  margin: 0;
+}
+
+.specMeta {
+  margin-bottom: 20px;
 }
 
 .compactName {
-  margin-bottom: 4px;
+  margin: 0;
+  font-size: 1.1em;
   font-weight: bold;
 }
