@@ -21,10 +21,24 @@ NESTED_FIELDS = {
 
 
 def migrate_config(config: Mapping[str, Any]) -> Mapping[str, Any]:
-    source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH), config=config)
+    source = YamlDeclarativeSource(path_to_yaml=str(MANIFEST_PATH))
     migrated_config = source._migrate_and_transform_config(None, config)
     assert migrated_config is not None
     return migrated_config
+
+
+def connector_config_control_message(output: str) -> Mapping[str, Any]:
+    control_messages = []
+    for line in output.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if message.get("type") == "CONTROL" and message.get("control", {}).get("type") == "CONNECTOR_CONFIG":
+            control_messages.append(message)
+
+    assert len(control_messages) == 1
+    return control_messages[0]
 
 
 def test_migrates_nested_credentials_to_root(capsys):
@@ -41,9 +55,21 @@ def test_migrates_nested_credentials_to_root(capsys):
         "start_date": "2021-03-20T00:00:00Z",
         "sandbox": True,
     }
-    control_message = json.loads(capsys.readouterr().out.splitlines()[-1])
-    assert control_message["control"]["type"] == "CONNECTOR_CONFIG"
+    control_message = connector_config_control_message(capsys.readouterr().out)
     assert control_message["control"]["connectorConfig"]["config"] == migrated_config
+
+
+def test_migrates_numeric_realm_id_to_string():
+    config = {
+        "credentials": {**NESTED_FIELDS, "realm_id": 123},
+        "start_date": "2021-03-20T00:00:00Z",
+        "sandbox": False,
+    }
+
+    migrated_config = migrate_config(config)
+
+    assert migrated_config["realm_id"] == "123"
+    assert isinstance(migrated_config["realm_id"], str)
 
 
 def test_does_not_add_missing_nested_fields_as_none():

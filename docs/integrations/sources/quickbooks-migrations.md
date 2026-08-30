@@ -2,9 +2,9 @@
 
 ## Upgrading to 4.0.0
 
-The config no longer has a nested credentials field, while the config fields remain the same, they are now at the root level instead of being nested inside a credentials object. You will need to repopulate the config fields to make the connector work again. This is done to fix the refresh token issue where it wasn't getting updated after 24 hours.
+The config no longer has a nested credentials field: the config fields remain the same, but they are now at the root level instead of being nested inside a credentials object. This was done to fix the refresh token issue where it wasn't getting updated after 24 hours.
 
-As of 4.1.9, configs that still use the old nested `credentials` shape are migrated automatically. You do not need to repopulate the config fields manually.
+As of 4.1.9 this migration is automatic — configs still using the old nested `credentials` shape are lifted to the root-level shape on the next sync, and no manual action is needed. On versions 4.0.0 through 4.1.8 you had to repopulate the config fields by hand.
 
 ## Upgrading to 3.0.0
 
