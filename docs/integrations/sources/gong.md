@@ -22,7 +22,7 @@ The connection test validates connectivity by reading the `users` stream, so the
 
 You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 
-### For Airbyte Cloud:
+### For Airbyte Cloud
 
 <!-- env:cloud -->
 
@@ -32,7 +32,7 @@ You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
 
 - **API Key**. Alternatively, authenticate with an access key and access key secret, generated as described in the Open Source section below.
 
-### For Airbyte Open Source:
+### For Airbyte Open Source
 
 - **API Key**. Authenticate using an access key and access key secret. To generate credentials:
   1. Log in to your Gong account as a technical administrator.
