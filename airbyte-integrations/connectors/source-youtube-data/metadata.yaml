@@ -9,6 +9,12 @@ data:
       enabled: true
     cloud:
       enabled: true
+  suggestedStreams:
+    streams:
+      - channels
+      - videos
+      - comments
+      - channel_comments
   remoteRegistries:
     pypi:
       enabled: false
