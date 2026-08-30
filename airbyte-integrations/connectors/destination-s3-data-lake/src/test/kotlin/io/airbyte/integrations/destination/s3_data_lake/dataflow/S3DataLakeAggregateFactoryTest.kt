@@ -27,6 +27,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
 import io.mockk.verify
+import io.mockk.verifyOrder
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -105,6 +106,7 @@ internal class S3DataLakeAggregateFactoryTest {
                 Types.NestedField.optional(2, "name", Types.StringType.get()),
             )
         val table: Table = mockk()
+        every { table.refresh() } just runs
         every { table.refs() } returns emptyMap()
         val append: AppendFiles = mockk {
             every { toBranch(stagingBranchName) } returns this
@@ -166,6 +168,12 @@ internal class S3DataLakeAggregateFactoryTest {
         firstFlush.get(5, TimeUnit.SECONDS)
         secondFlush.get(5, TimeUnit.SECONDS)
         assertThat(secondCompleteCalls.get()).isEqualTo(1)
+        verifyOrder {
+            table.refresh()
+            table.refs()
+            table.refresh()
+            table.refs()
+        }
     }
 
     private fun makeStream(): DestinationStream {
