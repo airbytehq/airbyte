@@ -10,6 +10,7 @@ import org.apache.iceberg.data.GenericFileWriterFactory
 import org.apache.iceberg.data.Record
 import org.apache.iceberg.deletes.PositionDelete
 import org.apache.iceberg.deletes.PositionDeleteWriter
+import org.apache.iceberg.encryption.EncryptedOutputFile
 import org.apache.iceberg.io.OutputFileFactory
 
 /** One positional delete writer per partition, with file paths and positions in ascending order. */
@@ -44,7 +45,7 @@ class PositionalDeleteFiles(
                     writers.getOrPut(key) {
                         WriterState(
                             writerFactory.newPositionDeleteWriter(
-                                outputFileFactory.newOutputFile(location.spec, location.partition),
+                                newOutputFile(location),
                                 location.spec,
                                 location.partition,
                             ),
@@ -69,6 +70,17 @@ class PositionalDeleteFiles(
         }
         return writers.values.flatMap { it.writer.result().deleteFiles() }
     }
+
+    /**
+     * An unpartitioned spec renders an empty partition path, so asking for a partitioned location
+     * yields a doubled separator that some readers cannot resolve.
+     */
+    private fun newOutputFile(location: PositionalDeleteResolver.RowLocation): EncryptedOutputFile =
+        if (location.partition == null) {
+            outputFileFactory.newOutputFile()
+        } else {
+            outputFileFactory.newOutputFile(location.spec, location.partition)
+        }
 
     private fun partitionValues(partition: StructLike?): List<Any?> =
         if (partition == null) {
