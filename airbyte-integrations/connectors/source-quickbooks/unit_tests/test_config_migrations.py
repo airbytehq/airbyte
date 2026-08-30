@@ -48,9 +48,7 @@ def test_migrates_nested_credentials_to_root(capsys):
 
 def test_does_not_add_missing_nested_fields_as_none():
     config = {
-        "credentials": {
-            key: value for key, value in NESTED_FIELDS.items() if key != "token_expiry_date"
-        },
+        "credentials": {key: value for key, value in NESTED_FIELDS.items() if key != "token_expiry_date"},
         "start_date": "2021-03-20T00:00:00Z",
         "sandbox": False,
     }
