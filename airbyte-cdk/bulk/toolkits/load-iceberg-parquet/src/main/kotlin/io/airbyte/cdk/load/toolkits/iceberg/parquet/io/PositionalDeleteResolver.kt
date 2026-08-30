@@ -16,8 +16,10 @@ import org.apache.iceberg.io.OutputFileFactory
 /**
  * Resolves the physical locations of keys touched by one positional-delete flush.
  *
- * The resolver deliberately ignores existing delete files. A position delete for every older
- * physical copy is safe even when an equality or position delete already hides that row.
+ * A position delete for every older physical copy is safe even when an equality or position delete
+ * already hides that row, so [suppressDeletedPositions] can be turned off to write a delete for
+ * every copy without consulting prior deletes. The features that build on suppression, whole-file
+ * supersession and the delete index, then have nothing to count and must be off too.
  */
 class PositionalDeleteResolver(
     table: Table,
@@ -29,6 +31,7 @@ class PositionalDeleteResolver(
     private val maxTouchedKeys: Int = DEFAULT_MAX_TOUCHED_KEYS,
     state: PositionalDeleteResolutionState = PositionalDeleteResolutionState(),
     allowWholeFileSupersession: Boolean = false,
+    suppressDeletedPositions: Boolean = true,
 ) {
     private val finder =
         SupersededRowFinder(
@@ -37,6 +40,7 @@ class PositionalDeleteResolver(
             identifierFieldIds,
             state,
             allowWholeFileSupersession = allowWholeFileSupersession,
+            suppressDeletedPositions = suppressDeletedPositions,
         )
     private val deleteFiles =
         PositionalDeleteFiles(writerFactory, outputFileFactory, state.deleteIndex)
@@ -49,6 +53,13 @@ class PositionalDeleteResolver(
 
     init {
         require(maxTouchedKeys > 0) { "maxTouchedKeys must be positive" }
+        // Both features count already-deleted positions, so neither is meaningful without them.
+        require(suppressDeletedPositions || !allowWholeFileSupersession) {
+            "Whole-file supersession requires suppression of already-deleted positions"
+        }
+        require(suppressDeletedPositions || !state.deleteIndex.enabled) {
+            "The delete index requires suppression of already-deleted positions"
+        }
     }
 
     fun resolve(touchedKeys: TouchedKeys): List<DeleteFile> =

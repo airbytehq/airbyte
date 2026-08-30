@@ -36,6 +36,7 @@ class SupersededRowFinder(
     private val maxInValues: Int = MAX_IN_VALUES,
     private val maxSubRanges: Int = MAX_SUB_RANGES,
     private val allowWholeFileSupersession: Boolean = false,
+    private val suppressDeletedPositions: Boolean = true,
 ) {
     private val identifierSchema = TypeUtil.select(schema, identifierFieldIds)
     private val identifierFields = identifierSchema.columns()
@@ -97,7 +98,11 @@ class SupersededRowFinder(
         state.positionDeleteFilesRead.set(0)
         state.deleteIndex.beginFlush()
         indexEntries =
-            state.deleteIndex.entries(table, table.refs()[ref]?.snapshotId() ?: NO_SNAPSHOT)
+            if (suppressDeletedPositions) {
+                state.deleteIndex.entries(table, table.refs()[ref]?.snapshotId() ?: NO_SNAPSHOT)
+            } else {
+                emptyMap()
+            }
         return plannedFiles
             .asSequence()
             .sortedBy { it.file.location().toString() }
@@ -163,6 +168,7 @@ class SupersededRowFinder(
     }
 
     private fun positionDeleteIndex(planned: PlannedDataFile): PositionDeleteIndex? {
+        if (!suppressDeletedPositions) return null
         val location = planned.file.location().toString()
         val index = mergedPositionDeleteIndex(planned, location)
         state.deleteIndex.observe(location, planned.file.recordCount(), planned.deletes, index)

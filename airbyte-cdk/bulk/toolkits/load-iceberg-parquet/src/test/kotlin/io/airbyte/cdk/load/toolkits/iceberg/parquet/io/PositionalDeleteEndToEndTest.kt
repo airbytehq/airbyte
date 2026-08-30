@@ -317,6 +317,68 @@ class PositionalDeleteEndToEndTest {
 
     @Test
     @Suppress("DEPRECATION")
+    fun `writes a delete for every copy when suppression is off`() {
+        val warehouse = Files.createTempDirectory("positional-delete-naive")
+        val catalog = HadoopCatalog(Configuration(), warehouse.toString())
+        val tableId = TableIdentifier.of("db", "naive")
+        val schema =
+            Schema(
+                listOf(
+                    Types.NestedField.required(1, "id", Types.StringType.get()),
+                    Types.NestedField.required(2, "name", Types.StringType.get()),
+                ),
+                setOf(1),
+            )
+        catalog.createNamespace(tableId.namespace())
+        val table =
+            catalog
+                .buildTable(tableId, schema)
+                .withProperty(
+                    TableProperties.DEFAULT_FILE_FORMAT,
+                    FileFormat.PARQUET.name.lowercase()
+                )
+                .create()
+        val writerFactory = IcebergTableWriterFactory()
+        val initialWriter = writerFactory.create(table, "ab-generation-id-0-e", Append, schema)
+        listOf("a", "b").forEach { id -> initialWriter.write(record(schema, id, "old-$id")) }
+        val initialResult = initialWriter.complete()
+        table.newAppend().apply { initialResult.dataFiles().forEach(::appendFile) }.commit()
+        table.manageSnapshots().createBranch("staging").commit()
+        val state = PositionalDeleteResolutionState()
+        val importType = io.airbyte.cdk.load.command.Dedupe(listOf(listOf("id")), emptyList())
+
+        // Every flush updates the same key, so the second and third re-delete positions that
+        // earlier flushes already deleted rather than reading those deletes back.
+        repeat(3) { flush ->
+            val planned = table.refs()["staging"]!!.snapshotId()
+            val writer =
+                writerFactory.create(
+                    table,
+                    "ab-generation-id-${flush + 1}-e",
+                    importType,
+                    schema,
+                    positionalDeleteRef = "staging",
+                    positionalDeleteState = state,
+                    suppressDeletedPositions = false,
+                )
+            writer.write(RecordWrapper(record(schema, "a", "new-a-$flush"), Operation.UPDATE))
+            val result = writer.complete()
+            assertThat(result.deleteFiles()).hasSize(flush + 1)
+            IcebergTableCommitter.commit(table, "staging", result, planned, emptySet())
+        }
+        assertThat(state.positionDeleteFilesRead.get()).isZero()
+
+        val rows =
+            IcebergGenerics.read(table)
+                .useSnapshot(table.refs()["staging"]!!.snapshotId())
+                .build()
+                .use { records -> records.map { it.getField("name") }.toSet() }
+        assertThat(rows).containsExactlyInAnyOrder("new-a-2", "old-b")
+        warehouse.toFile().deleteRecursively()
+    }
+
+    @Test
+    @Suppress("DEPRECATION")
     fun `falls back per data file when a prior position delete cannot be read`() {
         val warehouse = Files.createTempDirectory("positional-delete-fallback")
         val catalog = HadoopCatalog(Configuration(), warehouse.toString())

@@ -23,8 +23,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
 
 /**
- * Measures the optimized positional delete path with the deletion-vector index off and on. Not a
- * correctness test, and off unless `RUN_DELETE_INDEX_BENCHMARK` is set:
+ * Measures the three positional delete modes over the same workloads: naive, optimized, and
+ * optimized with the deletion-vector index. Not a correctness test, and off unless
+ * `RUN_DELETE_INDEX_BENCHMARK` is set:
  *
  * ```
  * RUN_DELETE_INDEX_BENCHMARK=1 ./gradlew -PJunitMethodExecutionTimeout=30m \
@@ -34,6 +35,13 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable
  */
 @EnabledIfEnvironmentVariable(named = "RUN_DELETE_INDEX_BENCHMARK", matches = ".+")
 class DeleteIndexBenchmark {
+    /** The delete modes under measurement, in increasing order of optimization. */
+    enum class Mode(val suppressDeletedPositions: Boolean, val indexed: Boolean) {
+        NAIVE(suppressDeletedPositions = false, indexed = false),
+        OPTIMIZED(suppressDeletedPositions = true, indexed = false),
+        INDEXED(suppressDeletedPositions = true, indexed = true),
+    }
+
     data class Shape(
         val name: String,
         val dataFiles: Int,
@@ -44,6 +52,8 @@ class DeleteIndexBenchmark {
         val hotFileFraction: Double,
         /** Flushes per sync; a new sync drops the in-memory index and rereads statistics. */
         val flushesPerSync: Int,
+        /** Rows per data file that updates cycle through; fewer rows means more re-updates. */
+        val updatedRowsPerFile: Int = rowsPerDataFile,
     )
 
     data class Result(
@@ -67,30 +77,38 @@ class DeleteIndexBenchmark {
                 Shape("20 flushes, one sync, high volume", 8, 4000, 20, 200, 0.25, 20),
                 Shape("40 flushes, 40 syncs, hot files", 4, 500, 40, 20, 0.25, 1),
                 Shape("40 flushes, 40 syncs, uniform", 4, 500, 40, 20, 1.0, 1),
+                Shape(
+                    "20 flushes, one sync, repeated keys",
+                    4,
+                    500,
+                    20,
+                    20,
+                    0.25,
+                    20,
+                    updatedRowsPerFile = 20,
+                ),
             )
         val repetitions = 3
         val runs =
             (1..repetitions).flatMap {
                 shapes.flatMap { shape ->
-                    listOf(false, true).map { indexed ->
-                        Triple(shape.name, indexed, run(shape, indexed))
-                    }
+                    Mode.entries.map { mode -> Triple(shape.name, mode, run(shape, mode)) }
                 }
             }
         val rows = mutableListOf<String>()
         rows.add(
-            "| shape | index | files opened | rows scanned | delete files read | " +
+            "| shape | mode | files opened | rows scanned | delete files read | " +
                 "delete files | delete bytes | median wall ms of $repetitions |"
         )
         rows.add("| --- | --- | --- | --- | --- | --- | --- | --- |")
         shapes.forEach { shape ->
-            listOf(false, true).forEach { indexed ->
+            Mode.entries.forEach { mode ->
                 val results =
-                    runs.filter { it.first == shape.name && it.second == indexed }.map { it.third }
+                    runs.filter { it.first == shape.name && it.second == mode }.map { it.third }
                 val result = results.first()
                 val medianWallTime = results.map { it.wallTimeMillis }.sorted()[results.size / 2]
                 rows.add(
-                    "| ${shape.name} | ${if (indexed) "on" else "off"} | " +
+                    "| ${shape.name} | ${mode.name.lowercase()} | " +
                         "${result.dataFilesOpened} | ${result.rowsScanned} | " +
                         "${result.positionDeleteFilesRead} | ${result.deleteFiles} | " +
                         "${result.deleteFileBytes} | $medianWallTime |"
@@ -102,7 +120,7 @@ class DeleteIndexBenchmark {
         Files.writeString(Path.of(System.getProperty("java.io.tmpdir"), "dv-benchmark.md"), report)
     }
 
-    private fun run(shape: Shape, indexed: Boolean): Result {
+    private fun run(shape: Shape, mode: Mode): Result {
         val warehouse = Files.createTempDirectory("delete-index-bench")
         try {
             val catalog = HadoopCatalog(Configuration(), warehouse.toString())
@@ -135,7 +153,7 @@ class DeleteIndexBenchmark {
             }
             table.manageSnapshots().createBranch(BRANCH).commit()
 
-            var state = PositionalDeleteResolutionState(deleteIndexEnabled = indexed)
+            var state = PositionalDeleteResolutionState(deleteIndexEnabled = mode.indexed)
             val hotFiles = maxOf(1, (shape.dataFiles * shape.hotFileFraction).toInt())
             var totalDataFilesOpened = 0
             var totalRowsScanned = 0L
@@ -146,19 +164,21 @@ class DeleteIndexBenchmark {
                         totalDataFilesOpened += state.dataFilesOpened.get()
                         totalRowsScanned += state.rowsScanned.get()
                         totalDeleteFilesRead += state.positionDeleteFilesRead.get()
-                        state = PositionalDeleteResolutionState(deleteIndexEnabled = indexed)
+                        state = PositionalDeleteResolutionState(deleteIndexEnabled = mode.indexed)
                     }
                     flush(
                         table,
                         schema,
                         writerFactory,
                         state,
+                        mode = mode,
                         generation = flush + 1,
                         keys =
                             (0 until shape.updatesPerFlush).map { update ->
                                 val fileIndex = (flush + update) % hotFiles
                                 val rowIndex =
-                                    (flush * shape.updatesPerFlush + update) % shape.rowsPerDataFile
+                                    (flush * shape.updatesPerFlush + update) %
+                                        shape.updatedRowsPerFile
                                 key(fileIndex, rowIndex, shape)
                             },
                     )
@@ -195,6 +215,7 @@ class DeleteIndexBenchmark {
         schema: Schema,
         writerFactory: IcebergTableWriterFactory,
         state: PositionalDeleteResolutionState,
+        mode: Mode,
         generation: Int,
         keys: List<String>,
     ) {
@@ -207,6 +228,7 @@ class DeleteIndexBenchmark {
                 schema,
                 positionalDeleteRef = BRANCH,
                 positionalDeleteState = state,
+                suppressDeletedPositions = mode.suppressDeletedPositions,
             )
         keys.forEach { key ->
             writer.write(
