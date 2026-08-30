@@ -15255,29 +15255,36 @@ spec:
           NEW: {"realm_id": ..., "client_id": ..., ..., "start_date": ...}
         transformations:
           - type: ConfigAddFields
-            condition: "{{ value is not none and config.get(path[0]) is none }}"
+            condition: "{{ config.get('credentials', {}).get(path[0]) is not none and config.get(path[0]) is none }}"
             fields:
               - type: AddedFieldDefinition
                 path: ["realm_id"]
                 value: "{{ config.get('credentials', {}).get('realm_id') }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path: ["auth_type"]
                 value: "{{ config.get('credentials', {}).get('auth_type') }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path: ["client_id"]
                 value: "{{ config.get('credentials', {}).get('client_id') }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path: ["client_secret"]
                 value: "{{ config.get('credentials', {}).get('client_secret') }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path: ["refresh_token"]
                 value: "{{ config.get('credentials', {}).get('refresh_token') }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path: ["access_token"]
                 value: "{{ config.get('credentials', {}).get('access_token') }}"
+                value_type: string
               - type: AddedFieldDefinition
                 path: ["token_expiry_date"]
                 value: "{{ config.get('credentials', {}).get('token_expiry_date') }}"
+                value_type: string
           - type: ConfigRemoveFields
             condition: "{{ config.get('credentials') is not none }}"
             field_pointers:
