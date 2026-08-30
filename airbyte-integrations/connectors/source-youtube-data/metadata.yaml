@@ -2,7 +2,8 @@ metadataSpecVersion: "1.0"
 data:
   allowedHosts:
     hosts:
-      - "googleapis.com"
+      - www.googleapis.com
+      - oauth2.googleapis.com
   registryOverrides:
     oss:
       enabled: true
