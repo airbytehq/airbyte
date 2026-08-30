@@ -65,7 +65,7 @@ definitions:
           fields:
             - path:
                 - datetime
-              value: "{{ now_utc() }}"
+              value: "{{ now_utc().isoformat() }}"
         - type: AddFields
           fields:
             - path:
@@ -120,6 +120,9 @@ definitions:
     comments:
       type: DeclarativeStream
       name: comments
+      primary_key:
+        - videoId
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -158,6 +161,12 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/videos"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record.get('topLevelComment', {}).get('id') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -165,6 +174,8 @@ definitions:
     videos:
       type: DeclarativeStream
       name: videos
+      primary_key:
+        - videoId
       retriever:
         type: SimpleRetriever
         requester:
@@ -173,6 +184,7 @@ definitions:
           http_method: GET
           request_parameters:
             channelId: "{{ config.channel_ids }}"
+            type: video
         record_selector:
           type: RecordSelector
           extractor:
@@ -203,6 +215,9 @@ definitions:
     channel_comments:
       type: DeclarativeStream
       name: channel_comments
+      primary_key:
+        - channelId
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -230,6 +245,12 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken', '') }}"
             stop_condition: "{{ response.get('nextPageToken') is none }}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record.get('topLevelComment', {}).get('id') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -450,6 +471,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       videoId:
         type: string
       kind:
@@ -468,6 +490,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       channelId:
         type:
           - string
@@ -739,6 +762,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           license:
             type:
               - string
@@ -836,6 +860,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           defaultLanguage:
             type:
               - string
@@ -1035,6 +1060,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
       localizations:
         type:
           - object
@@ -1052,6 +1078,10 @@ schemas:
           - boolean
           - "null"
       channelId:
+        type:
+          - string
+          - "null"
+      id:
         type:
           - string
           - "null"
@@ -1118,6 +1148,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               textDisplay:
                 type:
                   - string
@@ -1130,6 +1161,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               videoId:
                 type:
                   - string
@@ -1172,6 +1204,10 @@ schemas:
         type:
           - string
           - "null"
+      id:
+        type:
+          - string
+          - "null"
       isPublic:
         type:
           - boolean
@@ -1235,6 +1271,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               textDisplay:
                 type:
                   - string
@@ -1247,6 +1284,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               videoId:
                 type:
                   - string
