@@ -73,9 +73,16 @@ class GcsDataLakeBeanFactory {
         catalog: DestinationCatalog,
         config: GcsDataLakeConfiguration,
     ): DataFlowSocketConfig {
+        val positionalEncoding =
+            when (config.mergeOnReadDeleteEncoding) {
+                // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing;
+                // flip it back to equality before release.
+                MergeOnReadDeleteEncoding.AUTOMATIC,
+                MergeOnReadDeleteEncoding.POSITIONAL -> true
+                MergeOnReadDeleteEncoding.EQUALITY -> false
+            }
         val hasPositionalDedupeStreams =
-            config.mergeOnReadDeleteEncoding == MergeOnReadDeleteEncoding.POSITIONAL &&
-                catalog.streams.any { it.tableSchema.importType is Dedupe }
+            positionalEncoding && catalog.streams.any { it.tableSchema.importType is Dedupe }
         return if (hasPositionalDedupeStreams) {
             log.info { "Positional dedup streams detected, limiting to 1 test socket" }
             object : DataFlowSocketConfig {
