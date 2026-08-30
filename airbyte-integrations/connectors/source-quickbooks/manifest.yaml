@@ -15245,6 +15245,43 @@ spec:
         default: false
         description: Determines whether to use the sandbox or production environment.
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Lifts the pre-4.0.0 nested credentials fields to the config root.
+          OLD: {"credentials": {"realm_id": ..., "client_id": ..., ...}, "start_date": ...}
+          NEW: {"realm_id": ..., "client_id": ..., ..., "start_date": ...}
+        transformations:
+          - type: ConfigAddFields
+            condition: "{{ value is not none and config.get(path[0]) is none }}"
+            fields:
+              - type: AddedFieldDefinition
+                path: ["realm_id"]
+                value: "{{ config.get('credentials', {}).get('realm_id') }}"
+              - type: AddedFieldDefinition
+                path: ["auth_type"]
+                value: "{{ config.get('credentials', {}).get('auth_type') }}"
+              - type: AddedFieldDefinition
+                path: ["client_id"]
+                value: "{{ config.get('credentials', {}).get('client_id') }}"
+              - type: AddedFieldDefinition
+                path: ["client_secret"]
+                value: "{{ config.get('credentials', {}).get('client_secret') }}"
+              - type: AddedFieldDefinition
+                path: ["refresh_token"]
+                value: "{{ config.get('credentials', {}).get('refresh_token') }}"
+              - type: AddedFieldDefinition
+                path: ["access_token"]
+                value: "{{ config.get('credentials', {}).get('access_token') }}"
+              - type: AddedFieldDefinition
+                path: ["token_expiry_date"]
+                value: "{{ config.get('credentials', {}).get('token_expiry_date') }}"
+          - type: ConfigRemoveFields
+            condition: "{{ config.get('credentials') is not none }}"
+            field_pointers:
+              - ["credentials"]
 metadata:
   autoImportSchema:
     accounts: false
