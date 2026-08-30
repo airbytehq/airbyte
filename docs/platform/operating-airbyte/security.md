@@ -131,6 +131,12 @@ Our compliance efforts for Airbyte Cloud include:
 - ISO 27001 certification: We received our ISO 27001 certification in November 2022. A copy of the certificate is available upon request.
 - Assessments and penetration tests: We use tools provided by the Cloud platforms as well as third-party assessments and penetration tests.
 
+### Enterprise Flex data flow diagram {#flex-data-flow}
+
+This diagram describes the flow of data between Airbyte's control plane, a self-managed data plane, and the open internet in [Enterprise Flex](../enterprise-flex/).
+
+![Network diagram describing Airbyte Enterprise Flex](assets/flex-network-diagram.png)
+
 ## Reporting Vulnerabilities​
 
 :::warning
