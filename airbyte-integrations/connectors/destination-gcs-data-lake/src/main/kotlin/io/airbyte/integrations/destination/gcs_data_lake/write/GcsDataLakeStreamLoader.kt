@@ -12,10 +12,13 @@ import io.airbyte.cdk.load.toolkits.iceberg.parquet.ColumnTypeChangeBehavior
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.IcebergTableSynchronizer
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableCleaner
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.PositionalDeleteResolutionState
+import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.enableIdentifierBloomFilters
 import io.airbyte.cdk.load.write.StreamLoader
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.integrations.destination.gcs_data_lake.catalog.GcsDataLakeCatalogUtil
 import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.MergeOnReadDeleteEncoding
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.iceberg.Schema
 import org.apache.iceberg.Table
@@ -200,10 +203,36 @@ class GcsDataLakeStreamLoader(
             }
         }
 
+        // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing; flip it
+        // back to equality before release.
+        val positionalDeletesEnabled =
+            stream.tableSchema.importType is Dedupe &&
+                when (icebergConfiguration.mergeOnReadDeleteEncoding) {
+                    MergeOnReadDeleteEncoding.AUTOMATIC,
+                    MergeOnReadDeleteEncoding.POSITIONAL -> true
+                    MergeOnReadDeleteEncoding.EQUALITY -> false
+                }
+        val identifierFieldIds =
+            if (positionalDeletesEnabled) targetSchema.identifierFieldIds() else emptySet()
+        val suppressDeletedPositions = icebergConfiguration.suppressDeletedPositions
+        val positionalDeleteState =
+            if (positionalDeletesEnabled) {
+                enableIdentifierBloomFilters(table, targetSchema, identifierFieldIds)
+                PositionalDeleteResolutionState(
+                    deleteIndexEnabled =
+                        suppressDeletedPositions && icebergConfiguration.indexPositionalDeletes,
+                )
+            } else {
+                null
+            }
+
         val state =
             GcsDataLakeStreamState(
                 table = table,
                 schema = targetSchema,
+                stagingBranchName = stagingBranchName,
+                positionalDeleteState = positionalDeleteState,
+                suppressDeletedPositions = suppressDeletedPositions,
             )
         streamStateStore.put(stream.mappedDescriptor, state)
     }

@@ -175,6 +175,10 @@ This connector uses a merge-on-read strategy to support deduplication.
 - Airbyte translates the stream's primary keys to Iceberg's [identifier columns](https://iceberg.apache.org/spec/#identifier-field-ids).
 - An "upsert" is an [equality-based delete](https://iceberg.apache.org/spec/#equality-delete-files) on that row's primary key, followed by an insertion of the new data.
 
+The `merge_on_read_delete_encoding` option controls the delete encoding for Dedupe streams. `AUTOMATIC` currently uses equality deletes and may change in a future version. Choose `EQUALITY` to always use equality deletes, or `POSITIONAL` when downstream readers reject equality-delete files. Append and Overwrite streams always use their existing behavior.
+
+Two experimental options tune how positional deletes are written. `suppress_deleted_positions` (default enabled) reads prior positional delete files so each position is deleted at most once; disabling it writes a delete for every physical copy of a row, which skips those reads but grows the delete-file population. `index_positional_deletes` (default disabled) publishes a deletion-vector index as Iceberg statistics so later flushes can skip reading prior delete files. Delete files remain the source of truth in every combination, and readers see identical table contents.
+
 ### Assumptions about primary keys
 
 The GCS Data Lake connector assumes that one of two things is true:
@@ -222,6 +226,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                                 | Subject                                                                               |
 |:--------|:-----------|:-------------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 1.1.0   | 2026-07-31 | [83275](https://github.com/airbytehq/airbyte/pull/83275)     | Add configurable equality or positional delete encoding for Dedupe streams             |
 | 1.0.10  | 2026-05-19 | [78235](https://github.com/airbytehq/airbyte/pull/78235)     | Upgrade CDK to 1.0.13                                                                  |
 | 1.0.9   | 2026-04-17 | [76406](https://github.com/airbytehq/airbyte/pull/76406)     | Upgrade CDK to 1.0.9                                                                  |
 | 1.0.8   | 2026-03-30 | [75630](https://github.com/airbytehq/airbyte/pull/75630)     | Upgrade CDK to 1.0.7: fix sort order handling during schema evolution                 |
