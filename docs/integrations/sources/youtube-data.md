@@ -24,7 +24,8 @@ This connector uses the [YouTube Data API v3](https://developers.google.com/yout
 1. Go to [YouTube](https://www.youtube.com/) and navigate to the channel you want to sync.
 2. The Channel ID is in the URL: `https://www.youtube.com/channel/CHANNEL_ID`.
 3. Alternatively, you can find it in YouTube Studio under **Settings** > **Channel** > **Advanced settings**.
-Channel IDs start with `UC`; handles and usernames such as `@airbyte` are not accepted.
+
+Channel IDs start with `UC`. Handles and usernames such as `@airbyte` are not accepted.
 
 <!-- env:cloud -->
 
