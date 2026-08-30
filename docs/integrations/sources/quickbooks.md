@@ -28,7 +28,7 @@ This page contains the setup guide and reference information for the QuickBooks 
 5. **Client Secret** - The OAuth2.0 application secret
 6. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
 7. **Access Token** - Access token to perform authenticated API calls with
-8. **Token Expiry Date** - DateTime when the access token becomes invalid
+8. **Token Expiry Date** - Optional date-time when the access token becomes invalid; it is managed automatically.
 9. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 10. **Start date** - The date starting from which you'd like to replicate data.
 11. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
@@ -44,7 +44,7 @@ This page contains the setup guide and reference information for the QuickBooks 
 2. **Client Secret** - The OAuth2.0 application secret
 3. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
 4. **Access Token** - Access token to perform authenticated API calls with
-5. **Token Expiry Date** - DateTime when the access token becomes invalid
+5. **Token Expiry Date** - Optional date-time when the access token becomes invalid; it is managed automatically.
 6. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 7. **Start date** - The date starting from which you'd like to replicate data.
 8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
@@ -112,6 +112,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
+| 4.2.0 | 2026-08-30 | TBD | Automatically refresh the access token when it expires mid-sync, surface QuickBooks fault details in error messages, and make Token Expiry Date optional (managed automatically). |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
 | 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
 | 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
