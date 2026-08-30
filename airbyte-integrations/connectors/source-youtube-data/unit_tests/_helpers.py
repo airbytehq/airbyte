@@ -11,15 +11,15 @@ from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
-def _get_manifest_path() -> Path:
-    """Resolve the path to the connector's `manifest.yaml`."""
+def _get_connector_dir() -> Path:
+    """Resolve the directory holding the connector's `manifest.yaml`."""
     ci_path = Path("/airbyte/integration_code/source_declarative_manifest")
     if ci_path.exists():
         return ci_path
-    return Path(__file__).parent.parent
+    return Path(__file__).resolve().parent.parent
 
 
-_MANIFEST_PATH = _get_manifest_path() / "manifest.yaml"
+_MANIFEST_PATH = _get_connector_dir() / "manifest.yaml"
 
 
 def read_stream(stream_name: str, config: dict) -> EntrypointOutput:

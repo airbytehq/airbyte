@@ -46,7 +46,7 @@ def _mock_search(mocker) -> None:
 
 
 def _queries(mocker, path: str) -> list:
-    return [_query(request) for request in mocker.request_history if request.path == path.lower()]
+    return [_query(request) for request in mocker.request_history if request.path.lower() == path.lower()]
 
 
 def test_videos_searches_one_channel_per_request_and_only_for_videos() -> None:
