@@ -114,7 +114,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
@@ -220,7 +220,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
@@ -351,7 +351,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
@@ -439,7 +439,7 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         is_client_side_incremental: true
@@ -625,10 +625,9 @@ spec:
         type: string
         description: >-
           The date from which to list calls, in the ISO-8601 format; if not
-          specified, the connector syncs all available data from the
-          earliest recorded call. For web-conference calls recorded by
-          Gong, the date denotes its scheduled time, otherwise, it denotes
-          its actual start time.
+          specified, a default value of two years ago is used. For
+          web-conference calls recorded by Gong, the date denotes its
+          scheduled time, otherwise, it denotes its actual start time.
         title: Start date
         pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
         examples:
