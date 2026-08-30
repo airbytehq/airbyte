@@ -84,9 +84,16 @@ class S3DataLakeBeanFactory {
         catalog: DestinationCatalog,
         config: S3DataLakeConfiguration,
     ): DataFlowSocketConfig {
+        val positionalEncoding =
+            when (config.mergeOnReadDeleteEncoding) {
+                // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing;
+                // flip it back to equality before release.
+                MergeOnReadDeleteEncoding.AUTOMATIC,
+                MergeOnReadDeleteEncoding.POSITIONAL -> true
+                MergeOnReadDeleteEncoding.EQUALITY -> false
+            }
         val hasPositionalDedupStreams =
-            config.mergeOnReadDeleteEncoding == MergeOnReadDeleteEncoding.POSITIONAL &&
-                catalog.streams.any { it.tableSchema.importType is Dedupe }
+            positionalEncoding && catalog.streams.any { it.tableSchema.importType is Dedupe }
         return if (hasPositionalDedupStreams) {
             log.info { "Positional dedup streams detected, limiting to 1 test socket" }
             object : DataFlowSocketConfig {
