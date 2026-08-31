@@ -836,7 +836,12 @@ internal class SnowflakeAirbyteClientTest {
         every { dataSource.connection } returns connection
         every { connection.createStatement() } returns statement
         every { statement.executeQuery(sql) } throws
-            SnowflakeSQLException("Some unrecognised access control failure", "42501")
+            SnowflakeSQLException(
+                "unknown",
+                "Some unrecognised access control failure",
+                "42501",
+                42501,
+            )
         every { statement.close() } just Runs
         every { connection.close() } just Runs
 
