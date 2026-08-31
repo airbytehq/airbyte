@@ -274,6 +274,44 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/youtube/v3/
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['commentsDisabled', 'videoNotFound'] }}"
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 401
+              error_message: >-
+                Authentication failed. Re-authenticate with Google OAuth from
+                the source settings, or provide a valid API key.
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['keyInvalid', 'accessNotConfigured', 'channelNotFound'] or response.get('error', {}).get('details', [{}])[0].get('reason') in ['API_KEY_INVALID', 'SERVICE_DISABLED', 'ACCESS_TOKEN_SCOPE_INSUFFICIENT'] }}"
+              error_message: >-
+                The YouTube API rejected the request: {{ response.get('error',
+                {}).get('message', 'unknown error') }} Check that the API key
+                is valid, the YouTube Data API v3 is enabled in your Google
+                Cloud project, and the configured Channel IDs exist.
+            - type: HttpResponseFilter
+              action: RETRY
+              failure_type: transient_error
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['quotaExceeded', 'dailyLimitExceeded', 'rateLimitExceeded', 'userRateLimitExceeded'] or response.get('error', {}).get('details', [{}])[0].get('reason') in ['RATE_LIMIT_EXCEEDED', 'QUOTA_EXCEEDED'] }}"
+            - type: HttpResponseFilter
+              action: RETRY
+              failure_type: transient_error
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_method"]
