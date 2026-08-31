@@ -17,6 +17,10 @@ appropriate fixtures and `--expect-*` assertions.
 - Reproducing a CDC-mode bug against `source-mssql` locally.
 - Verifying a fix by re-running an existing case with
   `VERSION=dev ./cases/<id>.sh` (after `:dockerBuildx`).
+- Verifying that a fix which *loosens* CDC offset validation still
+  rejects genuinely invalid state — `cases/11451.sh` is the
+  invalid-state case for LSN availability; see
+  [Invalid-state case](#invalid-state-case-for-lsn-availability-fixes).
 - Authoring a new repro for a customer-reported CDC bug. Drop a SQL
   fixture under `fixtures/sql/` and a `cases/<issue-number>.sh` script
   that invokes `run.sh` with the right fixtures and `--expect-*`
@@ -38,7 +42,7 @@ You do not need GSM or Cloud admin credentials.
 source-mssql-e2e-cdc-tests/
 ├── SKILL.md
 ├── cases/
-│   ├── 11451.sh                      # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+ (multi-phase)
+│   ├── 11451.sh                      # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+ (multi-phase; invalid-state case)
 │   ├── 12094.sh                      # airbytehq/oncall#12094 — schema-history bloat
 │   └── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
 └── fixtures/
@@ -195,6 +199,29 @@ past a saved offset on geo-replicas with aggressive cleanup. The
 saved-offset-rejection guard then fires even though the data is
 still present. Investigation lives at
 [`airbytehq/oncall#11451`](https://github.com/airbytehq/oncall/issues/11451).
+
+#### Invalid-state case for LSN-availability fixes
+
+This case's Phase 3 is a *genuinely* expired saved offset: Phase 2
+advances `fn_cdc_get_min_lsn` past the captured LSN, so rejecting the
+replay is the correct behavior, not the bug. That makes it the
+invalid-state counterpart to any repro built around a saved LSN that is
+still valid — for example an unauthorized capture instance returning
+`0x0` and poisoning
+`MIN(sys.fn_cdc_get_min_lsn(capture_instance))`.
+
+So when a change relaxes what the offset-availability check aggregates
+or tolerates, run this case against the image built from that change:
+
+```bash
+TARGET_VERSION=dev "$SKILL/cases/11451.sh"
+```
+
+It must still fail with the same two `stderr` signatures the case
+asserts on. A pass here means the guard stopped firing on state it is
+supposed to reject, which turns an actionable "reset the connection"
+error into a silently incomplete sync — the symptom-gone evidence from
+the valid-LSN repro cannot distinguish that from a correct fix.
 
 ## Authoring a new repro
 
