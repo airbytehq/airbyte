@@ -1,6 +1,6 @@
 import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
-# YouTube Data Migration Guide
+# Youtube Data Migration Guide
 
 ## Upgrading to 0.1.0
 
