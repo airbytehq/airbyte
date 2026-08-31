@@ -68,3 +68,7 @@ Three 0.1.0 changes trip the breaking-change checklist and are declared in `meta
 - **`videos` pins `type=video`** — the stream stops returning channel/playlist id records it previously emitted (those records carried a null `videoId` and broke the new primary key).
 
 The 0.0.65 → 0.1.0 minor bump is the breaking magnitude for a pre-1.0 connector.
+
+## CI credential strategy
+
+CI's live standard tests run only the OAuth credential (`SECRET_YOUTUBE-DATA_CREDS` → `config_oauth.json`). The API-key credential (`SECRET_YOUTUBE-DATA_API_KEY_CREDS` in GSM) is deliberately excluded from `connectorTestSuitesOptions`: Google rejects anonymous API-key requests from shared GitHub-runner IP ranges with HTTP 403, while the identical key succeeds from residential IPs and OAuth requests succeed from the same runners in the same run. API-key auth remains covered by local verification against the GSM secret; the credential itself stays in GSM for manual use.
