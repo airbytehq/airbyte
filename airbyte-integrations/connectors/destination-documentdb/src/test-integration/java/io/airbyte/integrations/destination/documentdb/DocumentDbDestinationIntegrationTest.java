@@ -83,4 +83,5 @@ class DocumentDbDestinationIntegrationTest {
         "tls", false,
         "direct_connection", true));
   }
+
 }

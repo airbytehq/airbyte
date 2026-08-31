@@ -10,21 +10,60 @@
     "type": "object",
     "required": ["database"],
     "oneOf": [
-      {"title": "Host and port", "required": ["host", "port"]},
-      {"title": "Connection string", "required": ["connection_string"]}
+      { "title": "Host and port", "required": ["host", "port"] },
+      { "title": "Connection string", "required": ["connection_string"] }
     ],
     "properties": {
-      "host": {"title": "Host", "type": "string", "order": 1},
-      "port": {"title": "Port", "type": "integer", "default": 10260, "minimum": 1, "maximum": 65535, "order": 2},
-      "connection_string": {"title": "Connection String", "type": "string", "description": "A mongodb:// URI. Airbyte always applies retryWrites=false.", "order": 3},
-      "database": {"title": "Database", "type": "string", "order": 4},
-      "username": {"title": "Username", "type": "string", "order": 5},
-      "password": {"title": "Password", "type": "string", "airbyte_secret": true, "order": 6},
-      "auth_source": {"title": "Authentication Source", "type": "string", "default": "admin", "order": 7},
-      "tls": {"title": "TLS", "type": "boolean", "default": true, "order": 8},
-      "direct_connection": {"title": "Direct Connection", "type": "boolean", "default": true, "order": 9},
-      "replica_set": {"title": "Replica Set", "type": "string", "order": 10},
-      "read_preference": {"title": "Read Preference", "type": "string", "enum": ["primary", "primaryPreferred", "secondary", "secondaryPreferred", "nearest"], "default": "primaryPreferred", "order": 11}
+      "host": { "title": "Host", "type": "string", "order": 1 },
+      "port": {
+        "title": "Port",
+        "type": "integer",
+        "default": 10260,
+        "minimum": 1,
+        "maximum": 65535,
+        "order": 2
+      },
+      "connection_string": {
+        "title": "Connection String",
+        "type": "string",
+        "description": "A mongodb:// URI. Airbyte always applies retryWrites=false.",
+        "order": 3
+      },
+      "database": { "title": "Database", "type": "string", "order": 4 },
+      "username": { "title": "Username", "type": "string", "order": 5 },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 6
+      },
+      "auth_source": {
+        "title": "Authentication Source",
+        "type": "string",
+        "default": "admin",
+        "order": 7
+      },
+      "tls": { "title": "TLS", "type": "boolean", "default": true, "order": 8 },
+      "direct_connection": {
+        "title": "Direct Connection",
+        "type": "boolean",
+        "default": true,
+        "order": 9
+      },
+      "replica_set": { "title": "Replica Set", "type": "string", "order": 10 },
+      "read_preference": {
+        "title": "Read Preference",
+        "type": "string",
+        "enum": [
+          "primary",
+          "primaryPreferred",
+          "secondary",
+          "secondaryPreferred",
+          "nearest"
+        ],
+        "default": "primaryPreferred",
+        "order": 11
+      }
     }
   }
 }

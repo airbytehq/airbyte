@@ -48,4 +48,5 @@ public class DocumentDbDestination extends MongodbDestination {
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new DocumentDbDestination()).run(args);
   }
+
 }

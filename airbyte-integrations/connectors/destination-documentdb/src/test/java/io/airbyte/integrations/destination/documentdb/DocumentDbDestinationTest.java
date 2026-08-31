@@ -12,6 +12,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class DocumentDbDestinationTest {
+
   @Test
   void buildsDocumentDbSafeConnectionString() {
     final var config = Jsons.jsonNode(Map.of("host", "localhost", "port", 10260, "database", "db"));
@@ -22,7 +23,8 @@ class DocumentDbDestinationTest {
   @Test
   void preservesCredentialsFromConnectionString() {
     final var config = Jsons.jsonNode(Map.of("connection_string", "mongodb://writer:secret@localhost:10260/?retryWrites=true", "database", "db"));
-    assertEquals("mongodb://writer:secret@localhost:10260/db?retryWrites=false&tls=true&directConnection=true&readPreference=primaryPreferred&authSource=admin",
+    assertEquals(
+        "mongodb://writer:secret@localhost:10260/db?retryWrites=false&tls=true&directConnection=true&readPreference=primaryPreferred&authSource=admin",
         DocumentDbDestination.buildConnectionString(config));
   }
 
@@ -31,4 +33,5 @@ class DocumentDbDestinationTest {
     final var config = Jsons.jsonNode(Map.of("connection_string", "mongodb+srv://example.test/", "database", "db"));
     assertThrows(IllegalArgumentException.class, () -> DocumentDbDestination.buildConnectionString(config));
   }
+
 }

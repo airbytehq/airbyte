@@ -13,6 +13,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import io.airbyte.cdk.integrations.base.IntegrationRunner;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.MongoDbSource;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -20,7 +21,6 @@ import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.SyncMode;
-import io.airbyte.commons.util.AutoCloseableIterator;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -78,8 +78,10 @@ public class DocumentDbSource extends MongoDbSource {
     databaseConfig.put("connection_string", buildConnectionString(config));
     databaseConfig.set("databases", config.get("databases"));
     databaseConfig.put("schema_enforced", config.path("schema_enforced").asBoolean(true));
-    if (config.hasNonNull("username")) databaseConfig.set("username", config.get("username"));
-    if (config.hasNonNull("password")) databaseConfig.set("password", config.get("password"));
+    if (config.hasNonNull("username"))
+      databaseConfig.set("username", config.get("username"));
+    if (config.hasNonNull("password"))
+      databaseConfig.set("password", config.get("password"));
     databaseConfig.put("auth_source", config.path("auth_source").asText("admin"));
     return normalized;
   }
@@ -113,4 +115,5 @@ public class DocumentDbSource extends MongoDbSource {
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new DocumentDbSource()).run(args);
   }
+
 }
