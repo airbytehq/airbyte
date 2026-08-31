@@ -11,6 +11,7 @@ The Ashby API uses `.list` endpoints with cursor-based pagination. The `applicat
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
 | applications | large | top-level parent | none | created_at_only | deferred_no_api_support | Has `createdAfter` in body; mutable resource (status changes). Verify if `updatedAfter` is supported. |
+| application_history | large | substream of applications | none | none | full_refresh_only | No date filter or `syncToken`; one request per application; ~23 hours for ~108,100 applications at ~1.31 req/s. |
 | archive_reasons | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | candidate_tags | small | top-level parent | none | none | deferred_no_api_support | Config-style lookup |
 | candidates | large | top-level parent | none | none | deferred_no_api_support | No documented date filter on `.list`. High volume. |

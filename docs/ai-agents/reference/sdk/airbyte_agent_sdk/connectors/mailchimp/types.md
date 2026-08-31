@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AutomationsAnyCondition"></a>
@@ -115,10 +115,24 @@ Classes
     `tracking: Any`
     :   The tracking options for the Automation
 
+<a id="AutomationsArrayContainsCondition"></a>
+
+`AutomationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AutomationsContainsCondition"></a>
 
 `AutomationsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -366,7 +380,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AutomationsOrCondition"></a>
@@ -388,7 +402,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AutomationsSearchFilter"></a>
@@ -440,7 +454,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.AutomationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.AutomationsSortFilter]`
@@ -555,7 +569,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -657,10 +671,24 @@ Classes
     `web_id: Any`
     :   The ID used in the Mailchimp web application. View this campaign in your Mailchimp account at `ht...
 
+<a id="CampaignsArrayContainsCondition"></a>
+
+`CampaignsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -976,7 +1004,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -998,7 +1026,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -1089,7 +1117,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.CampaignsSortFilter]`
@@ -1282,7 +1310,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EmailActivityAnyCondition"></a>
@@ -1348,10 +1376,24 @@ Classes
     `url: Any`
     :   If the action is a 'click', the URL on which the member clicked.
 
+<a id="EmailActivityArrayContainsCondition"></a>
+
+`EmailActivityArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EmailActivityContainsCondition"></a>
 
 `EmailActivityContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1593,7 +1635,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition`
     :   The type of the None singleton.
 
 <a id="EmailActivityOrCondition"></a>
@@ -1615,7 +1657,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EmailActivitySearchFilter"></a>
@@ -1670,7 +1712,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityInCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.EmailActivityAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.EmailActivitySortFilter]`
@@ -1791,7 +1833,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InterestCategoriesAnyCondition"></a>
@@ -1842,10 +1884,24 @@ Classes
     `type_: Any`
     :   Determines how this category's interests appear on signup forms
 
+<a id="InterestCategoriesArrayContainsCondition"></a>
+
+`InterestCategoriesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="InterestCategoriesContainsCondition"></a>
 
 `InterestCategoriesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2086,7 +2142,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="InterestCategoriesOrCondition"></a>
@@ -2108,7 +2164,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InterestCategoriesSearchFilter"></a>
@@ -2148,7 +2204,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestCategoriesSortFilter]`
@@ -2239,7 +2295,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InterestsAnyCondition"></a>
@@ -2293,10 +2349,24 @@ Classes
     `subscriber_count: Any`
     :   The number of subscribers associated with this interest
 
+<a id="InterestsArrayContainsCondition"></a>
+
+`InterestsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="InterestsContainsCondition"></a>
 
 `InterestsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2546,7 +2616,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition`
     :   The type of the None singleton.
 
 <a id="InterestsOrCondition"></a>
@@ -2568,7 +2638,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InterestsSearchFilter"></a>
@@ -2611,7 +2681,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.InterestsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.InterestsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.InterestsSortFilter]`
@@ -2708,7 +2778,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListMembersAnyCondition"></a>
@@ -2825,10 +2895,24 @@ Classes
     `web_id: Any`
     :   The ID used in the Mailchimp web application
 
+<a id="ListMembersArrayContainsCondition"></a>
+
+`ListMembersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ListMembersContainsCondition"></a>
 
 `ListMembersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3174,7 +3258,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition`
     :   The type of the None singleton.
 
 <a id="ListMembersOrCondition"></a>
@@ -3196,7 +3280,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListMembersSearchFilter"></a>
@@ -3302,7 +3386,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListMembersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.ListMembersSortFilter]`
@@ -3525,7 +3609,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsAnyCondition"></a>
@@ -3624,10 +3708,24 @@ Classes
     `web_id: Any`
     :   The ID used in the Mailchimp web application. View this list in your Mailchimp account at `https:...
 
+<a id="ListsArrayContainsCondition"></a>
+
+`ListsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ListsContainsCondition"></a>
 
 `ListsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3931,7 +4029,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ListsOrCondition"></a>
@@ -3953,7 +4051,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListsSearchFilter"></a>
@@ -4041,7 +4139,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.ListsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ListsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.ListsSortFilter]`
@@ -4228,7 +4326,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReportsAnyCondition"></a>
@@ -4342,10 +4440,24 @@ Classes
     `unsubscribed: Any`
     :   The total number of unsubscribed members for this campaign.
 
+<a id="ReportsArrayContainsCondition"></a>
+
+`ReportsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ReportsContainsCondition"></a>
 
 `ReportsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4652,7 +4764,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ReportsOrCondition"></a>
@@ -4674,7 +4786,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReportsSearchFilter"></a>
@@ -4777,7 +4889,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.ReportsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.ReportsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.ReportsSortFilter]`
@@ -4994,7 +5106,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SegmentMembersAnyCondition"></a>
@@ -5087,10 +5199,24 @@ Classes
     `vip: Any`
     :   VIP status for subscriber
 
+<a id="SegmentMembersArrayContainsCondition"></a>
+
+`SegmentMembersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SegmentMembersContainsCondition"></a>
 
 `SegmentMembersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5359,7 +5485,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition`
     :   The type of the None singleton.
 
 <a id="SegmentMembersOrCondition"></a>
@@ -5381,7 +5507,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SegmentMembersSearchFilter"></a>
@@ -5463,7 +5589,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentMembersSortFilter]`
@@ -5638,7 +5764,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SegmentsAnyCondition"></a>
@@ -5698,10 +5824,24 @@ Classes
     `updated_at: Any`
     :   The date and time the segment was last updated
 
+<a id="SegmentsArrayContainsCondition"></a>
+
+`SegmentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="SegmentsContainsCondition"></a>
 
 `SegmentsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5966,7 +6106,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="SegmentsOrCondition"></a>
@@ -5988,7 +6128,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SegmentsSearchFilter"></a>
@@ -6037,7 +6177,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.SegmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.SegmentsSortFilter]`
@@ -6146,7 +6286,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsAnyCondition"></a>
@@ -6188,10 +6328,24 @@ Classes
     `name: Any`
     :   The name of the tag
 
+<a id="TagsArrayContainsCondition"></a>
+
+`TagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6403,7 +6557,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TagsOrCondition"></a>
@@ -6425,7 +6579,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsSearchFilter"></a>
@@ -6456,7 +6610,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.TagsEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsInCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.TagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.TagsSortFilter]`
@@ -6529,7 +6683,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UnsubscribesAnyCondition"></a>
@@ -6592,10 +6746,24 @@ Classes
     `vip: Any`
     :   VIP status for subscriber
 
+<a id="UnsubscribesArrayContainsCondition"></a>
+
+`UnsubscribesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UnsubscribesContainsCondition"></a>
 
 `UnsubscribesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6831,7 +6999,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition`
     :   The type of the None singleton.
 
 <a id="UnsubscribesOrCondition"></a>
@@ -6853,7 +7021,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UnsubscribesSearchFilter"></a>
@@ -6905,7 +7073,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNeqCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesGteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLtCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesLteCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesInCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesStartswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesEndswithCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesFuzzyCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesKeywordCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesArrayContainsCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesNotCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAndCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesOrCondition | airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.mailchimp.types.UnsubscribesSortFilter]`
