@@ -58,9 +58,9 @@ class FlushMemoryBenchmark {
         private const val MEGABYTE = 1024L * 1024L
 
         /**
-         * Payload columns beyond the primary key, each holding [PAYLOAD_WIDTH] characters. Wide rows
-         * shift heap from the positional key state toward the Parquet column writers, so the row
-         * group size only matters once this is large.
+         * Payload columns beyond the primary key, each holding [PAYLOAD_WIDTH] characters. Wide
+         * rows shift heap from the positional key state toward the Parquet column writers, so the
+         * row group size only matters once this is large.
          */
         private val PAYLOAD_COLUMNS = System.getProperty("payloadColumns", "1").toInt()
 
