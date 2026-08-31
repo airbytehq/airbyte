@@ -1050,6 +1050,8 @@ streams:
           password: "{{ config['api_key'] }}"
         path: /interview.list
         http_method: POST
+        request_body_json:
+          includeNonSharedInterviews: true
       record_selector:
         type: RecordSelector
         extractor:
@@ -1082,6 +1084,50 @@ streams:
               - "null"
               - string
           applicationId:
+            type:
+              - "null"
+              - string
+          title:
+            type:
+              - "null"
+              - string
+          externalTitle:
+            type:
+              - "null"
+              - string
+          type:
+            type:
+              - "null"
+              - string
+          isArchived:
+            type:
+              - "null"
+              - boolean
+          isDebrief:
+            type:
+              - "null"
+              - boolean
+          isFeedbackRequired:
+            type:
+              - "null"
+              - boolean
+          isFeedbackRequested:
+            type:
+              - "null"
+              - boolean
+          instructionsHtml:
+            type:
+              - "null"
+              - string
+          instructionsPlain:
+            type:
+              - "null"
+              - string
+          jobId:
+            type:
+              - "null"
+              - string
+          feedbackFormDefinitionId:
             type:
               - "null"
               - string
