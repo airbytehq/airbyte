@@ -31,6 +31,20 @@ data:
   icon: icon.svg
   license: ELv2
   name: Youtube Data
+  releases:
+    breakingChanges:
+      0.1.0:
+        message: "Version 0.1.0 declares primary keys on the `comments`, `videos`, and `channel_comments` streams, adds `date-time` formats to nine timestamp fields, and restricts the `videos` stream to actual video results (it previously also returned channel and playlist id records). After upgrading, refresh the source schema and reset the affected streams. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations)."
+        upgradeDeadline: "2026-09-14"
+        deadlineAction: "auto_upgrade"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "comments"
+              - "videos"
+              - "channel_comments"
+              - "video"
+              - "channels"
   releaseDate: 2024-11-08
   releaseStage: generally_available
   supportLevel: certified
