@@ -44,11 +44,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Incidents | [List](./REFERENCE.md#incidents-list), [Get](./REFERENCE.md#incidents-get), [Context Store Search](./REFERENCE.md#incidents-context-store-search) |
-| Alerts | [List](./REFERENCE.md#alerts-list), [Get](./REFERENCE.md#alerts-get), [Context Store Search](./REFERENCE.md#alerts-context-store-search) |
+| Incidents | [List](./REFERENCE.md#incidents-list), [Get](./REFERENCE.md#incidents-get), [Context Store Search](./REFERENCE.md#incidents-context-store-search), [Semantic Search](./REFERENCE.md#incidents-semantic-search) |
+| Alerts | [List](./REFERENCE.md#alerts-list), [Get](./REFERENCE.md#alerts-get), [Context Store Search](./REFERENCE.md#alerts-context-store-search), [Semantic Search](./REFERENCE.md#alerts-semantic-search) |
 | Escalations | [List](./REFERENCE.md#escalations-list), [Get](./REFERENCE.md#escalations-get), [Context Store Search](./REFERENCE.md#escalations-context-store-search) |
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Incident Updates | [List](./REFERENCE.md#incident-updates-list), [Context Store Search](./REFERENCE.md#incident-updates-context-store-search) |
+| Incident Updates | [List](./REFERENCE.md#incident-updates-list), [Context Store Search](./REFERENCE.md#incident-updates-context-store-search), [Semantic Search](./REFERENCE.md#incident-updates-semantic-search) |
 | Incident Roles | [List](./REFERENCE.md#incident-roles-list), [Get](./REFERENCE.md#incident-roles-get), [Context Store Search](./REFERENCE.md#incident-roles-context-store-search) |
 | Incident Statuses | [List](./REFERENCE.md#incident-statuses-list), [Get](./REFERENCE.md#incident-statuses-get), [Context Store Search](./REFERENCE.md#incident-statuses-context-store-search) |
 | Incident Timestamps | [List](./REFERENCE.md#incident-timestamps-list), [Get](./REFERENCE.md#incident-timestamps-get), [Context Store Search](./REFERENCE.md#incident-timestamps-context-store-search) |

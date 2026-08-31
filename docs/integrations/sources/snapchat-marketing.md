@@ -140,6 +140,14 @@ Start Date is required for all stats streams that use `start_time` as a key (see
 | Campaigns_Stats_Daily     | Yes         | `id`, `granularity`, `start_time`   |
 | Campaigns_Stats_Lifetime  | No          | `id`, `granularity`                 |
 
+### Metrics in the stats streams
+
+The stats streams flatten Snapchat's nested `stats` object, so each metric is a top-level field in the record.
+
+Spend metrics are reported in [micro-currency](https://developers.snap.com/api/marketing-api/Ads-API/measurement#core-metrics), so divide the value by 1,000,000 to get an amount in whole currency units. This applies to `spend`, `coupon_used_local`, and `coupon_used_usd`. `coupon_used_local` uses the currency assigned to the ad account, and `coupon_used_usd` is always in US dollars.
+
+The coupon fields are only available in the Ads, AdSquads, and Campaigns stats streams. They were added in version 1.6.0-rc.1, the release candidate for 1.6.0. The three AdAccounts stats streams return `spend` only, because Snapchat's ad account stats endpoint rejects requests for any other metric.
+
 ## Performance considerations
 
 The Snapchat Marketing API enforces rate limits of 20 requests per second at the app level and 10 requests per second per access token. The connector handles HTTP 429 responses with automatic retries and backoff.
@@ -159,6 +167,12 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                        |
 |:-----------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 1.6.0-rc.1 | 2026-08-24 | [76912](https://github.com/airbytehq/airbyte/pull/76912) | Add `coupon_used_local` and `coupon_used_usd` spend fields to ads, ad squads, and campaigns stats streams |
+| 1.5.47 | 2026-08-18 | [84742](https://github.com/airbytehq/airbyte/pull/84742) | Update dependencies |
+| 1.5.46 | 2026-08-11 | [84121](https://github.com/airbytehq/airbyte/pull/84121) | Update dependencies |
+| 1.5.45 | 2026-08-04 | [83618](https://github.com/airbytehq/airbyte/pull/83618) | Update dependencies |
+| 1.5.44 | 2026-07-28 | [83091](https://github.com/airbytehq/airbyte/pull/83091) | Update dependencies |
+| 1.5.43 | 2026-07-21 | [82576](https://github.com/airbytehq/airbyte/pull/82576) | Update dependencies |
 | 1.5.42 | 2026-07-14 | [82015](https://github.com/airbytehq/airbyte/pull/82015) | Update dependencies |
 | 1.5.41 | 2026-06-30 | [81242](https://github.com/airbytehq/airbyte/pull/81242) | Update dependencies |
 | 1.5.40 | 2026-06-23 | [80650](https://github.com/airbytehq/airbyte/pull/80650) | Update dependencies |

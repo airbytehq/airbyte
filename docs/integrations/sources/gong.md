@@ -44,7 +44,7 @@ You can authenticate to Gong using one of two methods:
 
 <FieldAnchor field="num_workers">
 
-- **Number of Concurrent Threads** (optional). Controls how many streams are synced in parallel. Higher values can speed up syncs but increase API rate-limit usage. The default of 4 is tuned to stay within Gong's standard 3 requests-per-second limit. Valid range: 1–10.
+- **Number of Concurrent Threads** (optional). Controls how many streams are synced in parallel. The default is 4 and the valid range is 1–10. The connector paces itself to Gong's 3 requests-per-second limit no matter how many threads you use, so raising this value mainly helps when streams are waiting on Gong to respond rather than on the rate limit.
 
 </FieldAnchor>
 
@@ -76,9 +76,16 @@ Starting with version 1.1.0, the connector excludes calls marked as private (`is
 
 ### Performance considerations
 
-The Gong connector should not run into Gong API limitations under normal usage. Gong limits API access to 3 calls per second and 10,000 calls per day. If you exceed these limits, the API returns HTTP status code 429 with a `Retry-After` header indicating when to retry.
+Gong limits API access to 3 calls per second and 10,000 calls per day. If you exceed either limit, the API returns HTTP status code 429 with a `Retry-After` header indicating how long to wait.
 
-The call transcripts stream fetches transcripts one call at a time as a substream of the calls stream. On the initial sync for accounts with a large number of calls, this may take longer than a bulk-fetch approach. Subsequent incremental syncs only fetch transcripts for new calls.
+Starting with version 1.3.1, the connector handles both sides of this:
+
+- It throttles its own requests to 3 per second across all streams, so syncs stay under the per-second limit before Gong has to reject anything.
+- When Gong does return a 429, the connector waits for the interval in the `Retry-After` header and then retries, instead of backing off on a fixed schedule.
+
+The connector doesn't pace itself against the 10,000-calls-per-day quota, so a large backfill or a frequent sync schedule can still exhaust it.
+
+The call transcripts stream is a substream of the calls stream. Starting with version 1.3.0, it batches up to 100 call IDs into each `POST /v2/calls/transcript` request instead of sending one request per call. This sharply reduces the request volume during large backfills, making it much less likely you'll hit Gong's rate limit or daily quota, though very large tenants can still approach these limits. Subsequent incremental syncs only fetch transcripts for new calls.
 
 ## IP allow list
 
@@ -91,6 +98,13 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.3.5 | 2026-08-18 | [84600](https://github.com/airbytehq/airbyte/pull/84600) | Update dependencies |
+| 1.3.4 | 2026-08-11 | [83953](https://github.com/airbytehq/airbyte/pull/83953) | Update dependencies |
+| 1.3.3 | 2026-08-04 | [83474](https://github.com/airbytehq/airbyte/pull/83474) | Update dependencies |
+| 1.3.2 | 2026-07-28 | [82937](https://github.com/airbytehq/airbyte/pull/82937) | Update dependencies |
+| 1.3.1 | 2026-07-27 | [80891](https://github.com/airbytehq/airbyte/pull/80891) | Throttle requests to Gong's 3 requests-per-second limit and honor the `Retry-After` header when a 429 occurs |
+| 1.3.0 | 2026-07-22 | [82260](https://github.com/airbytehq/airbyte/pull/82260) | Batch `call transcripts` requests to fetch up to 100 call IDs per API call, reducing the request volume that drove rate-limit (429) errors and daily-quota exhaustion under one request per call |
+| 1.2.11 | 2026-07-21 | [82434](https://github.com/airbytehq/airbyte/pull/82434) | Update dependencies |
 | 1.2.10 | 2026-07-14 | [81846](https://github.com/airbytehq/airbyte/pull/81846) | Update dependencies |
 | 1.2.9 | 2026-07-07 | [80750](https://github.com/airbytehq/airbyte/pull/80750) | Remove 90-day default lookback window; when `start_date` is not configured the connector now syncs all available data from the earliest recorded call, matching the Gong API default and the spec description |
 | 1.2.8 | 2026-06-30 | [81076](https://github.com/airbytehq/airbyte/pull/81076) | Update dependencies |

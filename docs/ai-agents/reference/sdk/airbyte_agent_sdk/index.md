@@ -111,7 +111,7 @@ Advanced users who need to inspect a connector's `ConnectorModel` or
 traverse tool-call records should import from the submodules directly:
 `airbyte_agent_sdk.types` for auth/spec types and
 `airbyte_agent_sdk.executor.models` for nested result dataclasses. See
-[`docs/CONTRIBUTING.md`](https://github.com/airbytehq/airbyte-embedded/blob/main/connector-sdk/docs/CONTRIBUTING.md)
+[`docs/CONTRIBUTING.md`](https://github.com/airbytehq/sonar/blob/main/connector-sdk/docs/CONTRIBUTING.md)
 for the public-API contract.
 
 Anything not listed in `__all__` is internal and may change between
@@ -125,6 +125,8 @@ Sub-modules
 * airbyte_agent_sdk.constants
 * airbyte_agent_sdk.executor
 * airbyte_agent_sdk.http_client
+* airbyte_agent_sdk.secrets_aws
+* airbyte_agent_sdk.secrets_gcp
 * airbyte_agent_sdk.tools
 * airbyte_agent_sdk.translation
 * airbyte_agent_sdk.types
@@ -284,8 +286,10 @@ Functions
         func: The function to wrap (when used without arguments, e.g.
             `@translate_exceptions`).
         framework: One of `"pydantic_ai" | "langchain" | "openai_agents" |
-            "mcp"`. Defaults to None → auto-detect by attempting each
-            framework's canonical import in order. Explicit always wins.
+            "mcp" | "none"`. Defaults to None → auto-detect by attempting each
+            framework's canonical import in order, falling back to `"none"`
+            (failures raise `AirbyteToolError`) when nothing is installed.
+            Explicit always wins.
         max_output_chars: Maximum serialized output size (`json.dumps`,
             `default=str`). Excess raises the framework's signal asking the
             LLM to narrow the query. Set to `None` or `0` to disable.
@@ -413,6 +417,8 @@ Classes
     * ``ExecutorError`` and subclasses (``EntityNotFoundError``,
       ``ActionNotSupportedError``, ``MissingParameterError``,
       ``InvalidParameterError``) raised by the local executor.
+    * ``AirbyteToolError`` raised by the framework-neutral
+      (``framework="none"``) tool-error translation strategy.
     
     Not caught by ``AirbyteError``:
     
@@ -436,8 +442,25 @@ Classes
 
     ### Descendants
 
+    * airbyte_agent_sdk.errors.AirbyteToolError
     * airbyte_agent_sdk.executor.models.ExecutorError
     * airbyte_agent_sdk.http.exceptions.HTTPClientError
+
+<a id="AirbyteToolError"></a>
+
+`AirbyteToolError(*args, **kwargs)`
+:   Tool failure surfaced by the framework-neutral translation strategy.
+    
+    Raised by ``translate_exceptions(framework="none")`` (and decorators
+    composing it) in place of a framework-specific retry signal. The message
+    carries the formatted underlying failure; ``__cause__`` preserves the
+    original exception.
+
+    ### Ancestors (in MRO)
+
+    * airbyte_agent_sdk.errors.AirbyteError
+    * builtins.Exception
+    * builtins.BaseException
 
 <a id="AuthenticationError"></a>
 
@@ -1054,6 +1077,37 @@ Classes
     * airbyte_agent_sdk.errors.AirbyteError
     * builtins.Exception
     * builtins.BaseException
+
+<a id="SkillDocsAccessor"></a>
+
+`SkillDocsAccessor(connector: Any, *, docs_provider: ConnectorDocsProvider | None = None)`
+:   Stateful access to one connector's skill docs.
+    
+    Owns the ``docs_skill_id`` cache: populated after the first successful
+    :meth:`inspect`, re-inspected only when missing, never populated on
+    failure. Cache lifetime is the accessor instance — `build_connector_tools`
+    shares one across its tool closures; generated typed connectors hold one
+    per connector instance.
+
+    ### Instance variables
+
+    `provider: ConnectorDocsProvider | None`
+    :
+
+    ### Methods
+
+    `inspect(self) ‑> dict[str, typing.Any]`
+    :   Inspect the connector's hosted metadata and resolve its docs skill id.
+        
+        Local/offline connectors (no docs provider) get a local-mode payload
+        with a warning instead of a hosted inspection.
+
+    `read(self, section: str | None = None) ‑> str`
+    :   Read the connector's usage docs, rendered to text.
+        
+        Omit ``section`` for the outline and general guidance; pass an exact
+        section id for full details. Local/offline connectors return the full
+        generated docs and ignore ``section``.
 
 <a id="TimeoutError"></a>
 

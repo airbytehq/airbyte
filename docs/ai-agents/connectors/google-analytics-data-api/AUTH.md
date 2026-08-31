@@ -59,7 +59,40 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
 
 
 ### Token
-This authentication method isn't available for this connector.
+Create a connector with Token credentials.
+
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `credentials_json` | `str` | Yes | The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide |
+
+`replication_config` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `property_ids` | `str` | Yes | A list of GA4 Property IDs to replicate data from. |
+
+Example request:
+
+
+```bash
+curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
+  -H "Authorization: Bearer <YOUR_BEARER_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "workspace_name": "<WORKSPACE_NAME>",
+    "connector_type": "Google-Analytics-Data-Api",
+    "name": "My Google-Analytics-Data-Api Connector",
+    "credentials": {
+      "credentials_json": "<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
+    },
+    "replication_config": {
+      "property_ids": "<A list of GA4 Property IDs to replicate data from.>"
+    }
+  }'
+```
 
 ### Execution
 
@@ -390,10 +423,10 @@ Example request:
 
 ```python
 from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
-from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiAuthConfig
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiOauth20AuthenticationAuthConfig
 
 connector = GoogleAnalyticsDataApiConnector(
-    auth_config=GoogleAnalyticsDataApiAuthConfig(
+    auth_config=GoogleAnalyticsDataApiOauth20AuthenticationAuthConfig(
         client_id="<OAuth 2.0 Client ID from Google Cloud Console>",
         client_secret="<OAuth 2.0 Client Secret from Google Cloud Console>",
         refresh_token="<OAuth 2.0 Refresh Token for obtaining new access tokens>"
@@ -402,5 +435,23 @@ connector = GoogleAnalyticsDataApiConnector(
 ```
 
 ### Token
-This authentication method isn't available for this connector.
+
+`credentials` fields you need:
+
+| Field Name | Type | Required | Description |
+|------------|------|----------|-------------|
+| `credentials_json` | `str` | Yes | The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide |
+
+Example request:
+
+```python
+from airbyte_agent_sdk.connectors.google_analytics_data_api import GoogleAnalyticsDataApiConnector
+from airbyte_agent_sdk.connectors.google_analytics_data_api.models import GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig
+
+connector = GoogleAnalyticsDataApiConnector(
+    auth_config=GoogleAnalyticsDataApiServiceAccountKeyAuthenticationAuthConfig(
+        credentials_json="<The JSON key linked to the service account used for authorization. For steps on obtaining this key, refer to https://docs.airbyte.com/integrations/sources/google-analytics-data-api/#setup-guide>"
+    )
+)
+```
 

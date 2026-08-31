@@ -39,14 +39,12 @@ If you authenticate with a personal access token, generate one in **Settings > A
 3. On the source setup page, select **GitLab** from the Source type dropdown and enter a name for this connector.
 4. Click **Authenticate your GitLab account** by selecting OAuth or Personal Access Token for authentication.
 5. Log in and authorize the GitLab account.
-6. **API URL** (Optional) - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+6. **API URL** (Optional) - The host of your self-hosted GitLab instance, or `gitlab.com` (default).
 7. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 8. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 9. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
+10. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4, with an allowed range of 2 to 25. Adjust based on your GitLab instance's rate limits.
 11. Click **Set up source**.
-
-**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 
 <!-- /env:cloud -->
 
@@ -57,15 +55,27 @@ If you authenticate with a personal access token, generate one in **Settings > A
 1. Navigate to the Airbyte UI and click **Sources > + New source**.
 2. Select **GitLab** and enter a name for the connector.
 3. Authenticate with a **Personal Access Token**.
-4. **API URL** (Optional) - The URL to access your self-hosted GitLab instance or `gitlab.com` (default).
+4. **API URL** (Optional) - The host of your self-hosted GitLab instance, or `gitlab.com` (default).
 5. **Start date** (Optional) - The date from which you'd like to replicate data for streams, in the format `YYYY-MM-DDT00:00:00Z`.
 6. **Groups** (Optional) - List of GitLab group paths, e.g. `airbytehq` for a single group.
 7. **Projects** (Optional) - List of GitLab project paths, e.g. `airbytehq/airbyte`.
-8. **Number of concurrent threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4. Adjust based on your GitLab instance's rate limits.
+8. **Number of Concurrent Threads** (Optional) - The number of concurrent threads used for syncing. Higher values can speed up syncs but may hit rate limits. Defaults to 4, with an allowed range of 2 to 25. Adjust based on your GitLab instance's rate limits.
 9. Click **Set up source**.
-
-**Note:** If both **Groups** and **Projects** are blank, the connector retrieves all groups accessible to the configured token and syncs their projects. If you specify **Groups**, the connector syncs projects from those groups and their descendant groups. If you also specify **Projects**, the projects list filters which projects are synced from the specified groups.
 <!-- /env:oss -->
+
+### Choose which groups and projects to sync
+
+Almost every stream in this connector is scoped to a group or a project, so **Groups** and **Projects** determine how much data the sync covers.
+
+- If you leave both blank, the connector discovers every group your token can see and syncs the projects in those groups.
+- If you set **Groups**, the connector syncs those groups, their descendant groups, and the projects in them.
+- If you set both, **Projects** acts as a filter on the projects discovered from your groups. If that filter matches nothing, the connector falls back to syncing the project paths in **Projects** directly, which is how you sync a project that isn't in one of the listed groups.
+
+Use full paths, not display names or numeric IDs: `airbytehq` for a group and `airbytehq/airbyte` for a project.
+
+### API URL format
+
+The **API URL** takes a host, not a full API endpoint. The connector appends `/api/v4/` itself, so `gitlab.company.org` and `https://gitlab.company.org` both work, but a value containing a path, such as `gitlab.company.org/api/v4`, fails validation. Only `http` and `https` schemes are accepted, and Airbyte Cloud rejects `http`.
 
 ## Supported sync modes
 
@@ -92,7 +102,7 @@ This connector outputs the following streams:
 - [Groups](https://docs.gitlab.com/api/groups/)
 - [Issues](https://docs.gitlab.com/api/issues/) (Incremental)
 - [Jobs](https://docs.gitlab.com/api/jobs/) (child of Pipelines — one request per pipeline)
-- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/)
+- [Merge Request Commits](https://docs.gitlab.com/api/merge_requests/) (child of Merge Requests — one request per merge request)
 - [Merge Requests](https://docs.gitlab.com/api/merge_requests/) (Incremental)
 - [Pipelines](https://docs.gitlab.com/api/pipelines/) (Incremental)
 - [Pipelines Extended](https://docs.gitlab.com/api/pipelines/) (detailed per-pipeline info, child of Pipelines)
@@ -110,6 +120,10 @@ This connector outputs the following streams:
 
 This connector uses GitLab API v4. It works with both GitLab.com and self-hosted GitLab instances.
 
+### Incremental sync window
+
+Incremental streams filter on `updated_at` and request data in 180-day windows, so a first sync of a long-lived project issues many requests. If you leave **Start date** blank, incremental streams start from 2014-01-01, which is effectively all history for most projects. Set a start date to cut the initial sync short.
+
 ### Rate limits
 
 The connector respects per-endpoint rate limits based on [GitLab.com's documented defaults](https://docs.gitlab.com/user/gitlab_com/#rate-limits-on-gitlabcom) for the [Groups API](https://docs.gitlab.com/administration/settings/rate_limit_on_groups_api/), [Members API](https://docs.gitlab.com/administration/settings/rate_limit_on_members_api/), [Projects API](https://docs.gitlab.com/administration/settings/rate_limit_on_projects_api/), and general authenticated traffic:
@@ -124,13 +138,22 @@ The connector respects per-endpoint rate limits based on [GitLab.com's documente
 | `GET /projects/:id/members/all` | 200 requests/min |
 | All other authenticated requests | 2,000 requests/min |
 
-Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector automatically retries requests that receive HTTP 429 responses. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
+Self-hosted GitLab instances may have different rate limits configured by the administrator. The connector also reads the `RateLimit-Remaining` and `RateLimit-Reset` response headers and backs off when GitLab returns HTTP 429. If you encounter persistent rate limit errors, [create an issue](https://github.com/airbytehq/airbyte/issues).
 
 You can adjust the **Number of Concurrent Threads** setting to control how many parallel requests the connector makes. Lower this value if you share your API quota with other integrations or if you experience rate limiting.
 
-### Inaccessible resources
+### How the connector handles API errors
 
-The connector silently skips any group, project, or resource that returns an HTTP 403 (Forbidden) response. If you notice missing data, verify that your access token has the required permissions for the groups and projects you want to sync.
+| Response | Behavior |
+| :--- | :--- |
+| 401 Unauthorized | The sync fails with `Unable to refresh the access_token, please re-authenticate in Sources > Settings.` Re-authenticate the source, or replace an expired or revoked personal access token. |
+| 403 Forbidden | The connector skips the group, project, or resource and continues. Nothing fails, so partial data is the only symptom. |
+| 404 Not Found | The sync fails with `Groups and/or projects that you provide are invalid or you don't have permission to view it.` Check the paths in **Groups** and **Projects** for typos and confirm your token can see them. |
+| 500 Internal Server Error | Retried. |
+
+Because 403 responses are skipped silently, missing data usually means a permissions gap rather than a bug. Verify that your token has access to every group and project you expect to sync.
+
+Connection checks read the `groups` endpoint. A check can succeed while individual project streams still return no data, if the token can list groups but can't read the projects inside them.
 
 ## IP allow list
 
@@ -143,6 +166,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                            |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 4.4.37 | 2026-08-18 | [84568](https://github.com/airbytehq/airbyte/pull/84568) | Update dependencies |
+| 4.4.36 | 2026-08-11 | [83941](https://github.com/airbytehq/airbyte/pull/83941) | Update dependencies |
+| 4.4.35 | 2026-07-28 | [82903](https://github.com/airbytehq/airbyte/pull/82903) | Update dependencies |
+| 4.4.34 | 2026-07-21 | [82429](https://github.com/airbytehq/airbyte/pull/82429) | Update dependencies |
 | 4.4.33 | 2026-07-14 | [81830](https://github.com/airbytehq/airbyte/pull/81830) | Update dependencies |
 | 4.4.32 | 2026-06-30 | [81041](https://github.com/airbytehq/airbyte/pull/81041) | Update dependencies |
 | 4.4.31 | 2026-06-23 | [80476](https://github.com/airbytehq/airbyte/pull/80476) | Update dependencies |
@@ -179,36 +206,36 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.4.5 | 2025-08-02 | [64222](https://github.com/airbytehq/airbyte/pull/64222) | Update dependencies |
 | 4.4.4 | 2025-07-26 | [63913](https://github.com/airbytehq/airbyte/pull/63913) | Update dependencies |
 | 4.4.3 | 2025-07-19 | [63489](https://github.com/airbytehq/airbyte/pull/63489) | Update dependencies |
-| 4.4.2 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.4.2 | 2025-07-18 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
 | 4.4.1 | 2025-07-12 | [61471](https://github.com/airbytehq/airbyte/pull/61471) | Update dependencies |
 | 4.4.0 | 2025-07-07 | [62831](https://github.com/airbytehq/airbyte/pull/62831) | Promoting release candidate 4.4.0-rc.1 to a main version. |
 | 4.4.0-rc.1 | 2025-07-02 | [62480](https://github.com/airbytehq/airbyte/pull/62480) | Migrate to manifest-only |
-| 4.3.7 | 2025-05-31 | [57264](https://github.com/airbytehq/airbyte/pull/57264) | Update dependencies |
+| 4.3.7 | 2025-06-02 | [57264](https://github.com/airbytehq/airbyte/pull/57264) | Update dependencies |
 | 4.3.6 | 2025-03-29 | [54945](https://github.com/airbytehq/airbyte/pull/54945) | Update dependencies |
-| 4.3.5 | 2025-02-22 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |
-| 4.3.4 | 2025-01-11 | [44671](https://github.com/airbytehq/airbyte/pull/44671) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 4.3.3 | 2024-08-17 | [44207](https://github.com/airbytehq/airbyte/pull/44207) | Update dependencies |
+| 4.3.5 | 2025-02-23 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |
+| 4.3.4 | 2025-01-15 | [44671](https://github.com/airbytehq/airbyte/pull/44671) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.3.3 | 2024-08-18 | [44207](https://github.com/airbytehq/airbyte/pull/44207) | Update dependencies |
 | 4.3.2 | 2024-08-12 | [43856](https://github.com/airbytehq/airbyte/pull/43856) | Update dependencies |
-| 4.3.1 | 2024-08-03 | [43058](https://github.com/airbytehq/airbyte/pull/43058) | Update dependencies |
+| 4.3.1 | 2024-08-04 | [43058](https://github.com/airbytehq/airbyte/pull/43058) | Update dependencies |
 | 4.3.0 | 2024-07-31 | [42920](https://github.com/airbytehq/airbyte/pull/42920) | Migrate to CDK v4.1.0 |
-| 4.2.2 | 2024-07-27 | [42601](https://github.com/airbytehq/airbyte/pull/42601) | Update dependencies |
-| 4.2.1 | 2024-07-20 | [42295](https://github.com/airbytehq/airbyte/pull/42295) | Update dependencies |
+| 4.2.2 | 2024-07-28 | [42601](https://github.com/airbytehq/airbyte/pull/42601) | Update dependencies |
+| 4.2.1 | 2024-07-21 | [42295](https://github.com/airbytehq/airbyte/pull/42295) | Update dependencies |
 | 4.2.0 | 2024-07-17 | [42085](https://github.com/airbytehq/airbyte/pull/42085) | Migrate to CDK v2.4.0 |
 | 4.1.0 | 2024-07-17 | [42021](https://github.com/airbytehq/airbyte/pull/42021) | Migrate to CDK v1.8.0 |
-| 4.0.8 | 2024-07-13 | [41835](https://github.com/airbytehq/airbyte/pull/41835) | Update dependencies |
-| 4.0.7 | 2024-07-10 | [41470](https://github.com/airbytehq/airbyte/pull/41470) | Update dependencies |
-| 4.0.6 | 2024-07-09 | [41100](https://github.com/airbytehq/airbyte/pull/41100) | Update dependencies |
-| 4.0.5 | 2024-07-06 | [40894](https://github.com/airbytehq/airbyte/pull/40894) | Update dependencies |
-| 4.0.4 | 2024-06-25 | [40417](https://github.com/airbytehq/airbyte/pull/40417) | Update dependencies |
-| 4.0.3 | 2024-06-22 | [40102](https://github.com/airbytehq/airbyte/pull/40102) | Update dependencies |
-| 4.0.2 | 2024-04-24 | [36637](https://github.com/airbytehq/airbyte/pull/36637) | Schema descriptions and CDK 0.80.0 |
+| 4.0.8 | 2024-07-14 | [41835](https://github.com/airbytehq/airbyte/pull/41835) | Update dependencies |
+| 4.0.7 | 2024-07-11 | [41470](https://github.com/airbytehq/airbyte/pull/41470) | Update dependencies |
+| 4.0.6 | 2024-07-10 | [41100](https://github.com/airbytehq/airbyte/pull/41100) | Update dependencies |
+| 4.0.5 | 2024-07-07 | [40894](https://github.com/airbytehq/airbyte/pull/40894) | Update dependencies |
+| 4.0.4 | 2024-06-26 | [40417](https://github.com/airbytehq/airbyte/pull/40417) | Update dependencies |
+| 4.0.3 | 2024-06-23 | [40102](https://github.com/airbytehq/airbyte/pull/40102) | Update dependencies |
+| 4.0.2 | 2024-05-07 | [36637](https://github.com/airbytehq/airbyte/pull/36637) | Schema descriptions and CDK 0.80.0 |
 | 4.0.1 | 2024-04-23 | [37505](https://github.com/airbytehq/airbyte/pull/37505) | Set error code `500` as retryable |
-| 4.0.0 | 2024-03-25 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code |
-| 3.0.0 | 2024-01-25 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request |
-| 2.1.2 | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry. |
-| 2.1.1 | 2024-01-12 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib |
-| 2.1.0 | 2023-12-20 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
-| 2.0.0 | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams |
+| 4.0.0 | 2024-04-01 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code |
+| 3.0.0 | 2024-02-15 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request |
+| 2.1.2 | 2024-02-13 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry. |
+| 2.1.1 | 2024-01-16 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib |
+| 2.1.0 | 2024-01-09 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
+| 2.0.0 | 2023-10-26 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams |
 | 1.8.4 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.8.3 | 2023-10-18 | [31547](https://github.com/airbytehq/airbyte/pull/31547) | Add validation for invalid `groups_list` and/or `projects_list` |
 | 1.8.2 | 2023-10-17 | [31492](https://github.com/airbytehq/airbyte/pull/31492) | Expand list of possible error status codes when handling expired `access_token` |
