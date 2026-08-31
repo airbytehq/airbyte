@@ -775,6 +775,78 @@ internal class SnowflakeAirbyteClientTest {
     }
 
     @Test
+    fun testExecuteWithInsufficientPrivilegesOwnershipError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "DROP TABLE IF EXISTS MY_TABLE"
+        val ownershipErrorMessage =
+            "SQL access control error:\n" +
+                "Insufficient privileges to operate on table 'MY_TABLE'. " +
+                "Your primary role MY_ROLE must have OWNERSHIP granted on TABLE 'MY_TABLE'."
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.executeQuery(sql) } throws SnowflakeSQLException(ownershipErrorMessage)
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
+
+        assertTrue(exception.message!!.contains("Insufficient privileges to operate on"))
+        assertTrue(exception.cause is SnowflakeSQLException)
+    }
+
+    @Test
+    fun testDropTableWithInsufficientPrivilegesOwnershipError() {
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val sql = "DROP TABLE IF EXISTS namespace.name"
+        val ownershipErrorMessage =
+            "SQL access control error:\n" +
+                "Insufficient privileges to operate on table 'MY_TABLE'. " +
+                "Your primary role MY_ROLE must have OWNERSHIP granted on TABLE 'MY_TABLE'."
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(sql) } throws SnowflakeSQLException(ownershipErrorMessage)
+                every { close() } just Runs
+            }
+        val connection =
+            mockk<Connection> {
+                every { createStatement() } returns statement
+                every { close() } just Runs
+            }
+
+        every { sqlGenerator.dropTable(tableName) } returns sql
+        every { dataSource.connection } returns connection
+
+        runBlocking {
+            val exception = assertThrows<ConfigErrorException> { client.dropTable(tableName) }
+
+            assertTrue(exception.message!!.contains("Insufficient privileges to operate on"))
+            assertTrue(exception.cause is SnowflakeSQLException)
+            verify(exactly = 1) { sqlGenerator.dropTable(tableName) }
+        }
+    }
+
+    @Test
+    fun testExecuteWithAccessControlSqlStateError() {
+        val connection = mockk<Connection>()
+        val statement = mockk<Statement>()
+        val sql = "DROP TABLE IF EXISTS MY_TABLE"
+
+        every { dataSource.connection } returns connection
+        every { connection.createStatement() } returns statement
+        every { statement.executeQuery(sql) } throws
+            SnowflakeSQLException("Some unrecognised access control failure", "42501", 42501)
+        every { statement.close() } just Runs
+        every { connection.close() } just Runs
+
+        val exception = assertThrows<ConfigErrorException> { client.execute(sql) }
+
+        assertTrue(exception.message!!.contains("Some unrecognised access control failure"))
+        assertTrue(exception.cause is SnowflakeSQLException)
+    }
+
+    @Test
     fun testToCanonicalDataTypeStripsArgumentsFromNonNumericTypes() {
         assertEquals("VARCHAR", toCanonicalDataType("VARCHAR(16777216)"))
         assertEquals("TIMESTAMP_TZ", toCanonicalDataType("TIMESTAMP_TZ(9)"))
