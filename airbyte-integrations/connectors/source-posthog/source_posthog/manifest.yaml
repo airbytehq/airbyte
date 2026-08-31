@@ -132,32 +132,40 @@ definitions:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      transformations:
-        - class_name: "source_posthog.components.EventsSimpleRetriever"
-          fields:
-            - path: ["name"]
-              value: "{{ parameters['name'] }}"
-            - path: ["primary_key"]
-              value: "{{ parameters['primary_key'] }}"
+      type: CustomRetriever
+      class_name: source_posthog.components.EventsSimpleRetriever
       name: "{{ parameters['name'] }}"
       primary_key: "{{ parameters['primary_key'] }}"
       record_selector:
-        $ref: "#/definitions/selector"
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["results"]
+        $parameters:
+          transformations:
+            - type: RemoveFields
+              field_pointers:
+                - ["__airbyte_noop_field"]
       requester:
         $ref: "#/definitions/requester"
         path: "/projects/{{ stream_slice.project_id }}/{{ parameters['name'] }}/"
+        $parameters:
+          name: "events"
       paginator:
         type: "DefaultPaginator"
         page_size_option:
+          type: RequestOption
           inject_into: "request_parameter"
           field_name: "limit"
         pagination_strategy:
-          type: "OffsetIncrement"
+          type: "CursorPagination"
+          cursor_value: "{{ response.next }}"
+          stop_condition: "{{ not response.next }}"
           page_size: 10000
         page_token_option:
-          type: RequestOption
-          field_name: "offset"
-          inject_into: "request_parameter"
+          type: RequestPath
+        $parameters:
+          url_base: "{{ config['base_url'] or 'https://app.posthog.com'}}/api/"
 
 streams:
   - "#/definitions/projects_stream"
