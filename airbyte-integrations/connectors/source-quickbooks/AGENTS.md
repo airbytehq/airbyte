@@ -28,6 +28,8 @@ ORDER BY Metadata.LastUpdatedTime ASC
 STARTPOSITION <n> MAXRESULTS <max_results>
 ```
 
+The casing in that query (`Metadata`) reproduces the manifest verbatim and differs from the record field the cursor and schema use (`MetaData`). Both spellings predate `4.0.0` and incremental syncs work in production, so Intuit evidently resolves the query identifier case-insensitively — inference from behavior, not from Intuit's documentation. Do not normalize the query occurrences without a live API to verify against.
+
 `step: P30D` windows the query, and `cursor_granularity: PT0S` with a `>` lower bound makes slices non-overlapping. `Active IN (true, false)` is required because QuickBooks otherwise returns only active records.
 
 Two things to know before changing this:
