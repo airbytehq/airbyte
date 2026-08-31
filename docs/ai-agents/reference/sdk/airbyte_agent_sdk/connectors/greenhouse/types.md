@@ -33,26 +33,6 @@ Classes
     `query: dict[str, typing.Any]`
     :   The type of the None singleton.
 
-<a id="ApplicationAttachmentDownloadParams"></a>
-
-`ApplicationAttachmentDownloadParams(*args, **kwargs)`
-:   Parameters for application_attachment.download operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `attachment_index: str`
-    :   The type of the None singleton.
-
-    `id: str`
-    :   The type of the None singleton.
-
-    `range_header: str`
-    :   The type of the None singleton.
-
 <a id="ApplicationsAndCondition"></a>
 
 `ApplicationsAndCondition(*args, **kwargs)`
@@ -72,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ApplicationsAnyCondition"></a>
@@ -108,70 +88,96 @@ Classes
 
     ### Class variables
 
+    `agency_note_id: Any`
+    :   Id of the note created when the candidate was submitted by an agency, or `null` if the application did not come through an agency.
+
     `answers: Any`
-    :   Answers provided in the application.
-
-    `applied_at: Any`
-    :   Timestamp when the candidate applied.
-
-    `attachments: Any`
-    :   Attachments uploaded with the application.
+    :   Free-text answers the candidate provided on the job post application form. Each entry pairs the question text with the candidate's answer.
 
     `candidate_id: Any`
-    :   Unique identifier for the candidate.
+    :   Id of the candidate (person) this application belongs to.
 
-    `credited_to: Any`
-    :   Information about the employee who credited the application.
+    `coordinator_id: Any`
+    :   Id of the user assigned as coordinator on the application's job, or `null` when unassigned.
 
-    `current_stage: Any`
-    :   Current stage of the application process.
+    `created_at: Any`
+    :   Created at from the Greenhouse v3 applications record.
+
+    `custom_fields: Any`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: Any`
-    :   Unique identifier for the application.
+    :   Id from the Greenhouse v3 applications record.
+
+    `job_id: Any`
+    :   Id of the job this application is on. `null` for jobless prospect applications.
+
+    `job_interview_stage_id: Any`
+    :   Id of the job interview stage definition (see `GET /v3/job_interview_stages`) the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
 
     `job_post_id: Any`
-    :   The type of the None singleton.
-
-    `jobs: Any`
-    :   Jobs applied for by the candidate.
+    :   Id of the job post the candidate applied through, or `null` if the application was created internally rather than from a posted role.
 
     `last_activity_at: Any`
-    :   Timestamp of the last activity on the application.
+    :   Timestamp of the most recent activity on this application (notes, emails, stage changes, etc.), in ISO 8601.
 
-    `location: Any`
-    :   Location related to the application.
+    `location_address: Any`
+    :   Free-form location string captured on the application (typically from the job post's location question).
+
+    `needs_decision: Any`
+    :   `true` when the application is waiting on a hiring-team decision (scorecard completion, advance/reject, etc.) in its current stage.
 
     `prospect: Any`
-    :   Status of the application prospect.
+    :   `true` for prospect applications (sourced candidates not yet attached to a single job), `false` for candidate applications on a specific job.
 
-    `prospect_detail: Any`
-    :   Details related to the application prospect.
+    `prospective_job_ids: Any`
+    :   For prospect applications, the ids of jobs the prospect is being considered for. Empty for non-prospect applications and for jobless prospects.
 
-    `prospective_department: Any`
-    :   Prospective department for the candidate.
+    `recruiter_id: Any`
+    :   Id of the user assigned as recruiter on the application's job, or `null` when unassigned.
 
-    `prospective_office: Any`
-    :   Prospective office for the candidate.
+    `referrer_id: Any`
+    :   Id of the referrer who credited this application, or `null` if there was no referral. References a referrer, not a Greenhouse user.
 
     `rejected_at: Any`
-    :   Timestamp when the application was rejected.
+    :   Timestamp the application was rejected, in ISO 8601. `null` for applications that have not been rejected.
 
-    `rejection_details: Any`
-    :   Details related to the application rejection.
+    `rejection_reason_id: Any`
+    :   Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason, or has not been rejected.
 
-    `rejection_reason: Any`
-    :   Reason for the application rejection.
+    `source_id: Any`
+    :   Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
 
-    `source: Any`
-    :   Source of the application.
+    `stage_id: Any`
+    :   Id of the interview stage the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
+
+    `stage_name: Any`
+    :   Display name of the candidate's current interview stage on this application.
 
     `status: Any`
-    :   Status of the application.
+    :   Lifecycle status of the application. `in_process` for active candidates, `rejected` for rejected applications, `hired` once an offer is closed and the hire endpoint has fired, and `converted` for prospect applications that have been promoted to a candidate application via `convert_to_candidate`.
+
+    `updated_at: Any`
+    :   Updated at from the Greenhouse v3 applications record.
+
+<a id="ApplicationsArrayContainsCondition"></a>
+
+`ApplicationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="ApplicationsContainsCondition"></a>
 
 `ApplicationsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -180,6 +186,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ApplicationsEndswithCondition"></a>
+
+`ApplicationsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
     :   The type of the None singleton.
 
 <a id="ApplicationsEqCondition"></a>
@@ -208,20 +228,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
-    :   The type of the None singleton.
-
-<a id="ApplicationsGetParams"></a>
-
-`ApplicationsGetParams(*args, **kwargs)`
-:   Parameters for applications.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="ApplicationsGtCondition"></a>
@@ -285,65 +291,77 @@ Classes
 
     ### Class variables
 
+    `agency_note_id: list[int]`
+    :   Id of the note created when the candidate was submitted by an agency, or `null` if the application did not come through an agency.
+
     `answers: list[list[typing.Any]]`
-    :   Answers provided in the application.
-
-    `applied_at: list[str]`
-    :   Timestamp when the candidate applied.
-
-    `attachments: list[list[typing.Any]]`
-    :   Attachments uploaded with the application.
+    :   Free-text answers the candidate provided on the job post application form. Each entry pairs the question text with the candidate's answer.
 
     `candidate_id: list[int]`
-    :   Unique identifier for the candidate.
+    :   Id of the candidate (person) this application belongs to.
 
-    `credited_to: list[dict[str, typing.Any]]`
-    :   Information about the employee who credited the application.
+    `coordinator_id: list[int]`
+    :   Id of the user assigned as coordinator on the application's job, or `null` when unassigned.
 
-    `current_stage: list[dict[str, typing.Any]]`
-    :   Current stage of the application process.
+    `created_at: list[str]`
+    :   Created at from the Greenhouse v3 applications record.
+
+    `custom_fields: list[dict[str, typing.Any]]`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: list[int]`
-    :   Unique identifier for the application.
+    :   Id from the Greenhouse v3 applications record.
+
+    `job_id: list[int]`
+    :   Id of the job this application is on. `null` for jobless prospect applications.
+
+    `job_interview_stage_id: list[int]`
+    :   Id of the job interview stage definition (see `GET /v3/job_interview_stages`) the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
 
     `job_post_id: list[int]`
-    :   The type of the None singleton.
-
-    `jobs: list[list[typing.Any]]`
-    :   Jobs applied for by the candidate.
+    :   Id of the job post the candidate applied through, or `null` if the application was created internally rather than from a posted role.
 
     `last_activity_at: list[str]`
-    :   Timestamp of the last activity on the application.
+    :   Timestamp of the most recent activity on this application (notes, emails, stage changes, etc.), in ISO 8601.
 
-    `location: list[str]`
-    :   Location related to the application.
+    `location_address: list[str]`
+    :   Free-form location string captured on the application (typically from the job post's location question).
+
+    `needs_decision: list[bool]`
+    :   `true` when the application is waiting on a hiring-team decision (scorecard completion, advance/reject, etc.) in its current stage.
 
     `prospect: list[bool]`
-    :   Status of the application prospect.
+    :   `true` for prospect applications (sourced candidates not yet attached to a single job), `false` for candidate applications on a specific job.
 
-    `prospect_detail: list[dict[str, typing.Any]]`
-    :   Details related to the application prospect.
+    `prospective_job_ids: list[list[typing.Any]]`
+    :   For prospect applications, the ids of jobs the prospect is being considered for. Empty for non-prospect applications and for jobless prospects.
 
-    `prospective_department: list[str]`
-    :   Prospective department for the candidate.
+    `recruiter_id: list[int]`
+    :   Id of the user assigned as recruiter on the application's job, or `null` when unassigned.
 
-    `prospective_office: list[str]`
-    :   Prospective office for the candidate.
+    `referrer_id: list[int]`
+    :   Id of the referrer who credited this application, or `null` if there was no referral. References a referrer, not a Greenhouse user.
 
     `rejected_at: list[str]`
-    :   Timestamp when the application was rejected.
+    :   Timestamp the application was rejected, in ISO 8601. `null` for applications that have not been rejected.
 
-    `rejection_details: list[dict[str, typing.Any]]`
-    :   Details related to the application rejection.
+    `rejection_reason_id: list[int]`
+    :   Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason, or has not been rejected.
 
-    `rejection_reason: list[dict[str, typing.Any]]`
-    :   Reason for the application rejection.
+    `source_id: list[int]`
+    :   Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
 
-    `source: list[dict[str, typing.Any]]`
-    :   Source of the application.
+    `stage_id: list[int]`
+    :   Id of the interview stage the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
+
+    `stage_name: list[str]`
+    :   Display name of the candidate's current interview stage on this application.
 
     `status: list[str]`
-    :   Status of the application.
+    :   Lifecycle status of the application. `in_process` for active candidates, `rejected` for rejected applications, `hired` once an offer is closed and the hire endpoint has fired, and `converted` for prospect applications that have been promoted to a candidate application via `convert_to_candidate`.
+
+    `updated_at: list[str]`
+    :   Updated at from the Greenhouse v3 applications record.
 
 <a id="ApplicationsKeywordCondition"></a>
 
@@ -359,20 +377,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
     :   The type of the None singleton.
 
-<a id="ApplicationsLikeCondition"></a>
-
-`ApplicationsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ApplicationsListParams"></a>
 
 `ApplicationsListParams(*args, **kwargs)`
@@ -384,25 +388,16 @@ Classes
 
     ### Class variables
 
-    `created_after: str`
+    `cursor: str`
     :   The type of the None singleton.
 
-    `created_before: str`
-    :   The type of the None singleton.
-
-    `job_id: int`
-    :   The type of the None singleton.
-
-    `last_activity_after: str`
-    :   The type of the None singleton.
-
-    `page: int`
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
     :   The type of the None singleton.
 
-    `status: str`
+    `updated_at: str`
     :   The type of the None singleton.
 
 <a id="ApplicationsLtCondition"></a>
@@ -466,7 +461,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ApplicationsOrCondition"></a>
@@ -488,7 +483,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ApplicationsSearchFilter"></a>
@@ -502,65 +497,77 @@ Classes
 
     ### Class variables
 
+    `agency_note_id: int | None`
+    :   Id of the note created when the candidate was submitted by an agency, or `null` if the application did not come through an agency.
+
     `answers: list[typing.Any] | None`
-    :   Answers provided in the application.
-
-    `applied_at: str | None`
-    :   Timestamp when the candidate applied.
-
-    `attachments: list[typing.Any] | None`
-    :   Attachments uploaded with the application.
+    :   Free-text answers the candidate provided on the job post application form. Each entry pairs the question text with the candidate's answer.
 
     `candidate_id: int | None`
-    :   Unique identifier for the candidate.
+    :   Id of the candidate (person) this application belongs to.
 
-    `credited_to: dict[str, typing.Any] | None`
-    :   Information about the employee who credited the application.
+    `coordinator_id: int | None`
+    :   Id of the user assigned as coordinator on the application's job, or `null` when unassigned.
 
-    `current_stage: dict[str, typing.Any] | None`
-    :   Current stage of the application process.
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 applications record.
+
+    `custom_fields: dict[str, typing.Any] | None`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: int | None`
-    :   Unique identifier for the application.
+    :   Id from the Greenhouse v3 applications record.
+
+    `job_id: int | None`
+    :   Id of the job this application is on. `null` for jobless prospect applications.
+
+    `job_interview_stage_id: int | None`
+    :   Id of the job interview stage definition (see `GET /v3/job_interview_stages`) the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
 
     `job_post_id: int | None`
-    :   The type of the None singleton.
-
-    `jobs: list[typing.Any] | None`
-    :   Jobs applied for by the candidate.
+    :   Id of the job post the candidate applied through, or `null` if the application was created internally rather than from a posted role.
 
     `last_activity_at: str | None`
-    :   Timestamp of the last activity on the application.
+    :   Timestamp of the most recent activity on this application (notes, emails, stage changes, etc.), in ISO 8601.
 
-    `location: str | None`
-    :   Location related to the application.
+    `location_address: str | None`
+    :   Free-form location string captured on the application (typically from the job post's location question).
+
+    `needs_decision: bool | None`
+    :   `true` when the application is waiting on a hiring-team decision (scorecard completion, advance/reject, etc.) in its current stage.
 
     `prospect: bool | None`
-    :   Status of the application prospect.
+    :   `true` for prospect applications (sourced candidates not yet attached to a single job), `false` for candidate applications on a specific job.
 
-    `prospect_detail: dict[str, typing.Any] | None`
-    :   Details related to the application prospect.
+    `prospective_job_ids: list[typing.Any] | None`
+    :   For prospect applications, the ids of jobs the prospect is being considered for. Empty for non-prospect applications and for jobless prospects.
 
-    `prospective_department: str | None`
-    :   Prospective department for the candidate.
+    `recruiter_id: int | None`
+    :   Id of the user assigned as recruiter on the application's job, or `null` when unassigned.
 
-    `prospective_office: str | None`
-    :   Prospective office for the candidate.
+    `referrer_id: int | None`
+    :   Id of the referrer who credited this application, or `null` if there was no referral. References a referrer, not a Greenhouse user.
 
     `rejected_at: str | None`
-    :   Timestamp when the application was rejected.
+    :   Timestamp the application was rejected, in ISO 8601. `null` for applications that have not been rejected.
 
-    `rejection_details: dict[str, typing.Any] | None`
-    :   Details related to the application rejection.
+    `rejection_reason_id: int | None`
+    :   Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason, or has not been rejected.
 
-    `rejection_reason: dict[str, typing.Any] | None`
-    :   Reason for the application rejection.
+    `source_id: int | None`
+    :   Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
 
-    `source: dict[str, typing.Any] | None`
-    :   Source of the application.
+    `stage_id: int | None`
+    :   Id of the interview stage the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
+
+    `stage_name: str | None`
+    :   Display name of the candidate's current interview stage on this application.
 
     `status: str | None`
-    :   Status of the application.
+    :   Lifecycle status of the application. `in_process` for active candidates, `rejected` for rejected applications, `hired` once an offer is closed and the hire endpoint has fired, and `converted` for prospect applications that have been promoted to a candidate application via `convert_to_candidate`.
+
+    `updated_at: str | None`
+    :   Updated at from the Greenhouse v3 applications record.
 
 <a id="ApplicationsSearchQuery"></a>
 
@@ -573,7 +580,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsSortFilter]`
@@ -590,141 +597,179 @@ Classes
 
     ### Class variables
 
+    `agency_note_id: Literal['asc', 'desc']`
+    :   Id of the note created when the candidate was submitted by an agency, or `null` if the application did not come through an agency.
+
     `answers: Literal['asc', 'desc']`
-    :   Answers provided in the application.
-
-    `applied_at: Literal['asc', 'desc']`
-    :   Timestamp when the candidate applied.
-
-    `attachments: Literal['asc', 'desc']`
-    :   Attachments uploaded with the application.
+    :   Free-text answers the candidate provided on the job post application form. Each entry pairs the question text with the candidate's answer.
 
     `candidate_id: Literal['asc', 'desc']`
-    :   Unique identifier for the candidate.
+    :   Id of the candidate (person) this application belongs to.
 
-    `credited_to: Literal['asc', 'desc']`
-    :   Information about the employee who credited the application.
+    `coordinator_id: Literal['asc', 'desc']`
+    :   Id of the user assigned as coordinator on the application's job, or `null` when unassigned.
 
-    `current_stage: Literal['asc', 'desc']`
-    :   Current stage of the application process.
+    `created_at: Literal['asc', 'desc']`
+    :   Created at from the Greenhouse v3 applications record.
+
+    `custom_fields: Literal['asc', 'desc']`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: Literal['asc', 'desc']`
-    :   Unique identifier for the application.
+    :   Id from the Greenhouse v3 applications record.
+
+    `job_id: Literal['asc', 'desc']`
+    :   Id of the job this application is on. `null` for jobless prospect applications.
+
+    `job_interview_stage_id: Literal['asc', 'desc']`
+    :   Id of the job interview stage definition (see `GET /v3/job_interview_stages`) the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
 
     `job_post_id: Literal['asc', 'desc']`
-    :   The type of the None singleton.
-
-    `jobs: Literal['asc', 'desc']`
-    :   Jobs applied for by the candidate.
+    :   Id of the job post the candidate applied through, or `null` if the application was created internally rather than from a posted role.
 
     `last_activity_at: Literal['asc', 'desc']`
-    :   Timestamp of the last activity on the application.
+    :   Timestamp of the most recent activity on this application (notes, emails, stage changes, etc.), in ISO 8601.
 
-    `location: Literal['asc', 'desc']`
-    :   Location related to the application.
+    `location_address: Literal['asc', 'desc']`
+    :   Free-form location string captured on the application (typically from the job post's location question).
+
+    `needs_decision: Literal['asc', 'desc']`
+    :   `true` when the application is waiting on a hiring-team decision (scorecard completion, advance/reject, etc.) in its current stage.
 
     `prospect: Literal['asc', 'desc']`
-    :   Status of the application prospect.
+    :   `true` for prospect applications (sourced candidates not yet attached to a single job), `false` for candidate applications on a specific job.
 
-    `prospect_detail: Literal['asc', 'desc']`
-    :   Details related to the application prospect.
+    `prospective_job_ids: Literal['asc', 'desc']`
+    :   For prospect applications, the ids of jobs the prospect is being considered for. Empty for non-prospect applications and for jobless prospects.
 
-    `prospective_department: Literal['asc', 'desc']`
-    :   Prospective department for the candidate.
+    `recruiter_id: Literal['asc', 'desc']`
+    :   Id of the user assigned as recruiter on the application's job, or `null` when unassigned.
 
-    `prospective_office: Literal['asc', 'desc']`
-    :   Prospective office for the candidate.
+    `referrer_id: Literal['asc', 'desc']`
+    :   Id of the referrer who credited this application, or `null` if there was no referral. References a referrer, not a Greenhouse user.
 
     `rejected_at: Literal['asc', 'desc']`
-    :   Timestamp when the application was rejected.
+    :   Timestamp the application was rejected, in ISO 8601. `null` for applications that have not been rejected.
 
-    `rejection_details: Literal['asc', 'desc']`
-    :   Details related to the application rejection.
+    `rejection_reason_id: Literal['asc', 'desc']`
+    :   Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason, or has not been rejected.
 
-    `rejection_reason: Literal['asc', 'desc']`
-    :   Reason for the application rejection.
+    `source_id: Literal['asc', 'desc']`
+    :   Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
 
-    `source: Literal['asc', 'desc']`
-    :   Source of the application.
+    `stage_id: Literal['asc', 'desc']`
+    :   Id of the interview stage the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
+
+    `stage_name: Literal['asc', 'desc']`
+    :   Display name of the candidate's current interview stage on this application.
 
     `status: Literal['asc', 'desc']`
-    :   Status of the application.
+    :   Lifecycle status of the application. `in_process` for active candidates, `rejected` for rejected applications, `hired` once an offer is closed and the hire endpoint has fired, and `converted` for prospect applications that have been promoted to a candidate application via `convert_to_candidate`.
+
+    `updated_at: Literal['asc', 'desc']`
+    :   Updated at from the Greenhouse v3 applications record.
+
+<a id="ApplicationsStartswithCondition"></a>
+
+`ApplicationsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.ApplicationsStringFilter`
+    :   The type of the None singleton.
 
 <a id="ApplicationsStringFilter"></a>
 
 `ApplicationsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
     * builtins.dict
 
     ### Class variables
+
+    `agency_note_id: str`
+    :   Id of the note created when the candidate was submitted by an agency, or `null` if the application did not come through an agency.
 
     `answers: str`
-    :   Answers provided in the application.
-
-    `applied_at: str`
-    :   Timestamp when the candidate applied.
-
-    `attachments: str`
-    :   Attachments uploaded with the application.
+    :   Free-text answers the candidate provided on the job post application form. Each entry pairs the question text with the candidate's answer.
 
     `candidate_id: str`
-    :   Unique identifier for the candidate.
+    :   Id of the candidate (person) this application belongs to.
 
-    `credited_to: str`
-    :   Information about the employee who credited the application.
+    `coordinator_id: str`
+    :   Id of the user assigned as coordinator on the application's job, or `null` when unassigned.
 
-    `current_stage: str`
-    :   Current stage of the application process.
+    `created_at: str`
+    :   Created at from the Greenhouse v3 applications record.
+
+    `custom_fields: str`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: str`
-    :   Unique identifier for the application.
+    :   Id from the Greenhouse v3 applications record.
+
+    `job_id: str`
+    :   Id of the job this application is on. `null` for jobless prospect applications.
+
+    `job_interview_stage_id: str`
+    :   Id of the job interview stage definition (see `GET /v3/job_interview_stages`) the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
 
     `job_post_id: str`
-    :   The type of the None singleton.
-
-    `jobs: str`
-    :   Jobs applied for by the candidate.
+    :   Id of the job post the candidate applied through, or `null` if the application was created internally rather than from a posted role.
 
     `last_activity_at: str`
-    :   Timestamp of the last activity on the application.
+    :   Timestamp of the most recent activity on this application (notes, emails, stage changes, etc.), in ISO 8601.
 
-    `location: str`
-    :   Location related to the application.
+    `location_address: str`
+    :   Free-form location string captured on the application (typically from the job post's location question).
+
+    `needs_decision: str`
+    :   `true` when the application is waiting on a hiring-team decision (scorecard completion, advance/reject, etc.) in its current stage.
 
     `prospect: str`
-    :   Status of the application prospect.
+    :   `true` for prospect applications (sourced candidates not yet attached to a single job), `false` for candidate applications on a specific job.
 
-    `prospect_detail: str`
-    :   Details related to the application prospect.
+    `prospective_job_ids: str`
+    :   For prospect applications, the ids of jobs the prospect is being considered for. Empty for non-prospect applications and for jobless prospects.
 
-    `prospective_department: str`
-    :   Prospective department for the candidate.
+    `recruiter_id: str`
+    :   Id of the user assigned as recruiter on the application's job, or `null` when unassigned.
 
-    `prospective_office: str`
-    :   Prospective office for the candidate.
+    `referrer_id: str`
+    :   Id of the referrer who credited this application, or `null` if there was no referral. References a referrer, not a Greenhouse user.
 
     `rejected_at: str`
-    :   Timestamp when the application was rejected.
+    :   Timestamp the application was rejected, in ISO 8601. `null` for applications that have not been rejected.
 
-    `rejection_details: str`
-    :   Details related to the application rejection.
+    `rejection_reason_id: str`
+    :   Id of the rejection reason selected for the application. References a `/v3/rejection_reasons` row scoped to the organization. `null` when the application was rejected without a reason, or has not been rejected.
 
-    `rejection_reason: str`
-    :   Reason for the application rejection.
+    `source_id: str`
+    :   Id of the source the application is attributed to (e.g. a job board, an event, an employee referral source). `null` if no source is set.
 
-    `source: str`
-    :   Source of the application.
+    `stage_id: str`
+    :   Id of the interview stage the candidate is currently in for this application. `null` for prospect applications and applications in a terminal state.
+
+    `stage_name: str`
+    :   Display name of the candidate's current interview stage on this application.
 
     `status: str`
-    :   Status of the application.
+    :   Lifecycle status of the application. `in_process` for active candidates, `rejected` for rejected applications, `hired` once an offer is closed and the hire endpoint has fired, and `converted` for prospect applications that have been promoted to a candidate application via `convert_to_candidate`.
 
-<a id="CandidateAttachmentDownloadParams"></a>
+    `updated_at: str`
+    :   Updated at from the Greenhouse v3 applications record.
 
-`CandidateAttachmentDownloadParams(*args, **kwargs)`
-:   Parameters for candidate_attachment.download operation
+<a id="AttachmentsDownloadParams"></a>
+
+`AttachmentsDownloadParams(*args, **kwargs)`
+:   Parameters for attachments.download operation
 
     ### Ancestors (in MRO)
 
@@ -732,13 +777,42 @@ Classes
 
     ### Class variables
 
-    `attachment_index: str`
-    :   The type of the None singleton.
-
-    `id: str`
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `range_header: str`
+    :   The type of the None singleton.
+
+<a id="AttachmentsListParams"></a>
+
+`AttachmentsListParams(*args, **kwargs)`
+:   Parameters for attachments.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `application_ids: list[int]`
+    :   The type of the None singleton.
+
+    `candidate_ids: list[int]`
+    :   The type of the None singleton.
+
+    `cursor: str`
+    :   The type of the None singleton.
+
+    `ids: list[int]`
+    :   The type of the None singleton.
+
+    `per_page: int`
+    :   The type of the None singleton.
+
+    `type: str`
+    :   The type of the None singleton.
+
+    `updated_at: str`
     :   The type of the None singleton.
 
 <a id="CandidatesAndCondition"></a>
@@ -760,7 +834,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CandidatesAnyCondition"></a>
@@ -797,87 +871,83 @@ Classes
     ### Class variables
 
     `addresses: Any`
-    :   Candidate's addresses
-
-    `application_ids: Any`
-    :   List of application IDs
-
-    `applications: Any`
-    :   An array of all applications made by candidates.
-
-    `attachments: Any`
-    :   Attachments related to the candidate
+    :   Postal addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `home`, `work`, or `other`.
 
     `can_email: Any`
-    :   Indicates if candidate can be emailed
+    :   Whether this candidate has consented to receive email communication from your organization.
 
     `company: Any`
-    :   Company where the candidate is associated
-
-    `coordinator: Any`
-    :   Coordinator assigned to the candidate
+    :   Candidate's current company, as entered on their profile.
 
     `created_at: Any`
-    :   Date and time of creation
+    :   Created at from the Greenhouse v3 candidates record.
 
     `custom_fields: Any`
-    :   Custom fields associated with the candidate
-
-    `educations: Any`
-    :   List of candidate's educations
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `email_addresses: Any`
-    :   Candidate's email addresses
-
-    `employments: Any`
-    :   List of candidate's employments
+    :   Email addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `work`, or `other`.
 
     `first_name: Any`
-    :   Candidate's first name
+    :   First name from the Greenhouse v3 candidates record.
 
     `id: Any`
-    :   Candidate's ID
+    :   Id from the Greenhouse v3 candidates record.
 
-    `is_private: Any`
-    :   Indicates if the candidate's data is private
-
-    `keyed_custom_fields: Any`
-    :   Keyed custom fields associated with the candidate
-
-    `last_activity: Any`
-    :   Details of the last activity related to the candidate
+    `last_activity_at: Any`
+    :   Timestamp of the most recent activity on any of the candidate's applications (notes, emails, stage changes, etc.), in ISO 8601.
 
     `last_name: Any`
-    :   Candidate's last name
+    :   Last name from the Greenhouse v3 candidates record.
+
+    `linked_user_ids: Any`
+    :   Ids of Greenhouse users linked to this candidate (employees represented by both a user record and a candidate record).
 
     `phone_numbers: Any`
-    :   Candidate's phone numbers
+    :   Phone numbers on the candidate's profile. Each entry pairs the `value` with a `type` such as `mobile`, `home`, `work`, `skype`, or `other`.
 
-    `photo_url: Any`
-    :   URL of the candidate's profile photo
+    `preferred_name: Any`
+    :   Preferred or chosen name the candidate goes by, when different from their legal first name.
 
-    `recruiter: Any`
-    :   Recruiter assigned to the candidate
+    `private: Any`
+    :   If true, the candidate is restricted to users with `View Private Candidates` access. Defaults to `false`.
 
     `social_media_addresses: Any`
-    :   Candidate's social media addresses
+    :   Social media handles or URLs on the candidate's profile. Social entries are untyped — only the `value` is returned.
 
     `tags: Any`
-    :   Tags associated with the candidate
+    :   Candidate tag names applied to this candidate within your organization.
+
+    `time_zone: Any`
+    :   Candidate's time zone as a Rails-style identifier (for example `Eastern Time (US & Canada)`).
 
     `title: Any`
-    :   Candidate's title (e.g., Mr., Mrs., Dr.)
+    :   Candidate's current job title, as entered on their profile.
 
     `updated_at: Any`
-    :   Date and time of last update
+    :   Updated at from the Greenhouse v3 candidates record.
 
     `website_addresses: Any`
-    :   List of candidate's website addresses
+    :   Personal websites or portfolio URLs on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `company`, `portfolio`, `blog`, or `other`.
+
+<a id="CandidatesArrayContainsCondition"></a>
+
+`CandidatesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="CandidatesContainsCondition"></a>
 
 `CandidatesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -886,6 +956,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CandidatesEndswithCondition"></a>
+
+`CandidatesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
     :   The type of the None singleton.
 
 <a id="CandidatesEqCondition"></a>
@@ -914,20 +998,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
-    :   The type of the None singleton.
-
-<a id="CandidatesGetParams"></a>
-
-`CandidatesGetParams(*args, **kwargs)`
-:   Parameters for candidates.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="CandidatesGtCondition"></a>
@@ -992,82 +1062,64 @@ Classes
     ### Class variables
 
     `addresses: list[list[typing.Any]]`
-    :   Candidate's addresses
-
-    `application_ids: list[list[typing.Any]]`
-    :   List of application IDs
-
-    `applications: list[list[typing.Any]]`
-    :   An array of all applications made by candidates.
-
-    `attachments: list[list[typing.Any]]`
-    :   Attachments related to the candidate
+    :   Postal addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `home`, `work`, or `other`.
 
     `can_email: list[bool]`
-    :   Indicates if candidate can be emailed
+    :   Whether this candidate has consented to receive email communication from your organization.
 
     `company: list[str]`
-    :   Company where the candidate is associated
-
-    `coordinator: list[str]`
-    :   Coordinator assigned to the candidate
+    :   Candidate's current company, as entered on their profile.
 
     `created_at: list[str]`
-    :   Date and time of creation
+    :   Created at from the Greenhouse v3 candidates record.
 
     `custom_fields: list[dict[str, typing.Any]]`
-    :   Custom fields associated with the candidate
-
-    `educations: list[list[typing.Any]]`
-    :   List of candidate's educations
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `email_addresses: list[list[typing.Any]]`
-    :   Candidate's email addresses
-
-    `employments: list[list[typing.Any]]`
-    :   List of candidate's employments
+    :   Email addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `work`, or `other`.
 
     `first_name: list[str]`
-    :   Candidate's first name
+    :   First name from the Greenhouse v3 candidates record.
 
     `id: list[int]`
-    :   Candidate's ID
+    :   Id from the Greenhouse v3 candidates record.
 
-    `is_private: list[bool]`
-    :   Indicates if the candidate's data is private
-
-    `keyed_custom_fields: list[dict[str, typing.Any]]`
-    :   Keyed custom fields associated with the candidate
-
-    `last_activity: list[str]`
-    :   Details of the last activity related to the candidate
+    `last_activity_at: list[str]`
+    :   Timestamp of the most recent activity on any of the candidate's applications (notes, emails, stage changes, etc.), in ISO 8601.
 
     `last_name: list[str]`
-    :   Candidate's last name
+    :   Last name from the Greenhouse v3 candidates record.
+
+    `linked_user_ids: list[list[typing.Any]]`
+    :   Ids of Greenhouse users linked to this candidate (employees represented by both a user record and a candidate record).
 
     `phone_numbers: list[list[typing.Any]]`
-    :   Candidate's phone numbers
+    :   Phone numbers on the candidate's profile. Each entry pairs the `value` with a `type` such as `mobile`, `home`, `work`, `skype`, or `other`.
 
-    `photo_url: list[str]`
-    :   URL of the candidate's profile photo
+    `preferred_name: list[str]`
+    :   Preferred or chosen name the candidate goes by, when different from their legal first name.
 
-    `recruiter: list[str]`
-    :   Recruiter assigned to the candidate
+    `private: list[bool]`
+    :   If true, the candidate is restricted to users with `View Private Candidates` access. Defaults to `false`.
 
     `social_media_addresses: list[list[typing.Any]]`
-    :   Candidate's social media addresses
+    :   Social media handles or URLs on the candidate's profile. Social entries are untyped — only the `value` is returned.
 
     `tags: list[list[typing.Any]]`
-    :   Tags associated with the candidate
+    :   Candidate tag names applied to this candidate within your organization.
+
+    `time_zone: list[str]`
+    :   Candidate's time zone as a Rails-style identifier (for example `Eastern Time (US & Canada)`).
 
     `title: list[str]`
-    :   Candidate's title (e.g., Mr., Mrs., Dr.)
+    :   Candidate's current job title, as entered on their profile.
 
     `updated_at: list[str]`
-    :   Date and time of last update
+    :   Updated at from the Greenhouse v3 candidates record.
 
     `website_addresses: list[list[typing.Any]]`
-    :   List of candidate's website addresses
+    :   Personal websites or portfolio URLs on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `company`, `portfolio`, `blog`, or `other`.
 
 <a id="CandidatesKeywordCondition"></a>
 
@@ -1083,20 +1135,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
     :   The type of the None singleton.
 
-<a id="CandidatesLikeCondition"></a>
-
-`CandidatesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
-    :   The type of the None singleton.
-
 <a id="CandidatesListParams"></a>
 
 `CandidatesListParams(*args, **kwargs)`
@@ -1108,10 +1146,16 @@ Classes
 
     ### Class variables
 
-    `page: int`
+    `cursor: str`
+    :   The type of the None singleton.
+
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
+    :   The type of the None singleton.
+
+    `updated_at: str`
     :   The type of the None singleton.
 
 <a id="CandidatesLtCondition"></a>
@@ -1175,7 +1219,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="CandidatesOrCondition"></a>
@@ -1197,7 +1241,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CandidatesSearchFilter"></a>
@@ -1212,82 +1256,64 @@ Classes
     ### Class variables
 
     `addresses: list[typing.Any] | None`
-    :   Candidate's addresses
-
-    `application_ids: list[typing.Any] | None`
-    :   List of application IDs
-
-    `applications: list[typing.Any] | None`
-    :   An array of all applications made by candidates.
-
-    `attachments: list[typing.Any] | None`
-    :   Attachments related to the candidate
+    :   Postal addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `home`, `work`, or `other`.
 
     `can_email: bool | None`
-    :   Indicates if candidate can be emailed
+    :   Whether this candidate has consented to receive email communication from your organization.
 
     `company: str | None`
-    :   Company where the candidate is associated
-
-    `coordinator: str | None`
-    :   Coordinator assigned to the candidate
+    :   Candidate's current company, as entered on their profile.
 
     `created_at: str | None`
-    :   Date and time of creation
+    :   Created at from the Greenhouse v3 candidates record.
 
     `custom_fields: dict[str, typing.Any] | None`
-    :   Custom fields associated with the candidate
-
-    `educations: list[typing.Any] | None`
-    :   List of candidate's educations
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `email_addresses: list[typing.Any] | None`
-    :   Candidate's email addresses
-
-    `employments: list[typing.Any] | None`
-    :   List of candidate's employments
+    :   Email addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `work`, or `other`.
 
     `first_name: str | None`
-    :   Candidate's first name
+    :   First name from the Greenhouse v3 candidates record.
 
     `id: int | None`
-    :   Candidate's ID
+    :   Id from the Greenhouse v3 candidates record.
 
-    `is_private: bool | None`
-    :   Indicates if the candidate's data is private
-
-    `keyed_custom_fields: dict[str, typing.Any] | None`
-    :   Keyed custom fields associated with the candidate
-
-    `last_activity: str | None`
-    :   Details of the last activity related to the candidate
+    `last_activity_at: str | None`
+    :   Timestamp of the most recent activity on any of the candidate's applications (notes, emails, stage changes, etc.), in ISO 8601.
 
     `last_name: str | None`
-    :   Candidate's last name
+    :   Last name from the Greenhouse v3 candidates record.
+
+    `linked_user_ids: list[typing.Any] | None`
+    :   Ids of Greenhouse users linked to this candidate (employees represented by both a user record and a candidate record).
 
     `phone_numbers: list[typing.Any] | None`
-    :   Candidate's phone numbers
+    :   Phone numbers on the candidate's profile. Each entry pairs the `value` with a `type` such as `mobile`, `home`, `work`, `skype`, or `other`.
 
-    `photo_url: str | None`
-    :   URL of the candidate's profile photo
+    `preferred_name: str | None`
+    :   Preferred or chosen name the candidate goes by, when different from their legal first name.
 
-    `recruiter: str | None`
-    :   Recruiter assigned to the candidate
+    `private: bool | None`
+    :   If true, the candidate is restricted to users with `View Private Candidates` access. Defaults to `false`.
 
     `social_media_addresses: list[typing.Any] | None`
-    :   Candidate's social media addresses
+    :   Social media handles or URLs on the candidate's profile. Social entries are untyped — only the `value` is returned.
 
     `tags: list[typing.Any] | None`
-    :   Tags associated with the candidate
+    :   Candidate tag names applied to this candidate within your organization.
+
+    `time_zone: str | None`
+    :   Candidate's time zone as a Rails-style identifier (for example `Eastern Time (US & Canada)`).
 
     `title: str | None`
-    :   Candidate's title (e.g., Mr., Mrs., Dr.)
+    :   Candidate's current job title, as entered on their profile.
 
     `updated_at: str | None`
-    :   Date and time of last update
+    :   Updated at from the Greenhouse v3 candidates record.
 
     `website_addresses: list[typing.Any] | None`
-    :   List of candidate's website addresses
+    :   Personal websites or portfolio URLs on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `company`, `portfolio`, `blog`, or `other`.
 
 <a id="CandidatesSearchQuery"></a>
 
@@ -1300,7 +1326,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.CandidatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.CandidatesSortFilter]`
@@ -1318,87 +1344,83 @@ Classes
     ### Class variables
 
     `addresses: Literal['asc', 'desc']`
-    :   Candidate's addresses
-
-    `application_ids: Literal['asc', 'desc']`
-    :   List of application IDs
-
-    `applications: Literal['asc', 'desc']`
-    :   An array of all applications made by candidates.
-
-    `attachments: Literal['asc', 'desc']`
-    :   Attachments related to the candidate
+    :   Postal addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `home`, `work`, or `other`.
 
     `can_email: Literal['asc', 'desc']`
-    :   Indicates if candidate can be emailed
+    :   Whether this candidate has consented to receive email communication from your organization.
 
     `company: Literal['asc', 'desc']`
-    :   Company where the candidate is associated
-
-    `coordinator: Literal['asc', 'desc']`
-    :   Coordinator assigned to the candidate
+    :   Candidate's current company, as entered on their profile.
 
     `created_at: Literal['asc', 'desc']`
-    :   Date and time of creation
+    :   Created at from the Greenhouse v3 candidates record.
 
     `custom_fields: Literal['asc', 'desc']`
-    :   Custom fields associated with the candidate
-
-    `educations: Literal['asc', 'desc']`
-    :   List of candidate's educations
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `email_addresses: Literal['asc', 'desc']`
-    :   Candidate's email addresses
-
-    `employments: Literal['asc', 'desc']`
-    :   List of candidate's employments
+    :   Email addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `work`, or `other`.
 
     `first_name: Literal['asc', 'desc']`
-    :   Candidate's first name
+    :   First name from the Greenhouse v3 candidates record.
 
     `id: Literal['asc', 'desc']`
-    :   Candidate's ID
+    :   Id from the Greenhouse v3 candidates record.
 
-    `is_private: Literal['asc', 'desc']`
-    :   Indicates if the candidate's data is private
-
-    `keyed_custom_fields: Literal['asc', 'desc']`
-    :   Keyed custom fields associated with the candidate
-
-    `last_activity: Literal['asc', 'desc']`
-    :   Details of the last activity related to the candidate
+    `last_activity_at: Literal['asc', 'desc']`
+    :   Timestamp of the most recent activity on any of the candidate's applications (notes, emails, stage changes, etc.), in ISO 8601.
 
     `last_name: Literal['asc', 'desc']`
-    :   Candidate's last name
+    :   Last name from the Greenhouse v3 candidates record.
+
+    `linked_user_ids: Literal['asc', 'desc']`
+    :   Ids of Greenhouse users linked to this candidate (employees represented by both a user record and a candidate record).
 
     `phone_numbers: Literal['asc', 'desc']`
-    :   Candidate's phone numbers
+    :   Phone numbers on the candidate's profile. Each entry pairs the `value` with a `type` such as `mobile`, `home`, `work`, `skype`, or `other`.
 
-    `photo_url: Literal['asc', 'desc']`
-    :   URL of the candidate's profile photo
+    `preferred_name: Literal['asc', 'desc']`
+    :   Preferred or chosen name the candidate goes by, when different from their legal first name.
 
-    `recruiter: Literal['asc', 'desc']`
-    :   Recruiter assigned to the candidate
+    `private: Literal['asc', 'desc']`
+    :   If true, the candidate is restricted to users with `View Private Candidates` access. Defaults to `false`.
 
     `social_media_addresses: Literal['asc', 'desc']`
-    :   Candidate's social media addresses
+    :   Social media handles or URLs on the candidate's profile. Social entries are untyped — only the `value` is returned.
 
     `tags: Literal['asc', 'desc']`
-    :   Tags associated with the candidate
+    :   Candidate tag names applied to this candidate within your organization.
+
+    `time_zone: Literal['asc', 'desc']`
+    :   Candidate's time zone as a Rails-style identifier (for example `Eastern Time (US & Canada)`).
 
     `title: Literal['asc', 'desc']`
-    :   Candidate's title (e.g., Mr., Mrs., Dr.)
+    :   Candidate's current job title, as entered on their profile.
 
     `updated_at: Literal['asc', 'desc']`
-    :   Date and time of last update
+    :   Updated at from the Greenhouse v3 candidates record.
 
     `website_addresses: Literal['asc', 'desc']`
-    :   List of candidate's website addresses
+    :   Personal websites or portfolio URLs on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `company`, `portfolio`, `blog`, or `other`.
+
+<a id="CandidatesStartswithCondition"></a>
+
+`CandidatesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.CandidatesStringFilter`
+    :   The type of the None singleton.
 
 <a id="CandidatesStringFilter"></a>
 
 `CandidatesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1407,82 +1429,64 @@ Classes
     ### Class variables
 
     `addresses: str`
-    :   Candidate's addresses
-
-    `application_ids: str`
-    :   List of application IDs
-
-    `applications: str`
-    :   An array of all applications made by candidates.
-
-    `attachments: str`
-    :   Attachments related to the candidate
+    :   Postal addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `home`, `work`, or `other`.
 
     `can_email: str`
-    :   Indicates if candidate can be emailed
+    :   Whether this candidate has consented to receive email communication from your organization.
 
     `company: str`
-    :   Company where the candidate is associated
-
-    `coordinator: str`
-    :   Coordinator assigned to the candidate
+    :   Candidate's current company, as entered on their profile.
 
     `created_at: str`
-    :   Date and time of creation
+    :   Created at from the Greenhouse v3 candidates record.
 
     `custom_fields: str`
-    :   Custom fields associated with the candidate
-
-    `educations: str`
-    :   List of candidate's educations
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `email_addresses: str`
-    :   Candidate's email addresses
-
-    `employments: str`
-    :   List of candidate's employments
+    :   Email addresses on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `work`, or `other`.
 
     `first_name: str`
-    :   Candidate's first name
+    :   First name from the Greenhouse v3 candidates record.
 
     `id: str`
-    :   Candidate's ID
+    :   Id from the Greenhouse v3 candidates record.
 
-    `is_private: str`
-    :   Indicates if the candidate's data is private
-
-    `keyed_custom_fields: str`
-    :   Keyed custom fields associated with the candidate
-
-    `last_activity: str`
-    :   Details of the last activity related to the candidate
+    `last_activity_at: str`
+    :   Timestamp of the most recent activity on any of the candidate's applications (notes, emails, stage changes, etc.), in ISO 8601.
 
     `last_name: str`
-    :   Candidate's last name
+    :   Last name from the Greenhouse v3 candidates record.
+
+    `linked_user_ids: str`
+    :   Ids of Greenhouse users linked to this candidate (employees represented by both a user record and a candidate record).
 
     `phone_numbers: str`
-    :   Candidate's phone numbers
+    :   Phone numbers on the candidate's profile. Each entry pairs the `value` with a `type` such as `mobile`, `home`, `work`, `skype`, or `other`.
 
-    `photo_url: str`
-    :   URL of the candidate's profile photo
+    `preferred_name: str`
+    :   Preferred or chosen name the candidate goes by, when different from their legal first name.
 
-    `recruiter: str`
-    :   Recruiter assigned to the candidate
+    `private: str`
+    :   If true, the candidate is restricted to users with `View Private Candidates` access. Defaults to `false`.
 
     `social_media_addresses: str`
-    :   Candidate's social media addresses
+    :   Social media handles or URLs on the candidate's profile. Social entries are untyped — only the `value` is returned.
 
     `tags: str`
-    :   Tags associated with the candidate
+    :   Candidate tag names applied to this candidate within your organization.
+
+    `time_zone: str`
+    :   Candidate's time zone as a Rails-style identifier (for example `Eastern Time (US & Canada)`).
 
     `title: str`
-    :   Candidate's title (e.g., Mr., Mrs., Dr.)
+    :   Candidate's current job title, as entered on their profile.
 
     `updated_at: str`
-    :   Date and time of last update
+    :   Updated at from the Greenhouse v3 candidates record.
 
     `website_addresses: str`
-    :   List of candidate's website addresses
+    :   Personal websites or portfolio URLs on the candidate's profile. Each entry pairs the `value` with a `type` such as `personal`, `company`, `portfolio`, `blog`, or `other`.
 
 <a id="DepartmentsAndCondition"></a>
 
@@ -1503,7 +1507,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DepartmentsAnyCondition"></a>
@@ -1539,31 +1543,42 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: Any`
-    :   External IDs of child departments associated with this department.
-
-    `child_ids: Any`
-    :   Unique IDs of child departments associated with this department.
+    `created_at: Any`
+    :   Created at from the Greenhouse v3 departments record.
 
     `external_id: Any`
-    :   External ID of this department.
+    :   Partner-supplied identifier for the department, typically the matching id from an HRIS or other external system. Free-form string and `null` when no external id has been set.
 
     `id: Any`
-    :   Unique ID of this department.
+    :   Id from the Greenhouse v3 departments record.
 
     `name: Any`
-    :   Name of the department.
-
-    `parent_department_external_id: Any`
-    :   External ID of the parent department of this department.
+    :   Display name of the department (e.g. `Engineering`, `Marketing`).
 
     `parent_id: Any`
-    :   Unique ID of the parent department of this department.
+    :   Id of the parent department in the organization's department tree. `null` for top-level departments. References another `/v3/departments` row.
+
+    `updated_at: Any`
+    :   Updated at from the Greenhouse v3 departments record.
+
+<a id="DepartmentsArrayContainsCondition"></a>
+
+`DepartmentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="DepartmentsContainsCondition"></a>
 
 `DepartmentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1572,6 +1587,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DepartmentsEndswithCondition"></a>
+
+`DepartmentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
     :   The type of the None singleton.
 
 <a id="DepartmentsEqCondition"></a>
@@ -1600,20 +1629,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
-    :   The type of the None singleton.
-
-<a id="DepartmentsGetParams"></a>
-
-`DepartmentsGetParams(*args, **kwargs)`
-:   Parameters for departments.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="DepartmentsGtCondition"></a>
@@ -1677,26 +1692,23 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: list[list[typing.Any]]`
-    :   External IDs of child departments associated with this department.
-
-    `child_ids: list[list[typing.Any]]`
-    :   Unique IDs of child departments associated with this department.
+    `created_at: list[str]`
+    :   Created at from the Greenhouse v3 departments record.
 
     `external_id: list[str]`
-    :   External ID of this department.
+    :   Partner-supplied identifier for the department, typically the matching id from an HRIS or other external system. Free-form string and `null` when no external id has been set.
 
     `id: list[int]`
-    :   Unique ID of this department.
+    :   Id from the Greenhouse v3 departments record.
 
     `name: list[str]`
-    :   Name of the department.
-
-    `parent_department_external_id: list[str]`
-    :   External ID of the parent department of this department.
+    :   Display name of the department (e.g. `Engineering`, `Marketing`).
 
     `parent_id: list[int]`
-    :   Unique ID of the parent department of this department.
+    :   Id of the parent department in the organization's department tree. `null` for top-level departments. References another `/v3/departments` row.
+
+    `updated_at: list[str]`
+    :   Updated at from the Greenhouse v3 departments record.
 
 <a id="DepartmentsKeywordCondition"></a>
 
@@ -1712,20 +1724,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
     :   The type of the None singleton.
 
-<a id="DepartmentsLikeCondition"></a>
-
-`DepartmentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="DepartmentsListParams"></a>
 
 `DepartmentsListParams(*args, **kwargs)`
@@ -1737,7 +1735,10 @@ Classes
 
     ### Class variables
 
-    `page: int`
+    `cursor: str`
+    :   The type of the None singleton.
+
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
@@ -1804,7 +1805,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="DepartmentsOrCondition"></a>
@@ -1826,7 +1827,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DepartmentsSearchFilter"></a>
@@ -1840,26 +1841,23 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: list[typing.Any] | None`
-    :   External IDs of child departments associated with this department.
-
-    `child_ids: list[typing.Any] | None`
-    :   Unique IDs of child departments associated with this department.
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 departments record.
 
     `external_id: str | None`
-    :   External ID of this department.
+    :   Partner-supplied identifier for the department, typically the matching id from an HRIS or other external system. Free-form string and `null` when no external id has been set.
 
     `id: int | None`
-    :   Unique ID of this department.
+    :   Id from the Greenhouse v3 departments record.
 
     `name: str | None`
-    :   Name of the department.
-
-    `parent_department_external_id: str | None`
-    :   External ID of the parent department of this department.
+    :   Display name of the department (e.g. `Engineering`, `Marketing`).
 
     `parent_id: int | None`
-    :   Unique ID of the parent department of this department.
+    :   Id of the parent department in the organization's department tree. `null` for top-level departments. References another `/v3/departments` row.
+
+    `updated_at: str | None`
+    :   Updated at from the Greenhouse v3 departments record.
 
 <a id="DepartmentsSearchQuery"></a>
 
@@ -1872,7 +1870,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsSortFilter]`
@@ -1889,31 +1887,28 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: Literal['asc', 'desc']`
-    :   External IDs of child departments associated with this department.
-
-    `child_ids: Literal['asc', 'desc']`
-    :   Unique IDs of child departments associated with this department.
+    `created_at: Literal['asc', 'desc']`
+    :   Created at from the Greenhouse v3 departments record.
 
     `external_id: Literal['asc', 'desc']`
-    :   External ID of this department.
+    :   Partner-supplied identifier for the department, typically the matching id from an HRIS or other external system. Free-form string and `null` when no external id has been set.
 
     `id: Literal['asc', 'desc']`
-    :   Unique ID of this department.
+    :   Id from the Greenhouse v3 departments record.
 
     `name: Literal['asc', 'desc']`
-    :   Name of the department.
-
-    `parent_department_external_id: Literal['asc', 'desc']`
-    :   External ID of the parent department of this department.
+    :   Display name of the department (e.g. `Engineering`, `Marketing`).
 
     `parent_id: Literal['asc', 'desc']`
-    :   Unique ID of the parent department of this department.
+    :   Id of the parent department in the organization's department tree. `null` for top-level departments. References another `/v3/departments` row.
 
-<a id="DepartmentsStringFilter"></a>
+    `updated_at: Literal['asc', 'desc']`
+    :   Updated at from the Greenhouse v3 departments record.
 
-`DepartmentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+<a id="DepartmentsStartswithCondition"></a>
+
+`DepartmentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
 
     ### Ancestors (in MRO)
 
@@ -1921,26 +1916,60 @@ Classes
 
     ### Class variables
 
-    `child_department_external_ids: str`
-    :   External IDs of child departments associated with this department.
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.DepartmentsStringFilter`
+    :   The type of the None singleton.
 
-    `child_ids: str`
-    :   Unique IDs of child departments associated with this department.
+<a id="DepartmentsStringFilter"></a>
+
+`DepartmentsStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   Created at from the Greenhouse v3 departments record.
 
     `external_id: str`
-    :   External ID of this department.
+    :   Partner-supplied identifier for the department, typically the matching id from an HRIS or other external system. Free-form string and `null` when no external id has been set.
 
     `id: str`
-    :   Unique ID of this department.
+    :   Id from the Greenhouse v3 departments record.
 
     `name: str`
-    :   Name of the department.
-
-    `parent_department_external_id: str`
-    :   External ID of the parent department of this department.
+    :   Display name of the department (e.g. `Engineering`, `Marketing`).
 
     `parent_id: str`
-    :   Unique ID of the parent department of this department.
+    :   Id of the parent department in the organization's department tree. `null` for top-level departments. References another `/v3/departments` row.
+
+    `updated_at: str`
+    :   Updated at from the Greenhouse v3 departments record.
+
+<a id="InterviewsListParams"></a>
+
+`InterviewsListParams(*args, **kwargs)`
+:   Parameters for interviews.list operation
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `cursor: str`
+    :   The type of the None singleton.
+
+    `ids: list[int]`
+    :   The type of the None singleton.
+
+    `per_page: int`
+    :   The type of the None singleton.
+
+    `updated_at: str`
+    :   The type of the None singleton.
 
 <a id="JobPostsAndCondition"></a>
 
@@ -1961,7 +1990,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobPostsAnyCondition"></a>
@@ -1998,54 +2027,74 @@ Classes
     ### Class variables
 
     `active: Any`
-    :   Flag indicating if the job post is active or not.
+    :   If `true`, the post has not been deleted. Deleted posts are excluded by default; pass `active=false` on the list endpoint to retrieve them.
 
     `content: Any`
-    :   Content or description of the job post.
+    :   HTML body of the post shown to candidates on the job board. For internal posts this returns the `internal_content` instead. Sanitized server-side — only a limited element/attribute allowlist (including `iframe`, `video`, `source`) survives. `null` while the post is still being scaffolded.
 
     `created_at: Any`
-    :   Date and time when the job post was created.
+    :   Created at from the Greenhouse v3 job posts record.
 
     `demographic_question_set_id: Any`
-    :   ID of the demographic question set associated with the job post.
+    :   Id of the demographic question set surfaced to candidates on this post for diversity, equity, and inclusion (DE&I) reporting. `null` when the post does not collect demographic data.
 
-    `external: Any`
-    :   Flag indicating if the job post is external or not.
+    `featured: Any`
+    :   If `true`, the post is currently featured on the organization's internal job board and surfaces in the weekly internal-jobs email. Only internal posts can be featured, and at most three can be featured at a time.
 
     `first_published_at: Any`
-    :   Date and time when the job post was first published.
+    :   Timestamp the post first transitioned to `live`, in ISO 8601. `null` for posts that have never been published.
 
     `id: Any`
-    :   Unique identifier of the job post.
+    :   Id from the Greenhouse v3 job posts record.
 
     `internal: Any`
-    :   Flag indicating if the job post is internal or not.
+    :   If `true`, the post lives on an internal job board and is visible only to existing employees signed in to the internal board. If `false`, the post is external and lives on a public-facing `job_board`. Set by the board the post is associated with at create time.
 
     `internal_content: Any`
-    :   Internal content or description of the job post.
+    :   HTML body shown on the internal job board when the post is also configured as internal. `null` for external-only posts. Same sanitization rules as `content`.
+
+    `job_board_id: Any`
+    :   Id of the `job_board` this post is published to. Resolves to either an external (careers site, syndicated board) or internal job board depending on `internal`. Each post belongs to exactly one board at a time.
 
     `job_id: Any`
-    :   ID of the job associated with the job post.
+    :   Id of the parent job (requisition) this post belongs to. A single job can have multiple posts; the job is the source of truth for the hiring team, openings, and interview plan.
+
+    `language: Any`
+    :   ISO 639-1 locale of the post, used to render the candidate-facing application form in the matching language (e.g. `en`, `fr`, `ja`). `null` when no locale has been chosen.
 
     `live: Any`
-    :   Flag indicating if the job post is live or not.
+    :   If `true`, the post is published (`job_application_status` is `live`) and its job board is also live. A post on an unpublished board is **not** `live` — its `public_url` returns a 404 until the board is enabled.
 
-    `location: Any`
-    :   Details about the job post location.
+    `public_url: Any`
+    :   Canonical public URL of the post on its job board, including the `gh_jid` tracking parameter. `null` when the post has no associated job board or the board has no public URL configured.
 
     `questions: Any`
-    :   List of questions related to the job post.
+    :   Application form questions presented to candidates on this post, including default questions (resume, cover letter, basic info) and any custom questions configured by the hiring team. Ordered as they appear on the form.
 
     `title: Any`
-    :   Title or headline of the job post.
+    :   Public-facing title shown to candidates on the job board (e.g. `Senior Backend Engineer, Remote`). Distinct from the internal `job.name` — a single job can have several posts with different titles, one per board, language, or geography.
 
     `updated_at: Any`
-    :   Date and time when the job post was last updated.
+    :   Updated at from the Greenhouse v3 job posts record.
+
+<a id="JobPostsArrayContainsCondition"></a>
+
+`JobPostsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="JobPostsContainsCondition"></a>
 
 `JobPostsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2054,6 +2103,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="JobPostsEndswithCondition"></a>
+
+`JobPostsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
     :   The type of the None singleton.
 
 <a id="JobPostsEqCondition"></a>
@@ -2082,20 +2145,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
-    :   The type of the None singleton.
-
-<a id="JobPostsGetParams"></a>
-
-`JobPostsGetParams(*args, **kwargs)`
-:   Parameters for job_posts.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="JobPostsGtCondition"></a>
@@ -2160,49 +2209,55 @@ Classes
     ### Class variables
 
     `active: list[bool]`
-    :   Flag indicating if the job post is active or not.
+    :   If `true`, the post has not been deleted. Deleted posts are excluded by default; pass `active=false` on the list endpoint to retrieve them.
 
     `content: list[str]`
-    :   Content or description of the job post.
+    :   HTML body of the post shown to candidates on the job board. For internal posts this returns the `internal_content` instead. Sanitized server-side — only a limited element/attribute allowlist (including `iframe`, `video`, `source`) survives. `null` while the post is still being scaffolded.
 
     `created_at: list[str]`
-    :   Date and time when the job post was created.
+    :   Created at from the Greenhouse v3 job posts record.
 
     `demographic_question_set_id: list[int]`
-    :   ID of the demographic question set associated with the job post.
+    :   Id of the demographic question set surfaced to candidates on this post for diversity, equity, and inclusion (DE&I) reporting. `null` when the post does not collect demographic data.
 
-    `external: list[bool]`
-    :   Flag indicating if the job post is external or not.
+    `featured: list[bool]`
+    :   If `true`, the post is currently featured on the organization's internal job board and surfaces in the weekly internal-jobs email. Only internal posts can be featured, and at most three can be featured at a time.
 
     `first_published_at: list[str]`
-    :   Date and time when the job post was first published.
+    :   Timestamp the post first transitioned to `live`, in ISO 8601. `null` for posts that have never been published.
 
     `id: list[int]`
-    :   Unique identifier of the job post.
+    :   Id from the Greenhouse v3 job posts record.
 
     `internal: list[bool]`
-    :   Flag indicating if the job post is internal or not.
+    :   If `true`, the post lives on an internal job board and is visible only to existing employees signed in to the internal board. If `false`, the post is external and lives on a public-facing `job_board`. Set by the board the post is associated with at create time.
 
     `internal_content: list[str]`
-    :   Internal content or description of the job post.
+    :   HTML body shown on the internal job board when the post is also configured as internal. `null` for external-only posts. Same sanitization rules as `content`.
+
+    `job_board_id: list[int]`
+    :   Id of the `job_board` this post is published to. Resolves to either an external (careers site, syndicated board) or internal job board depending on `internal`. Each post belongs to exactly one board at a time.
 
     `job_id: list[int]`
-    :   ID of the job associated with the job post.
+    :   Id of the parent job (requisition) this post belongs to. A single job can have multiple posts; the job is the source of truth for the hiring team, openings, and interview plan.
+
+    `language: list[str]`
+    :   ISO 639-1 locale of the post, used to render the candidate-facing application form in the matching language (e.g. `en`, `fr`, `ja`). `null` when no locale has been chosen.
 
     `live: list[bool]`
-    :   Flag indicating if the job post is live or not.
+    :   If `true`, the post is published (`job_application_status` is `live`) and its job board is also live. A post on an unpublished board is **not** `live` — its `public_url` returns a 404 until the board is enabled.
 
-    `location: list[dict[str, typing.Any]]`
-    :   Details about the job post location.
+    `public_url: list[str]`
+    :   Canonical public URL of the post on its job board, including the `gh_jid` tracking parameter. `null` when the post has no associated job board or the board has no public URL configured.
 
     `questions: list[list[typing.Any]]`
-    :   List of questions related to the job post.
+    :   Application form questions presented to candidates on this post, including default questions (resume, cover letter, basic info) and any custom questions configured by the hiring team. Ordered as they appear on the form.
 
     `title: list[str]`
-    :   Title or headline of the job post.
+    :   Public-facing title shown to candidates on the job board (e.g. `Senior Backend Engineer, Remote`). Distinct from the internal `job.name` — a single job can have several posts with different titles, one per board, language, or geography.
 
     `updated_at: list[str]`
-    :   Date and time when the job post was last updated.
+    :   Updated at from the Greenhouse v3 job posts record.
 
 <a id="JobPostsKeywordCondition"></a>
 
@@ -2216,20 +2271,6 @@ Classes
     ### Class variables
 
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
-    :   The type of the None singleton.
-
-<a id="JobPostsLikeCondition"></a>
-
-`JobPostsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
     :   The type of the None singleton.
 
 <a id="JobPostsListParams"></a>
@@ -2246,13 +2287,16 @@ Classes
     `active: bool`
     :   The type of the None singleton.
 
-    `live: bool`
+    `cursor: str`
     :   The type of the None singleton.
 
-    `page: int`
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
+    :   The type of the None singleton.
+
+    `updated_at: str`
     :   The type of the None singleton.
 
 <a id="JobPostsLtCondition"></a>
@@ -2316,7 +2360,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
     :   The type of the None singleton.
 
 <a id="JobPostsOrCondition"></a>
@@ -2338,7 +2382,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobPostsSearchFilter"></a>
@@ -2353,49 +2397,55 @@ Classes
     ### Class variables
 
     `active: bool | None`
-    :   Flag indicating if the job post is active or not.
+    :   If `true`, the post has not been deleted. Deleted posts are excluded by default; pass `active=false` on the list endpoint to retrieve them.
 
     `content: str | None`
-    :   Content or description of the job post.
+    :   HTML body of the post shown to candidates on the job board. For internal posts this returns the `internal_content` instead. Sanitized server-side — only a limited element/attribute allowlist (including `iframe`, `video`, `source`) survives. `null` while the post is still being scaffolded.
 
     `created_at: str | None`
-    :   Date and time when the job post was created.
+    :   Created at from the Greenhouse v3 job posts record.
 
     `demographic_question_set_id: int | None`
-    :   ID of the demographic question set associated with the job post.
+    :   Id of the demographic question set surfaced to candidates on this post for diversity, equity, and inclusion (DE&I) reporting. `null` when the post does not collect demographic data.
 
-    `external: bool | None`
-    :   Flag indicating if the job post is external or not.
+    `featured: bool | None`
+    :   If `true`, the post is currently featured on the organization's internal job board and surfaces in the weekly internal-jobs email. Only internal posts can be featured, and at most three can be featured at a time.
 
     `first_published_at: str | None`
-    :   Date and time when the job post was first published.
+    :   Timestamp the post first transitioned to `live`, in ISO 8601. `null` for posts that have never been published.
 
     `id: int | None`
-    :   Unique identifier of the job post.
+    :   Id from the Greenhouse v3 job posts record.
 
     `internal: bool | None`
-    :   Flag indicating if the job post is internal or not.
+    :   If `true`, the post lives on an internal job board and is visible only to existing employees signed in to the internal board. If `false`, the post is external and lives on a public-facing `job_board`. Set by the board the post is associated with at create time.
 
     `internal_content: str | None`
-    :   Internal content or description of the job post.
+    :   HTML body shown on the internal job board when the post is also configured as internal. `null` for external-only posts. Same sanitization rules as `content`.
+
+    `job_board_id: int | None`
+    :   Id of the `job_board` this post is published to. Resolves to either an external (careers site, syndicated board) or internal job board depending on `internal`. Each post belongs to exactly one board at a time.
 
     `job_id: int | None`
-    :   ID of the job associated with the job post.
+    :   Id of the parent job (requisition) this post belongs to. A single job can have multiple posts; the job is the source of truth for the hiring team, openings, and interview plan.
+
+    `language: str | None`
+    :   ISO 639-1 locale of the post, used to render the candidate-facing application form in the matching language (e.g. `en`, `fr`, `ja`). `null` when no locale has been chosen.
 
     `live: bool | None`
-    :   Flag indicating if the job post is live or not.
+    :   If `true`, the post is published (`job_application_status` is `live`) and its job board is also live. A post on an unpublished board is **not** `live` — its `public_url` returns a 404 until the board is enabled.
 
-    `location: dict[str, typing.Any] | None`
-    :   Details about the job post location.
+    `public_url: str | None`
+    :   Canonical public URL of the post on its job board, including the `gh_jid` tracking parameter. `null` when the post has no associated job board or the board has no public URL configured.
 
     `questions: list[typing.Any] | None`
-    :   List of questions related to the job post.
+    :   Application form questions presented to candidates on this post, including default questions (resume, cover letter, basic info) and any custom questions configured by the hiring team. Ordered as they appear on the form.
 
     `title: str | None`
-    :   Title or headline of the job post.
+    :   Public-facing title shown to candidates on the job board (e.g. `Senior Backend Engineer, Remote`). Distinct from the internal `job.name` — a single job can have several posts with different titles, one per board, language, or geography.
 
     `updated_at: str | None`
-    :   Date and time when the job post was last updated.
+    :   Updated at from the Greenhouse v3 job posts record.
 
 <a id="JobPostsSearchQuery"></a>
 
@@ -2408,7 +2458,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobPostsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.JobPostsSortFilter]`
@@ -2426,54 +2476,74 @@ Classes
     ### Class variables
 
     `active: Literal['asc', 'desc']`
-    :   Flag indicating if the job post is active or not.
+    :   If `true`, the post has not been deleted. Deleted posts are excluded by default; pass `active=false` on the list endpoint to retrieve them.
 
     `content: Literal['asc', 'desc']`
-    :   Content or description of the job post.
+    :   HTML body of the post shown to candidates on the job board. For internal posts this returns the `internal_content` instead. Sanitized server-side — only a limited element/attribute allowlist (including `iframe`, `video`, `source`) survives. `null` while the post is still being scaffolded.
 
     `created_at: Literal['asc', 'desc']`
-    :   Date and time when the job post was created.
+    :   Created at from the Greenhouse v3 job posts record.
 
     `demographic_question_set_id: Literal['asc', 'desc']`
-    :   ID of the demographic question set associated with the job post.
+    :   Id of the demographic question set surfaced to candidates on this post for diversity, equity, and inclusion (DE&I) reporting. `null` when the post does not collect demographic data.
 
-    `external: Literal['asc', 'desc']`
-    :   Flag indicating if the job post is external or not.
+    `featured: Literal['asc', 'desc']`
+    :   If `true`, the post is currently featured on the organization's internal job board and surfaces in the weekly internal-jobs email. Only internal posts can be featured, and at most three can be featured at a time.
 
     `first_published_at: Literal['asc', 'desc']`
-    :   Date and time when the job post was first published.
+    :   Timestamp the post first transitioned to `live`, in ISO 8601. `null` for posts that have never been published.
 
     `id: Literal['asc', 'desc']`
-    :   Unique identifier of the job post.
+    :   Id from the Greenhouse v3 job posts record.
 
     `internal: Literal['asc', 'desc']`
-    :   Flag indicating if the job post is internal or not.
+    :   If `true`, the post lives on an internal job board and is visible only to existing employees signed in to the internal board. If `false`, the post is external and lives on a public-facing `job_board`. Set by the board the post is associated with at create time.
 
     `internal_content: Literal['asc', 'desc']`
-    :   Internal content or description of the job post.
+    :   HTML body shown on the internal job board when the post is also configured as internal. `null` for external-only posts. Same sanitization rules as `content`.
+
+    `job_board_id: Literal['asc', 'desc']`
+    :   Id of the `job_board` this post is published to. Resolves to either an external (careers site, syndicated board) or internal job board depending on `internal`. Each post belongs to exactly one board at a time.
 
     `job_id: Literal['asc', 'desc']`
-    :   ID of the job associated with the job post.
+    :   Id of the parent job (requisition) this post belongs to. A single job can have multiple posts; the job is the source of truth for the hiring team, openings, and interview plan.
+
+    `language: Literal['asc', 'desc']`
+    :   ISO 639-1 locale of the post, used to render the candidate-facing application form in the matching language (e.g. `en`, `fr`, `ja`). `null` when no locale has been chosen.
 
     `live: Literal['asc', 'desc']`
-    :   Flag indicating if the job post is live or not.
+    :   If `true`, the post is published (`job_application_status` is `live`) and its job board is also live. A post on an unpublished board is **not** `live` — its `public_url` returns a 404 until the board is enabled.
 
-    `location: Literal['asc', 'desc']`
-    :   Details about the job post location.
+    `public_url: Literal['asc', 'desc']`
+    :   Canonical public URL of the post on its job board, including the `gh_jid` tracking parameter. `null` when the post has no associated job board or the board has no public URL configured.
 
     `questions: Literal['asc', 'desc']`
-    :   List of questions related to the job post.
+    :   Application form questions presented to candidates on this post, including default questions (resume, cover letter, basic info) and any custom questions configured by the hiring team. Ordered as they appear on the form.
 
     `title: Literal['asc', 'desc']`
-    :   Title or headline of the job post.
+    :   Public-facing title shown to candidates on the job board (e.g. `Senior Backend Engineer, Remote`). Distinct from the internal `job.name` — a single job can have several posts with different titles, one per board, language, or geography.
 
     `updated_at: Literal['asc', 'desc']`
-    :   Date and time when the job post was last updated.
+    :   Updated at from the Greenhouse v3 job posts record.
+
+<a id="JobPostsStartswithCondition"></a>
+
+`JobPostsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.JobPostsStringFilter`
+    :   The type of the None singleton.
 
 <a id="JobPostsStringFilter"></a>
 
 `JobPostsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2482,49 +2552,55 @@ Classes
     ### Class variables
 
     `active: str`
-    :   Flag indicating if the job post is active or not.
+    :   If `true`, the post has not been deleted. Deleted posts are excluded by default; pass `active=false` on the list endpoint to retrieve them.
 
     `content: str`
-    :   Content or description of the job post.
+    :   HTML body of the post shown to candidates on the job board. For internal posts this returns the `internal_content` instead. Sanitized server-side — only a limited element/attribute allowlist (including `iframe`, `video`, `source`) survives. `null` while the post is still being scaffolded.
 
     `created_at: str`
-    :   Date and time when the job post was created.
+    :   Created at from the Greenhouse v3 job posts record.
 
     `demographic_question_set_id: str`
-    :   ID of the demographic question set associated with the job post.
+    :   Id of the demographic question set surfaced to candidates on this post for diversity, equity, and inclusion (DE&I) reporting. `null` when the post does not collect demographic data.
 
-    `external: str`
-    :   Flag indicating if the job post is external or not.
+    `featured: str`
+    :   If `true`, the post is currently featured on the organization's internal job board and surfaces in the weekly internal-jobs email. Only internal posts can be featured, and at most three can be featured at a time.
 
     `first_published_at: str`
-    :   Date and time when the job post was first published.
+    :   Timestamp the post first transitioned to `live`, in ISO 8601. `null` for posts that have never been published.
 
     `id: str`
-    :   Unique identifier of the job post.
+    :   Id from the Greenhouse v3 job posts record.
 
     `internal: str`
-    :   Flag indicating if the job post is internal or not.
+    :   If `true`, the post lives on an internal job board and is visible only to existing employees signed in to the internal board. If `false`, the post is external and lives on a public-facing `job_board`. Set by the board the post is associated with at create time.
 
     `internal_content: str`
-    :   Internal content or description of the job post.
+    :   HTML body shown on the internal job board when the post is also configured as internal. `null` for external-only posts. Same sanitization rules as `content`.
+
+    `job_board_id: str`
+    :   Id of the `job_board` this post is published to. Resolves to either an external (careers site, syndicated board) or internal job board depending on `internal`. Each post belongs to exactly one board at a time.
 
     `job_id: str`
-    :   ID of the job associated with the job post.
+    :   Id of the parent job (requisition) this post belongs to. A single job can have multiple posts; the job is the source of truth for the hiring team, openings, and interview plan.
+
+    `language: str`
+    :   ISO 639-1 locale of the post, used to render the candidate-facing application form in the matching language (e.g. `en`, `fr`, `ja`). `null` when no locale has been chosen.
 
     `live: str`
-    :   Flag indicating if the job post is live or not.
+    :   If `true`, the post is published (`job_application_status` is `live`) and its job board is also live. A post on an unpublished board is **not** `live` — its `public_url` returns a 404 until the board is enabled.
 
-    `location: str`
-    :   Details about the job post location.
+    `public_url: str`
+    :   Canonical public URL of the post on its job board, including the `gh_jid` tracking parameter. `null` when the post has no associated job board or the board has no public URL configured.
 
     `questions: str`
-    :   List of questions related to the job post.
+    :   Application form questions presented to candidates on this post, including default questions (resume, cover letter, basic info) and any custom questions configured by the hiring team. Ordered as they appear on the form.
 
     `title: str`
-    :   Title or headline of the job post.
+    :   Public-facing title shown to candidates on the job board (e.g. `Senior Backend Engineer, Remote`). Distinct from the internal `job.name` — a single job can have several posts with different titles, one per board, language, or geography.
 
     `updated_at: str`
-    :   Date and time when the job post was last updated.
+    :   Updated at from the Greenhouse v3 job posts record.
 
 <a id="JobsAndCondition"></a>
 
@@ -2545,7 +2621,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobsAnyCondition"></a>
@@ -2582,63 +2658,68 @@ Classes
     ### Class variables
 
     `closed_at: Any`
-    :   The date and time the job was closed
+    :   Timestamp the job most recently transitioned to `closed`, in ISO 8601. `null` for jobs that are still `open` or `draft`.
 
     `confidential: Any`
-    :   Indicates if the job details are confidential
+    :   If `true`, the job is restricted to users explicitly granted access on the Hiring Team. The legacy Confidential Jobs feature has been sunset — this flag cannot be set on new jobs and is preserved for jobs that already had it enabled.
 
     `copied_from_id: Any`
-    :   The ID of the job from which this job was copied
+    :   Id of the job (typically a template) this job was copied from on creation. `null` when the job was not created from another job.
 
     `created_at: Any`
-    :   The date and time the job was created
+    :   Created at from the Greenhouse v3 jobs record.
 
     `custom_fields: Any`
-    :   Custom fields related to the job
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `departments: Any`
-    :   Departments associated with the job
-
-    `hiring_team: Any`
-    :   Members of the hiring team for the job
+    `department_id: Any`
+    :   Id of the department this job is assigned to. `null` when no department is set.
 
     `id: Any`
-    :   Unique ID of the job
+    :   Id from the Greenhouse v3 jobs record.
 
     `is_template: Any`
-    :   Indicates if the job is a template
-
-    `keyed_custom_fields: Any`
-    :   Keyed custom fields related to the job
+    :   If `true`, this job is a template used as the source for new jobs rather than a real requisition. Templates do not accept applications; reference them via `template_job_id` on `POST /v3/jobs`.
 
     `name: Any`
-    :   Name of the job
+    :   Internal job title shown to the hiring team in Greenhouse (e.g. `Senior Backend Engineer`). Distinct from the external-facing title on each `job_post`.
 
     `notes: Any`
-    :   Additional notes or comments about the job
+    :   Internal HTML notes about the job, surfaced to the hiring team in the Greenhouse UI. Not exposed on public job posts.
 
-    `offices: Any`
-    :   Offices associated with the job
+    `office_ids: Any`
+    :   Ids of the offices this job is assigned to. A job can span multiple offices; empty array or `null` when no offices are set.
 
     `opened_at: Any`
-    :   The date and time the job was opened
-
-    `openings: Any`
-    :   Openings associated with the job
+    :   Timestamp the job first transitioned to `open`, in ISO 8601. `null` while the job is still in `draft`.
 
     `requisition_id: Any`
-    :   ID associated with the job requisition
+    :   Partner-supplied external identifier for the requisition (e.g. an HRIS or ATS code). Free-form string, not unique across the organization, and `null` when no external id has been set.
 
     `status: Any`
-    :   Current status of the job
+    :   Lifecycle status of the job. `draft` while it is being scaffolded, `open` once it has at least one open opening, and `closed` after every opening is closed. A job moves to `closed` automatically when its last open opening is closed via `PATCH /v3/openings/{id}`.
 
     `updated_at: Any`
-    :   The date and time the job was last updated
+    :   Updated at from the Greenhouse v3 jobs record.
+
+<a id="JobsArrayContainsCondition"></a>
+
+`JobsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="JobsContainsCondition"></a>
 
 `JobsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2647,6 +2728,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="JobsEndswithCondition"></a>
+
+`JobsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
     :   The type of the None singleton.
 
 <a id="JobsEqCondition"></a>
@@ -2675,20 +2770,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
-    :   The type of the None singleton.
-
-<a id="JobsGetParams"></a>
-
-`JobsGetParams(*args, **kwargs)`
-:   Parameters for jobs.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="JobsGtCondition"></a>
@@ -2753,58 +2834,49 @@ Classes
     ### Class variables
 
     `closed_at: list[str]`
-    :   The date and time the job was closed
+    :   Timestamp the job most recently transitioned to `closed`, in ISO 8601. `null` for jobs that are still `open` or `draft`.
 
     `confidential: list[bool]`
-    :   Indicates if the job details are confidential
+    :   If `true`, the job is restricted to users explicitly granted access on the Hiring Team. The legacy Confidential Jobs feature has been sunset — this flag cannot be set on new jobs and is preserved for jobs that already had it enabled.
 
     `copied_from_id: list[int]`
-    :   The ID of the job from which this job was copied
+    :   Id of the job (typically a template) this job was copied from on creation. `null` when the job was not created from another job.
 
     `created_at: list[str]`
-    :   The date and time the job was created
+    :   Created at from the Greenhouse v3 jobs record.
 
     `custom_fields: list[dict[str, typing.Any]]`
-    :   Custom fields related to the job
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `departments: list[list[typing.Any]]`
-    :   Departments associated with the job
-
-    `hiring_team: list[dict[str, typing.Any]]`
-    :   Members of the hiring team for the job
+    `department_id: list[int]`
+    :   Id of the department this job is assigned to. `null` when no department is set.
 
     `id: list[int]`
-    :   Unique ID of the job
+    :   Id from the Greenhouse v3 jobs record.
 
     `is_template: list[bool]`
-    :   Indicates if the job is a template
-
-    `keyed_custom_fields: list[dict[str, typing.Any]]`
-    :   Keyed custom fields related to the job
+    :   If `true`, this job is a template used as the source for new jobs rather than a real requisition. Templates do not accept applications; reference them via `template_job_id` on `POST /v3/jobs`.
 
     `name: list[str]`
-    :   Name of the job
+    :   Internal job title shown to the hiring team in Greenhouse (e.g. `Senior Backend Engineer`). Distinct from the external-facing title on each `job_post`.
 
     `notes: list[str]`
-    :   Additional notes or comments about the job
+    :   Internal HTML notes about the job, surfaced to the hiring team in the Greenhouse UI. Not exposed on public job posts.
 
-    `offices: list[list[typing.Any]]`
-    :   Offices associated with the job
+    `office_ids: list[list[typing.Any]]`
+    :   Ids of the offices this job is assigned to. A job can span multiple offices; empty array or `null` when no offices are set.
 
     `opened_at: list[str]`
-    :   The date and time the job was opened
-
-    `openings: list[list[typing.Any]]`
-    :   Openings associated with the job
+    :   Timestamp the job first transitioned to `open`, in ISO 8601. `null` while the job is still in `draft`.
 
     `requisition_id: list[str]`
-    :   ID associated with the job requisition
+    :   Partner-supplied external identifier for the requisition (e.g. an HRIS or ATS code). Free-form string, not unique across the organization, and `null` when no external id has been set.
 
     `status: list[str]`
-    :   Current status of the job
+    :   Lifecycle status of the job. `draft` while it is being scaffolded, `open` once it has at least one open opening, and `closed` after every opening is closed. A job moves to `closed` automatically when its last open opening is closed via `PATCH /v3/openings/{id}`.
 
     `updated_at: list[str]`
-    :   The date and time the job was last updated
+    :   Updated at from the Greenhouse v3 jobs record.
 
 <a id="JobsKeywordCondition"></a>
 
@@ -2820,20 +2892,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
     :   The type of the None singleton.
 
-<a id="JobsLikeCondition"></a>
-
-`JobsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
-    :   The type of the None singleton.
-
 <a id="JobsListParams"></a>
 
 `JobsListParams(*args, **kwargs)`
@@ -2845,10 +2903,16 @@ Classes
 
     ### Class variables
 
-    `page: int`
+    `cursor: str`
+    :   The type of the None singleton.
+
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
+    :   The type of the None singleton.
+
+    `updated_at: str`
     :   The type of the None singleton.
 
 <a id="JobsLtCondition"></a>
@@ -2912,7 +2976,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
     :   The type of the None singleton.
 
 <a id="JobsOrCondition"></a>
@@ -2934,7 +2998,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="JobsSearchFilter"></a>
@@ -2949,58 +3013,49 @@ Classes
     ### Class variables
 
     `closed_at: str | None`
-    :   The date and time the job was closed
+    :   Timestamp the job most recently transitioned to `closed`, in ISO 8601. `null` for jobs that are still `open` or `draft`.
 
     `confidential: bool | None`
-    :   Indicates if the job details are confidential
+    :   If `true`, the job is restricted to users explicitly granted access on the Hiring Team. The legacy Confidential Jobs feature has been sunset — this flag cannot be set on new jobs and is preserved for jobs that already had it enabled.
 
     `copied_from_id: int | None`
-    :   The ID of the job from which this job was copied
+    :   Id of the job (typically a template) this job was copied from on creation. `null` when the job was not created from another job.
 
     `created_at: str | None`
-    :   The date and time the job was created
+    :   Created at from the Greenhouse v3 jobs record.
 
     `custom_fields: dict[str, typing.Any] | None`
-    :   Custom fields related to the job
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `departments: list[typing.Any] | None`
-    :   Departments associated with the job
-
-    `hiring_team: dict[str, typing.Any] | None`
-    :   Members of the hiring team for the job
+    `department_id: int | None`
+    :   Id of the department this job is assigned to. `null` when no department is set.
 
     `id: int | None`
-    :   Unique ID of the job
+    :   Id from the Greenhouse v3 jobs record.
 
     `is_template: bool | None`
-    :   Indicates if the job is a template
-
-    `keyed_custom_fields: dict[str, typing.Any] | None`
-    :   Keyed custom fields related to the job
+    :   If `true`, this job is a template used as the source for new jobs rather than a real requisition. Templates do not accept applications; reference them via `template_job_id` on `POST /v3/jobs`.
 
     `name: str | None`
-    :   Name of the job
+    :   Internal job title shown to the hiring team in Greenhouse (e.g. `Senior Backend Engineer`). Distinct from the external-facing title on each `job_post`.
 
     `notes: str | None`
-    :   Additional notes or comments about the job
+    :   Internal HTML notes about the job, surfaced to the hiring team in the Greenhouse UI. Not exposed on public job posts.
 
-    `offices: list[typing.Any] | None`
-    :   Offices associated with the job
+    `office_ids: list[typing.Any] | None`
+    :   Ids of the offices this job is assigned to. A job can span multiple offices; empty array or `null` when no offices are set.
 
     `opened_at: str | None`
-    :   The date and time the job was opened
-
-    `openings: list[typing.Any] | None`
-    :   Openings associated with the job
+    :   Timestamp the job first transitioned to `open`, in ISO 8601. `null` while the job is still in `draft`.
 
     `requisition_id: str | None`
-    :   ID associated with the job requisition
+    :   Partner-supplied external identifier for the requisition (e.g. an HRIS or ATS code). Free-form string, not unique across the organization, and `null` when no external id has been set.
 
     `status: str | None`
-    :   Current status of the job
+    :   Lifecycle status of the job. `draft` while it is being scaffolded, `open` once it has at least one open opening, and `closed` after every opening is closed. A job moves to `closed` automatically when its last open opening is closed via `PATCH /v3/openings/{id}`.
 
     `updated_at: str | None`
-    :   The date and time the job was last updated
+    :   Updated at from the Greenhouse v3 jobs record.
 
 <a id="JobsSearchQuery"></a>
 
@@ -3013,7 +3068,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.JobsEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsInCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.JobsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.JobsSortFilter]`
@@ -3031,63 +3086,68 @@ Classes
     ### Class variables
 
     `closed_at: Literal['asc', 'desc']`
-    :   The date and time the job was closed
+    :   Timestamp the job most recently transitioned to `closed`, in ISO 8601. `null` for jobs that are still `open` or `draft`.
 
     `confidential: Literal['asc', 'desc']`
-    :   Indicates if the job details are confidential
+    :   If `true`, the job is restricted to users explicitly granted access on the Hiring Team. The legacy Confidential Jobs feature has been sunset — this flag cannot be set on new jobs and is preserved for jobs that already had it enabled.
 
     `copied_from_id: Literal['asc', 'desc']`
-    :   The ID of the job from which this job was copied
+    :   Id of the job (typically a template) this job was copied from on creation. `null` when the job was not created from another job.
 
     `created_at: Literal['asc', 'desc']`
-    :   The date and time the job was created
+    :   Created at from the Greenhouse v3 jobs record.
 
     `custom_fields: Literal['asc', 'desc']`
-    :   Custom fields related to the job
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `departments: Literal['asc', 'desc']`
-    :   Departments associated with the job
-
-    `hiring_team: Literal['asc', 'desc']`
-    :   Members of the hiring team for the job
+    `department_id: Literal['asc', 'desc']`
+    :   Id of the department this job is assigned to. `null` when no department is set.
 
     `id: Literal['asc', 'desc']`
-    :   Unique ID of the job
+    :   Id from the Greenhouse v3 jobs record.
 
     `is_template: Literal['asc', 'desc']`
-    :   Indicates if the job is a template
-
-    `keyed_custom_fields: Literal['asc', 'desc']`
-    :   Keyed custom fields related to the job
+    :   If `true`, this job is a template used as the source for new jobs rather than a real requisition. Templates do not accept applications; reference them via `template_job_id` on `POST /v3/jobs`.
 
     `name: Literal['asc', 'desc']`
-    :   Name of the job
+    :   Internal job title shown to the hiring team in Greenhouse (e.g. `Senior Backend Engineer`). Distinct from the external-facing title on each `job_post`.
 
     `notes: Literal['asc', 'desc']`
-    :   Additional notes or comments about the job
+    :   Internal HTML notes about the job, surfaced to the hiring team in the Greenhouse UI. Not exposed on public job posts.
 
-    `offices: Literal['asc', 'desc']`
-    :   Offices associated with the job
+    `office_ids: Literal['asc', 'desc']`
+    :   Ids of the offices this job is assigned to. A job can span multiple offices; empty array or `null` when no offices are set.
 
     `opened_at: Literal['asc', 'desc']`
-    :   The date and time the job was opened
-
-    `openings: Literal['asc', 'desc']`
-    :   Openings associated with the job
+    :   Timestamp the job first transitioned to `open`, in ISO 8601. `null` while the job is still in `draft`.
 
     `requisition_id: Literal['asc', 'desc']`
-    :   ID associated with the job requisition
+    :   Partner-supplied external identifier for the requisition (e.g. an HRIS or ATS code). Free-form string, not unique across the organization, and `null` when no external id has been set.
 
     `status: Literal['asc', 'desc']`
-    :   Current status of the job
+    :   Lifecycle status of the job. `draft` while it is being scaffolded, `open` once it has at least one open opening, and `closed` after every opening is closed. A job moves to `closed` automatically when its last open opening is closed via `PATCH /v3/openings/{id}`.
 
     `updated_at: Literal['asc', 'desc']`
-    :   The date and time the job was last updated
+    :   Updated at from the Greenhouse v3 jobs record.
+
+<a id="JobsStartswithCondition"></a>
+
+`JobsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.JobsStringFilter`
+    :   The type of the None singleton.
 
 <a id="JobsStringFilter"></a>
 
 `JobsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3096,58 +3156,49 @@ Classes
     ### Class variables
 
     `closed_at: str`
-    :   The date and time the job was closed
+    :   Timestamp the job most recently transitioned to `closed`, in ISO 8601. `null` for jobs that are still `open` or `draft`.
 
     `confidential: str`
-    :   Indicates if the job details are confidential
+    :   If `true`, the job is restricted to users explicitly granted access on the Hiring Team. The legacy Confidential Jobs feature has been sunset — this flag cannot be set on new jobs and is preserved for jobs that already had it enabled.
 
     `copied_from_id: str`
-    :   The ID of the job from which this job was copied
+    :   Id of the job (typically a template) this job was copied from on creation. `null` when the job was not created from another job.
 
     `created_at: str`
-    :   The date and time the job was created
+    :   Created at from the Greenhouse v3 jobs record.
 
     `custom_fields: str`
-    :   Custom fields related to the job
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `departments: str`
-    :   Departments associated with the job
-
-    `hiring_team: str`
-    :   Members of the hiring team for the job
+    `department_id: str`
+    :   Id of the department this job is assigned to. `null` when no department is set.
 
     `id: str`
-    :   Unique ID of the job
+    :   Id from the Greenhouse v3 jobs record.
 
     `is_template: str`
-    :   Indicates if the job is a template
-
-    `keyed_custom_fields: str`
-    :   Keyed custom fields related to the job
+    :   If `true`, this job is a template used as the source for new jobs rather than a real requisition. Templates do not accept applications; reference them via `template_job_id` on `POST /v3/jobs`.
 
     `name: str`
-    :   Name of the job
+    :   Internal job title shown to the hiring team in Greenhouse (e.g. `Senior Backend Engineer`). Distinct from the external-facing title on each `job_post`.
 
     `notes: str`
-    :   Additional notes or comments about the job
+    :   Internal HTML notes about the job, surfaced to the hiring team in the Greenhouse UI. Not exposed on public job posts.
 
-    `offices: str`
-    :   Offices associated with the job
+    `office_ids: str`
+    :   Ids of the offices this job is assigned to. A job can span multiple offices; empty array or `null` when no offices are set.
 
     `opened_at: str`
-    :   The date and time the job was opened
-
-    `openings: str`
-    :   Openings associated with the job
+    :   Timestamp the job first transitioned to `open`, in ISO 8601. `null` while the job is still in `draft`.
 
     `requisition_id: str`
-    :   ID associated with the job requisition
+    :   Partner-supplied external identifier for the requisition (e.g. an HRIS or ATS code). Free-form string, not unique across the organization, and `null` when no external id has been set.
 
     `status: str`
-    :   Current status of the job
+    :   Lifecycle status of the job. `draft` while it is being scaffolded, `open` once it has at least one open opening, and `closed` after every opening is closed. A job moves to `closed` automatically when its last open opening is closed via `PATCH /v3/openings/{id}`.
 
     `updated_at: str`
-    :   The date and time the job was last updated
+    :   Updated at from the Greenhouse v3 jobs record.
 
 <a id="OffersAndCondition"></a>
 
@@ -3168,7 +3219,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OffersAnyCondition"></a>
@@ -3205,51 +3256,62 @@ Classes
     ### Class variables
 
     `application_id: Any`
-    :   Unique identifier for the application associated with the offer
+    :   Id of the application this offer is extended on. Every offer belongs to exactly one application; the offer is voided if the application is rejected or deleted.
 
     `candidate_id: Any`
-    :   Unique identifier for the candidate associated with the offer
+    :   Id of the candidate (person) receiving this offer. Resolved through the offer's application.
 
     `created_at: Any`
-    :   Timestamp indicating when the offer was created
+    :   Created at from the Greenhouse v3 offers record.
 
     `custom_fields: Any`
-    :   Additional custom fields related to the offer
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: Any`
-    :   Unique identifier for the offer
+    :   Id from the Greenhouse v3 offers record.
 
     `job_id: Any`
-    :   Unique identifier for the job associated with the offer
+    :   Id of the job this offer's application is on.
 
-    `keyed_custom_fields: Any`
-    :   Keyed custom fields associated with the offer
-
-    `opening: Any`
-    :   Details about the job opening
+    `opening_id: Any`
+    :   Id of the specific opening this offer is being extended for. `null` when the offer has not yet been linked to an opening.
 
     `resolved_at: Any`
-    :   Timestamp indicating when the offer was resolved
+    :   Timestamp the offer was resolved (`Accepted` or `Rejected`), in ISO 8601. Date updates submitted through `PATCH /v3/offers/{id}` are normalized to noon UTC on the supplied date. `null` while the offer is still `Created` or has been superseded as `Deprecated` without a resolution.
 
-    `sent_at: Any`
-    :   Timestamp indicating when the offer was sent
+    `sent_on: Any`
+    :   Date the offer was sent to the candidate, in ISO 8601 (YYYY-MM-DD). `null` until the offer has been sent.
 
-    `starts_at: Any`
-    :   Timestamp indicating when the offer starts
+    `starts_on: Any`
+    :   Candidate's proposed start date, in ISO 8601 (YYYY-MM-DD). `null` when no start date has been set on the offer.
 
     `status: Any`
-    :   Status of the offer
+    :   Lifecycle status of the offer. `Created` for offers still being drafted or pending approval, `Accepted` once the candidate accepts, `Rejected` if declined or withdrawn, and `Deprecated` for superseded prior versions (a new offer version replaces an earlier one with this status).
 
     `updated_at: Any`
-    :   Timestamp indicating when the offer was last updated
+    :   Updated at from the Greenhouse v3 offers record.
 
     `version: Any`
-    :   Version of the offer data
+    :   Revision number of this offer within its application. Greenhouse creates a new offer row (incrementing `version`) whenever a tracked field on an existing offer changes — typically `starts_on`, `opening_id`, or a custom field configured to trigger a new version. Pair with `current_only=true` to filter the list endpoint down to the latest version per application.
+
+<a id="OffersArrayContainsCondition"></a>
+
+`OffersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="OffersContainsCondition"></a>
 
 `OffersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3258,6 +3320,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OffersEndswithCondition"></a>
+
+`OffersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
     :   The type of the None singleton.
 
 <a id="OffersEqCondition"></a>
@@ -3286,20 +3362,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
-    :   The type of the None singleton.
-
-<a id="OffersGetParams"></a>
-
-`OffersGetParams(*args, **kwargs)`
-:   Parameters for offers.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="OffersGtCondition"></a>
@@ -3364,46 +3426,43 @@ Classes
     ### Class variables
 
     `application_id: list[int]`
-    :   Unique identifier for the application associated with the offer
+    :   Id of the application this offer is extended on. Every offer belongs to exactly one application; the offer is voided if the application is rejected or deleted.
 
     `candidate_id: list[int]`
-    :   Unique identifier for the candidate associated with the offer
+    :   Id of the candidate (person) receiving this offer. Resolved through the offer's application.
 
     `created_at: list[str]`
-    :   Timestamp indicating when the offer was created
+    :   Created at from the Greenhouse v3 offers record.
 
     `custom_fields: list[dict[str, typing.Any]]`
-    :   Additional custom fields related to the offer
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: list[int]`
-    :   Unique identifier for the offer
+    :   Id from the Greenhouse v3 offers record.
 
     `job_id: list[int]`
-    :   Unique identifier for the job associated with the offer
+    :   Id of the job this offer's application is on.
 
-    `keyed_custom_fields: list[dict[str, typing.Any]]`
-    :   Keyed custom fields associated with the offer
-
-    `opening: list[dict[str, typing.Any]]`
-    :   Details about the job opening
+    `opening_id: list[int]`
+    :   Id of the specific opening this offer is being extended for. `null` when the offer has not yet been linked to an opening.
 
     `resolved_at: list[str]`
-    :   Timestamp indicating when the offer was resolved
+    :   Timestamp the offer was resolved (`Accepted` or `Rejected`), in ISO 8601. Date updates submitted through `PATCH /v3/offers/{id}` are normalized to noon UTC on the supplied date. `null` while the offer is still `Created` or has been superseded as `Deprecated` without a resolution.
 
-    `sent_at: list[str]`
-    :   Timestamp indicating when the offer was sent
+    `sent_on: list[str]`
+    :   Date the offer was sent to the candidate, in ISO 8601 (YYYY-MM-DD). `null` until the offer has been sent.
 
-    `starts_at: list[str]`
-    :   Timestamp indicating when the offer starts
+    `starts_on: list[str]`
+    :   Candidate's proposed start date, in ISO 8601 (YYYY-MM-DD). `null` when no start date has been set on the offer.
 
     `status: list[str]`
-    :   Status of the offer
+    :   Lifecycle status of the offer. `Created` for offers still being drafted or pending approval, `Accepted` once the candidate accepts, `Rejected` if declined or withdrawn, and `Deprecated` for superseded prior versions (a new offer version replaces an earlier one with this status).
 
     `updated_at: list[str]`
-    :   Timestamp indicating when the offer was last updated
+    :   Updated at from the Greenhouse v3 offers record.
 
     `version: list[int]`
-    :   Version of the offer data
+    :   Revision number of this offer within its application. Greenhouse creates a new offer row (incrementing `version`) whenever a tracked field on an existing offer changes — typically `starts_on`, `opening_id`, or a custom field configured to trigger a new version. Pair with `current_only=true` to filter the list endpoint down to the latest version per application.
 
 <a id="OffersKeywordCondition"></a>
 
@@ -3419,20 +3478,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
     :   The type of the None singleton.
 
-<a id="OffersLikeCondition"></a>
-
-`OffersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
-    :   The type of the None singleton.
-
 <a id="OffersListParams"></a>
 
 `OffersListParams(*args, **kwargs)`
@@ -3444,19 +3489,16 @@ Classes
 
     ### Class variables
 
-    `created_after: str`
+    `cursor: str`
     :   The type of the None singleton.
 
-    `created_before: str`
-    :   The type of the None singleton.
-
-    `page: int`
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
     :   The type of the None singleton.
 
-    `resolved_after: str`
+    `updated_at: str`
     :   The type of the None singleton.
 
 <a id="OffersLtCondition"></a>
@@ -3520,7 +3562,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
     :   The type of the None singleton.
 
 <a id="OffersOrCondition"></a>
@@ -3542,7 +3584,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OffersSearchFilter"></a>
@@ -3557,46 +3599,43 @@ Classes
     ### Class variables
 
     `application_id: int | None`
-    :   Unique identifier for the application associated with the offer
+    :   Id of the application this offer is extended on. Every offer belongs to exactly one application; the offer is voided if the application is rejected or deleted.
 
     `candidate_id: int | None`
-    :   Unique identifier for the candidate associated with the offer
+    :   Id of the candidate (person) receiving this offer. Resolved through the offer's application.
 
     `created_at: str | None`
-    :   Timestamp indicating when the offer was created
+    :   Created at from the Greenhouse v3 offers record.
 
     `custom_fields: dict[str, typing.Any] | None`
-    :   Additional custom fields related to the offer
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: int | None`
-    :   Unique identifier for the offer
+    :   Id from the Greenhouse v3 offers record.
 
     `job_id: int | None`
-    :   Unique identifier for the job associated with the offer
+    :   Id of the job this offer's application is on.
 
-    `keyed_custom_fields: dict[str, typing.Any] | None`
-    :   Keyed custom fields associated with the offer
-
-    `opening: dict[str, typing.Any] | None`
-    :   Details about the job opening
+    `opening_id: int | None`
+    :   Id of the specific opening this offer is being extended for. `null` when the offer has not yet been linked to an opening.
 
     `resolved_at: str | None`
-    :   Timestamp indicating when the offer was resolved
+    :   Timestamp the offer was resolved (`Accepted` or `Rejected`), in ISO 8601. Date updates submitted through `PATCH /v3/offers/{id}` are normalized to noon UTC on the supplied date. `null` while the offer is still `Created` or has been superseded as `Deprecated` without a resolution.
 
-    `sent_at: str | None`
-    :   Timestamp indicating when the offer was sent
+    `sent_on: str | None`
+    :   Date the offer was sent to the candidate, in ISO 8601 (YYYY-MM-DD). `null` until the offer has been sent.
 
-    `starts_at: str | None`
-    :   Timestamp indicating when the offer starts
+    `starts_on: str | None`
+    :   Candidate's proposed start date, in ISO 8601 (YYYY-MM-DD). `null` when no start date has been set on the offer.
 
     `status: str | None`
-    :   Status of the offer
+    :   Lifecycle status of the offer. `Created` for offers still being drafted or pending approval, `Accepted` once the candidate accepts, `Rejected` if declined or withdrawn, and `Deprecated` for superseded prior versions (a new offer version replaces an earlier one with this status).
 
     `updated_at: str | None`
-    :   Timestamp indicating when the offer was last updated
+    :   Updated at from the Greenhouse v3 offers record.
 
     `version: int | None`
-    :   Version of the offer data
+    :   Revision number of this offer within its application. Greenhouse creates a new offer row (incrementing `version`) whenever a tracked field on an existing offer changes — typically `starts_on`, `opening_id`, or a custom field configured to trigger a new version. Pair with `current_only=true` to filter the list endpoint down to the latest version per application.
 
 <a id="OffersSearchQuery"></a>
 
@@ -3609,7 +3648,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OffersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OffersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.OffersSortFilter]`
@@ -3627,51 +3666,62 @@ Classes
     ### Class variables
 
     `application_id: Literal['asc', 'desc']`
-    :   Unique identifier for the application associated with the offer
+    :   Id of the application this offer is extended on. Every offer belongs to exactly one application; the offer is voided if the application is rejected or deleted.
 
     `candidate_id: Literal['asc', 'desc']`
-    :   Unique identifier for the candidate associated with the offer
+    :   Id of the candidate (person) receiving this offer. Resolved through the offer's application.
 
     `created_at: Literal['asc', 'desc']`
-    :   Timestamp indicating when the offer was created
+    :   Created at from the Greenhouse v3 offers record.
 
     `custom_fields: Literal['asc', 'desc']`
-    :   Additional custom fields related to the offer
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: Literal['asc', 'desc']`
-    :   Unique identifier for the offer
+    :   Id from the Greenhouse v3 offers record.
 
     `job_id: Literal['asc', 'desc']`
-    :   Unique identifier for the job associated with the offer
+    :   Id of the job this offer's application is on.
 
-    `keyed_custom_fields: Literal['asc', 'desc']`
-    :   Keyed custom fields associated with the offer
-
-    `opening: Literal['asc', 'desc']`
-    :   Details about the job opening
+    `opening_id: Literal['asc', 'desc']`
+    :   Id of the specific opening this offer is being extended for. `null` when the offer has not yet been linked to an opening.
 
     `resolved_at: Literal['asc', 'desc']`
-    :   Timestamp indicating when the offer was resolved
+    :   Timestamp the offer was resolved (`Accepted` or `Rejected`), in ISO 8601. Date updates submitted through `PATCH /v3/offers/{id}` are normalized to noon UTC on the supplied date. `null` while the offer is still `Created` or has been superseded as `Deprecated` without a resolution.
 
-    `sent_at: Literal['asc', 'desc']`
-    :   Timestamp indicating when the offer was sent
+    `sent_on: Literal['asc', 'desc']`
+    :   Date the offer was sent to the candidate, in ISO 8601 (YYYY-MM-DD). `null` until the offer has been sent.
 
-    `starts_at: Literal['asc', 'desc']`
-    :   Timestamp indicating when the offer starts
+    `starts_on: Literal['asc', 'desc']`
+    :   Candidate's proposed start date, in ISO 8601 (YYYY-MM-DD). `null` when no start date has been set on the offer.
 
     `status: Literal['asc', 'desc']`
-    :   Status of the offer
+    :   Lifecycle status of the offer. `Created` for offers still being drafted or pending approval, `Accepted` once the candidate accepts, `Rejected` if declined or withdrawn, and `Deprecated` for superseded prior versions (a new offer version replaces an earlier one with this status).
 
     `updated_at: Literal['asc', 'desc']`
-    :   Timestamp indicating when the offer was last updated
+    :   Updated at from the Greenhouse v3 offers record.
 
     `version: Literal['asc', 'desc']`
-    :   Version of the offer data
+    :   Revision number of this offer within its application. Greenhouse creates a new offer row (incrementing `version`) whenever a tracked field on an existing offer changes — typically `starts_on`, `opening_id`, or a custom field configured to trigger a new version. Pair with `current_only=true` to filter the list endpoint down to the latest version per application.
+
+<a id="OffersStartswithCondition"></a>
+
+`OffersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.OffersStringFilter`
+    :   The type of the None singleton.
 
 <a id="OffersStringFilter"></a>
 
 `OffersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3680,46 +3730,43 @@ Classes
     ### Class variables
 
     `application_id: str`
-    :   Unique identifier for the application associated with the offer
+    :   Id of the application this offer is extended on. Every offer belongs to exactly one application; the offer is voided if the application is rejected or deleted.
 
     `candidate_id: str`
-    :   Unique identifier for the candidate associated with the offer
+    :   Id of the candidate (person) receiving this offer. Resolved through the offer's application.
 
     `created_at: str`
-    :   Timestamp indicating when the offer was created
+    :   Created at from the Greenhouse v3 offers record.
 
     `custom_fields: str`
-    :   Additional custom fields related to the offer
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
     `id: str`
-    :   Unique identifier for the offer
+    :   Id from the Greenhouse v3 offers record.
 
     `job_id: str`
-    :   Unique identifier for the job associated with the offer
+    :   Id of the job this offer's application is on.
 
-    `keyed_custom_fields: str`
-    :   Keyed custom fields associated with the offer
-
-    `opening: str`
-    :   Details about the job opening
+    `opening_id: str`
+    :   Id of the specific opening this offer is being extended for. `null` when the offer has not yet been linked to an opening.
 
     `resolved_at: str`
-    :   Timestamp indicating when the offer was resolved
+    :   Timestamp the offer was resolved (`Accepted` or `Rejected`), in ISO 8601. Date updates submitted through `PATCH /v3/offers/{id}` are normalized to noon UTC on the supplied date. `null` while the offer is still `Created` or has been superseded as `Deprecated` without a resolution.
 
-    `sent_at: str`
-    :   Timestamp indicating when the offer was sent
+    `sent_on: str`
+    :   Date the offer was sent to the candidate, in ISO 8601 (YYYY-MM-DD). `null` until the offer has been sent.
 
-    `starts_at: str`
-    :   Timestamp indicating when the offer starts
+    `starts_on: str`
+    :   Candidate's proposed start date, in ISO 8601 (YYYY-MM-DD). `null` when no start date has been set on the offer.
 
     `status: str`
-    :   Status of the offer
+    :   Lifecycle status of the offer. `Created` for offers still being drafted or pending approval, `Accepted` once the candidate accepts, `Rejected` if declined or withdrawn, and `Deprecated` for superseded prior versions (a new offer version replaces an earlier one with this status).
 
     `updated_at: str`
-    :   Timestamp indicating when the offer was last updated
+    :   Updated at from the Greenhouse v3 offers record.
 
     `version: str`
-    :   Version of the offer data
+    :   Revision number of this offer within its application. Greenhouse creates a new offer row (incrementing `version`) whenever a tracked field on an existing offer changes — typically `starts_on`, `opening_id`, or a custom field configured to trigger a new version. Pair with `current_only=true` to filter the list endpoint down to the latest version per application.
 
 <a id="OfficesAndCondition"></a>
 
@@ -3740,7 +3787,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OfficesAnyCondition"></a>
@@ -3776,37 +3823,48 @@ Classes
 
     ### Class variables
 
-    `child_ids: Any`
-    :   IDs of child offices associated with this office
-
-    `child_office_external_ids: Any`
-    :   External IDs of child offices associated with this office
+    `created_at: Any`
+    :   Created at from the Greenhouse v3 offices record.
 
     `external_id: Any`
-    :   Unique identifier for this office in the external system
+    :   Stable identifier supplied by the customer or HRIS for cross-system reconciliation. `null` when no external id has been set. Available when the `org_structure_external_id` product flag is enabled.
 
     `id: Any`
-    :   Unique identifier for this office in the API system
+    :   Id from the Greenhouse v3 offices record.
 
     `location: Any`
-    :   Location details of this office
+    :   Free-form physical location string for the office (e.g. `New York, NY, USA`). `null` for offices that have no location set, including most remote offices.
 
     `name: Any`
-    :   Name of the office
+    :   Display name of the office (e.g. `San Francisco`, `Remote (US)`). Unique among active offices in the same organization.
 
     `parent_id: Any`
-    :   ID of the parent office, if this office is a branch office
+    :   Id of the parent office when offices are organized hierarchically. `null` for top-level offices. References another `/v3/offices` row in the same organization.
 
-    `parent_office_external_id: Any`
-    :   External ID of the parent office in the external system
+    `primary_in_house_contact_user_id: Any`
+    :   Id of the Greenhouse user designated as the office's primary internal contact, typically the local recruiting lead. References a `/v3/users` row. `null` when no contact has been assigned.
 
-    `primary_contact_user_id: Any`
-    :   User ID of the primary contact person for this office
+    `updated_at: Any`
+    :   Updated at from the Greenhouse v3 offices record.
+
+<a id="OfficesArrayContainsCondition"></a>
+
+`OfficesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="OfficesContainsCondition"></a>
 
 `OfficesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3815,6 +3873,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OfficesEndswithCondition"></a>
+
+`OfficesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
     :   The type of the None singleton.
 
 <a id="OfficesEqCondition"></a>
@@ -3843,20 +3915,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
-    :   The type of the None singleton.
-
-<a id="OfficesGetParams"></a>
-
-`OfficesGetParams(*args, **kwargs)`
-:   Parameters for offices.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="OfficesGtCondition"></a>
@@ -3920,32 +3978,29 @@ Classes
 
     ### Class variables
 
-    `child_ids: list[list[typing.Any]]`
-    :   IDs of child offices associated with this office
-
-    `child_office_external_ids: list[list[typing.Any]]`
-    :   External IDs of child offices associated with this office
+    `created_at: list[str]`
+    :   Created at from the Greenhouse v3 offices record.
 
     `external_id: list[str]`
-    :   Unique identifier for this office in the external system
+    :   Stable identifier supplied by the customer or HRIS for cross-system reconciliation. `null` when no external id has been set. Available when the `org_structure_external_id` product flag is enabled.
 
     `id: list[int]`
-    :   Unique identifier for this office in the API system
+    :   Id from the Greenhouse v3 offices record.
 
-    `location: list[dict[str, typing.Any]]`
-    :   Location details of this office
+    `location: list[str]`
+    :   Free-form physical location string for the office (e.g. `New York, NY, USA`). `null` for offices that have no location set, including most remote offices.
 
     `name: list[str]`
-    :   Name of the office
+    :   Display name of the office (e.g. `San Francisco`, `Remote (US)`). Unique among active offices in the same organization.
 
     `parent_id: list[int]`
-    :   ID of the parent office, if this office is a branch office
+    :   Id of the parent office when offices are organized hierarchically. `null` for top-level offices. References another `/v3/offices` row in the same organization.
 
-    `parent_office_external_id: list[str]`
-    :   External ID of the parent office in the external system
+    `primary_in_house_contact_user_id: list[int]`
+    :   Id of the Greenhouse user designated as the office's primary internal contact, typically the local recruiting lead. References a `/v3/users` row. `null` when no contact has been assigned.
 
-    `primary_contact_user_id: list[int]`
-    :   User ID of the primary contact person for this office
+    `updated_at: list[str]`
+    :   Updated at from the Greenhouse v3 offices record.
 
 <a id="OfficesKeywordCondition"></a>
 
@@ -3961,20 +4016,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
     :   The type of the None singleton.
 
-<a id="OfficesLikeCondition"></a>
-
-`OfficesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
-    :   The type of the None singleton.
-
 <a id="OfficesListParams"></a>
 
 `OfficesListParams(*args, **kwargs)`
@@ -3986,7 +4027,10 @@ Classes
 
     ### Class variables
 
-    `page: int`
+    `cursor: str`
+    :   The type of the None singleton.
+
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
@@ -4053,7 +4097,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
     :   The type of the None singleton.
 
 <a id="OfficesOrCondition"></a>
@@ -4075,7 +4119,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OfficesSearchFilter"></a>
@@ -4089,32 +4133,29 @@ Classes
 
     ### Class variables
 
-    `child_ids: list[typing.Any] | None`
-    :   IDs of child offices associated with this office
-
-    `child_office_external_ids: list[typing.Any] | None`
-    :   External IDs of child offices associated with this office
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 offices record.
 
     `external_id: str | None`
-    :   Unique identifier for this office in the external system
+    :   Stable identifier supplied by the customer or HRIS for cross-system reconciliation. `null` when no external id has been set. Available when the `org_structure_external_id` product flag is enabled.
 
     `id: int | None`
-    :   Unique identifier for this office in the API system
+    :   Id from the Greenhouse v3 offices record.
 
-    `location: dict[str, typing.Any] | None`
-    :   Location details of this office
+    `location: str | None`
+    :   Free-form physical location string for the office (e.g. `New York, NY, USA`). `null` for offices that have no location set, including most remote offices.
 
     `name: str | None`
-    :   Name of the office
+    :   Display name of the office (e.g. `San Francisco`, `Remote (US)`). Unique among active offices in the same organization.
 
     `parent_id: int | None`
-    :   ID of the parent office, if this office is a branch office
+    :   Id of the parent office when offices are organized hierarchically. `null` for top-level offices. References another `/v3/offices` row in the same organization.
 
-    `parent_office_external_id: str | None`
-    :   External ID of the parent office in the external system
+    `primary_in_house_contact_user_id: int | None`
+    :   Id of the Greenhouse user designated as the office's primary internal contact, typically the local recruiting lead. References a `/v3/users` row. `null` when no contact has been assigned.
 
-    `primary_contact_user_id: int | None`
-    :   User ID of the primary contact person for this office
+    `updated_at: str | None`
+    :   Updated at from the Greenhouse v3 offices record.
 
 <a id="OfficesSearchQuery"></a>
 
@@ -4127,7 +4168,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.OfficesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.OfficesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.OfficesSortFilter]`
@@ -4144,37 +4185,48 @@ Classes
 
     ### Class variables
 
-    `child_ids: Literal['asc', 'desc']`
-    :   IDs of child offices associated with this office
-
-    `child_office_external_ids: Literal['asc', 'desc']`
-    :   External IDs of child offices associated with this office
+    `created_at: Literal['asc', 'desc']`
+    :   Created at from the Greenhouse v3 offices record.
 
     `external_id: Literal['asc', 'desc']`
-    :   Unique identifier for this office in the external system
+    :   Stable identifier supplied by the customer or HRIS for cross-system reconciliation. `null` when no external id has been set. Available when the `org_structure_external_id` product flag is enabled.
 
     `id: Literal['asc', 'desc']`
-    :   Unique identifier for this office in the API system
+    :   Id from the Greenhouse v3 offices record.
 
     `location: Literal['asc', 'desc']`
-    :   Location details of this office
+    :   Free-form physical location string for the office (e.g. `New York, NY, USA`). `null` for offices that have no location set, including most remote offices.
 
     `name: Literal['asc', 'desc']`
-    :   Name of the office
+    :   Display name of the office (e.g. `San Francisco`, `Remote (US)`). Unique among active offices in the same organization.
 
     `parent_id: Literal['asc', 'desc']`
-    :   ID of the parent office, if this office is a branch office
+    :   Id of the parent office when offices are organized hierarchically. `null` for top-level offices. References another `/v3/offices` row in the same organization.
 
-    `parent_office_external_id: Literal['asc', 'desc']`
-    :   External ID of the parent office in the external system
+    `primary_in_house_contact_user_id: Literal['asc', 'desc']`
+    :   Id of the Greenhouse user designated as the office's primary internal contact, typically the local recruiting lead. References a `/v3/users` row. `null` when no contact has been assigned.
 
-    `primary_contact_user_id: Literal['asc', 'desc']`
-    :   User ID of the primary contact person for this office
+    `updated_at: Literal['asc', 'desc']`
+    :   Updated at from the Greenhouse v3 offices record.
+
+<a id="OfficesStartswithCondition"></a>
+
+`OfficesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.OfficesStringFilter`
+    :   The type of the None singleton.
 
 <a id="OfficesStringFilter"></a>
 
 `OfficesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -4182,81 +4234,29 @@ Classes
 
     ### Class variables
 
-    `child_ids: str`
-    :   IDs of child offices associated with this office
-
-    `child_office_external_ids: str`
-    :   External IDs of child offices associated with this office
+    `created_at: str`
+    :   Created at from the Greenhouse v3 offices record.
 
     `external_id: str`
-    :   Unique identifier for this office in the external system
+    :   Stable identifier supplied by the customer or HRIS for cross-system reconciliation. `null` when no external id has been set. Available when the `org_structure_external_id` product flag is enabled.
 
     `id: str`
-    :   Unique identifier for this office in the API system
+    :   Id from the Greenhouse v3 offices record.
 
     `location: str`
-    :   Location details of this office
+    :   Free-form physical location string for the office (e.g. `New York, NY, USA`). `null` for offices that have no location set, including most remote offices.
 
     `name: str`
-    :   Name of the office
+    :   Display name of the office (e.g. `San Francisco`, `Remote (US)`). Unique among active offices in the same organization.
 
     `parent_id: str`
-    :   ID of the parent office, if this office is a branch office
+    :   Id of the parent office when offices are organized hierarchically. `null` for top-level offices. References another `/v3/offices` row in the same organization.
 
-    `parent_office_external_id: str`
-    :   External ID of the parent office in the external system
+    `primary_in_house_contact_user_id: str`
+    :   Id of the Greenhouse user designated as the office's primary internal contact, typically the local recruiting lead. References a `/v3/users` row. `null` when no contact has been assigned.
 
-    `primary_contact_user_id: str`
-    :   User ID of the primary contact person for this office
-
-<a id="ScheduledInterviewsGetParams"></a>
-
-`ScheduledInterviewsGetParams(*args, **kwargs)`
-:   Parameters for scheduled_interviews.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
-    :   The type of the None singleton.
-
-<a id="ScheduledInterviewsListParams"></a>
-
-`ScheduledInterviewsListParams(*args, **kwargs)`
-:   Parameters for scheduled_interviews.list operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `created_after: str`
-    :   The type of the None singleton.
-
-    `created_before: str`
-    :   The type of the None singleton.
-
-    `ends_before: str`
-    :   The type of the None singleton.
-
-    `page: int`
-    :   The type of the None singleton.
-
-    `per_page: int`
-    :   The type of the None singleton.
-
-    `starts_after: str`
-    :   The type of the None singleton.
-
-    `updated_after: str`
-    :   The type of the None singleton.
-
-    `updated_before: str`
-    :   The type of the None singleton.
+    `updated_at: str`
+    :   Updated at from the Greenhouse v3 offices record.
 
 <a id="SourcesAndCondition"></a>
 
@@ -4277,7 +4277,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SourcesAnyCondition"></a>
@@ -4313,19 +4313,39 @@ Classes
 
     ### Class variables
 
+    `created_at: Any`
+    :   Created at from the Greenhouse v3 sources record.
+
     `id: Any`
-    :   The unique identifier for the source.
+    :   Id from the Greenhouse v3 sources record.
 
     `name: Any`
-    :   The name of the source.
+    :   Display name of the source as recruiters see it in Greenhouse (e.g. `LinkedIn (Prospecting)`, `Indeed`, `Referral`, `Internal Applicant`, or a custom agency name). For organization-specific sources this is the label the org configured; for global Greenhouse sources it is the standard public name.
 
     `type_: Any`
-    :   Type of the data source
+    :   The sourcing strategy this source rolls up to — the broader category used for reporting. Sources are grouped under sourcing strategies such as `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`, `Company marketing`, `In person event`, `MyGreenhouse`, and `Other`. Use the strategy when aggregating candidate volume by channel; use the source itself when reporting on a specific channel within that category.
+
+    `updated_at: Any`
+    :   Updated at from the Greenhouse v3 sources record.
+
+<a id="SourcesArrayContainsCondition"></a>
+
+`SourcesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="SourcesContainsCondition"></a>
 
 `SourcesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4334,6 +4354,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="SourcesEndswithCondition"></a>
+
+`SourcesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
     :   The type of the None singleton.
 
 <a id="SourcesEqCondition"></a>
@@ -4425,14 +4459,20 @@ Classes
 
     ### Class variables
 
+    `created_at: list[str]`
+    :   Created at from the Greenhouse v3 sources record.
+
     `id: list[int]`
-    :   The unique identifier for the source.
+    :   Id from the Greenhouse v3 sources record.
 
     `name: list[str]`
-    :   The name of the source.
+    :   Display name of the source as recruiters see it in Greenhouse (e.g. `LinkedIn (Prospecting)`, `Indeed`, `Referral`, `Internal Applicant`, or a custom agency name). For organization-specific sources this is the label the org configured; for global Greenhouse sources it is the standard public name.
 
     `type_: list[dict[str, typing.Any]]`
-    :   Type of the data source
+    :   The sourcing strategy this source rolls up to — the broader category used for reporting. Sources are grouped under sourcing strategies such as `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`, `Company marketing`, `In person event`, `MyGreenhouse`, and `Other`. Use the strategy when aggregating candidate volume by channel; use the source itself when reporting on a specific channel within that category.
+
+    `updated_at: list[str]`
+    :   Updated at from the Greenhouse v3 sources record.
 
 <a id="SourcesKeywordCondition"></a>
 
@@ -4448,20 +4488,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
     :   The type of the None singleton.
 
-<a id="SourcesLikeCondition"></a>
-
-`SourcesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
-    :   The type of the None singleton.
-
 <a id="SourcesListParams"></a>
 
 `SourcesListParams(*args, **kwargs)`
@@ -4473,7 +4499,10 @@ Classes
 
     ### Class variables
 
-    `page: int`
+    `cursor: str`
+    :   The type of the None singleton.
+
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
@@ -4540,7 +4569,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
     :   The type of the None singleton.
 
 <a id="SourcesOrCondition"></a>
@@ -4562,7 +4591,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="SourcesSearchFilter"></a>
@@ -4576,14 +4605,20 @@ Classes
 
     ### Class variables
 
+    `created_at: str | None`
+    :   Created at from the Greenhouse v3 sources record.
+
     `id: int | None`
-    :   The unique identifier for the source.
+    :   Id from the Greenhouse v3 sources record.
 
     `name: str | None`
-    :   The name of the source.
+    :   Display name of the source as recruiters see it in Greenhouse (e.g. `LinkedIn (Prospecting)`, `Indeed`, `Referral`, `Internal Applicant`, or a custom agency name). For organization-specific sources this is the label the org configured; for global Greenhouse sources it is the standard public name.
 
     `type_: dict[str, typing.Any] | None`
-    :   Type of the data source
+    :   The sourcing strategy this source rolls up to — the broader category used for reporting. Sources are grouped under sourcing strategies such as `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`, `Company marketing`, `In person event`, `MyGreenhouse`, and `Other`. Use the strategy when aggregating candidate volume by channel; use the source itself when reporting on a specific channel within that category.
+
+    `updated_at: str | None`
+    :   Updated at from the Greenhouse v3 sources record.
 
 <a id="SourcesSearchQuery"></a>
 
@@ -4596,7 +4631,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.SourcesEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesInCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.SourcesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.SourcesSortFilter]`
@@ -4613,19 +4648,25 @@ Classes
 
     ### Class variables
 
+    `created_at: Literal['asc', 'desc']`
+    :   Created at from the Greenhouse v3 sources record.
+
     `id: Literal['asc', 'desc']`
-    :   The unique identifier for the source.
+    :   Id from the Greenhouse v3 sources record.
 
     `name: Literal['asc', 'desc']`
-    :   The name of the source.
+    :   Display name of the source as recruiters see it in Greenhouse (e.g. `LinkedIn (Prospecting)`, `Indeed`, `Referral`, `Internal Applicant`, or a custom agency name). For organization-specific sources this is the label the org configured; for global Greenhouse sources it is the standard public name.
 
     `type_: Literal['asc', 'desc']`
-    :   Type of the data source
+    :   The sourcing strategy this source rolls up to — the broader category used for reporting. Sources are grouped under sourcing strategies such as `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`, `Company marketing`, `In person event`, `MyGreenhouse`, and `Other`. Use the strategy when aggregating candidate volume by channel; use the source itself when reporting on a specific channel within that category.
 
-<a id="SourcesStringFilter"></a>
+    `updated_at: Literal['asc', 'desc']`
+    :   Updated at from the Greenhouse v3 sources record.
 
-`SourcesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+<a id="SourcesStartswithCondition"></a>
+
+`SourcesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
 
     ### Ancestors (in MRO)
 
@@ -4633,14 +4674,34 @@ Classes
 
     ### Class variables
 
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.SourcesStringFilter`
+    :   The type of the None singleton.
+
+<a id="SourcesStringFilter"></a>
+
+`SourcesStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `created_at: str`
+    :   Created at from the Greenhouse v3 sources record.
+
     `id: str`
-    :   The unique identifier for the source.
+    :   Id from the Greenhouse v3 sources record.
 
     `name: str`
-    :   The name of the source.
+    :   Display name of the source as recruiters see it in Greenhouse (e.g. `LinkedIn (Prospecting)`, `Indeed`, `Referral`, `Internal Applicant`, or a custom agency name). For organization-specific sources this is the label the org configured; for global Greenhouse sources it is the standard public name.
 
     `type_: str`
-    :   Type of the data source
+    :   The sourcing strategy this source rolls up to — the broader category used for reporting. Sources are grouped under sourcing strategies such as `Agencies`, `Referral`, `Third-party boards`, `Prospecting`, `Social media`, `Company marketing`, `In person event`, `MyGreenhouse`, and `Other`. Use the strategy when aggregating candidate volume by channel; use the source itself when reporting on a specific channel within that category.
+
+    `updated_at: str`
+    :   Updated at from the Greenhouse v3 sources record.
 
 <a id="UsersAndCondition"></a>
 
@@ -4661,7 +4722,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -4697,52 +4758,78 @@ Classes
 
     ### Class variables
 
+    `agency_id: Any`
+    :   Id of the staffing agency this user belongs to, when the user is an external agency recruiter rather than an employee of your organization. `null` for in-house users.
+
     `created_at: Any`
-    :   The date and time when the user account was created.
+    :   Created at from the Greenhouse v3 users record.
 
-    `departments: Any`
-    :   List of departments associated with users
+    `custom_fields: Any`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `disabled: Any`
-    :   Indicates whether the user account is disabled.
+    `deactivated: Any`
+    :   Whether the user has been deactivated. Deactivated users cannot sign in or be assigned to new jobs, but their historical activity (notes, scorecards, emails) is preserved. Toggle via `POST /v3/users/{id}/deactivate` and `POST /v3/users/{id}/activate`.
+
+    `department_ids: Any`
+    :   Ids of the departments this user is assigned to. Used to scope future job permissions and to filter the user list by department. Empty when the user is not pinned to any department.
 
     `emails: Any`
-    :   Email addresses of the users
+    :   All email addresses on the user's account, including the primary address and any additional verified addresses.
 
     `employee_id: Any`
-    :   Employee identifier for the user.
+    :   Partner-supplied external employee identifier, typically the user's HRIS or payroll id. Free-form string; not unique across organizations and `null` when no employee id has been set.
 
     `first_name: Any`
-    :   The first name of the user.
+    :   First name from the Greenhouse v3 users record.
 
     `id: Any`
-    :   Unique identifier for the user.
+    :   Id from the Greenhouse v3 users record.
+
+    `interviewer_tags: Any`
+    :   Interviewer tags applied to this user — the labeled skill or panel groupings (e.g. `Senior Engineer`, `Bar Raiser`) used to suggest qualified interviewers when building an interview plan. Each entry pairs the tag's `id` with its `name`.
+
+    `job_title: Any`
+    :   Free-form job title set on the user's Greenhouse profile (e.g. `Senior Recruiter`). Not synchronized with any HRIS title.
 
     `last_name: Any`
-    :   The last name of the user.
+    :   Last name from the Greenhouse v3 users record.
 
     `linked_candidate_ids: Any`
-    :   IDs of candidates linked to the user.
+    :   Ids of candidate records linked to this user. Populated when an employee is represented by both a user record (for Greenhouse access) and a candidate record (for past or internal applications).
 
     `name: Any`
-    :   The full name of the user.
+    :   Concatenation of `first_name` and `last_name` rendered as a single display string. Provided for convenience; partners that need either component should read `first_name`/`last_name` directly.
 
-    `offices: Any`
-    :   List of office locations where users are based
+    `office_ids: Any`
+    :   Ids of the offices this user is assigned to. Used to scope future job permissions and to filter the user list by office. Empty when the user is not pinned to any office.
 
-    `primary_email_address: Any`
-    :   The primary email address of the user.
+    `primary_email: Any`
+    :   Primary email address on the user's account. Sign-in identifier and the address Greenhouse uses for outbound mail; additional verified addresses are not surfaced here. Service accounts (integration/ISU users) have no email and are excluded from this endpoint by default; when included via `show_service_accounts=true`, their `primary_email` is an empty string.
 
     `site_admin: Any`
-    :   Indicates whether the user is a site administrator.
+    :   Whether the user holds the Site Admin role. Site admins have unrestricted access to every non-confidential job and to organization-level settings. Demote a site admin to a Basic user with `POST /v3/users/{id}/revoke_permissions`.
 
     `updated_at: Any`
-    :   The date and time when the user account was last updated.
+    :   Updated at from the Greenhouse v3 users record.
+
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4751,6 +4838,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -4779,20 +4880,6 @@ Classes
     ### Class variables
 
     `fuzzy: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
-    :   The type of the None singleton.
-
-<a id="UsersGetParams"></a>
-
-`UsersGetParams(*args, **kwargs)`
-:   Parameters for users.get operation
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `id: str`
     :   The type of the None singleton.
 
 <a id="UsersGtCondition"></a>
@@ -4856,47 +4943,59 @@ Classes
 
     ### Class variables
 
+    `agency_id: list[int]`
+    :   Id of the staffing agency this user belongs to, when the user is an external agency recruiter rather than an employee of your organization. `null` for in-house users.
+
     `created_at: list[str]`
-    :   The date and time when the user account was created.
+    :   Created at from the Greenhouse v3 users record.
 
-    `departments: list[list[typing.Any]]`
-    :   List of departments associated with users
+    `custom_fields: list[dict[str, typing.Any]]`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `disabled: list[bool]`
-    :   Indicates whether the user account is disabled.
+    `deactivated: list[bool]`
+    :   Whether the user has been deactivated. Deactivated users cannot sign in or be assigned to new jobs, but their historical activity (notes, scorecards, emails) is preserved. Toggle via `POST /v3/users/{id}/deactivate` and `POST /v3/users/{id}/activate`.
+
+    `department_ids: list[list[typing.Any]]`
+    :   Ids of the departments this user is assigned to. Used to scope future job permissions and to filter the user list by department. Empty when the user is not pinned to any department.
 
     `emails: list[list[typing.Any]]`
-    :   Email addresses of the users
+    :   All email addresses on the user's account, including the primary address and any additional verified addresses.
 
     `employee_id: list[str]`
-    :   Employee identifier for the user.
+    :   Partner-supplied external employee identifier, typically the user's HRIS or payroll id. Free-form string; not unique across organizations and `null` when no employee id has been set.
 
     `first_name: list[str]`
-    :   The first name of the user.
+    :   First name from the Greenhouse v3 users record.
 
     `id: list[int]`
-    :   Unique identifier for the user.
+    :   Id from the Greenhouse v3 users record.
+
+    `interviewer_tags: list[list[typing.Any]]`
+    :   Interviewer tags applied to this user — the labeled skill or panel groupings (e.g. `Senior Engineer`, `Bar Raiser`) used to suggest qualified interviewers when building an interview plan. Each entry pairs the tag's `id` with its `name`.
+
+    `job_title: list[str]`
+    :   Free-form job title set on the user's Greenhouse profile (e.g. `Senior Recruiter`). Not synchronized with any HRIS title.
 
     `last_name: list[str]`
-    :   The last name of the user.
+    :   Last name from the Greenhouse v3 users record.
 
     `linked_candidate_ids: list[list[typing.Any]]`
-    :   IDs of candidates linked to the user.
+    :   Ids of candidate records linked to this user. Populated when an employee is represented by both a user record (for Greenhouse access) and a candidate record (for past or internal applications).
 
     `name: list[str]`
-    :   The full name of the user.
+    :   Concatenation of `first_name` and `last_name` rendered as a single display string. Provided for convenience; partners that need either component should read `first_name`/`last_name` directly.
 
-    `offices: list[list[typing.Any]]`
-    :   List of office locations where users are based
+    `office_ids: list[list[typing.Any]]`
+    :   Ids of the offices this user is assigned to. Used to scope future job permissions and to filter the user list by office. Empty when the user is not pinned to any office.
 
-    `primary_email_address: list[str]`
-    :   The primary email address of the user.
+    `primary_email: list[str]`
+    :   Primary email address on the user's account. Sign-in identifier and the address Greenhouse uses for outbound mail; additional verified addresses are not surfaced here. Service accounts (integration/ISU users) have no email and are excluded from this endpoint by default; when included via `show_service_accounts=true`, their `primary_email` is an empty string.
 
     `site_admin: list[bool]`
-    :   Indicates whether the user is a site administrator.
+    :   Whether the user holds the Site Admin role. Site admins have unrestricted access to every non-confidential job and to organization-level settings. Demote a site admin to a Basic user with `POST /v3/users/{id}/revoke_permissions`.
 
     `updated_at: list[str]`
-    :   The date and time when the user account was last updated.
+    :   Updated at from the Greenhouse v3 users record.
 
 <a id="UsersKeywordCondition"></a>
 
@@ -4912,20 +5011,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -4937,22 +5022,19 @@ Classes
 
     ### Class variables
 
-    `created_after: str`
+    `cursor: str`
     :   The type of the None singleton.
 
-    `created_before: str`
-    :   The type of the None singleton.
-
-    `page: int`
+    `ids: list[int]`
     :   The type of the None singleton.
 
     `per_page: int`
     :   The type of the None singleton.
 
-    `updated_after: str`
+    `show_service_accounts: bool`
     :   The type of the None singleton.
 
-    `updated_before: str`
+    `updated_at: str`
     :   The type of the None singleton.
 
 <a id="UsersLtCondition"></a>
@@ -5016,7 +5098,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -5038,7 +5120,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -5052,47 +5134,59 @@ Classes
 
     ### Class variables
 
+    `agency_id: int | None`
+    :   Id of the staffing agency this user belongs to, when the user is an external agency recruiter rather than an employee of your organization. `null` for in-house users.
+
     `created_at: str | None`
-    :   The date and time when the user account was created.
+    :   Created at from the Greenhouse v3 users record.
 
-    `departments: list[typing.Any] | None`
-    :   List of departments associated with users
+    `custom_fields: dict[str, typing.Any] | None`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `disabled: bool | None`
-    :   Indicates whether the user account is disabled.
+    `deactivated: bool | None`
+    :   Whether the user has been deactivated. Deactivated users cannot sign in or be assigned to new jobs, but their historical activity (notes, scorecards, emails) is preserved. Toggle via `POST /v3/users/{id}/deactivate` and `POST /v3/users/{id}/activate`.
+
+    `department_ids: list[typing.Any] | None`
+    :   Ids of the departments this user is assigned to. Used to scope future job permissions and to filter the user list by department. Empty when the user is not pinned to any department.
 
     `emails: list[typing.Any] | None`
-    :   Email addresses of the users
+    :   All email addresses on the user's account, including the primary address and any additional verified addresses.
 
     `employee_id: str | None`
-    :   Employee identifier for the user.
+    :   Partner-supplied external employee identifier, typically the user's HRIS or payroll id. Free-form string; not unique across organizations and `null` when no employee id has been set.
 
     `first_name: str | None`
-    :   The first name of the user.
+    :   First name from the Greenhouse v3 users record.
 
     `id: int | None`
-    :   Unique identifier for the user.
+    :   Id from the Greenhouse v3 users record.
+
+    `interviewer_tags: list[typing.Any] | None`
+    :   Interviewer tags applied to this user — the labeled skill or panel groupings (e.g. `Senior Engineer`, `Bar Raiser`) used to suggest qualified interviewers when building an interview plan. Each entry pairs the tag's `id` with its `name`.
+
+    `job_title: str | None`
+    :   Free-form job title set on the user's Greenhouse profile (e.g. `Senior Recruiter`). Not synchronized with any HRIS title.
 
     `last_name: str | None`
-    :   The last name of the user.
+    :   Last name from the Greenhouse v3 users record.
 
     `linked_candidate_ids: list[typing.Any] | None`
-    :   IDs of candidates linked to the user.
+    :   Ids of candidate records linked to this user. Populated when an employee is represented by both a user record (for Greenhouse access) and a candidate record (for past or internal applications).
 
     `name: str | None`
-    :   The full name of the user.
+    :   Concatenation of `first_name` and `last_name` rendered as a single display string. Provided for convenience; partners that need either component should read `first_name`/`last_name` directly.
 
-    `offices: list[typing.Any] | None`
-    :   List of office locations where users are based
+    `office_ids: list[typing.Any] | None`
+    :   Ids of the offices this user is assigned to. Used to scope future job permissions and to filter the user list by office. Empty when the user is not pinned to any office.
 
-    `primary_email_address: str | None`
-    :   The primary email address of the user.
+    `primary_email: str | None`
+    :   Primary email address on the user's account. Sign-in identifier and the address Greenhouse uses for outbound mail; additional verified addresses are not surfaced here. Service accounts (integration/ISU users) have no email and are excluded from this endpoint by default; when included via `show_service_accounts=true`, their `primary_email` is an empty string.
 
     `site_admin: bool | None`
-    :   Indicates whether the user is a site administrator.
+    :   Whether the user holds the Site Admin role. Site admins have unrestricted access to every non-confidential job and to organization-level settings. Demote a site admin to a Basic user with `POST /v3/users/{id}/revoke_permissions`.
 
     `updated_at: str | None`
-    :   The date and time when the user account was last updated.
+    :   Updated at from the Greenhouse v3 users record.
 
 <a id="UsersSearchQuery"></a>
 
@@ -5105,7 +5199,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLikeCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.greenhouse.types.UsersEqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNeqCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersGteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLtCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersLteCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersInCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersNotCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAndCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersOrCondition | airbyte_agent_sdk.connectors.greenhouse.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.greenhouse.types.UsersSortFilter]`
@@ -5122,52 +5216,64 @@ Classes
 
     ### Class variables
 
+    `agency_id: Literal['asc', 'desc']`
+    :   Id of the staffing agency this user belongs to, when the user is an external agency recruiter rather than an employee of your organization. `null` for in-house users.
+
     `created_at: Literal['asc', 'desc']`
-    :   The date and time when the user account was created.
+    :   Created at from the Greenhouse v3 users record.
 
-    `departments: Literal['asc', 'desc']`
-    :   List of departments associated with users
+    `custom_fields: Literal['asc', 'desc']`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `disabled: Literal['asc', 'desc']`
-    :   Indicates whether the user account is disabled.
+    `deactivated: Literal['asc', 'desc']`
+    :   Whether the user has been deactivated. Deactivated users cannot sign in or be assigned to new jobs, but their historical activity (notes, scorecards, emails) is preserved. Toggle via `POST /v3/users/{id}/deactivate` and `POST /v3/users/{id}/activate`.
+
+    `department_ids: Literal['asc', 'desc']`
+    :   Ids of the departments this user is assigned to. Used to scope future job permissions and to filter the user list by department. Empty when the user is not pinned to any department.
 
     `emails: Literal['asc', 'desc']`
-    :   Email addresses of the users
+    :   All email addresses on the user's account, including the primary address and any additional verified addresses.
 
     `employee_id: Literal['asc', 'desc']`
-    :   Employee identifier for the user.
+    :   Partner-supplied external employee identifier, typically the user's HRIS or payroll id. Free-form string; not unique across organizations and `null` when no employee id has been set.
 
     `first_name: Literal['asc', 'desc']`
-    :   The first name of the user.
+    :   First name from the Greenhouse v3 users record.
 
     `id: Literal['asc', 'desc']`
-    :   Unique identifier for the user.
+    :   Id from the Greenhouse v3 users record.
+
+    `interviewer_tags: Literal['asc', 'desc']`
+    :   Interviewer tags applied to this user — the labeled skill or panel groupings (e.g. `Senior Engineer`, `Bar Raiser`) used to suggest qualified interviewers when building an interview plan. Each entry pairs the tag's `id` with its `name`.
+
+    `job_title: Literal['asc', 'desc']`
+    :   Free-form job title set on the user's Greenhouse profile (e.g. `Senior Recruiter`). Not synchronized with any HRIS title.
 
     `last_name: Literal['asc', 'desc']`
-    :   The last name of the user.
+    :   Last name from the Greenhouse v3 users record.
 
     `linked_candidate_ids: Literal['asc', 'desc']`
-    :   IDs of candidates linked to the user.
+    :   Ids of candidate records linked to this user. Populated when an employee is represented by both a user record (for Greenhouse access) and a candidate record (for past or internal applications).
 
     `name: Literal['asc', 'desc']`
-    :   The full name of the user.
+    :   Concatenation of `first_name` and `last_name` rendered as a single display string. Provided for convenience; partners that need either component should read `first_name`/`last_name` directly.
 
-    `offices: Literal['asc', 'desc']`
-    :   List of office locations where users are based
+    `office_ids: Literal['asc', 'desc']`
+    :   Ids of the offices this user is assigned to. Used to scope future job permissions and to filter the user list by office. Empty when the user is not pinned to any office.
 
-    `primary_email_address: Literal['asc', 'desc']`
-    :   The primary email address of the user.
+    `primary_email: Literal['asc', 'desc']`
+    :   Primary email address on the user's account. Sign-in identifier and the address Greenhouse uses for outbound mail; additional verified addresses are not surfaced here. Service accounts (integration/ISU users) have no email and are excluded from this endpoint by default; when included via `show_service_accounts=true`, their `primary_email` is an empty string.
 
     `site_admin: Literal['asc', 'desc']`
-    :   Indicates whether the user is a site administrator.
+    :   Whether the user holds the Site Admin role. Site admins have unrestricted access to every non-confidential job and to organization-level settings. Demote a site admin to a Basic user with `POST /v3/users/{id}/revoke_permissions`.
 
     `updated_at: Literal['asc', 'desc']`
-    :   The date and time when the user account was last updated.
+    :   Updated at from the Greenhouse v3 users record.
 
-<a id="UsersStringFilter"></a>
+<a id="UsersStartswithCondition"></a>
 
-`UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
 
     ### Ancestors (in MRO)
 
@@ -5175,44 +5281,70 @@ Classes
 
     ### Class variables
 
+    `startswith: airbyte_agent_sdk.connectors.greenhouse.types.UsersStringFilter`
+    :   The type of the None singleton.
+
+<a id="UsersStringFilter"></a>
+
+`UsersStringFilter(*args, **kwargs)`
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `agency_id: str`
+    :   Id of the staffing agency this user belongs to, when the user is an external agency recruiter rather than an employee of your organization. `null` for in-house users.
+
     `created_at: str`
-    :   The date and time when the user account was created.
+    :   Created at from the Greenhouse v3 users record.
 
-    `departments: str`
-    :   List of departments associated with users
+    `custom_fields: str`
+    :   Org-defined custom fields keyed by the field's `name_key`. Each value carries the field's display `name`, its `type`, and its `value`.
 
-    `disabled: str`
-    :   Indicates whether the user account is disabled.
+    `deactivated: str`
+    :   Whether the user has been deactivated. Deactivated users cannot sign in or be assigned to new jobs, but their historical activity (notes, scorecards, emails) is preserved. Toggle via `POST /v3/users/{id}/deactivate` and `POST /v3/users/{id}/activate`.
+
+    `department_ids: str`
+    :   Ids of the departments this user is assigned to. Used to scope future job permissions and to filter the user list by department. Empty when the user is not pinned to any department.
 
     `emails: str`
-    :   Email addresses of the users
+    :   All email addresses on the user's account, including the primary address and any additional verified addresses.
 
     `employee_id: str`
-    :   Employee identifier for the user.
+    :   Partner-supplied external employee identifier, typically the user's HRIS or payroll id. Free-form string; not unique across organizations and `null` when no employee id has been set.
 
     `first_name: str`
-    :   The first name of the user.
+    :   First name from the Greenhouse v3 users record.
 
     `id: str`
-    :   Unique identifier for the user.
+    :   Id from the Greenhouse v3 users record.
+
+    `interviewer_tags: str`
+    :   Interviewer tags applied to this user — the labeled skill or panel groupings (e.g. `Senior Engineer`, `Bar Raiser`) used to suggest qualified interviewers when building an interview plan. Each entry pairs the tag's `id` with its `name`.
+
+    `job_title: str`
+    :   Free-form job title set on the user's Greenhouse profile (e.g. `Senior Recruiter`). Not synchronized with any HRIS title.
 
     `last_name: str`
-    :   The last name of the user.
+    :   Last name from the Greenhouse v3 users record.
 
     `linked_candidate_ids: str`
-    :   IDs of candidates linked to the user.
+    :   Ids of candidate records linked to this user. Populated when an employee is represented by both a user record (for Greenhouse access) and a candidate record (for past or internal applications).
 
     `name: str`
-    :   The full name of the user.
+    :   Concatenation of `first_name` and `last_name` rendered as a single display string. Provided for convenience; partners that need either component should read `first_name`/`last_name` directly.
 
-    `offices: str`
-    :   List of office locations where users are based
+    `office_ids: str`
+    :   Ids of the offices this user is assigned to. Used to scope future job permissions and to filter the user list by office. Empty when the user is not pinned to any office.
 
-    `primary_email_address: str`
-    :   The primary email address of the user.
+    `primary_email: str`
+    :   Primary email address on the user's account. Sign-in identifier and the address Greenhouse uses for outbound mail; additional verified addresses are not surfaced here. Service accounts (integration/ISU users) have no email and are excluded from this endpoint by default; when included via `show_service_accounts=true`, their `primary_email` is an empty string.
 
     `site_admin: str`
-    :   Indicates whether the user is a site administrator.
+    :   Whether the user holds the Site Admin role. Site admins have unrestricted access to every non-confidential job and to organization-level settings. Demote a site admin to a Basic user with `POST /v3/users/{id}/revoke_permissions`.
 
     `updated_at: str`
-    :   The date and time when the user account was last updated.
+    :   Updated at from the Greenhouse v3 users record.

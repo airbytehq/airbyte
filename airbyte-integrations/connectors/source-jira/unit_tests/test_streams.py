@@ -707,7 +707,7 @@ def test_labels_stream(config, labels_response):
 def test_issue_worklogs_stream(config, mock_projects_responses, mock_issues_responses_with_date_filter, issue_worklogs_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/issue/10627/worklog?maxResults=50",
+        f"https://{config['domain']}/rest/api/3/issue/10627/worklog?maxResults=5000",
         json=issue_worklogs_response,
     )
 

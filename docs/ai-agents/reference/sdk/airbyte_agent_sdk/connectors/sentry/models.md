@@ -930,6 +930,9 @@ Classes
     `date_created: str | None`
     :   The type of the None singleton.
 
+    `environments: list[str | None] | None`
+    :   The type of the None singleton.
+
     `features: list[str | None] | None`
     :   The type of the None singleton.
 
@@ -1002,6 +1005,9 @@ Classes
     `has_trace_metrics: bool | None`
     :   The type of the None singleton.
 
+    `has_user_reports: bool | None`
+    :   The type of the None singleton.
+
     `id: str | None`
     :   The type of the None singleton.
 
@@ -1017,6 +1023,12 @@ Classes
     `is_public: bool | None`
     :   The type of the None singleton.
 
+    `latest_deploys: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `latest_release: airbyte_agent_sdk.connectors.sentry.models.ProjectLatestrelease | None`
+    :   The type of the None singleton.
+
     `model_config`
     :   The type of the None singleton.
 
@@ -1029,10 +1041,19 @@ Classes
     `platform: str | None`
     :   The type of the None singleton.
 
+    `platforms: list[str | None] | None`
+    :   The type of the None singleton.
+
     `slug: str | None`
     :   The type of the None singleton.
 
     `status: str | None`
+    :   The type of the None singleton.
+
+    `team: airbyte_agent_sdk.connectors.sentry.models.ProjectTeam | None`
+    :   The type of the None singleton.
+
+    `teams: list[airbyte_agent_sdk.connectors.sentry.models.ProjectTeamsItem | None] | None`
     :   The type of the None singleton.
 
 <a id="ProjectAvatar"></a>
@@ -1443,10 +1464,94 @@ Classes
     `slug: str | None`
     :   The type of the None singleton.
 
+<a id="ProjectLatestrelease"></a>
+
+`ProjectLatestrelease(**data: Any)`
+:   The most recent release for this project.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `version: str | None`
+    :   The type of the None singleton.
+
 <a id="ProjectOrganization"></a>
 
 `ProjectOrganization(**data: Any)`
-:   Organization this project belongs to.
+:   Organization this project belongs to. Not returned by the organization-scoped list endpoint; available via project_detail.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `slug: str | None`
+    :   The type of the None singleton.
+
+<a id="ProjectTeam"></a>
+
+`ProjectTeam(**data: Any)`
+:   Primary team that owns this project.
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `id: str | None`
+    :   The type of the None singleton.
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `name: str | None`
+    :   The type of the None singleton.
+
+    `slug: str | None`
+    :   The type of the None singleton.
+
+<a id="ProjectTeamsItem"></a>
+
+`ProjectTeamsItem(**data: Any)`
+:   Nested schema for Project.teams_item
     
     Create a new model by parsing and validating input data from keyword arguments.
     

@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlocksAnyCondition"></a>
@@ -214,10 +214,24 @@ Classes
     `video: Any`
     :   Represents a video block.
 
+<a id="BlocksArrayContainsCondition"></a>
+
+`BlocksArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.notion.types.BlocksAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BlocksContainsCondition"></a>
 
 `BlocksContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -316,7 +330,7 @@ Classes
     `toggle: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemToggle`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
     `video: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemVideo`
@@ -339,7 +353,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemAudioFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemAudioExternal"></a>
@@ -410,7 +424,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemBookmarkCaptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemBookmarkCaptionItemAnnotations"></a>
@@ -527,7 +541,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemBulletedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemBulletedListItemRichTextItemAnnotations"></a>
@@ -647,7 +661,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemCalloutRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemCalloutRichTextItemAnnotations"></a>
@@ -764,7 +778,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemCodeRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemCodeRichTextItemAnnotations"></a>
@@ -886,7 +900,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemFileFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemFileExternal"></a>
@@ -960,7 +974,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemHeading1RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemHeading1RichTextItemAnnotations"></a>
@@ -1080,7 +1094,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemHeading2RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemHeading2RichTextItemAnnotations"></a>
@@ -1200,7 +1214,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemHeading3RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemHeading3RichTextItemAnnotations"></a>
@@ -1294,7 +1308,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemImageFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemImageExternal"></a>
@@ -1365,7 +1379,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemNumberedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemNumberedListItemRichTextItemAnnotations"></a>
@@ -1482,7 +1496,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemParagraphRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemParagraphRichTextItemAnnotations"></a>
@@ -1576,7 +1590,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemPdfFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemPdfExternal"></a>
@@ -1647,7 +1661,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemQuoteRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemQuoteRichTextItemAnnotations"></a>
@@ -1781,7 +1795,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemToDoRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemToDoRichTextItemAnnotations"></a>
@@ -1898,7 +1912,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemToggleRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemToggleRichTextItemAnnotations"></a>
@@ -1992,7 +2006,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksCreateParamsChildrenItemVideoFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksCreateParamsChildrenItemVideoExternal"></a>
@@ -2021,6 +2035,20 @@ Classes
     ### Class variables
 
     `id: str`
+    :   The type of the None singleton.
+
+<a id="BlocksEndswithCondition"></a>
+
+`BlocksEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.notion.types.BlocksStringFilter`
     :   The type of the None singleton.
 
 <a id="BlocksEqCondition"></a>
@@ -2266,20 +2294,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.notion.types.BlocksStringFilter`
     :   The type of the None singleton.
 
-<a id="BlocksLikeCondition"></a>
-
-`BlocksLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.notion.types.BlocksStringFilter`
-    :   The type of the None singleton.
-
 <a id="BlocksListParams"></a>
 
 `BlocksListParams(*args, **kwargs)`
@@ -2361,7 +2375,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition`
     :   The type of the None singleton.
 
 <a id="BlocksOrCondition"></a>
@@ -2383,7 +2397,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BlocksSearchFilter"></a>
@@ -2534,7 +2548,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLikeCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.notion.types.BlocksEqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNeqCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksGteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLtCondition | airbyte_agent_sdk.connectors.notion.types.BlocksLteCondition | airbyte_agent_sdk.connectors.notion.types.BlocksInCondition | airbyte_agent_sdk.connectors.notion.types.BlocksStartswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksEndswithCondition | airbyte_agent_sdk.connectors.notion.types.BlocksFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.BlocksKeywordCondition | airbyte_agent_sdk.connectors.notion.types.BlocksContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.BlocksNotCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAndCondition | airbyte_agent_sdk.connectors.notion.types.BlocksOrCondition | airbyte_agent_sdk.connectors.notion.types.BlocksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.notion.types.BlocksSortFilter]`
@@ -2677,10 +2691,24 @@ Classes
     `video: Literal['asc', 'desc']`
     :   Represents a video block.
 
+<a id="BlocksStartswithCondition"></a>
+
+`BlocksStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.notion.types.BlocksStringFilter`
+    :   The type of the None singleton.
+
 <a id="BlocksStringFilter"></a>
 
 `BlocksStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2908,7 +2936,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsAudioFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsAudioExternal"></a>
@@ -2979,7 +3007,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsBookmarkCaptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsBookmarkCaptionItemAnnotations"></a>
@@ -3096,7 +3124,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsBulletedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsBulletedListItemRichTextItemAnnotations"></a>
@@ -3216,7 +3244,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsCalloutRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsCalloutRichTextItemAnnotations"></a>
@@ -3336,7 +3364,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsCodeCaptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsCodeCaptionItemAnnotations"></a>
@@ -3436,7 +3464,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsCodeRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsCodeRichTextItemAnnotations"></a>
@@ -3558,7 +3586,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsFileFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsFileExternal"></a>
@@ -3632,7 +3660,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsHeading1RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsHeading1RichTextItemAnnotations"></a>
@@ -3752,7 +3780,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsHeading2RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsHeading2RichTextItemAnnotations"></a>
@@ -3872,7 +3900,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsHeading3RichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsHeading3RichTextItemAnnotations"></a>
@@ -3966,7 +3994,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsImageFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsImageExternal"></a>
@@ -4037,7 +4065,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsNumberedListItemRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsNumberedListItemRichTextItemAnnotations"></a>
@@ -4154,7 +4182,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsParagraphRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsParagraphRichTextItemAnnotations"></a>
@@ -4248,7 +4276,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsPdfFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsPdfExternal"></a>
@@ -4319,7 +4347,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsQuoteRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsQuoteRichTextItemAnnotations"></a>
@@ -4456,7 +4484,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsToDoRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsToDoRichTextItemAnnotations"></a>
@@ -4573,7 +4601,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsToggleRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsToggleRichTextItemAnnotations"></a>
@@ -4667,7 +4695,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.BlocksUpdateParamsVideoFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="BlocksUpdateParamsVideoExternal"></a>
@@ -4717,7 +4745,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommentsAnyCondition"></a>
@@ -4777,10 +4805,24 @@ Classes
     `rich_text: Any`
     :   Content of the comment as rich text.
 
+<a id="CommentsArrayContainsCondition"></a>
+
+`CommentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.notion.types.CommentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CommentsContainsCondition"></a>
 
 `CommentsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4834,7 +4876,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.CommentsCreateParamsRichTextItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="CommentsCreateParamsRichTextItemAnnotations"></a>
@@ -4909,6 +4951,20 @@ Classes
     ### Class variables
 
     `url: str`
+    :   The type of the None singleton.
+
+<a id="CommentsEndswithCondition"></a>
+
+`CommentsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.notion.types.CommentsStringFilter`
     :   The type of the None singleton.
 
 <a id="CommentsEqCondition"></a>
@@ -5038,20 +5094,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.notion.types.CommentsStringFilter`
     :   The type of the None singleton.
 
-<a id="CommentsLikeCondition"></a>
-
-`CommentsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.notion.types.CommentsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CommentsListParams"></a>
 
 `CommentsListParams(*args, **kwargs)`
@@ -5133,7 +5175,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CommentsOrCondition"></a>
@@ -5155,7 +5197,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommentsSearchFilter"></a>
@@ -5204,7 +5246,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLikeCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.notion.types.CommentsEqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNeqCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsGteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLtCondition | airbyte_agent_sdk.connectors.notion.types.CommentsLteCondition | airbyte_agent_sdk.connectors.notion.types.CommentsInCondition | airbyte_agent_sdk.connectors.notion.types.CommentsStartswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsEndswithCondition | airbyte_agent_sdk.connectors.notion.types.CommentsFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.CommentsKeywordCondition | airbyte_agent_sdk.connectors.notion.types.CommentsContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.CommentsNotCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAndCondition | airbyte_agent_sdk.connectors.notion.types.CommentsOrCondition | airbyte_agent_sdk.connectors.notion.types.CommentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.notion.types.CommentsSortFilter]`
@@ -5245,10 +5287,24 @@ Classes
     `rich_text: Literal['asc', 'desc']`
     :   Content of the comment as rich text.
 
+<a id="CommentsStartswithCondition"></a>
+
+`CommentsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.notion.types.CommentsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CommentsStringFilter"></a>
 
 `CommentsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5299,7 +5355,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLikeCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DataSourcesAnyCondition"></a>
@@ -5386,10 +5442,24 @@ Classes
     `url: Any`
     :   URL or reference to access the data source.
 
+<a id="DataSourcesArrayContainsCondition"></a>
+
+`DataSourcesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="DataSourcesContainsCondition"></a>
 
 `DataSourcesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5398,6 +5468,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="DataSourcesEndswithCondition"></a>
+
+`DataSourcesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.notion.types.DataSourcesStringFilter`
     :   The type of the None singleton.
 
 <a id="DataSourcesEqCondition"></a>
@@ -5568,20 +5652,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.notion.types.DataSourcesStringFilter`
     :   The type of the None singleton.
 
-<a id="DataSourcesLikeCondition"></a>
-
-`DataSourcesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.notion.types.DataSourcesStringFilter`
-    :   The type of the None singleton.
-
 <a id="DataSourcesListParams"></a>
 
 `DataSourcesListParams(*args, **kwargs)`
@@ -5700,7 +5770,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLikeCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition`
     :   The type of the None singleton.
 
 <a id="DataSourcesOrCondition"></a>
@@ -5722,7 +5792,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLikeCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="DataSourcesSearchFilter"></a>
@@ -5798,7 +5868,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLikeCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.notion.types.DataSourcesEqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNeqCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesGteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLtCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesLteCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesInCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesNotCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAndCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesOrCondition | airbyte_agent_sdk.connectors.notion.types.DataSourcesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.notion.types.DataSourcesSortFilter]`
@@ -5866,10 +5936,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   URL or reference to access the data source.
 
+<a id="DataSourcesStartswithCondition"></a>
+
+`DataSourcesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.notion.types.DataSourcesStringFilter`
+    :   The type of the None singleton.
+
 <a id="DataSourcesStringFilter"></a>
 
 `DataSourcesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -5980,7 +6064,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsCoverFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsCoverExternal"></a>
@@ -6034,7 +6118,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsDescriptionItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsDescriptionItemAnnotations"></a>
@@ -6137,7 +6221,7 @@ Classes
     `icon: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsIconIcon`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsIconCustomEmoji"></a>
@@ -6222,7 +6306,7 @@ Classes
     `text: airbyte_agent_sdk.connectors.notion.types.DataSourcesUpdateParamsTitleItemText`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="DataSourcesUpdateParamsTitleItemAnnotations"></a>
@@ -6318,7 +6402,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesLikeCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesAnyCondition"></a>
@@ -6396,10 +6480,24 @@ Classes
     `url: Any`
     :   URL of the page within the service.
 
+<a id="PagesArrayContainsCondition"></a>
+
+`PagesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.notion.types.PagesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="PagesContainsCondition"></a>
 
 `PagesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6453,7 +6551,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.PagesCreateParamsCoverFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesCreateParamsCoverExternal"></a>
@@ -6510,7 +6608,7 @@ Classes
     `icon: airbyte_agent_sdk.connectors.notion.types.PagesCreateParamsIconIcon`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesCreateParamsIconCustomEmoji"></a>
@@ -6570,6 +6668,20 @@ Classes
     :   The type of the None singleton.
 
     `name: str`
+    :   The type of the None singleton.
+
+<a id="PagesEndswithCondition"></a>
+
+`PagesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.notion.types.PagesStringFilter`
     :   The type of the None singleton.
 
 <a id="PagesEqCondition"></a>
@@ -6731,20 +6843,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.notion.types.PagesStringFilter`
     :   The type of the None singleton.
 
-<a id="PagesLikeCondition"></a>
-
-`PagesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.notion.types.PagesStringFilter`
-    :   The type of the None singleton.
-
 <a id="PagesListParams"></a>
 
 `PagesListParams(*args, **kwargs)`
@@ -6863,7 +6961,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesLikeCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="PagesOrCondition"></a>
@@ -6885,7 +6983,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesLikeCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PagesSearchFilter"></a>
@@ -6952,7 +7050,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesLikeCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.notion.types.PagesEqCondition | airbyte_agent_sdk.connectors.notion.types.PagesNeqCondition | airbyte_agent_sdk.connectors.notion.types.PagesGtCondition | airbyte_agent_sdk.connectors.notion.types.PagesGteCondition | airbyte_agent_sdk.connectors.notion.types.PagesLtCondition | airbyte_agent_sdk.connectors.notion.types.PagesLteCondition | airbyte_agent_sdk.connectors.notion.types.PagesInCondition | airbyte_agent_sdk.connectors.notion.types.PagesStartswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesEndswithCondition | airbyte_agent_sdk.connectors.notion.types.PagesFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.PagesKeywordCondition | airbyte_agent_sdk.connectors.notion.types.PagesContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.PagesNotCondition | airbyte_agent_sdk.connectors.notion.types.PagesAndCondition | airbyte_agent_sdk.connectors.notion.types.PagesOrCondition | airbyte_agent_sdk.connectors.notion.types.PagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.notion.types.PagesSortFilter]`
@@ -7011,10 +7109,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   URL of the page within the service.
 
+<a id="PagesStartswithCondition"></a>
+
+`PagesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.notion.types.PagesStringFilter`
+    :   The type of the None singleton.
+
 <a id="PagesStringFilter"></a>
 
 `PagesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -7110,7 +7222,7 @@ Classes
     `file_upload: airbyte_agent_sdk.connectors.notion.types.PagesUpdateParamsCoverFileUpload`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesUpdateParamsCoverExternal"></a>
@@ -7167,7 +7279,7 @@ Classes
     `icon: airbyte_agent_sdk.connectors.notion.types.PagesUpdateParamsIconIcon`
     :   The type of the None singleton.
 
-    `type: str`
+    `type_: str`
     :   The type of the None singleton.
 
 <a id="PagesUpdateParamsIconCustomEmoji"></a>
@@ -7248,7 +7360,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersLikeCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -7305,10 +7417,24 @@ Classes
     `type_: Any`
     :   Type of user (person or bot)
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.notion.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7317,6 +7443,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.notion.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.notion.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -7457,20 +7597,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.notion.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.notion.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -7549,7 +7675,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersLikeCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -7571,7 +7697,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersLikeCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -7617,7 +7743,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersLikeCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.notion.types.UsersEqCondition | airbyte_agent_sdk.connectors.notion.types.UsersNeqCondition | airbyte_agent_sdk.connectors.notion.types.UsersGtCondition | airbyte_agent_sdk.connectors.notion.types.UsersGteCondition | airbyte_agent_sdk.connectors.notion.types.UsersLtCondition | airbyte_agent_sdk.connectors.notion.types.UsersLteCondition | airbyte_agent_sdk.connectors.notion.types.UsersInCondition | airbyte_agent_sdk.connectors.notion.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.notion.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.notion.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.notion.types.UsersContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.notion.types.UsersNotCondition | airbyte_agent_sdk.connectors.notion.types.UsersAndCondition | airbyte_agent_sdk.connectors.notion.types.UsersOrCondition | airbyte_agent_sdk.connectors.notion.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.notion.types.UsersSortFilter]`
@@ -7655,10 +7781,24 @@ Classes
     `type_: Literal['asc', 'desc']`
     :   Type of user (person or bot)
 
+<a id="UsersStartswithCondition"></a>
+
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.notion.types.UsersStringFilter`
+    :   The type of the None singleton.
+
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
