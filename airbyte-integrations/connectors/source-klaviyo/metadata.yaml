@@ -7,8 +7,8 @@ data:
   connectorType: source
   definitionId: 95e8cffd-b8c4-4039-968e-d32fb4a69bde
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.13.0@sha256:949b0f3efefbd66e6222f279f36b2fb1c796b06e0e712b1a80124b49769862c4
-  dockerImageTag: 2.17.3
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.24.0@sha256:e34fb609bccdeb77474763c77e3621ea9d5adf9f65f2d9851102cc14a1caa281
+  dockerImageTag: 3.0.1
   dockerRepository: airbyte/source-klaviyo
   githubIssueLabel: source-klaviyo
   icon: klaviyo.svg
@@ -34,25 +34,41 @@ data:
       - flows
   releases:
     breakingChanges:
+      3.0.0:
+        message: "The 'flow_series_reports' stream now emits one record per calendar day instead of one record per request window. Every 'statistics' field changes from an array of daily values to a single number for that day, and 'date' is now the real day the row reports on rather than the end of the request window. Both 'flow_series_reports' and 'campaign_values_reports' now request whole calendar day periods ending on the last complete day, which changes the reporting periods previously written by 'campaign_values_reports', and its 'date' is now the midnight that closes the reported period instead of a timestamp inside it. Users must refresh the source schema and clear both streams after upgrading. See the [Klaviyo migration guide](https://docs.airbyte.com/integrations/sources/klaviyo-migrations#upgrading-to-300) for details."
+        upgradeDeadline: "2026-08-31"
+        deadlineAction: "disable"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - flow_series_reports
+              - campaign_values_reports
       2.0.0:
         message: In this release, streams 'campaigns', 'email_templates', 'events', 'flows', 'global_exclusions', 'lists', and 'metrics' are now pulling data using latest API which has a different schema. Users will need to refresh the source schemas and reset these streams after upgrading.
         upgradeDeadline: "2023-11-30"
       1.0.0:
         message: In this release, for 'events' stream changed type of 'event_properties/items/quantity' field from integer to number. Users will need to refresh the source schema and reset events streams after upgrading.
         upgradeDeadline: "2023-11-30"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   documentationUrl: https://docs.airbyte.com/integrations/sources/klaviyo
   externalDocumentationUrls:
-    - title: Versioning docs
+    - title: API versioning and deprecation policy
       url: https://developers.klaviyo.com/en/docs/api_versioning_and_deprecation_policy
-      type: api_reference
+      type: api_deprecations
     - title: Changelog
       url: https://developers.klaviyo.com/en/docs/changelog_
       type: api_release_history
     - title: Developer Group
       url: https://community.klaviyo.com/groups/developer-group-64
-    - title: Changelog
-      url: https://developers.klaviyo.com/en/docs/changelog
-      type: api_release_history
+    - title: Klaviyo OpenAPI specification repository
+      url: https://github.com/klaviyo/openapi
+      type: spec_repository
   tags:
     - cdk:low-code
     - language:manifest-only

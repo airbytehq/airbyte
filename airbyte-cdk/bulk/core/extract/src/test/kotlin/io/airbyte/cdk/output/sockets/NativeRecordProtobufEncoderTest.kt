@@ -26,7 +26,7 @@ import io.airbyte.cdk.data.OffsetTimeCodec
 import io.airbyte.cdk.data.ShortCodec
 import io.airbyte.cdk.data.TextCodec
 import io.airbyte.cdk.data.UrlCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.discover.FieldType
 import io.airbyte.cdk.protocol.AirbyteValueProtobufDecoder
 import io.airbyte.protocol.protobuf.AirbyteRecordMessage.AirbyteRecordMessageProtobuf
@@ -77,8 +77,8 @@ class NativeRecordProtobufEncoderTest {
     val protoBuilder =
         AirbyteRecordMessageProtobuf.newBuilder().also { it.addData(0, valBuilder.clear()) }
 
-    fun fieldOf(airbyteSchemaType: AirbyteSchemaType, jsonEncoder: JsonEncoder<*>): Field =
-        Field(
+    fun fieldOf(airbyteSchemaType: AirbyteSchemaType, jsonEncoder: JsonEncoder<*>): EmittedField =
+        EmittedField(
             "id",
             object : FieldType {
                 override val airbyteSchemaType = airbyteSchemaType

@@ -23,6 +23,35 @@ from .conftest import START_DATE, get_stream_by_name
 logger = logging.getLogger("airbyte")
 
 
+def test_spec_exposes_bounded_bulk_export_window():
+    spec = SourceMarketo().spec(logger).connectionSpecification
+
+    window_property = spec["properties"]["window_in_days"]
+
+    assert window_property["type"] == "integer"
+    assert window_property["default"] == 30
+    assert window_property["minimum"] == 1
+    assert window_property["maximum"] == 31
+
+
+@pytest.mark.parametrize(
+    "window_in_days",
+    [
+        pytest.param(0, id="below-minimum"),
+        pytest.param(32, id="above-maximum"),
+        pytest.param("7", id="not-integer"),
+    ],
+)
+def test_window_in_days_rejects_invalid_values(config, window_in_days):
+    config["window_in_days"] = window_in_days
+
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        Leads(config)
+
+    assert exc_info.value.message == 'Field "window_in_days" must be an integer from 1 to 31.'
+    assert "Invalid window_in_days value" in exc_info.value.internal_message
+
+
 def test_create_export_job(mocker, send_email_stream, caplog):
     mocker.patch("time.sleep")
     caplog.set_level(logging.WARNING)
@@ -155,7 +184,7 @@ def test_activities_schema(activity, expected_schema, config):
 )
 def test_export_parse_response(send_email_stream, response_text, expected_records):
     def iter_lines(*args, **kwargs):
-        yield from response_text.splitlines()
+        yield from response_text.split("\n")
 
     assert list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1")))) == expected_records
 
@@ -195,6 +224,10 @@ def test_memory_usage(send_email_stream, file_generator):
     # Then we do the same with a tiny file. The goal is not to load the whole file into memory when parsing the response,
     # so we assert the memory consumed was almost the same for two runs. Allowed delta is 50 KB which is 1% of a big file size.
     assert abs(big_file_peak - small_file_peak) < 50 * 1024
+
+
+def test_export_request_kwargs_streams_response(send_email_stream):
+    assert send_email_stream.request_kwargs(stream_state={}) == {"stream": True, "timeout": (30, 300)}
 
 
 @pytest.mark.parametrize("job_statuses", ((("Created",), ("Completed",)), (("Created",), ("Cancelled",))))
@@ -334,9 +367,149 @@ def test_csv_rows(config):
         assert expected_record == record
 
 
+def test_parse_response_with_unicode_line_separator(send_email_stream):
+    """Verify that Unicode line separators (\u2028, \u2029) in CJK field values
+    do not cause CSV column misalignment. This was the root cause of
+    https://github.com/airbytehq/oncall/issues/11468.
+    """
+    response_text = "Campaign Run ID,Choice Number,Has Predictive,Step ID,Test Variant\n" "1,\u2028test,true,10,15\n" "2,3,false,11,16"
+
+    def iter_lines(*args, **kwargs):
+        yield from response_text.split("\n")
+
+    records = list(send_email_stream.parse_response(Mock(iter_lines=iter_lines, request=Mock(url="/send_email/1"))))
+    assert len(records) == 2
+    assert records[0]["Campaign Run ID"] == "1"
+    assert records[0]["Choice Number"] == "\u2028test"
+    assert records[0]["Has Predictive"] == "true"
+    assert records[1]["Campaign Run ID"] == "2"
+
+
+def test_csv_rows_column_count_mismatch(config):
+    stream = Leads(config)
+    # Row has fewer columns than the header
+    test_lines = ["Name,Email,Phone", "John Doe,john@example.com"]
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.csv_rows(test_lines))
+    assert exc_info.value.message == "CSV row column count does not match header column count."
+    assert "expected 3 columns, got 2" in exc_info.value.internal_message
+
+    # Row has more columns than the header
+    test_lines_extra = ["Name,Email", "John Doe,john@example.com,extra"]
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(stream.csv_rows(test_lines_extra))
+    assert exc_info.value.message == "CSV row column count does not match header column count."
+    assert "expected 2 columns, got 3" in exc_info.value.internal_message
+
+
 def test_availability_strategy(config):
     stream = Leads(config)
     assert stream.availability_strategy is None
+
+
+def test_leads_bulk_export_filters_on_updated_at(config, requests_mock, mocker):
+    """
+    The Leads bulk export must filter on `updatedAt` (matching the stream's
+    cursor field) so that updates to pre-existing leads are captured by
+    incremental syncs. Marketo's Bulk Lead Extract honors only a single filter
+    per export; filtering on `createdAt` silently drops any lead whose
+    `createdAt` is earlier than the cursor even when its `updatedAt` moves
+    into the sync window.
+    """
+    mocker.patch("time.sleep")
+
+    # Avoid the describe-endpoint call affecting field selection.
+    requests_mock.get(
+        f"{config['domain_url'].rstrip('/')}/rest/v1/leads/describe.json",
+        json={"result": []},
+    )
+    requests_mock.register_uri(
+        "POST",
+        f"{config['domain_url'].rstrip('/')}/bulk/v1/leads/export/create.json",
+        json={"result": [{"exportId": "lead-export-id", "status": "Created", "format": "CSV"}]},
+    )
+
+    leads_stream = Leads(config)
+    list(leads_stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=None))
+
+    create_calls = [req for req in requests_mock.request_history if req.method == "POST" and req.path.endswith("/leads/export/create.json")]
+    assert create_calls, "Expected at least one Leads export/create POST"
+
+    for call in create_calls:
+        filter_ = call.json()["filter"]
+        assert "updatedAt" in filter_, (
+            "Leads bulk export must filter on `updatedAt` to match the cursor field; " f"got filter keys: {list(filter_.keys())}"
+        )
+        assert "createdAt" not in filter_, (
+            "Leads bulk export must not filter on `createdAt`; Marketo honors only "
+            "one filter per export and using `createdAt` silently drops lead updates."
+        )
+
+
+@pytest.mark.parametrize(
+    "window_in_days, expected_ranges",
+    [
+        pytest.param(
+            30,
+            [("2026-05-19T22:16:10Z", "2026-06-18T22:16:10Z")],
+            id="default-single-marketo-window",
+        ),
+        pytest.param(
+            7,
+            [
+                ("2026-05-19T22:16:10Z", "2026-05-26T22:16:10Z"),
+                ("2026-05-26T22:16:10Z", "2026-06-02T22:16:10Z"),
+                ("2026-06-02T22:16:10Z", "2026-06-09T22:16:10Z"),
+                ("2026-06-09T22:16:10Z", "2026-06-16T22:16:10Z"),
+                ("2026-06-16T22:16:10Z", "2026-06-18T22:16:10Z"),
+            ],
+            id="smaller-windows-create-more-exports",
+        ),
+        pytest.param(
+            1,
+            [
+                ("2026-05-19T22:16:10Z", "2026-05-20T22:16:10Z"),
+                ("2026-05-20T22:16:10Z", "2026-05-21T22:16:10Z"),
+                ("2026-05-21T22:16:10Z", "2026-05-22T22:16:10Z"),
+            ],
+            id="one-day-window",
+        ),
+    ],
+)
+def test_leads_bulk_export_window_controls_date_slices(config, mocker, window_in_days, expected_ranges):
+    config["start_date"] = "2026-05-19T22:16:10Z"
+    config["end_date"] = "2026-05-22T22:16:10Z" if window_in_days == 1 else "2026-06-18T22:16:10Z"
+    config["window_in_days"] = window_in_days
+    mocker.patch.object(Leads, "stream_fields", new_callable=lambda: property(lambda self: []))
+    mocker.patch.object(Leads, "create_export", return_value={"exportId": "lead-export-id"})
+
+    slices = Leads(config).stream_slices(
+        sync_mode=SyncMode.incremental,
+        stream_state={"updatedAt": "2026-05-19T22:16:10Z"},
+    )
+
+    assert [(slice_["startAt"], slice_["endAt"]) for slice_ in slices] == expected_ranges
+
+
+def test_activities_bulk_export_preserves_created_at_filter(send_email_stream, requests_mock, mocker):
+    """
+    Activities are immutable events, so filtering their bulk export on
+    `createdAt` matches vendor expectations. This test guards against
+    accidentally changing the activities filter alongside the Leads fix.
+    """
+    mocker.patch("time.sleep")
+
+    list(send_email_stream.stream_slices(sync_mode=SyncMode.incremental, stream_state=None))
+
+    create_calls = [
+        req for req in requests_mock.request_history if req.method == "POST" and req.path.endswith("/activities/export/create.json")
+    ]
+    assert create_calls, "Expected at least one activities export/create POST"
+
+    for call in create_calls:
+        filter_ = call.json()["filter"]
+        assert "createdAt" in filter_
+        assert "updatedAt" not in filter_
 
 
 def test_path(config):

@@ -1,6 +1,30 @@
 name: Bump versions for connectors in a PR
 
 on:
+  workflow_call:
+    inputs:
+      pr:
+        description: "Pull request number. This PR will be referenced in the changelog line."
+        type: string
+        required: false
+      comment-id:
+        description: "Optional. The comment-id of the slash command. Used to update the comment with the status."
+        type: string
+        required: false
+      type:
+        description: "The type of bump to perform. One of 'major', 'minor', or 'patch'."
+        type: string
+        required: false
+        default: "patch"
+      changelog:
+        description: "Optional. The comment to add to the changelog. If not provided, the PR title will be used."
+        type: string
+        required: false
+        default: ""
+    secrets:
+      GH_PAT_APPROVINGTON_OCTAVIA:
+        required: true
+
   workflow_dispatch:
     inputs:
       pr:
@@ -32,9 +56,14 @@ on:
         description: "Ref (Ignored)"
         required: false
 
-run-name: "Bump connector versions in PR: #${{ github.event.inputs.pr }}"
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+run-name: "Bump connector versions in PR: #${{ inputs.pr }}"
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.inputs.pr }}
+  group: ${{ github.workflow }}-${{ inputs.pr }}
   # Cancel any previous runs on the same branch if they are still in progress
   cancel-in-progress: true
 
@@ -47,9 +76,10 @@ jobs:
         id: job-vars
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ inputs.pr }}
         shell: bash
         run: |
-          PR_JSON=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.inputs.pr }})
+          PR_JSON=$(gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER")
           echo "repo=$(echo "$PR_JSON" | jq -r .head.repo.full_name)" >> $GITHUB_OUTPUT
           echo "branch=$(echo "$PR_JSON" | jq -r .head.ref)" >> $GITHUB_OUTPUT
           echo "pr_title=$(echo "$PR_JSON" | jq -r .title)" >> $GITHUB_OUTPUT
@@ -60,7 +90,7 @@ jobs:
       # forks if the user installs the app into their fork. Until we document this as a clear
       # path, we will have to keep using the PAT.
       - name: Checkout Airbyte
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ steps.job-vars.outputs.repo }}
           ref: ${{ steps.job-vars.outputs.branch }}
@@ -75,36 +105,76 @@ jobs:
         id: first-comment-action
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          issue-number: ${{ github.event.inputs.pr }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
           body: |
 
             > Bump Version job started... [Check job output.][1]
 
             [1]: ${{ steps.job-vars.outputs.run-url }}
 
-      - name: Log changelog source
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install airbyte-ops CLI
+        run: uv tool install airbyte-internal-ops
+
+      - name: Detect modified connectors
+        id: detect-connectors
+        env:
+          PR_NUMBER: ${{ inputs.pr }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ -n "${{ github.event.inputs.changelog }}" ]; then
-            echo "Using user-provided changelog: ${{ github.event.inputs.changelog }}"
+          CONNECTORS=$(
+            airbyte-ops local connector list \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --modified-only \
+              --pr "$PR_NUMBER" \
+              --gh-token "$GH_TOKEN" \
+              --output-format lines
+          )
+
+          if [ -z "$CONNECTORS" ]; then
+            echo "No modified connectors found in PR #$PR_NUMBER."
           else
-            echo "Using PR title as changelog: ${{ steps.job-vars.outputs.pr_title }}"
+            echo "Modified connectors:"
+            echo "$CONNECTORS"
           fi
 
-      - name: Run airbyte-ci connectors --modified bump-version
-        uses: ./.github/actions/run-airbyte-ci
-        continue-on-error: true
-        with:
-          context: "manual"
-          gcs_credentials: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
-          sentry_dsn: ${{ secrets.SENTRY_AIRBYTE_CI_DSN }}
-          github_token: ${{ secrets.GH_PAT_MAINTENANCE_OCTAVIA }}
-          git_repo_url: https://github.com/${{ steps.job-vars.outputs.repo }}.git
-          subcommand: |
-            connectors --modified bump-version \
-              ${{ github.event.inputs.type }} \
-              "${{ github.event.inputs.changelog != '' && github.event.inputs.changelog || steps.job-vars.outputs.pr_title }}" \
-              --pr-number ${{ github.event.inputs.pr }}
+          # Pass the connector list to the next step via GITHUB_OUTPUT.
+          # Only set the multiline output when CONNECTORS is non-empty so that
+          # the downstream `if:` reliably evaluates to false for empty lists.
+          if [ -n "$CONNECTORS" ]; then
+            EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+            echo "connectors<<$EOF" >> $GITHUB_OUTPUT
+            echo "$CONNECTORS" >> $GITHUB_OUTPUT
+            echo "$EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Bump versions for modified connectors
+        if: steps.detect-connectors.outputs.connectors != ''
+        env:
+          BUMP_TYPE: ${{ inputs.type }}
+          CHANGELOG_MSG: ${{ inputs.changelog }}
+          PR_TITLE: ${{ steps.job-vars.outputs.pr_title }}
+          PR_NUMBER: ${{ inputs.pr }}
+          CONNECTORS: ${{ steps.detect-connectors.outputs.connectors }}
+        run: |
+          MSG="${CHANGELOG_MSG:-$PR_TITLE}"
+          echo "Changelog message: $MSG"
+          echo "Bump type: $BUMP_TYPE"
+          echo ""
+
+          echo "$CONNECTORS" | while IFS= read -r connector; do
+            [ -z "$connector" ] && continue
+            echo "--- Bumping version for $connector ---"
+            airbyte-ops local connector bump-version \
+              --name "$connector" \
+              --repo-path "$GITHUB_WORKSPACE" \
+              --bump-type "$BUMP_TYPE" \
+              --changelog-message "$MSG" \
+              --pr-number "$PR_NUMBER"
+          done
 
       # This is helpful in the case that we change a previously committed generated file to be ignored by git.
       - name: Remove any files that have been gitignored
@@ -121,11 +191,13 @@ jobs:
       - name: Commit changes
         id: commit-step
         if: steps.git-diff.outputs.changes == 'true'
+        env:
+          BUMP_TYPE: ${{ inputs.type }}
         run: |
           git config --global user.name "Octavia Squidington III"
           git config --global user.email "octavia-squidington-iii@users.noreply.github.com"
           git add .
-          git commit -m "chore: bump-version ${{ github.event.inputs.bump-type }}"
+          git commit -m "chore: bump-version $BUMP_TYPE"
           echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Push changes to '(${{ steps.job-vars.outputs.repo }})'

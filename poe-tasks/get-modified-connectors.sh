@@ -12,6 +12,7 @@ NO_JAVA=false
 JSON=false
 PREV_COMMIT=false
 LOCAL_CDK=false
+REQUIRE_VERSION_BUMP=false
 
 # parse flags
 while [[ $# -gt 0 ]]; do
@@ -31,6 +32,9 @@ while [[ $# -gt 0 ]]; do
     --local-cdk|local-cdk)
       LOCAL_CDK=true
       ;;
+    --require-version-bump)
+      REQUIRE_VERSION_BUMP=true
+      ;;
     *)
       echo "Unknown argument: $1" >&2;
       exit 1
@@ -38,6 +42,9 @@ while [[ $# -gt 0 ]]; do
   esac
   shift
 done
+
+# --require-version-bump only applies to --prev-commit, which is the master
+# publish path. It is intentionally a no-op for PR-branch comparisons.
 
 # 1) Fetch the latest from the default branch (using the correct remote)
 if git remote get-url upstream &>/dev/null; then
@@ -52,6 +59,7 @@ ignore_patterns=(
   '.coveragerc'
   'poe_tasks.toml'
   'airbyte-integrations/connectors/[^/]+/README.md'
+  'airbyte-integrations/connectors/[^/]+/CONTRIBUTING.md'
 )
 # join with | into a grouped regex
 ignore_globs="($(IFS='|'; echo "${ignore_patterns[*]}"))$"
@@ -89,7 +97,7 @@ return_empty_json() {
 }
 
 # 5) drop ignored files
-filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})")
+filtered=$(printf '%s\n' "$all_changes" | grep -v -E "(/${ignore_globs}|^${ignore_globs})" || true)
 if [ -z "$filtered" ]; then
   echo "⚠️ Warning: No files remaining after filtering. Returning empty connector list." >&2
   return_empty_json
@@ -124,6 +132,48 @@ if [ -n "$dirs" ]; then
       echo "⚠️ '$d' directory was not found. This can happen if a connector is removed. Skipping." >&2
     fi
   done <<< "$(printf '%s\n' "$dirs" | sort -u)"
+fi
+
+filter_to_version_bumps() {
+  local parent_commit
+  if ! parent_commit=$(git rev-parse --verify HEAD^ 2>/dev/null); then
+    echo "⚠️ Cannot read the parent commit; keeping all modified connectors." >&2
+    return
+  fi
+
+  local version_bumped=()
+  local connector metadata current_tag parent_tag
+  for connector in "${connectors[@]}"; do
+    metadata="airbyte-integrations/connectors/${connector}/metadata.yaml"
+    if [[ ! -f "$metadata" ]]; then
+      echo "⚠️ Cannot read '$metadata'; keeping '$connector'." >&2
+      version_bumped+=("$connector")
+      continue
+    fi
+    if ! git cat-file -e "${parent_commit}:${metadata}" 2>/dev/null; then
+      version_bumped+=("$connector")
+      continue
+    fi
+    if ! current_tag=$(yq -r '.data.dockerImageTag // ""' "$metadata" 2>/dev/null) ||
+      ! parent_tag=$(git show "${parent_commit}:${metadata}" | yq -r '.data.dockerImageTag // ""' 2>/dev/null); then
+      echo "⚠️ Cannot read the dockerImageTag for '$connector'; keeping it." >&2
+      version_bumped+=("$connector")
+      continue
+    fi
+    if [[ "$current_tag" != "$parent_tag" ]]; then
+      version_bumped+=("$connector")
+    else
+      echo "⚠️ Skipping '$connector': dockerImageTag is unchanged from the parent commit." >&2
+      echo "   To push metadata-only edits to the registry, run the publish workflow with registry-refresh-only." >&2
+    fi
+  done
+  connectors=("${version_bumped[@]}")
+}
+
+if $PREV_COMMIT && $REQUIRE_VERSION_BUMP; then
+  # Compare versions rather than metadata paths: Java and manifest-only changes
+  # can legitimately publish a new version without changing only metadata.yaml.
+  filter_to_version_bumps
 fi
 
 # 9) Define function to print either JSON or newline-delimited list.

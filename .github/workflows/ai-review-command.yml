@@ -15,6 +15,16 @@ on:
       comment-id:
         description: "Comment ID"
         required: false
+  workflow_call:
+    inputs:
+      pr:
+        description: "PR number"
+        required: true
+        type: string
+      comment-id:
+        description: "Comment ID"
+        required: false
+        type: string
 
 run-name: "PR AI Review for PR #${{ inputs.pr }}"
 
@@ -33,10 +43,10 @@ jobs:
           echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Authenticate as GitHub App
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3.0.0
         id: get-app-token
         with:
           owner: "airbytehq"
@@ -55,13 +65,21 @@ jobs:
           HEAD_REF=$(echo "$PR_INFO" | jq -r '.head.ref')
           IS_DRAFT=$(echo "$PR_INFO" | jq -r '.draft')
           NODE_ID=$(echo "$PR_INFO" | jq -r '.node_id')
+          SUPPORT_BOT_ASSIGNED=$(echo "$PR_INFO" | jq -r 'any(.assignees[]; .login == "airbyte-support-bot")')
           echo "head-sha=$HEAD_SHA" | tee -a $GITHUB_OUTPUT
           echo "head-ref=$HEAD_REF" | tee -a $GITHUB_OUTPUT
           echo "is-draft=$IS_DRAFT" | tee -a $GITHUB_OUTPUT
           echo "node-id=$NODE_ID" | tee -a $GITHUB_OUTPUT
+          echo "support-bot-assigned=$SUPPORT_BOT_ASSIGNED" | tee -a $GITHUB_OUTPUT
+
+      - name: Keep PR in draft -- 'airbyte-support-bot' not assigned
+        if: steps.pr-details.outputs.is-draft == 'true' && steps.pr-details.outputs.support-bot-assigned != 'true'
+        run: |
+          echo "PR is a draft and 'airbyte-support-bot' is not assigned; leaving draft status to the author."
+          echo "Reviewing the PR as-is. Assign 'airbyte-support-bot' to let the hands-free pipeline advance it."
 
       - name: Mark PR as ready for review
-        if: steps.pr-details.outputs.is-draft == 'true'
+        if: steps.pr-details.outputs.is-draft == 'true' && steps.pr-details.outputs.support-bot-assigned == 'true'
         env:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           NODE_ID: ${{ steps.pr-details.outputs.node-id }}
@@ -97,11 +115,13 @@ jobs:
           playbook-macro: "!pr_ai_review"
           devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
           github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
           start-message: |
             **AI PR Review** starting...
 
             Reviewing PR for connector safety and quality.
-            [View playbook](https://github.com/airbytehq/oncall/blob/main/prompts/playbooks/pr_ai_review.md)
+            [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/pr_ai_review.md)
           tags: |
             ai-oncall
             pr-review

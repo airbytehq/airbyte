@@ -15,194 +15,218 @@ check:
     - issues
 
 definitions:
+  incremental_sync_updated_at:
+    type: DatetimeBasedCursor
+    cursor_field: updatedAt
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%S.%fZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_datetime:
+      type: MinMaxDatetime
+      datetime: "{{ config.get('start_date', (now_utc() - duration('P2Y')).strftime('%Y-%m-%dT%H:%M:%S.000Z')) }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+    start_time_option:
+      type: RequestOption
+      inject_into: body_json
+      field_path:
+        - variables
+        - filter
+        - updatedAt
+        - gte
+  base_issues_stream:
+    type: DeclarativeStream
+    name: issues
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /
+        http_method: POST
+        request_headers:
+          Content-Type: application/json
+        request_body_json:
+          query: >-
+            query Issues($after: String, $filter: IssueFilter, $orderBy: PaginationOrderBy) { issues(after: $after, first: 25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
+            nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
+            archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
+            canceledAt completedAt createdAt creator { id }
+            customerTicketCount cycle { id } description descriptionState
+            dueDate estimate identifier integrationSourceType labelIds number
+            parent { id } previousIdentifiers priority priorityLabel
+            prioritySortOrder project { id } projectMilestone { id }
+            reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
+            state { id } startedTriageAt subIssueSortOrder team { id } title
+            trashed triagedAt updatedAt url attachments { nodes { id } }
+            sourceComment { id } labels { nodes { id } } slaType slaStartedAt
+            slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
+            } } subscribers { nodes { id } } } pageInfo { hasNextPage
+            endCursor } } }
+          variables:
+            orderBy: updatedAt
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+            - issues
+            - nodes
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_path:
+            - variables
+            - after
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.data.issues.pageInfo.endCursor or \"\" }}"
+          stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
+      decoder:
+        type: JsonDecoder
+    transformations:
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - assigneeId
+            value: "{{ record.assignee.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - assignee
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - creatorId
+            value: "{{ record.creator.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - creator
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - cycleId
+            value: "{{ record.cycle.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - cycle
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - stateId
+            value: "{{ record.state.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - state
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - teamId
+            value: "{{ record.team.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - team
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - parentId
+            value: "{{ record.parent.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - parent
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - projectId
+            value: "{{ record.project.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - project
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - milestoneId
+            value: "{{ record.projectMilestone.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - projectMilestone
+            - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - attachmentIds
+            value: "{{ record.attachments.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - attachments
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - labelIds
+            value: "{{ record.labels.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - labels
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - subscriberIds
+            value: "{{ record.subscribers.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - subscribers
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - relationIds
+            value: "{{ record.relations.nodes | map(attribute='id') | list }}"
+      - type: RemoveFields
+        field_pointers:
+          - - relations
+            - nodes
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - sourceCommentId
+            value: "{{ record.sourceComment.id }}"
+      - type: RemoveFields
+        field_pointers:
+          - - sourceComment
+            - id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/issues"
   streams:
     issues:
-      type: DeclarativeStream
-      name: issues
-      primary_key:
-        - id
-      retriever:
-        type: SimpleRetriever
-        requester:
-          $ref: "#/definitions/base_requester"
-          path: /
-          http_method: POST
-          request_headers:
-            Content-Type: application/json
-          request_body_json:
-            query: >-
-              query Issues($after: String) { issues(after: $after, first: 25) {
-              nodes { id addedToCycleAt addedToProjectAt addedToTeamAt
-              archivedAt assignee { id } autoArchivedAt autoClosedAt branchName
-              canceledAt completedAt createdAt creator { id }
-              customerTicketCount cycle { id } description descriptionState
-              dueDate estimate identifier integrationSourceType labelIds number
-              parent { id } previousIdentifiers priority priorityLabel
-              prioritySortOrder project { id } projectMilestone { id }
-              reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
-              state { id } startedTriageAt subIssueSortOrder team { id } title
-              trashed triagedAt updatedAt url attachments { nodes { id } }
-              sourceComment { id } labels { nodes { id } } slaType slaStartedAt
-              slaMediumRiskAt slaHighRiskAt slaBreachesAt relations { nodes { id
-              } } subscribers { nodes { id } } } pageInfo { hasNextPage
-              endCursor } } }
-        record_selector:
-          type: RecordSelector
-          extractor:
-            type: DpathExtractor
-            field_path:
-              - data
-              - issues
-              - nodes
-        paginator:
-          type: DefaultPaginator
-          page_token_option:
-            type: RequestOption
-            inject_into: body_json
-            field_name: variables
-          pagination_strategy:
-            type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.issues.pageInfo.endCursor + '"}'
-              if response.data.issues.pageInfo.endCursor else "" }}
-            stop_condition: "{{ response.data.issues.pageInfo.hasNextPage is false }}"
-        decoder:
-          type: JsonDecoder
-      transformations:
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - assigneeId
-              value: "{{ record.assignee.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - assignee
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - creatorId
-              value: "{{ record.creator.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - creator
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - cycleId
-              value: "{{ record.cycle.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - cycle
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - stateId
-              value: "{{ record.state.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - state
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - teamId
-              value: "{{ record.team.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - team
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - parentId
-              value: "{{ record.parent.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - parent
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - projectId
-              value: "{{ record.project.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - project
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - milestoneId
-              value: "{{ record.projectMilestone.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - projectMilestone
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - attachmentIds
-              value: "{{ record.attachments.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - attachments
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - labelIds
-              value: "{{ record.labels.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - labels
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - subscriberIds
-              value: "{{ record.subscribers.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - subscribers
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - relationIds
-              value: "{{ record.relations.nodes | map(attribute='id') | list }}"
-        - type: RemoveFields
-          field_pointers:
-            - - relations
-              - nodes
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - sourceCommentId
-              value: "{{ record.sourceComment.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - sourceComment
-              - id
-      schema_loader:
-        type: InlineSchemaLoader
-        schema:
-          $ref: "#/schemas/issues"
+      $ref: "#/definitions/base_issues_stream"
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
     customers:
       type: DeclarativeStream
       name: customers
@@ -218,11 +242,13 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Customers($after: String) { customers(after: $after, first:
-              50) { nodes { approximateNeedCount archivedAt createdAt domains
+              query Customers($after: String, $filter: CustomerFilter, $orderBy: PaginationOrderBy) { customers(after: $after, first:
+              50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { approximateNeedCount archivedAt createdAt domains
               externalIds id logoUrl name owner { id } revenue size
               slackChannelId slugId status { id } tier { id } updatedAt }
               pageInfo { endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -236,15 +262,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.customers.pageInfo.endCursor +
-              '"}' if response.data.customers.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.customers.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.customers.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -285,12 +314,14 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Users($after: String) { users(after: $after, first: 50) {
+              query Users($after: String, $filter: UserFilter, $orderBy: PaginationOrderBy) { users(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) {
               nodes { active admin archivedAt avatarBackgroundColor avatarUrl
-              calendarHash createdAt createdIssueCount description disableReason
-              displayName email guest id initials inviteHash isMe lastSeen name
+              createdAt createdIssueCount description disableReason
+              displayName email guest id initials isMe lastSeen name
               statusEmoji statusLabel statusUntilAt teams { nodes { id } }
               timezone updatedAt url } pageInfo { hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -304,15 +335,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.users.pageInfo.endCursor + '"}'
-              if response.data.users.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.users.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.users.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -343,11 +377,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Comments($after: String) { comments(after: $after, first:
-              50) { nodes { archivedAt body bodyData createdAt editedAt id issue
+              query Comments($after: String, $filter: CommentFilter, $orderBy: PaginationOrderBy) { comments(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt body bodyData createdAt editedAt id issue
               { id } parent { id } quotedText resolvedAt resolvingComment { id }
               resolvingUser { id } updatedAt url user { id } } pageInfo {
               hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -361,15 +396,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.comments.pageInfo.endCursor +
-              '"}' if response.data.comments.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.comments.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.comments.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -440,13 +478,15 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Cycles($after: String) { cycles(after: $after, first: 50) {
+              query Cycles($after: String, $filter: CycleFilter, $orderBy: PaginationOrderBy) { cycles(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) {
               pageInfo { endCursor hasNextPage } nodes { archivedAt
               autoArchivedAt completedAt completedIssueCountHistory
               completedScopeHistory createdAt description id endsAt
               inProgressScopeHistory inheritedFrom { id } issueCountHistory name
               number progress scopeHistory startsAt team { id }
               uncompletedIssuesUponClose { nodes { id } } updatedAt } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -460,15 +500,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.cycles.pageInfo.endCursor + '"}'
-              if response.data.cycles.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.cycles.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.cycles.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -521,11 +564,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query CustomerNeeds($after: String) { customerNeeds(after: $after,
-              first: 50) { nodes { archivedAt body bodyData comment { id }
+              query CustomerNeeds($after: String, $filter: CustomerNeedFilter, $orderBy: PaginationOrderBy) { customerNeeds(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt body bodyData comment { id }
               createdAt creator { id } customer { id } id issue { id } priority
               project { id } updatedAt attachment { id } } pageInfo {
               hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -539,16 +583,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.customerNeeds.pageInfo.endCursor
-              + '"}' if response.data.customerNeeds.pageInfo.endCursor else ""
-              }}
+            cursor_value: "{{ response.data.customerNeeds.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.customerNeeds.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -629,8 +675,8 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Projects($after: String) { projects(after: $after, first:
-              25) { nodes { archivedAt autoArchivedAt canceledAt color
+              query Projects($after: String, $filter: ProjectFilter, $orderBy: PaginationOrderBy) { projects(after: $after, first:
+              25, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt autoArchivedAt canceledAt color
               completedAt completedIssueCountHistory completedScopeHistory
               content contentState convertedFromIssue { id } createdAt creator {
               id } description health healthUpdatedAt icon id
@@ -642,6 +688,8 @@ definitions:
               updateReminderFrequencyInWeeks updateRemindersDay
               updateRemindersHour updatedAt url } pageInfo { endCursor
               hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -655,15 +703,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.projects.pageInfo.endCursor +
-              '"}' if response.data.projects.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.projects.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.projects.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -734,10 +785,11 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query ProjectMilestones($after: String) { projectMilestones(after:
-              $after, first: 50) { nodes { archivedAt createdAt description
+              query ProjectMilestones($after: String, $filter: ProjectMilestoneFilter, $orderBy: PaginationOrderBy) { projectMilestones(after: $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt createdAt description
               descriptionState id name progress project { id } sortOrder status
               targetDate updatedAt } pageInfo { hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -751,18 +803,20 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' +
-              response.data.projectMilestones.pageInfo.endCursor + '"}' if
-              response.data.projectMilestones.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.projectMilestones.pageInfo.endCursor or \"\" }}"
             stop_condition: >-
               {{ response.data.projectMilestones.pageInfo.hasNextPage is false
               }}
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -794,7 +848,7 @@ definitions:
           request_body_json:
             query: >-
               query ProjectStatus($after: String) { projectStatuses(after:
-              $after, first: 50) { nodes { archivedAt color createdAt
+              $after, first: 50, includeArchived: true) { nodes { archivedAt color createdAt
               description id indefinite name position type updatedAt } pageInfo
               { endCursor hasNextPage } } }
         record_selector:
@@ -839,10 +893,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query IssueLabels($after: String) { issueLabels(after: $after,
-              first: 50) { nodes { archivedAt color createdAt creator { id }
+              query IssueLabels($after: String, $filter: IssueLabelFilter, $orderBy: PaginationOrderBy) { issueLabels(after: $after,
+              first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt color createdAt creator { id }
               description id inheritedFrom { id } isGroup name parent { id }
               team { id } updatedAt } pageInfo { endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -856,15 +912,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.issueLabels.pageInfo.endCursor +
-              '"}' if response.data.issueLabels.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.issueLabels.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.issueLabels.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -925,10 +984,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query WorkflowStates($after: String) { workflowStates(after:
-              $after, first: 50) { nodes { archivedAt color createdAt
+              query WorkflowStates($after: String, $filter: WorkflowStateFilter, $orderBy: PaginationOrderBy) { workflowStates(after:
+              $after, first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt color createdAt
               description id inheritedFrom { id } name position team { id } type
               updatedAt } pageInfo { hasNextPage endCursor } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -942,16 +1003,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.workflowStates.pageInfo.endCursor
-              + '"}' if response.data.workflowStates.pageInfo.endCursor else ""
-              }}
+            cursor_value: "{{ response.data.workflowStates.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.workflowStates.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -992,21 +1055,23 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Teams($after: String) { teams(after: $after, first: 25) {
+              query Teams($after: String, $filter: TeamFilter, $orderBy: PaginationOrderBy) { teams(after: $after, first: 25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
               nodes { activeCycle { id } archivedAt autoArchivePeriod
               autoCloseChildIssues autoCloseParentIssues autoClosePeriod
               autoCloseStateId color createdAt cycleCalenderUrl
               cycleCooldownTime cycleDuration cycleIssueAutoAssignCompleted
               cycleIssueAutoAssignStarted cycleLockToActive cycleStartDay
               cyclesEnabled defaultIssueEstimate defaultIssueState { id }
-              description groupIssueHistory icon id inviteHash issueCount
+              description groupIssueHistory icon id issueCount
               issueEstimationAllowZero issueEstimationExtended
               issueEstimationType joinByDefault key
-              markedAsDuplicateWorkflowState { id } name parent { id } private
+              name parent { id }
               requirePriorityToLeaveTriage scimGroupName scimManaged
               setIssueSortOrderOnStateChange timezone triageEnabled updatedAt
-              upcomingCycleCount triageIssueState { id } } pageInfo { endCursor
+              upcomingCycleCount triageIssueState { id } visibility } pageInfo { endCursor
               hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -1020,15 +1085,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.teams.pageInfo.endCursor + '"}'
-              if response.data.teams.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.teams.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.teams.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -1049,16 +1117,6 @@ definitions:
         - type: RemoveFields
           field_pointers:
             - - defaultIssueState
-              - id
-        - type: AddFields
-          fields:
-            - type: AddedFieldDefinition
-              path:
-                - markedAsDuplicateWorkflowStateId
-              value: "{{ record.markedAsDuplicateWorkflowState.id }}"
-        - type: RemoveFields
-          field_pointers:
-            - - markedAsDuplicateWorkflowState
               - id
         - type: AddFields
           fields:
@@ -1099,10 +1157,12 @@ definitions:
             Content-Type: application/json
           request_body_json:
             query: >-
-              query Attachments($after: String) { attachments(after: $after,
-              first: 50) { nodes { archivedAt createdAt creator { id }
+              query Attachments($after: String, $filter: AttachmentFilter, $orderBy: PaginationOrderBy) { attachments(after: $after,
+              first: 50, includeArchived: true, filter: $filter, orderBy: $orderBy) { nodes { archivedAt createdAt creator { id }
               groupBySource id issue { id } sourceType subtitle title updatedAt
               url } pageInfo { endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
         record_selector:
           type: RecordSelector
           extractor:
@@ -1116,15 +1176,18 @@ definitions:
           page_token_option:
             type: RequestOption
             inject_into: body_json
-            field_name: variables
+            field_path:
+              - variables
+              - after
           pagination_strategy:
             type: CursorPagination
-            cursor_value: >-
-              {{ '{"after": "' + response.data.attachments.pageInfo.endCursor +
-              '"}' if response.data.attachments.pageInfo.endCursor else "" }}
+            cursor_value: "{{ response.data.attachments.pageInfo.endCursor or \"\" }}"
             stop_condition: "{{ response.data.attachments.pageInfo.hasNextPage is false }}"
         decoder:
           type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+
       transformations:
         - type: AddFields
           fields:
@@ -1166,7 +1229,7 @@ definitions:
           request_body_json:
             query: >-
               query IssueRelations($after: String) { issueRelations(after:
-              $after, first: 50) { nodes { archivedAt createdAt id issue { id }
+              $after, first: 50, includeArchived: true) { nodes { archivedAt createdAt id issue { id }
               relatedIssue { id } type updatedAt } pageInfo { endCursor
               hasNextPage } } }
         record_selector:
@@ -1233,8 +1296,8 @@ definitions:
           request_body_json:
             query: >-
               query CustomerStatus($after: String) { customerStatuses(after:
-              $after, first: 50) { nodes { archivedAt color createdAt
-              description id name position type updatedAt } pageInfo { endCursor
+              $after, first: 50, includeArchived: true) { nodes { archivedAt color createdAt
+              description id name position updatedAt } pageInfo { endCursor
               hasNextPage } } }
         record_selector:
           type: RecordSelector
@@ -1279,7 +1342,7 @@ definitions:
           request_body_json:
             query: >-
               query CustomerTiers($after: String) { customerTiers(after: $after,
-              first: 50) { nodes { archivedAt color createdAt description
+              first: 50, includeArchived: true) { nodes { archivedAt color createdAt description
               displayName id name position updatedAt } pageInfo { endCursor
               hasNextPage } } }
         record_selector:
@@ -1309,16 +1372,408 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/customer_tiers"
+    initiatives:
+      type: DeclarativeStream
+      name: initiatives
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query Initiatives($after: String, $filter: InitiativeFilter,
+              $orderBy: PaginationOrderBy) { initiatives(after: $after, first:
+              25, includeArchived: true, filter: $filter, orderBy: $orderBy) {
+              nodes { archivedAt canceledAt color completedAt createdAt creator
+              { id } description health healthUpdatedAt icon id name owner { id }
+              parentInitiative { id } slugId sortOrder startedAt status targetDate
+              targetDateResolution trashed updatedAt url } pageInfo { endCursor
+              hasNextPage } } }
+            variables:
+              orderBy: updatedAt
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - initiatives
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.data.initiatives.pageInfo.endCursor or \"\" }}"
+            stop_condition: "{{ response.data.initiatives.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - creatorId
+              value: "{{ record.creator.id if record.creator else None }}"
+        - type: RemoveFields
+          field_pointers:
+            - - creator
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - ownerId
+              value: "{{ record.owner.id if record.owner else None }}"
+        - type: RemoveFields
+          field_pointers:
+            - - owner
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - parentInitiativeId
+              value: "{{ record.parentInitiative.id if record.parentInitiative else None }}"
+        - type: RemoveFields
+          field_pointers:
+            - - parentInitiative
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/initiatives"
+    initiative_to_projects:
+      type: DeclarativeStream
+      name: initiative_to_projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query InitiativeToProjects($after: String) {
+              initiativeToProjects(after: $after, first: 50, includeArchived:
+              true) { nodes { archivedAt createdAt id initiative { id } project
+              { id } sortOrder updatedAt } pageInfo { endCursor hasNextPage } } }
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - initiativeToProjects
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.data.initiativeToProjects.pageInfo.endCursor or \"\" }}"
+            stop_condition: "{{ response.data.initiativeToProjects.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - initiativeId
+              value: "{{ record.initiative.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - initiative
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - projectId
+              value: "{{ record.project.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - project
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/initiative_to_projects"
+    project_updates:
+      type: DeclarativeStream
+      name: project_updates
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query ProjectUpdates($after: String, $filter:
+              ProjectUpdateFilter, $orderBy: PaginationOrderBy) {
+              projectUpdates(after: $after, first: 25, includeArchived: true,
+              filter: $filter, orderBy: $orderBy) { nodes { archivedAt body
+              createdAt editedAt health id infoSnapshot isDiffHidden project {
+               id } reactionData slugId updatedAt url user { id } } pageInfo {
+              endCursor hasNextPage } } }
+            variables:
+              orderBy: updatedAt
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - projectUpdates
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.data.projectUpdates.pageInfo.endCursor or \"\" }}"
+            stop_condition: "{{ response.data.projectUpdates.pageInfo.hasNextPage is false }}"
+        decoder:
+          type: JsonDecoder
+      incremental_sync:
+        $ref: "#/definitions/incremental_sync_updated_at"
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - projectId
+              value: "{{ record.project.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - project
+              - id
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - userId
+              value: "{{ record.user.id }}"
+        - type: RemoveFields
+          field_pointers:
+            - - user
+              - id
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/project_updates"
+    issue_history:
+      type: DeclarativeStream
+      name: issue_history
+      primary_key:
+        - issueId
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: /
+          http_method: POST
+          request_headers:
+            Content-Type: application/json
+          request_body_json:
+            query: >-
+              query IssueHistory($issueId: String!, $after: String) { issue(id:
+              $issueId) { history(after: $after, first: 50, includeArchived:
+              true) { nodes { actorId addedLabelIds archived archivedAt
+              attachmentId autoArchived autoClosed changes createdAt customerNeedId
+              fromAssigneeId fromCycleId fromDueDate fromEstimate fromParentId
+              fromPriority fromProjectId fromStateId fromTeamId fromTitle id
+              removedLabelIds toAssigneeId toConvertedProjectId toCycleId
+              toDueDate toEstimate toParentId toPriority toProjectId toStateId
+              toTeamId toTitle trashed updatedAt updatedDescription } pageInfo {
+              endCursor hasNextPage } } } }
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: issue_id
+              stream:
+                $ref: "#/definitions/base_issues_stream"
+              request_option:
+                type: RequestOption
+                inject_into: body_json
+                field_path:
+                  - variables
+                  - issueId
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - issue
+              - history
+              - nodes
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: body_json
+            field_path:
+              - variables
+              - after
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ ((((response.get("data") or {}).get("issue") or {}).get("history") or {}).get("pageInfo") or {}).get("endCursor") or "" }}'
+            stop_condition: '{{ ((((response.get("data") or {}).get("issue") or {}).get("history") or {}).get("pageInfo") or {}).get("hasNextPage") is not true }}'
+        decoder:
+          type: JsonDecoder
+      transformations:
+        - type: AddFields
+          fields:
+            - type: AddedFieldDefinition
+              path:
+                - issueId
+              value: "{{ stream_partition['issue_id'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/issue_history"
   base_requester:
     type: HttpRequester
     url_base: https://api.linear.app/graphql
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Endpoint-Requests-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: WaitUntilTimeFromHeader
+          header: X-RateLimit-Complexity-Reset
+          regex: ^\d{10}
+          min_wait: 60
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+      response_filters:
+        # 1 · Rate limits — unchanged, must stay first.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'RATELIMITED' }}"
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Rate limit exceeded for Linear API."
+        # 2 · Authentication — surface Linear's own message.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'AUTHENTICATION_ERROR' }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Linear rejected the credentials.
+            If you authenticated with an API key, confirm it has not been revoked in Linear under Settings → Security & access → Personal API keys.
+            If you authenticated with OAuth, re-authenticate to obtain a new refresh token.
+            Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'authentication failed') }}
+        # 3 · Permission and plan gating — user-correctable, but not a credential problem.
+        #     This handler is shared by all 20 streams and by `check`, so the text must stay stream-agnostic.
+        - predicate: "{{ 'errors' in response and response['errors'] and (response['errors'][0].get('extensions', {}).get('code') in ['FORBIDDEN', 'FEATURE_NOT_ACCESSIBLE'] or response['errors'][0].get('extensions', {}).get('type') in ['forbidden', 'feature not accessible']) and not (response.get('data') or {}).values() | select | list }}"
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Linear denied access to this data.
+            Confirm the credentials you configured can read the teams and data this stream covers. If the failing stream is
+            customers, customer_needs, customer_statuses or customer_tiers, your workspace also needs Linear's Customer
+            Requests feature enabled (Workspace Settings > Customer requests) and, for OAuth sources, the customer:read
+            scope. Deselect the stream if you cannot grant it access.
+            Linear's message: {{ response['errors'][0].get('extensions', {}).get('userPresentableMessage', 'access denied') }}
+        # 4 · Query defects — permanent. Fail immediately; do NOT let the HTTP 500 case retry.
+        - predicate: "{{ 'errors' in response and response['errors'] and response['errors'][0].get('extensions', {}).get('code') == 'GRAPHQL_VALIDATION_FAILED' }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: >-
+            Linear rejected the connector's query as invalid.
+            This is a connector defect, not a configuration problem. Please report it to Airbyte support.
+            Linear's message: {{ response['errors'][0].get('message', 'validation failed') }}
+        # 4b · Retryable transport statuses. Must sit after the GRAPHQL_VALIDATION_FAILED filter
+        #      (so malformed queries still fail fast) and before the catch-all below, which has
+        #      no status guard and would otherwise shadow the CDK's DEFAULT_ERROR_MAPPING.
+        - http_codes: [429]
+          action: RATE_LIMITED
+          failure_type: transient_error
+          error_message: "Rate limit exceeded for Linear API."
+        - http_codes: [408, 500, 502, 503, 504]
+          action: RETRY
+          failure_type: transient_error
+          error_message: "Linear returned a transient error; retrying."
+        # 5 · Catch-all for data-less GraphQL errors not classified above. Partial-success pages
+        #     flow to the extractor; 408/429/5xx are handled by the status filters above.
+        - predicate: "{{ 'errors' in response and response['errors'] and not (response.get('data') or {}).values() | select | list }}"
+          action: FAIL
+          failure_type: system_error
+          error_message: >-
+            {%- set errs = response['errors'] -%}
+            {%- set err = errs[0] if errs is iterable and errs is not string and errs is not mapping else errs -%}
+            {%- set ext = err.get('extensions') if err is mapping else none -%}
+            Linear returned an error: {{ (ext.get('userPresentableMessage') if ext is mapping else none)
+            or (err.get('message') if err is mapping else err | string) or 'unknown error' }}
     authenticator:
-      type: ApiKeyAuthenticator
-      api_token: "{{ config[\"api_key\"] }}"
-      inject_into:
-        type: RequestOption
-        field_name: Authorization
-        inject_into: header
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "auth_type"]
+      authenticators:
+        "API Key":
+          type: ApiKeyAuthenticator
+          api_token: "{{ config['credentials']['api_key'] }}"
+          inject_into:
+            type: RequestOption
+            field_name: Authorization
+            inject_into: header
+        "OAuth2.0":
+          type: OAuthAuthenticator
+          client_id: "{{ config['credentials']['client_id'] }}"
+          client_secret: "{{ config['credentials']['client_secret'] }}"
+          refresh_token: "{{ config['credentials']['refresh_token'] }}"
+          token_refresh_endpoint: "https://api.linear.app/oauth/token"
+          access_token_name: access_token
+          grant_type: refresh_token
+          refresh_token_updater:
+            refresh_token_name: refresh_token
+            access_token_config_path: ["credentials", "access_token"]
+            refresh_token_config_path: ["credentials", "refresh_token"]
+            token_expiry_date_config_path: ["credentials", "token_expiry_date"]
+          refresh_token_error_status_codes: [400, 401]
+          refresh_token_error_key: "error"
+          refresh_token_error_values:
+            ["invalid_grant", "invalid_request", "invalid_client", "unauthorized_client"]
 
 streams:
   - $ref: "#/definitions/streams/issues"
@@ -1337,6 +1792,47 @@ streams:
   - $ref: "#/definitions/streams/issue_relations"
   - $ref: "#/definitions/streams/customer_statuses"
   - $ref: "#/definitions/streams/customer_tiers"
+  - $ref: "#/definitions/streams/initiatives"
+  - $ref: "#/definitions/streams/initiative_to_projects"
+  - $ref: "#/definitions/streams/project_updates"
+  - $ref: "#/definitions/streams/issue_history"
+
+# Linear API documented rate limits (per-user, per-hour windows):
+# - API key auth: 2,500 requests / hour (approximately 0.69 req/sec).
+# - OAuth app auth: 5,000 requests / hour (approximately 1.39 req/sec).
+# - Workspace OAuth auth: dynamic uplift based on paid seat count.
+# - Source: https://linear.app/developers/rate-limiting
+#
+# Starting concurrency follows the connector concurrency tuning playbook
+# (Path A, tuned against the lowest documented tier — 2,500 req/hr API key):
+# floor((2500/3600) / 4) = 0 ≤ 2 triggers the low-rate-limit special case →
+# starting_concurrency = 4, step = 1. Empirical tuning will adjust against
+# the documented 2,500 req/hr ceiling.
+#
+# The user-facing `num_workers` config field (see spec below) overrides the
+# default at the connection level; users on the higher-ceiling OAuth tiers
+# (5,000 req/hr or workspace OAuth dynamic uplift) can raise it up to the
+# max_concurrency ceiling, while users on the 2,500 req/hr API-key tier
+# should generally stay at or below the default of 4 to avoid sustained
+# rate-limit pressure.
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: "X-RateLimit-Requests-Remaining"
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: "{{ 20 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 10 }}"
+          interval: PT10S
+        - limit: "{{ 80 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 40 }}"
+          interval: PT1M
+        - limit: "{{ 5000 if config.get('credentials', {}).get('auth_type') == 'OAuth2.0' else 2500 }}"
+          interval: PT1H
+      matchers: []
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  max_concurrency: 16
 
 spec:
   type: Spec
@@ -1344,14 +1840,211 @@ spec:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
-      - api_key
+      - credentials
     properties:
-      api_key:
-        type: string
+      credentials:
+        type: object
+        title: Authentication
+        description: Choose how to authenticate to Linear.
         order: 0
-        title: API Key
-        airbyte_secret: true
+        oneOf:
+          - type: object
+            title: OAuth2.0
+            required:
+              - auth_type
+              - client_id
+              - client_secret
+              - refresh_token
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: "OAuth2.0"
+                order: 0
+              client_id:
+                type: string
+                title: Client ID
+                description: >-
+                  The Client ID of your Linear OAuth application. Create or view
+                  your applications in Linear under Settings → API →
+                  Applications.
+                airbyte_secret: true
+                order: 1
+              client_secret:
+                type: string
+                title: Client Secret
+                description: >-
+                  The Client Secret of your Linear OAuth application, shown
+                  alongside the Client ID in Linear under Settings → API →
+                  Applications.
+                airbyte_secret: true
+                order: 2
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: >-
+                  The Refresh Token that Linear returns when your OAuth
+                  application completes the OAuth 2.0 authorization flow. The
+                  connector uses it to refresh expired access tokens.
+                airbyte_secret: true
+                order: 3
+              access_token:
+                type: string
+                title: Access Token
+                description: >-
+                  The access token that Linear returns when the connector
+                  refreshes your OAuth 2.0 credentials.
+                airbyte_secret: true
+                order: 4
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: >-
+                  The date and time when the current OAuth 2.0 access token
+                  expires.
+                format: date-time
+                order: 5
+          - type: object
+            title: API Key
+            required:
+              - auth_type
+              - api_key
+            properties:
+              auth_type:
+                type: string
+                title: Authentication Method
+                const: "API Key"
+                order: 0
+              api_key:
+                type: string
+                title: API Key
+                description: >-
+                  Your Linear personal API key. In Linear, go to Settings →
+                  Security & access → Personal API keys, then click Create key
+                  and copy the generated key. The key inherits your Linear
+                  user's workspace permissions.
+                airbyte_secret: true
+                order: 1
+      start_date:
+        type: string
+        order: 1
+        title: Start Date
+        description: >-
+          UTC date and time in the ISO 8601 format (e.g.
+          2020-01-01T00:00:00.000Z). Any records updated before this date will
+          not be replicated. Only applies to streams that support incremental
+          sync. If unset, defaults to two years ago.
+        format: date-time
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3}Z$
+        examples:
+          - "2020-01-01T00:00:00.000Z"
+      num_workers:
+        type: integer
+        order: 2
+        title: Number of concurrent workers
+        description: >-
+          Number of worker threads used to read streams in parallel. Higher
+          values can speed up syncs but increase the risk of hitting Linear's
+          rate limits. The Linear API limits per-user requests by
+          authentication type: API key auth allows 2,500 requests/hour, OAuth
+          allows 5,000 requests/hour, and workspace OAuth scales dynamically
+          with paid seats. OAuth has a lower hourly complexity budget
+          (2,000,000 points versus 3,000,000 for API keys), which is usually
+          the binding limit for this GraphQL connector. Stay at the default
+          unless you have observed headroom in your rate-limit usage. See <a
+          href="https://linear.app/developers/rate-limiting">Linear API rate
+          limits</a> for details.
+        default: 4
+        minimum: 1
+        maximum: 10
     additionalProperties: true
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - auth_type
+    predicate_value: "OAuth2.0"
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: "read"
+          - scope: "customer:read"
+          - scope: "initiative:read"
+        scopes_join_strategy: comma
+        consent_url: "https://linear.app/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&response_type=code&{{state_param}}&{{scopes_param}}&actor=app&prompt=consent"
+        access_token_url: "https://api.linear.app/oauth/token"
+        access_token_headers:
+          Content-Type: "application/x-www-form-urlencoded"
+        access_token_params:
+          grant_type: "authorization_code"
+          code: "{{ auth_code_value }}"
+          client_id: "{{ client_id_value }}"
+          client_secret: "{{ client_secret_value }}"
+          redirect_uri: "{{ redirect_uri_value }}"
+        extract_output:
+          - access_token
+          - refresh_token
+          - expires_in
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          refresh_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - refresh_token
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+          token_expiry_date:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - token_expiry_date
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Migrate flat api_key config to nested credentials structure for OAuth 2.0 support
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "API Key"
+            condition: "{{ not config.get('credentials') and config.get('api_key') }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_key"]
+                value: "{{ config['api_key'] }}"
+            condition: "{{ not config.get('credentials', {}).get('api_key') and config.get('api_key') }}"
+
 
 metadata:
   autoImportSchema:
@@ -1371,6 +2064,10 @@ metadata:
     issue_relations: true
     customer_statuses: true
     customer_tiers: true
+    initiatives: false
+    initiative_to_projects: false
+    project_updates: false
+    issue_history: false
   testedStreams:
     issues:
       streamHash: 31da36c397cf9d42c652cf26817aa06d507c1f10
@@ -1500,14 +2197,22 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       addedToProjectAt:
         type:
           - string
           - "null"
+        format: date-time
       addedToTeamAt:
         type:
           - string
           - "null"
+        format: date-time
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       assignee:
         type:
           - object
@@ -1536,14 +2241,17 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       completedAt:
         type:
           - string
           - "null"
+        format: date-time
       createdAt:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -1572,6 +2280,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       estimate:
         type:
           - number
@@ -1678,6 +2387,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       state:
         type:
           - object
@@ -1714,10 +2424,15 @@ schemas:
         type:
           - string
           - "null"
+      trashed:
+        type:
+          - boolean
+          - "null"
       updatedAt:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -1733,10 +2448,16 @@ schemas:
         type:
           - number
           - "null"
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       createdAt:
         type:
           - string
           - "null"
+        format: date-time
       domains:
         type:
           - array
@@ -1791,6 +2512,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   users:
@@ -1806,6 +2528,11 @@ schemas:
         type:
           - boolean
           - "null"
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       avatarBackgroundColor:
         type:
           - string
@@ -1818,6 +2545,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       createdIssueCount:
         type:
           - number
@@ -1840,10 +2568,6 @@ schemas:
         type:
           - string
           - "null"
-      inviteHash:
-        type:
-          - string
-          - "null"
       isMe:
         type:
           - boolean
@@ -1852,6 +2576,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       name:
         type:
           - string
@@ -1876,6 +2601,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -1887,6 +2613,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       body:
         type:
           - string
@@ -1899,10 +2630,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       editedAt:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       issue:
@@ -1933,6 +2666,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -1960,6 +2694,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       completedIssueCountHistory:
         type:
           - array
@@ -1976,14 +2711,21 @@ schemas:
           type:
             - number
             - "null"
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       createdAt:
         type:
           - string
           - "null"
+        format: date-time
       endsAt:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       inProgressScopeHistory:
@@ -2030,6 +2772,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       team:
         type:
           - object
@@ -2054,6 +2797,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   customer_needs:
@@ -2061,6 +2805,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       attachment:
         type:
           - object
@@ -2077,6 +2826,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       creatorId:
         type:
           - string
@@ -2115,6 +2865,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   projects:
@@ -2126,10 +2877,16 @@ schemas:
         type:
           - string
           - "null"
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       canceledAt:
         type:
           - string
           - "null"
+        format: date-time
       color:
         type:
           - string
@@ -2138,6 +2895,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       completedIssueCountHistory:
         type:
           - array
@@ -2174,6 +2932,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -2190,6 +2949,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       icon:
         type:
           - string
@@ -2260,10 +3020,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       startedAt:
         type:
           - string
           - "null"
+        format: date-time
       status:
         type:
           - object
@@ -2276,6 +3038,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       teamIds:
         type:
           - array
@@ -2287,6 +3050,10 @@ schemas:
       teams:
         type:
           - object
+          - "null"
+      trashed:
+        type:
+          - boolean
           - "null"
       updateRemindersDay:
         type:
@@ -2300,6 +3067,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -2311,6 +3079,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       description:
         type:
           - string
@@ -2319,6 +3092,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       descriptionState:
         type:
           - string
@@ -2353,10 +3127,12 @@ schemas:
         type:
           - string
           - "null"
+        format: date
       updatedAt:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   project_statuses:
@@ -2364,6 +3140,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       type:
         type:
           - string
@@ -2376,6 +3157,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       indefinite:
@@ -2394,6 +3176,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   issue_labels:
@@ -2401,6 +3184,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       description:
         type:
           - string
@@ -2413,6 +3201,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -2455,6 +3244,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   workflow_states:
@@ -2462,6 +3252,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       type:
         type:
           - string
@@ -2478,6 +3273,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       inheritedFromId:
@@ -2504,6 +3300,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   teams:
@@ -2515,6 +3312,11 @@ schemas:
         type:
           - object
           - "null"
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       activeCycleId:
         type:
           - string
@@ -2539,6 +3341,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       cycleCalenderUrl:
         type:
           - string
@@ -2593,10 +3396,6 @@ schemas:
           - "null"
       id:
         type: string
-      inviteHash:
-        type:
-          - string
-          - "null"
       issueCount:
         type:
           - number
@@ -2617,14 +3416,6 @@ schemas:
         type:
           - string
           - "null"
-      markedAsDuplicateWorkflowState:
-        type:
-          - object
-          - "null"
-      markedAsDuplicateWorkflowStateId:
-        type:
-          - string
-          - "null"
       name:
         type:
           - string
@@ -2632,10 +3423,6 @@ schemas:
       parentTeamId:
         type:
           - string
-          - "null"
-      private:
-        type:
-          - boolean
           - "null"
       requirePriorityToLeaveTriage:
         type:
@@ -2669,6 +3456,11 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+      visibility:
+        type:
+          - string
+          - "null"
     required:
       - id
   attachments:
@@ -2676,10 +3468,16 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       createdAt:
         type:
           - string
           - "null"
+        format: date-time
       creator:
         type:
           - object
@@ -2718,6 +3516,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       url:
         type:
           - string
@@ -2729,6 +3528,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       type:
         type:
           - string
@@ -2737,6 +3541,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       issue:
@@ -2759,6 +3564,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   customer_statuses:
@@ -2766,6 +3572,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       color:
         type:
           - string
@@ -2774,6 +3585,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       id:
         type: string
       name:
@@ -2788,6 +3600,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
   customer_tiers:
@@ -2795,6 +3608,11 @@ schemas:
     $schema: http://json-schema.org/schema#
     additionalProperties: true
     properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
       color:
         type:
           - string
@@ -2803,6 +3621,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       displayName:
         type:
           - string
@@ -2821,5 +3640,402 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
     required:
       - id
+  initiatives:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      canceledAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      color:
+        type:
+          - string
+          - "null"
+      completedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      creator:
+        type:
+          - object
+          - "null"
+      creatorId:
+        type:
+          - string
+          - "null"
+      description:
+        type:
+          - string
+          - "null"
+      health:
+        type:
+          - string
+          - "null"
+      healthUpdatedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      icon:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      name:
+        type:
+          - string
+          - "null"
+      owner:
+        type:
+          - object
+          - "null"
+      ownerId:
+        type:
+          - string
+          - "null"
+      parentInitiative:
+        type:
+          - object
+          - "null"
+      parentInitiativeId:
+        type:
+          - string
+          - "null"
+      slugId:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - number
+          - "null"
+      startedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      status:
+        type:
+          - string
+          - "null"
+      targetDate:
+        type:
+          - "null"
+          - string
+        format: date
+      targetDateResolution:
+        type:
+          - string
+          - "null"
+      trashed:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  initiative_to_projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      id:
+        type: string
+      initiative:
+        type:
+          - object
+          - "null"
+      initiativeId:
+        type:
+          - string
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      sortOrder:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+    required:
+      - id
+  project_updates:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      body:
+        type:
+          - string
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      editedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      health:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      infoSnapshot:
+        type:
+          - object
+          - "null"
+      isDiffHidden:
+        type:
+          - boolean
+          - "null"
+      project:
+        type:
+          - object
+          - "null"
+      projectId:
+        type:
+          - string
+          - "null"
+      reactionData:
+        type:
+          - object
+          - array
+          - "null"
+      slugId:
+        type:
+          - string
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      url:
+        type:
+          - string
+          - "null"
+      user:
+        type:
+          - object
+          - "null"
+      userId:
+        type:
+          - string
+          - "null"
+    required:
+      - id
+  issue_history:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      actorId:
+        type:
+          - string
+          - "null"
+      addedLabelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      archived:
+        type:
+          - boolean
+          - "null"
+      archivedAt:
+        type:
+          - "null"
+          - string
+        format: date-time
+      attachmentId:
+        type:
+          - string
+          - "null"
+      autoArchived:
+        type:
+          - boolean
+          - "null"
+      autoClosed:
+        type:
+          - boolean
+          - "null"
+      changes:
+        type:
+          - object
+          - "null"
+      createdAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      customerNeedId:
+        type:
+          - string
+          - "null"
+      fromAssigneeId:
+        type:
+          - string
+          - "null"
+      fromCycleId:
+        type:
+          - string
+          - "null"
+      fromDueDate:
+        type:
+          - "null"
+          - string
+        format: date
+      fromEstimate:
+        type:
+          - number
+          - "null"
+      fromParentId:
+        type:
+          - string
+          - "null"
+      fromPriority:
+        type:
+          - number
+          - "null"
+      fromProjectId:
+        type:
+          - string
+          - "null"
+      fromStateId:
+        type:
+          - string
+          - "null"
+      fromTeamId:
+        type:
+          - string
+          - "null"
+      fromTitle:
+        type:
+          - string
+          - "null"
+      id:
+        type: string
+      issueId:
+        type: string
+      removedLabelIds:
+        type:
+          - array
+          - "null"
+        items:
+          type: string
+      toAssigneeId:
+        type:
+          - string
+          - "null"
+      toConvertedProjectId:
+        type:
+          - string
+          - "null"
+      toCycleId:
+        type:
+          - string
+          - "null"
+      toDueDate:
+        type:
+          - "null"
+          - string
+        format: date
+      toEstimate:
+        type:
+          - number
+          - "null"
+      toParentId:
+        type:
+          - string
+          - "null"
+      toPriority:
+        type:
+          - number
+          - "null"
+      toProjectId:
+        type:
+          - string
+          - "null"
+      toStateId:
+        type:
+          - string
+          - "null"
+      toTeamId:
+        type:
+          - string
+          - "null"
+      toTitle:
+        type:
+          - string
+          - "null"
+      trashed:
+        type:
+          - boolean
+          - "null"
+      updatedAt:
+        type:
+          - string
+          - "null"
+        format: date-time
+      updatedDescription:
+        type:
+          - boolean
+          - "null"
+    required:
+      - id
+      - issueId
