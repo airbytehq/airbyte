@@ -108,10 +108,7 @@ data:
     - title: Greenhouse rate limits
       url: https://harvestdocs.greenhouse.io/docs/api-rate-limiting
       type: rate_limits
-    - title: Greenhouse Harvest v3 API
-      url: https://harvestdocs.greenhouse.io/
-      type: api_reference
-    - title: Greenhouse Harvest v3 authentication
-      url: https://harvestdocs.greenhouse.io/docs/authentication
-      type: authentication_guide
+    - title: Greenhouse Harvest v3 changelog
+      url: https://harvestdocs.greenhouse.io/changelog
+      type: api_release_history
 metadataSpecVersion: "1.0"
