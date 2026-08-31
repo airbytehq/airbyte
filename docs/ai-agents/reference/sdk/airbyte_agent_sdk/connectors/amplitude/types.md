@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ActiveUsersAnyCondition"></a>
@@ -71,10 +71,24 @@ Classes
     `statistics: Any`
     :   The statistics related to the active users for the given date
 
+<a id="ActiveUsersArrayContainsCondition"></a>
+
+`ActiveUsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ActiveUsersContainsCondition"></a>
 
 `ActiveUsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -295,7 +309,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="ActiveUsersOrCondition"></a>
@@ -317,7 +331,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ActiveUsersSearchFilter"></a>
@@ -348,7 +362,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersGteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLtCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersLteCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersInCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersNotCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAndCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersOrCondition | airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.ActiveUsersSortFilter]`
@@ -444,7 +458,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AnnotationsAnyCondition"></a>
@@ -492,10 +506,24 @@ Classes
     `label: Any`
     :   The label assigned to the annotation
 
+<a id="AnnotationsArrayContainsCondition"></a>
+
+`AnnotationsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AnnotationsContainsCondition"></a>
 
 `AnnotationsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -719,7 +747,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AnnotationsOrCondition"></a>
@@ -741,7 +769,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AnnotationsSearchFilter"></a>
@@ -778,7 +806,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsInCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AnnotationsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.AnnotationsSortFilter]`
@@ -863,7 +891,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AverageSessionLengthAnyCondition"></a>
@@ -905,10 +933,24 @@ Classes
     `length: Any`
     :   The duration of the session in seconds
 
+<a id="AverageSessionLengthArrayContainsCondition"></a>
+
+`AverageSessionLengthArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AverageSessionLengthContainsCondition"></a>
 
 `AverageSessionLengthContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1120,7 +1162,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition`
     :   The type of the None singleton.
 
 <a id="AverageSessionLengthOrCondition"></a>
@@ -1142,7 +1184,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AverageSessionLengthSearchFilter"></a>
@@ -1173,7 +1215,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthGteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLtCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthLteCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthInCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthNotCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAndCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthOrCondition | airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.AverageSessionLengthSortFilter]`
@@ -1246,7 +1288,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CohortsAnyCondition"></a>
@@ -1360,10 +1402,24 @@ Classes
     `viewers: Any`
     :   Users or viewers who have access to the cohort data
 
+<a id="CohortsArrayContainsCondition"></a>
+
+`CohortsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CohortsContainsCondition"></a>
 
 `CohortsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1653,7 +1709,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CohortsOrCondition"></a>
@@ -1675,7 +1731,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CohortsSearchFilter"></a>
@@ -1778,7 +1834,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amplitude.types.CohortsEqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsGteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLtCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsLteCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsInCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsNotCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAndCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsOrCondition | airbyte_agent_sdk.connectors.amplitude.types.CohortsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.CohortsSortFilter]`
@@ -1995,7 +2051,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventsListAnyCondition"></a>
@@ -2073,10 +2129,24 @@ Classes
     `value: Any`
     :   Raw event name in the data
 
+<a id="EventsListArrayContainsCondition"></a>
+
+`EventsListArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EventsListContainsCondition"></a>
 
 `EventsListContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2316,7 +2386,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition`
     :   The type of the None singleton.
 
 <a id="EventsListOrCondition"></a>
@@ -2338,7 +2408,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventsListSearchFilter"></a>
@@ -2405,7 +2475,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amplitude.types.EventsListEqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNeqCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListGteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLtCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListLteCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListInCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListStartswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListEndswithCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListFuzzyCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListKeywordCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListArrayContainsCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListNotCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAndCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListOrCondition | airbyte_agent_sdk.connectors.amplitude.types.EventsListAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amplitude.types.EventsListSortFilter]`
