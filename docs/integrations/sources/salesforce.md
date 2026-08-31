@@ -93,7 +93,7 @@ To obtain these credentials, follow [this walkthrough](https://medium.com/@bpmme
 
 As an alternative to the refresh-token flow, the connector supports Salesforce's [OAuth 2.0 JWT Bearer
 flow](https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm&type=5). This is a
-server-to-server flow that requires no refresh token and no client secret — the connector signs a
+server-to-server flow that requires no refresh token and no client secret - the connector signs a
 short-lived JWT with your connected app's private key and exchanges it for an access token. It is well
 suited to automated/headless setups.
 
@@ -101,16 +101,22 @@ To use it:
 
 1. In your connected app, enable **Use digital signatures** and upload the X.509 certificate whose
    matching RSA private key you will provide to Airbyte.
-2. Pre-authorize the user: set the connected app's OAuth policy to **Admin approved users are
+2. Grant the app the `refresh_token` scope **plus** at least one standard scope such as `api`.
+   Salesforce refuses the JWT grant if the `refresh_token` scope is missing, even though this flow
+   never issues a refresh token.
+3. Pre-authorize the user: set the connected app's OAuth policy to **Admin approved users are
    pre-authorized** and assign the user (via a permission set or profile), or otherwise ensure the user
    has approved the app.
-3. In Airbyte, set **Authentication Type** to `JWT` and provide:
-   - **Client ID** — the connected app's Consumer Key (used as the JWT `iss`).
-   - **Username** — the Salesforce username the token is issued for (the JWT `sub`); this user must be
-     pre-authorized for the app.
-   - **Private Key** — the RSA private key (PEM) matching the uploaded certificate.
-4. Toggle **Sandbox** if connecting to a sandbox (this targets `test.salesforce.com` instead of
-   `login.salesforce.com` for both the audience and token endpoint).
+4. In Airbyte, set **Authentication Type** to `JWT` and provide:
+   - **Client ID** - the connected app's Consumer Key (used as the JWT `iss`).
+   - **Username** - the Salesforce username the token is issued for (the JWT `sub`); this user must be
+     pre-authorized for the app. For a sandbox, use the sandbox-modified username, which carries the
+     sandbox name as a suffix (for example `user@example.com.sandboxname`).
+   - **Private Key (PEM)** - the RSA private key matching the uploaded certificate. Both
+     `-----BEGIN PRIVATE KEY-----` (PKCS#8) and `-----BEGIN RSA PRIVATE KEY-----` (PKCS#1) are accepted.
+5. Toggle **Sandbox** if connecting to a sandbox (this targets `test.salesforce.com` instead of
+   `login.salesforce.com` for both the audience and token endpoint). After a sandbox is created or
+   refreshed it can take up to 24-48 hours before `test.salesforce.com` logins work for it.
 
 <!-- /env:oss -->
 

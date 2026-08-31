@@ -323,7 +323,7 @@ class Salesforce:
         client_secret: str = None,
         is_sandbox: bool = None,
         start_date: str = None,
-        auth_type: str = None,
+        auth_type: str = "Client",
         username: str = None,
         private_key: str = None,
         **kwargs: Any,
@@ -435,12 +435,17 @@ class Salesforce:
 
         https://help.salesforce.com/s/articleView?id=sf.remoteaccess_oauth_jwt_flow.htm
         """
+        # This flow only accepts login.salesforce.com / test.salesforce.com as the audience (plus the
+        # community URL for Experience Cloud users). Unlike the client credentials flow, a My Domain
+        # host is rejected here, so do not "fix" this to the instance URL.
         audience = f"https://{'test' if self.is_sandbox else 'login'}.salesforce.com"
         payload = {
             "iss": self.client_id,  # connected app consumer key
             "sub": self.username,  # Salesforce username the token is issued for
             "aud": audience,
-            "exp": int(time.time()) + 180,  # Salesforce requires exp within 5 minutes
+            # Assertion expiry. Salesforce adds a 3-minute clock-skew buffer on top of exp, so a short
+            # window is safe; every login re-signs a fresh assertion.
+            "exp": int(time.time()) + 180,
         }
         return jwt.encode(payload, self.private_key, algorithm="RS256")
 

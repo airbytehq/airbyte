@@ -19,7 +19,7 @@ import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import _LOGIN_DEDUP_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
+from source_salesforce.api import _LOGIN_DEDUP_SECONDS, _TOKEN_REFRESH_INTERVAL_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -137,14 +137,14 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     assert err.value.message == expected_error_msg
 
 
-def _generate_rsa_private_key_pem():
+def _generate_rsa_private_key_pem(pem_format="PKCS8"):
     from cryptography.hazmat.primitives import serialization
     from cryptography.hazmat.primitives.asymmetric import rsa
 
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     pem = key.private_bytes(
         encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
+        format=getattr(serialization.PrivateFormat, pem_format),
         encryption_algorithm=serialization.NoEncryption(),
     )
     return pem.decode(), key.public_key()
@@ -163,12 +163,19 @@ def _jwt_salesforce(**overrides):
 
 
 @pytest.mark.parametrize(
+    # Users paste whichever PEM their tooling produced: PKCS#8 is "BEGIN PRIVATE KEY",
+    # PKCS#1/TraditionalOpenSSL is "BEGIN RSA PRIVATE KEY".
+    "pem_format",
+    ["PKCS8", "TraditionalOpenSSL"],
+    ids=["pkcs8_pem", "pkcs1_pem"],
+)
+@pytest.mark.parametrize(
     "is_sandbox, host",
     [(False, "login.salesforce.com"), (True, "test.salesforce.com")],
     ids=["production", "sandbox"],
 )
-def test_jwt_login_builds_signed_assertion(requests_mock, is_sandbox, host):
-    private_key_pem, public_key = _generate_rsa_private_key_pem()
+def test_jwt_login_builds_signed_assertion(requests_mock, is_sandbox, host, pem_format):
+    private_key_pem, public_key = _generate_rsa_private_key_pem(pem_format)
     sf = Salesforce(
         auth_type="JWT",
         client_id="consumer_key",
@@ -211,6 +218,9 @@ def test_refresh_token_login_is_unchanged(requests_mock):
         "https://login.salesforce.com/services/oauth2/token",
         json={"access_token": "the_token", "instance_url": "https://instance_url"},
     )
+
+    # A config saved before the JWT option existed has no auth_type, so the default has to be Client.
+    assert sf.auth_type == "Client"
 
     sf.login()
 
@@ -287,6 +297,44 @@ def test_client_login_requires_required_fields(client_id, client_secret, refresh
 
     assert "Client authentication requires" in err.value.message
     assert expected_field in err.value.message
+
+
+def test_jwt_relogin_signs_a_fresh_assertion(requests_mock):
+    """The JWT Bearer flow issues no refresh token, so re-signing the assertion IS the refresh
+    mechanism. Every proactive refresh must therefore mint a new assertion (a cached one would expire
+    within 3 minutes of the first login) and adopt the access token it returns."""
+    private_key_pem, public_key = _generate_rsa_private_key_pem()
+    sf = _jwt_salesforce(private_key=private_key_pem)
+
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "token_1", "instance_url": "https://instance_url"},
+    )
+    with patch("source_salesforce.api.time.time", return_value=1_000_000):
+        sf.login()
+    first_assertion = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))["assertion"]
+
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "token_2", "instance_url": "https://instance_url"},
+    )
+    with (
+        patch("source_salesforce.api.time.time", return_value=1_004_000),
+        patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _TOKEN_REFRESH_INTERVAL_SECONDS + 1),
+    ):
+        sf.refresh_access_token_if_stale()
+    second_assertion = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))["assertion"]
+
+    assert sf.access_token == "token_2"
+    assert second_assertion != first_assertion
+
+    decode = lambda assertion: jwt.decode(  # noqa: E731
+        assertion, public_key, algorithms=["RS256"], audience="https://login.salesforce.com", options={"verify_exp": False}
+    )
+    assert decode(first_assertion)["exp"] == 1_000_000 + 180
+    assert decode(second_assertion)["exp"] == 1_004_000 + 180
 
 
 @pytest.mark.parametrize(

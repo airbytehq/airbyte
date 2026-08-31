@@ -55,6 +55,11 @@ connectionSpecification:
         - JWT
       default: Client
       order: 0
+      # auth_type used to be a hidden const, which the webapp treats as required and therefore keeps
+      # expanded, and with it the OAuth "Authenticate" button rendered next to this predicate field.
+      # As a plain optional enum it would sort into the collapsed "Optional fields" section instead,
+      # and on Cloud (where the OAuth-managed fields are hidden) that collapses the whole create form.
+      always_show: true
     client_id:
       title: Client ID
       description: Enter your Salesforce developer application's <a
@@ -83,11 +88,13 @@ connectionSpecification:
       title: Username
       description: >-
         The Salesforce username (the <code>sub</code> claim) the JWT assertion is issued for.
-        This user must be pre-authorized for the connected app. Required for <b>JWT</b> authentication.
+        This user must be pre-authorized for the connected app. For a sandbox, use the sandbox-modified
+        username, which carries the sandbox name as a suffix (for example
+        <code>user@example.com.sandboxname</code>). Required for <b>JWT</b> authentication.
       type: string
       order: 5
     private_key:
-      title: Private Key
+      title: Private Key (PEM)
       description: >-
         The RSA private key (PEM format) whose matching certificate is uploaded to the connected
         app's "Use digital signatures" setting. Used to sign the JWT assertion. Required for

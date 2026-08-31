@@ -8,17 +8,61 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import jinja2
+import pytest
 import yaml
+from jsonschema import Draft7Validator
 
 
 SPEC_PATH = Path(__file__).resolve().parents[1] / "source_salesforce" / "spec.yaml"
 
+_CLIENT_CREDENTIALS = {"client_id": "a_client_id", "client_secret": "a_client_secret", "refresh_token": "a_refresh_token"}
+_JWT_CREDENTIALS = {"auth_type": "JWT", "client_id": "a_client_id", "username": "a_user", "private_key": "a_private_key"}
+
+
+def _load_spec():
+    with SPEC_PATH.open() as spec_file:
+        return yaml.safe_load(spec_file)
+
 
 def _load_oauth_spec():
-    with SPEC_PATH.open() as spec_file:
-        spec = yaml.safe_load(spec_file)
-    oauth_spec = spec["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
-    return oauth_spec
+    return _load_spec()["advanced_auth"]["oauth_config_specification"]["oauth_connector_input_specification"]
+
+
+def _without(config, key):
+    return {name: value for name, value in config.items() if name != key}
+
+
+@pytest.mark.parametrize(
+    "config, is_valid",
+    [
+        pytest.param(_CLIENT_CREDENTIALS, True, id="legacy_config_without_auth_type"),
+        pytest.param({**_CLIENT_CREDENTIALS, "auth_type": "Client"}, True, id="explicit_client_auth_type"),
+        pytest.param(_JWT_CREDENTIALS, True, id="jwt_config"),
+        pytest.param(_without(_JWT_CREDENTIALS, "private_key"), False, id="jwt_without_private_key"),
+        pytest.param(_without(_JWT_CREDENTIALS, "username"), False, id="jwt_without_username"),
+        pytest.param(_without(_CLIENT_CREDENTIALS, "refresh_token"), False, id="client_without_refresh_token"),
+        pytest.param({"client_id": "a_client_id"}, False, id="client_id_only"),
+        pytest.param({**_CLIENT_CREDENTIALS, "auth_type": "Bogus"}, False, id="unknown_auth_type"),
+    ],
+)
+def test_conditional_required_fields_per_auth_type(config, is_valid):
+    """Neither credential set can be required at the top level once both auth types exist, so they are
+    required conditionally through allOf/if-then. auth_type alone selects the set, and a config saved
+    before the JWT option existed has no auth_type at all."""
+    errors = list(Draft7Validator(_load_spec()["connectionSpecification"]).iter_errors(config))
+
+    assert bool(not errors) is is_valid, [error.message for error in errors]
+
+
+def test_auth_type_stays_in_the_expanded_part_of_the_form():
+    """auth_type is the OAuth predicate field, so the "Authenticate" button renders beside it. It used
+    to be a hidden const, which the webapp treats as required and keeps expanded; as a plain optional
+    enum it would sort into the collapsed "Optional fields" section and take the button with it."""
+    auth_type = _load_spec()["connectionSpecification"]["properties"]["auth_type"]
+
+    assert auth_type["always_show"] is True
+    assert auth_type["default"] == "Client"
+    assert "auth_type" not in _load_spec()["connectionSpecification"]["required"], "legacy configs have no auth_type"
 
 
 def test_oauth_spec_includes_pkce_parameters():
