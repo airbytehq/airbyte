@@ -32,6 +32,13 @@ data:
   license: ELv2
   name: Youtube Data
   releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
     breakingChanges:
       0.1.0:
         message: "Version 0.1.0 declares primary keys on the `comments`, `videos`, and `channel_comments` streams, adds `date-time` formats to nine timestamp fields, and restricts the `videos` stream to actual video results (it previously also returned channel and playlist id records). After upgrading, refresh the source schema and reset the affected streams. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations)."
