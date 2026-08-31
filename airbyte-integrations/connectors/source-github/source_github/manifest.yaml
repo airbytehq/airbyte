@@ -296,11 +296,107 @@ definitions:
   # partition routers below. They are not exposed in the catalog.
   #
   # `repositories_resolver` expands wildcard patterns (e.g. `org/*`) by listing
-  # each wildcard org's repos and filtering them against the anchored pattern
+  # each wildcard owner's repos and filtering them against the anchored pattern
   # derived inline from config. `repository_stats` resolves explicit `org/repo`
   # entries and exposes the canonical `full_name` and `organization.login`;
   # entries that 404 are skipped with a warning (see `requester_base`'s
   # error_handler), matching the legacy warn-and-continue behavior.
+  #
+  # `owner_types_resolver` decides which listing endpoint a wildcard owner needs. The owner of
+  # `owner/*` can be an organization or a user, and the two listings are not
+  # interchangeable: `/orgs/{owner}/repos` returns every repo the token can see but 404s for a
+  # user account, while `/users/{owner}/repos` returns public repos and 404s for nothing. Asking
+  # only the org endpoint left `owner/*` resolving to nothing for every user-owned account
+  # (issue #67626), and switching everything to the user endpoint would silently drop
+  # organizations' private repos. `GET /users/{owner}` answers for both kinds of owner and
+  # reports which one it is in `type`, so one cached request per wildcard owner routes the
+  # listing:
+  #   https://docs.github.com/en/rest/users/users?apiVersion=2022-11-28#get-a-user
+  #   https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repositories-for-a-user
+  #
+  # `organization_owners` is the same request narrowed to organizations. It drives
+  # `organization_partition_router`, which is how a user login is kept out of the org-scoped
+  # streams — `/orgs/{login}/...` is a 404 for all of them.
+  #
+  # The two streams deliberately carry the same `name`: `use_cache: true` stores responses in a
+  # sqlite file named after the stream (HttpClient.cache_filename), so sharing the name is what
+  # makes the second stream replay the first's responses instead of asking GitHub again. They
+  # cannot disagree about what is cached — they share one requester definition, and the only
+  # difference between them is a record filter, which is applied after the HTTP layer.
+  owner_type_requester:
+    $ref: "#/definitions/requester_base"
+    path: "users/{{ stream_partition.owner }}"
+    http_method: GET
+    use_cache: true
+
+  wildcard_owner_list_router:
+    type: ListPartitionRouter
+    values:
+      $ref: "#/definitions/wildcard_organizations"
+    cursor_field: "owner"
+
+  owner_schema_loader:
+    type: InlineSchemaLoader
+    schema:
+      $schema: https://json-schema.org/draft-07/schema#
+      type: object
+      properties:
+        id:
+          type:
+            - "null"
+            - integer
+        login:
+          type:
+            - "null"
+            - string
+        type:
+          type:
+            - "null"
+            - string
+
+  owner_types_resolver_stream:
+    type: DeclarativeStream
+    name: owner_types_resolver
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/owner_type_requester"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        $ref: "#/definitions/wildcard_owner_list_router"
+    schema_loader:
+      $ref: "#/definitions/owner_schema_loader"
+
+  organization_owners_stream:
+    type: DeclarativeStream
+    # Same name as `owner_types_resolver_stream` on purpose — that is what shares the response
+    # cache between them, see above.
+    name: owner_types_resolver
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/owner_type_requester"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          # Only a user account is excluded, rather than keeping `== 'Organization'`, so an
+          # account type GitHub may add later stays on the org path instead of disappearing.
+          condition: "{{ record['type'] != 'User' }}"
+      partition_router:
+        $ref: "#/definitions/wildcard_owner_list_router"
+    schema_loader:
+      $ref: "#/definitions/owner_schema_loader"
+
   repositories_resolver_stream:
     type: DeclarativeStream
     name: repositories_resolver
@@ -309,7 +405,8 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester_base"
-        path: "orgs/{{ stream_partition.organization }}/repos"
+        path:
+          $ref: "#/definitions/owner_repositories_path"
         http_method: GET
         use_cache: true
         request_parameters:
@@ -328,10 +425,7 @@ definitions:
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
-        type: ListPartitionRouter
-        values:
-          $ref: "#/definitions/wildcard_organizations"
-        cursor_field: "organization"
+        $ref: "#/definitions/wildcard_owner_partition_router"
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -411,10 +505,20 @@ definitions:
   # `repository_partition_router` yields the deduplicated union of
   # wildcard-expanded repos and validated explicit repos.
   #
-  # `organization_partition_router` yields the deduplicated union of wildcard
-  # orgs (derived inline from config) and the orgs owning explicit repos.
+  # `organization_partition_router` yields the deduplicated union of the wildcard
+  # owners that are organizations and the orgs owning explicit repos.
   # User-owned repos have no `organization` object, so the substream child
   # skips them (they contribute a repository but not an organization).
+  #
+  # `owner_repositories_partition_router` is the same union with the *user* wildcard owners
+  # kept in, and only the `repositories` stream uses it: listing a user's repos is that
+  # stream's job, while an org-scoped stream must never receive a user login.
+  #
+  # The wildcard routers partition on `organization` rather than `owner` so that the
+  # `repositories` stream's per-partition state keys are unchanged, and carry the owner type in
+  # `extra_fields` instead of in the partition for the same reason. UnionPartitionRouter
+  # normalizes partitions but preserves extra_fields, so `owner_repositories_path` can still
+  # read the type after the union.
   repository_partition_router:
     type: UnionPartitionRouter
     partition_field: repository
@@ -434,21 +538,54 @@ definitions:
             parent_key: "full_name"
             partition_field: "repository"
 
+  wildcard_owner_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/owner_types_resolver_stream"
+        parent_key: "login"
+        partition_field: "organization"
+        extra_fields:
+          - ["type"]
+
+  wildcard_organization_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/organization_owners_stream"
+        parent_key: "login"
+        partition_field: "organization"
+
+  explicit_repository_organization_partition_router:
+    type: SubstreamPartitionRouter
+    parent_stream_configs:
+      - type: ParentStreamConfig
+        stream:
+          $ref: "#/definitions/repository_stats_stream"
+        parent_key: "organization/login"
+        partition_field: "organization"
+
   organization_partition_router:
     type: UnionPartitionRouter
     partition_field: organization
     partition_routers:
-      - type: ListPartitionRouter
-        values:
-          $ref: "#/definitions/wildcard_organizations"
-        cursor_field: "organization"
-      - type: SubstreamPartitionRouter
-        parent_stream_configs:
-          - type: ParentStreamConfig
-            stream:
-              $ref: "#/definitions/repository_stats_stream"
-            parent_key: "organization/login"
-            partition_field: "organization"
+      - $ref: "#/definitions/wildcard_organization_partition_router"
+      - $ref: "#/definitions/explicit_repository_organization_partition_router"
+
+  owner_repositories_partition_router:
+    type: UnionPartitionRouter
+    partition_field: organization
+    partition_routers:
+      - $ref: "#/definitions/wildcard_owner_partition_router"
+      - $ref: "#/definitions/explicit_repository_organization_partition_router"
+
+  # The repo listing path, shared by `repositories_resolver` and the `repositories` stream so
+  # the two can never route an owner differently. `or {}` keeps the org endpoint as the fallback
+  # for any slice that carries no extra fields at all: the orgs owning an explicit `org/repo`
+  # entry arrive that way, and they are organizations by construction.
+  owner_repositories_path: "{{ 'users' if (stream_slice.extra_fields or {}).get('type') == 'User' else 'orgs' }}/{{ stream_partition.organization }}/repos"
 
   repositories_stream:
     type: DeclarativeStream
@@ -458,7 +595,8 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester_base"
-        path: "orgs/{{ stream_partition.organization }}/repos"
+        path:
+          $ref: "#/definitions/owner_repositories_path"
         http_method: GET
         request_parameters:
           per_page: "100"
@@ -476,7 +614,7 @@ definitions:
       paginator:
         $ref: "#/definitions/page_link_paginator"
       partition_router:
-        $ref: "#/definitions/organization_partition_router"
+        $ref: "#/definitions/owner_repositories_partition_router"
     transformations:
       - type: AddFields
         fields:

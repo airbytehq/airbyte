@@ -82,6 +82,30 @@ def test_organization_partition_router_skips_user_owned_repos(rate_limit_mock_re
     assert all(set(partition) == {"organization"} for partition in partitions)
 
 
+def test_user_wildcard_yields_repositories_but_no_organization(rate_limit_mock_response, requests_mock):
+    """`owner/*` where the owner is a user account: the repos must reach the repo-scoped
+    partitions, and the login must stay out of the organization partitions — every org-scoped
+    endpoint (`/orgs/{login}/...`) 404s for a user."""
+    requests_mock.get("https://api.github.com/users/octocat", json={"login": "octocat", "type": "User"})
+    requests_mock.get(
+        "https://api.github.com/users/octocat/repos",
+        json=[
+            {"id": 1, "full_name": "octocat/hello-world", "owner": {"login": "octocat", "type": "User"}},
+            {"id": 2, "full_name": "octocat/spoon-knife", "owner": {"login": "octocat", "type": "User"}},
+        ],
+    )
+    config = {"credentials": {"access_token": "test_token"}, "repositories": ["octocat/*"]}
+
+    repositories = _build_router("repository_partition_router", config)
+    organizations = _build_router("organization_partition_router", config)
+
+    assert [stream_slice.partition for stream_slice in repositories.stream_slices()] == [
+        {"repository": "octocat/hello-world"},
+        {"repository": "octocat/spoon-knife"},
+    ]
+    assert list(organizations.stream_slices()) == []
+
+
 def test_repository_partition_router_explicit_repos_only(rate_limit_mock_response, requests_mock):
     _mock_github_api(requests_mock)
     config = {"credentials": {"access_token": "test_token"}, "repositories": ["airbytehq/integration-test"]}
