@@ -18,10 +18,19 @@ definitions:
   # `Repositories(pattern=None)` behavior. That pass-all clause is inert for the resolver
   # stream, whose partitions *are* the wildcard orgs: with no wildcards it has no partitions
   # and the filter never runs.
+  #
+  # The trailing `and not ...` clause drops repos matched by a `!org/repo` / `!org/prefix-*`
+  # exclusion selector. `SourceGithub._split_repository_exclusions` strips the `!` and moves
+  # those selectors to `excluded_repositories`, so the two expressions above never see them and
+  # the glob translation here is the same `*` -> `.*` they use. Unlike the include half this one
+  # is anchored at both ends: an exclusion is an exact statement, so `!org/repo` must not also
+  # drop `org/repo-fork`. With no exclusions the alternation is empty and the pattern degenerates
+  # to `^(())$`, which no non-empty `full_name` matches, so the clause is inert.
   wildcard_organizations: "{{ config.get('repositories', []) | map('regex_search', '^([^/]+)/[^/]*[*]') | select | unique | list }}"
   wildcard_repository_filter: >-
-    {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
-       or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+    {{ ((config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
+        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))'))
+       and not record['full_name'] | regex_search('^((' ~ (config.get('excluded_repositories', []) | map('replace', '*', '.*') | join(')|(')) ~ '))$') }}
 
   requester_base:
     type: HttpRequester
@@ -1208,17 +1217,26 @@ spec:
         type: array
         items:
           type: string
-          pattern: ^[\w.-]+/(([\w.-]*\*)|[\w.-]+(?<!\.git))$
+          pattern: ^!?[\w.-]+/(([\w.-]*\*)|[\w.-]+(?<!\.git))$
+        # At least one entry must be an inclusion: a list of exclusions alone selects nothing.
+        # `contains` is JSON Schema draft-06+; the platform validates configs with the drafts
+        # that support it, and clients that ignore the keyword still get the same answer from
+        # `check`, which reports that no repository could be found.
+        contains:
+          type: string
+          pattern: ^[^!]
         minItems: 1
         examples:
           - airbytehq/airbyte
           - airbytehq/another-repo
           - airbytehq/*
           - airbytehq/a*
+          - "!airbytehq/airbyte-cloud"
+          - "!airbytehq/archived-*"
         title: GitHub Repositories
-        description: List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a*` for matching multiple repositories by pattern.
+        description: List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a*` for matching multiple repositories by pattern. Prefix an entry with `!` to exclude the repositories it matches, e.g. `!airbytehq/airbyte-cloud` or `!airbytehq/archived-*`. At least one entry must be an inclusion.
         order: 1
-        pattern_descriptor: org/repo org/another-repo org/* org/a*
+        pattern_descriptor: org/repo org/another-repo org/* org/a* !org/repo !org/a*
       start_date:
         type: string
         title: Start date

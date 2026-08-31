@@ -61,6 +61,8 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 6. **GitHub Repositories** - Enter a list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/airbyte airbytehq/another-repo` for multiple repositories. If you want to specify the organization to receive data from all its repositories, then you should specify it according to the following example: `airbytehq/*`.
 
+   Prefix an entry with `!` to exclude the repositories it matches: `airbytehq/*` together with `!airbytehq/airbyte-cloud` and `!airbytehq/archived-*` syncs the whole organization except those, and newly created repositories are still discovered automatically. Exclusions apply to wildcard expansion and to the `repositories` stream alike, and an excluded repository is never requested. At least one entry must be an inclusion, and matching is case-sensitive.
+
    :::caution
    Repositories with the wrong name or repositories that do not exist or have the wrong name format will be skipped with `WARN` message in the logs.
    :::
@@ -259,6 +261,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.3.0 | 2026-08-28 | [82726](https://github.com/airbytehq/airbyte/pull/82726) | Support `!org/repo` and `!org/prefix-*` exclusion selectors in **GitHub Repositories** |
 | 2.2.0 | 2026-08-27 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |
 | 2.1.42 | 2026-08-25 | [85011](https://github.com/airbytehq/airbyte/pull/85011) | Update dependencies |
 | 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |
