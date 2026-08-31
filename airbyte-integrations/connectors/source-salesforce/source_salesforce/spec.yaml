@@ -172,10 +172,10 @@ connectionSpecification:
         these values as literal strings (for example, "NA" meaning "North America"). Empty fields
         are still synced as null. Leaving this disabled preserves the connector's historical behavior.
       default: false
-      order: 12
+      order: 13
     streams_criteria:
       type: array
-      order: 13
+      order: 12
       items:
         type: object
         required:
