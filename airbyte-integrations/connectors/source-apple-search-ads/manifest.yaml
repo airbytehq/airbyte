@@ -44,23 +44,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -104,23 +88,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -174,23 +142,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -251,25 +203,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -302,7 +236,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: "P{{ config.get('lookback_window', 30) }}D"
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -366,25 +300,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                max_retries: 10
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                    factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -425,7 +341,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window}}D
+        lookback_window: "P{{ config.get('lookback_window', 30) }}D"
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -490,28 +406,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: DefaultErrorHandler
-            max_retries: 10
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                predicate: >-
-                  {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in
-                  response.error.errors[0].message }}
-              - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
-                http_codes:
-                  - 401
-                failure_type: transient_error
-                error_message: Access token is expired.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handler_keywords_report_daily"
         record_selector:
           type: RecordSelector
           extractor:
@@ -552,7 +447,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: "P{{ config.get('lookback_window', 30) }}D"
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -606,23 +501,7 @@ definitions:
           request_headers:
             X-AP-Context: orgId={{ config.org_id }}
           error_handler:
-            type: CompositeErrorHandler
-            error_handlers:
-              - type: DefaultErrorHandler
-                backoff_strategies:
-                  - type: ExponentialBackoffStrategy
-                response_filters:
-                  - type: HttpResponseFilter
-                    action: REFRESH_TOKEN_THEN_RETRY
-                    http_codes:
-                      - 401
-                    failure_type: transient_error
-                    error_message: Access token is expired.
-                  - type: HttpResponseFilter
-                    action: RETRY
-                    http_codes:
-                      - 500
-                      - 429
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -677,23 +556,7 @@ definitions:
             startTime: "{{ stream_slice.start_time }}"
             granularity: DAILY
           error_handler:
-            type: DefaultErrorHandler
-            max_retries: 10
-            response_filters:
-              - type: HttpResponseFilter
-                action: REFRESH_TOKEN_THEN_RETRY
-                http_codes:
-                  - 401
-                failure_type: transient_error
-                error_message: Access token is expired.
-              - type: HttpResponseFilter
-                action: RETRY
-                http_codes:
-                  - 500
-                  - 429
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: "{{ config.backoff_factor }}"
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -734,7 +597,7 @@ definitions:
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: date
-        lookback_window: P{{ config.lookback_window }}D
+        lookback_window: "P{{ config.get('lookback_window', 30) }}D"
         cursor_datetime_formats:
           - "%Y-%m-%d"
         datetime_format: "%Y-%m-%d"
@@ -772,6 +635,82 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/ads_report_daily"
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        error_message_contains: "Invalid cert"
+        error_message: Apple Ads rejected the certificate backing the client_secret credential.
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        failure_type: transient_error
+        error_message: Apple Ads access token is expired.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        failure_type: config_error
+        error_message: Apple Ads denied access to the requested resource for the configured org_id.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+        failure_type: transient_error
+        error_message: Apple Ads returned a retryable rate-limit or server error.
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
+  error_handler_keywords_report_daily:
+    type: DefaultErrorHandler
+    max_retries: 10
+    response_filters:
+      - type: HttpResponseFilter
+        action: IGNORE
+        predicate: >-
+          {{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in (((response.get('error') or
+          {}).get('errors') or [{}])[0].get('message') or '') }}
+        error_message: >-
+          Campaign has no keywords, so it reports no keyword-level rows; the
+          partition is skipped and the sync continues.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        error_message_contains: "Invalid cert"
+        error_message: Apple Ads rejected the certificate backing the client_secret credential.
+      - type: HttpResponseFilter
+        action: REFRESH_TOKEN_THEN_RETRY
+        http_codes:
+          - 401
+        failure_type: transient_error
+        error_message: Apple Ads access token is expired.
+      - type: HttpResponseFilter
+        action: FAIL
+        http_codes:
+          - 403
+        failure_type: config_error
+        error_message: Apple Ads denied access to the requested resource for the configured org_id.
+      - type: HttpResponseFilter
+        action: RETRY
+        http_codes:
+          - 429
+          - 500
+          - 502
+          - 503
+          - 504
+        failure_type: transient_error
+        error_message: Apple Ads returned a retryable rate-limit or server error.
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: "{{ config.get('backoff_factor', 5) }}"
   base_requester:
     type: HttpRequester
     url_base: https://api.searchads.apple.com/api/v5
@@ -801,10 +740,8 @@ spec:
     required:
       - org_id
       - client_id
-      - start_date
       - client_secret
-      - timezone
-      - token_refresh_endpoint
+      - start_date
     properties:
       org_id:
         type: integer
@@ -865,6 +802,7 @@ spec:
         order: 6
         title: Exponential Backoff Factor
         default: 5
+        airbyte_hidden: true
         pattern: ^(20|1[0-9]|[1-9])$
         examples:
           - 10
@@ -882,12 +820,14 @@ spec:
       token_refresh_endpoint:
         type: string
         description: >-
-          Token Refresh Endpoint. You should override the default value in scenarios 
-          where it's required to proxy requests to Apple's token endpoint
+          Override the default Apple token endpoint only when token requests must
+          be proxied. The value must be an HTTPS URL.
         title: Token Refresh Endpoint
         default: >-
           https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
+        pattern: ^https://
         order: 8
+        airbyte_hidden: true
       num_workers:
         type: integer
         description: >-
@@ -1015,6 +955,8 @@ schemas:
         type: object
       creationTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       dailyBudgetAmount:
         type: object
         properties:
@@ -1027,7 +969,11 @@ schemas:
       displayStatus:
         type: string
       endTime:
-        type: "null"
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       id:
         type: integer
       locInvoiceDetails:
@@ -1049,6 +995,8 @@ schemas:
               - string
       modificationTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type: string
       orgId:
@@ -1063,6 +1011,8 @@ schemas:
         type: string
       startTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       supplySources:
@@ -1082,6 +1032,8 @@ schemas:
         type: "null"
       creationTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       defaultBidAmount:
         type: object
         properties:
@@ -1094,11 +1046,17 @@ schemas:
       displayStatus:
         type: string
       endTime:
-        type: "null"
+        type:
+          - string
+          - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       id:
         type: integer
       modificationTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type: string
       orgId:
@@ -1115,6 +1073,8 @@ schemas:
         type: string
       startTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       targetingDimensions:
@@ -1218,6 +1178,8 @@ schemas:
         type: integer
       creationTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       deleted:
         type: boolean
       id:
@@ -1226,6 +1188,8 @@ schemas:
         type: string
       modificationTime:
         type: string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       status:
         type: string
       text:
@@ -1278,6 +1242,8 @@ schemas:
             type: string
           modificationTime:
             type: string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           orgId:
             type: integer
           servingStateReasons:
@@ -1301,6 +1267,7 @@ schemas:
         type: integer
       date:
         type: string
+        format: date
       granularity:
         type: array
         items:
@@ -1322,6 +1289,7 @@ schemas:
                   type: string
             date:
               type: string
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -1396,19 +1364,28 @@ schemas:
           deleted:
             type: boolean
           endTime:
-            type: "null"
+            type:
+              - string
+              - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           modificationTime:
             type: string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           orgId:
             type: integer
           pricingModel:
             type: string
           startTime:
             type: string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
       adGroupId:
         type: integer
       date:
         type: string
+        format: date
       granularity:
         type: array
         items:
@@ -1430,6 +1407,7 @@ schemas:
                   type: string
             date:
               type: string
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -1503,8 +1481,11 @@ schemas:
             type: string
           modificationTime:
             type: string
+            format: date-time
+            airbyte_type: timestamp_without_timezone
       date:
         type: string
+        format: date
       granularity:
         type: array
         items:
@@ -1519,6 +1500,7 @@ schemas:
                   type: string
             date:
               type: string
+              format: date
             impressions:
               type: integer
             latOffInstalls:
@@ -1605,6 +1587,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       creativeId:
         type:
           - number
@@ -1623,6 +1607,8 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type:
           - string
@@ -1691,6 +1677,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           creativeId:
             type:
               - number
@@ -1707,6 +1695,8 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
+            airbyte_type: timestamp_without_timezone
           orgId:
             type:
               - number
@@ -1729,6 +1719,7 @@ schemas:
           - "null"
       date:
         type: string
+        format: date
       granularity:
         type:
           - array
@@ -1755,6 +1746,7 @@ schemas:
               type:
                 - string
                 - "null"
+              format: date
             impressions:
               type:
                 - number

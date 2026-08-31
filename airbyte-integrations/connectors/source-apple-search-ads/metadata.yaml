@@ -1,8 +1,20 @@
 data:
+  allowedHosts:
+    hosts:
+      - api.searchads.apple.com
+      - appleid.apple.com
+  suggestedStreams:
+    streams:
+      - campaigns_report_daily
+      - keywords_report_daily
+      - adgroups_report_daily
+      - campaigns
+      - adgroups
+      - keywords
   connectorSubtype: api
   connectorType: source
   definitionId: e59c8416-c2fa-4bd3-9e95-52677ea281c1
-  dockerImageTag: 1.1.14
+  dockerImageTag: 2.0.0
   dockerRepository: airbyte/source-apple-search-ads
   githubIssueLabel: source-apple-search-ads
   icon: icon.svg
@@ -22,6 +34,20 @@ data:
     rolloutConfiguration:
       enableProgressiveRollout: false
     breakingChanges:
+      2.0.0:
+        message: Date and datetime fields are now declared with JSON Schema formats, so destinations write them as dates and timestamps instead of strings. The `endTime` field, previously typed `null`, is now a nullable timestamp. To migrate, refresh the source schema and clear the affected streams. For more info please follow the process in the migration guide.
+        upgradeDeadline: "2026-09-30"
+        scopedImpact:
+          - scopeType: stream
+            impactedScopes:
+              - "campaigns"
+              - "adgroups"
+              - "keywords"
+              - "ads"
+              - "campaigns_report_daily"
+              - "adgroups_report_daily"
+              - "keywords_report_daily"
+              - "ads_report_daily"
       1.0.0:
         message: This release introduces changes to incremental sync of `adgroups_daily_reports` and `keywords_daily_reports` streams, changing stream's state from per-partition state to usage of a global state cursor. This will decrease the time of read for the streams. To migrate the Source Apple Ads to the new version, users will need to clear the affected streams. For more info please follow the process in migration guide.
         upgradeDeadline: "2025-11-04"
@@ -48,7 +74,7 @@ data:
             alias: airbyte-connector-testing-secret-store
   supportLevel: community
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.24.0@sha256:e34fb609bccdeb77474763c77e3621ea9d5adf9f65f2d9851102cc14a1caa281
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.3@sha256:6c926ab34644e3fb6f5422aea148599eef8a8d877cd8b8b28b3e7af914d93bbf
   externalDocumentationUrls:
     - title: API reference
       url: https://developer.apple.com/documentation/apple_search_ads

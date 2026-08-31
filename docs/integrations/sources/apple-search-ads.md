@@ -26,12 +26,13 @@ The connector authenticates to the Apple Ads Campaign Management API using OAuth
 3. For **Org Id**, enter the `orgId` of your Apple Ads organization (found in the Apple Ads UI).
 4. Enter the **Client ID** and **Client Secret** from [Step 1](#step-1-create-an-api-user-and-oauth-credentials-in-apple-ads).
 5. For **Start Date** and **End Date**, enter dates in `YYYY-MM-DD` format. If **End Date** is blank, Airbyte syncs up to today. Apple's reporting API limits how far back daily data is available; requests for dates outside the supported window return no data.
-6. For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`.
+6. (Optional) For **Time Zone**, select either `UTC` (Coordinated Universal Time) or `ORTZ` (Organization Time Zone). The default is `UTC`.
 7. For **Lookback Window**, enter a value between 1 and 30. Apple Ads applies a 30-day attribution window, so the default of 30 ensures late-attributed conversions are captured on each incremental sync. Lower values shorten incremental syncs but may miss late attributions.
-8. For **Exponential Backoff Factor**, enter a value between 1 and 20. This controls how aggressively the connector backs off when Apple's API returns rate-limit (`429`) or server (`500`) errors. The default is 5; increase it for very large accounts that frequently hit rate limits.
+8. (Optional) For **Exponential Backoff Factor**, enter a value between 1 and 20. This controls how aggressively the connector backs off when Apple's API returns rate-limit (`429`) or server (`5xx`) errors. The default is 5; increase it for very large accounts that frequently hit rate limits. The field is hidden in the UI and settable through the API.
 9. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
-10. (Optional) For **Token Refresh Endpoint**, override the default Apple OAuth token endpoint. Use this only if you proxy outbound requests; most users should leave it at the default.
-11. Click **Set up source**.
+10. Click **Set up source**.
+
+**Token Refresh Endpoint** is hidden in the UI. Override it through the API only if outbound requests to Apple's token endpoint must be proxied; the value must be an `https://` URL.
 
 ## Supported sync modes
 
@@ -68,8 +69,8 @@ Report streams use `date` as the cursor field and default to `(date, campaignId)
 
 ## Performance considerations
 
-- Apple's API returns `401 Unauthorized` when an access token is invalid or expired. The connector automatically refreshes expired access tokens and retries the failed request.
-- Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` rate-limit responses and `500` server errors; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
+- Apple's API returns `401 Unauthorized` when an access token is invalid or expired. The connector automatically refreshes expired access tokens and retries the failed request. If Apple rejects the credentials themselves (`Invalid cert`) or returns `403 Forbidden`, the sync fails immediately with a configuration error rather than retrying; the connector's `CONTRIBUTING.md` documents the full mapping.
+- Apple's API enforces rate limits and recommends exponential retry. The connector automatically retries `429` rate-limit responses and `500`, `502`, `503`, and `504` server errors; tune the **Exponential Backoff Factor** to control how aggressively it backs off.
 - For accounts with many campaigns or ad groups, increase **Number of Workers** to fetch partitions in parallel and reduce sync time.
 - Apple Ads applies a 30-day attribution window. Reducing **Lookback Window** below 30 days shortens incremental syncs but may miss late conversions.
 
@@ -90,10 +91,10 @@ For programmatic configuration, use these parameter names:
 | `client_secret` | Yes | OAuth client secret for the Apple Ads API user. |
 | `start_date` | Yes | Earliest report date to sync, in `YYYY-MM-DD` format. |
 | `end_date` | No | Latest report date to sync, in `YYYY-MM-DD` format. If omitted, Airbyte syncs through the current date. |
-| `timezone` | Yes | Reporting time zone. Valid values are `UTC` and `ORTZ`. |
+| `timezone` | No | Reporting time zone. Valid values are `UTC` and `ORTZ`. Defaults to `UTC`. |
 | `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
-| `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. |
-| `token_refresh_endpoint` | Yes | OAuth token endpoint. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. |
+| `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. Hidden in the UI. |
+| `token_refresh_endpoint` | No | OAuth token endpoint. Must be an `https://` URL. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. Hidden in the UI; set it only when outbound calls to Apple's token endpoint must be proxied. |
 | `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
 ## Changelog
@@ -103,6 +104,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 2.0.0 | 2026-08-29 | [85228](https://github.com/airbytehq/airbyte/pull/85228) | Declare date and datetime formats on schema fields, make `timezone` and `token_refresh_endpoint` optional, and classify Apple Ads error responses |
 | 1.1.14 | 2026-08-11 | [83830](https://github.com/airbytehq/airbyte/pull/83830) | Update dependencies |
 | 1.1.13 | 2026-08-04 | [83353](https://github.com/airbytehq/airbyte/pull/83353) | Update dependencies |
 | 1.1.12 | 2026-07-28 | [82825](https://github.com/airbytehq/airbyte/pull/82825) | Update dependencies |
