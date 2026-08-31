@@ -243,18 +243,8 @@ fi
 if [[ "$TEST_VERSION" == "dev" ]] && { [[ "$BUILD" == true ]] \
   || ! docker image inspect "airbyte/$CONNECTOR:dev" >/dev/null 2>&1; }; then
   REPO_ROOT="$(git -C "$SKILL_DIR" rev-parse --show-toplevel)"
-  # Maven Central 429s once aggregate traffic from one egress path crosses
-  # its consumption limit, which a cold connector build trips reliably on
-  # shared-egress machines; no client credential avoids it. The init script
-  # remaps Central to Google's mirror of it; see its header for why that is
-  # behaviour-preserving. E2E_GRADLE_MIRROR=0 opts out.
-  GRADLE_MIRROR_ARGS=()
-  if [[ "${E2E_GRADLE_MIRROR:-1}" != 0 ]]; then
-    GRADLE_MIRROR_ARGS=(--init-script "$SKILL_DIR/fixtures/gradle/maven-mirror-init.gradle")
-  fi
   echo "[run] building airbyte/$CONNECTOR:dev from the current checkout" >&2
-  "$REPO_ROOT/gradlew" "${GRADLE_MIRROR_ARGS[@]}" \
-    ":airbyte-integrations:connectors:$CONNECTOR:dockerBuildx" \
+  "$REPO_ROOT/gradlew" ":airbyte-integrations:connectors:$CONNECTOR:dockerBuildx" \
     --configure-on-demand
 fi
 
