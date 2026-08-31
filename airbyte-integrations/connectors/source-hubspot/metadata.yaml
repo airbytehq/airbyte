@@ -174,6 +174,9 @@ data:
     - title: HubSpot API reference
       url: https://developers.hubspot.com/docs/api/overview
       type: api_reference
+    - title: HubSpot sunsetted and deprecated APIs
+      url: https://developers.hubspot.com/docs/api-reference/deprecated-apis
+      type: api_deprecations
     - title: HubSpot API changelog
       url: https://developers.hubspot.com/changelog
       type: api_release_history
