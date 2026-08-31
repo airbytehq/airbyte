@@ -51,6 +51,8 @@ source-mssql-e2e-tests/
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
+    ├── gradle/
+    │   └── maven-mirror-init.gradle  # routes Maven Central through Google's mirror (429 avoidance); applied by run.sh's :dev build
     └── sql/
         ├── .gitignore          # `.tmp/` — subtree for uncommitted per-bug scratch fixtures
         └── 00-init-base.sql    # CREATE DATABASE TestDb + dbo.sample table
@@ -122,7 +124,14 @@ one command instead exits with the connector's own exit code, so a repro
 can still assert on it.
 
 Build the target image first when using `--test-version=dev`, or pass
-`--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
+`--build` to have `run.sh` run `:dockerBuildx` for you. That build routes
+Maven Central through Google's mirror of it via
+`fixtures/gradle/maven-mirror-init.gradle`, because Central limits
+consumption per egress path rather than per client — reads are anonymous,
+so no credential avoids it — and a cold connector build resolves enough
+artifacts to trip that limit on any shared-egress machine, costing ~10
+minutes of failed resolution before the build gives up.
+`E2E_GRADLE_MIRROR=0` opts out. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--skip-fixtures` (run against whatever state the backend already has;
 for the second/later `run.sh` invocation of a multi-phase driver, when
