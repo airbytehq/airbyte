@@ -34,15 +34,15 @@ def isCentral = { String url ->
     url.contains('repo.maven.apache.org') || url.contains('repo1.maven.org')
 }
 
-// Plugin resolution happens before any project repositories exist, so it
-// needs its own declaration. The plugin portal stays in the list as the
-// fallback for plugin markers that only exist there — the mirror is tried
-// first, not substituted for it.
+// Plugin resolution consumes pluginManagement.repositories while
+// settings.gradle itself evaluates (it has a `plugins {}` block at the top),
+// so settingsEvaluated is too late for it and the mirror has to be prepended
+// here instead of substituted in. settings.gradle still appends its own
+// airbyte-public-jars / gradlePluginPortal() / mavenCentral() entries after
+// these, so they are deliberately not repeated.
 beforeSettings { settings ->
     settings.pluginManagement.repositories {
         maven { url = MIRROR }
-        maven { url = 'https://airbyte.mycloudrepo.io/public/repositories/airbyte-public-jars/' }
-        gradlePluginPortal()
     }
 }
 
