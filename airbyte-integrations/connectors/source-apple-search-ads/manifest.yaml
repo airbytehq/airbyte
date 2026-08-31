@@ -649,7 +649,7 @@ definitions:
         http_codes:
           - 401
         failure_type: transient_error
-        error_message: Apple Ads access token is expired.
+        error_message: Apple Ads access token has expired.
       - type: HttpResponseFilter
         action: FAIL
         http_codes:
@@ -691,7 +691,7 @@ definitions:
         http_codes:
           - 401
         failure_type: transient_error
-        error_message: Apple Ads access token is expired.
+        error_message: Apple Ads access token has expired.
       - type: HttpResponseFilter
         action: FAIL
         http_codes:
@@ -797,7 +797,7 @@ spec:
       backoff_factor:
         type: integer
         description: >-
-          This factor factor determines the delay increase factor between
+          This factor determines the delay increase factor between
           retryable failures. Valid values are integers between 1 and 20.
         order: 6
         title: Exponential Backoff Factor
