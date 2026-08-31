@@ -46,9 +46,7 @@ def _read_calls(expecting_exception: bool = False):
 
 
 def _error_text(output) -> str:
-    return " ".join(
-        (error.trace.error.message or "") + " " + (error.trace.error.internal_message or "") for error in output.errors
-    )
+    return " ".join((error.trace.error.message or "") + " " + (error.trace.error.internal_message or "") for error in output.errors)
 
 
 @pytest.mark.parametrize("status_code", [401, 403])
