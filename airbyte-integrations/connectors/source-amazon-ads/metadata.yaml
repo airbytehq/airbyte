@@ -9,11 +9,11 @@ data:
       - advertising-api-eu.amazon.com
       - advertising-api-fe.amazon.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.24.0@sha256:e34fb609bccdeb77474763c77e3621ea9d5adf9f65f2d9851102cc14a1caa281
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.2@sha256:f30cf2745046c06dd1e903742d835d13faea085354690679d06cab083d5a63c7
   connectorSubtype: api
   connectorType: source
   definitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerImageTag: 9.1.0
+  dockerImageTag: 9.1.1
   dockerRepository: airbyte/source-amazon-ads
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-ads
   githubIssueLabel: source-amazon-ads
@@ -157,4 +157,7 @@ data:
     - title: Rate limits
       url: https://advertising.amazon.com/API/docs/en-us/reference/concepts/rate-limiting
       type: rate_limits
+    - title: Amazon Ads advanced tools docs repository
+      url: https://github.com/amzn/ads-advanced-tools-docs
+      type: spec_repository
 metadataSpecVersion: "1.0"
