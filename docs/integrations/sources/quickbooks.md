@@ -27,8 +27,8 @@ This page contains the setup guide and reference information for the QuickBooks 
 4. **Client ID** - The OAuth2.0 application ID
 5. **Client Secret** - The OAuth2.0 application secret
 6. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
-7. **Access Token** - Access token to perform authenticated API calls with
-8. **Token Expiry Date** - DateTime when the access token becomes invalid
+7. **Access Token** (optional) - Access token to perform authenticated API calls with. The connector obtains one from the refresh token, so leave it empty unless you have a valid token to seed.
+8. **Token Expiry Date** (optional) - DateTime when the access token becomes invalid. The connector maintains this value after each refresh.
 9. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 10. **Start date** - The date starting from which you'd like to replicate data.
 11. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
@@ -43,8 +43,8 @@ This page contains the setup guide and reference information for the QuickBooks 
 1. **Client ID** - The OAuth2.0 application ID
 2. **Client Secret** - The OAuth2.0 application secret
 3. **Refresh Token** - Refresh token used to get new access token every time the current one is expired
-4. **Access Token** - Access token to perform authenticated API calls with
-5. **Token Expiry Date** - DateTime when the access token becomes invalid
+4. **Access Token** (optional) - Access token to perform authenticated API calls with. The connector obtains one from the refresh token, so leave it empty unless you have a valid token to seed.
+5. **Token Expiry Date** (optional) - DateTime when the access token becomes invalid. The connector maintains this value after each refresh.
 6. **Realm ID** - The Labeled [Company ID](https://developer.intuit.com/app/developer/qbo/docs/learn/learn-basic-field-definitions#realm-id) you'd like to replicate data for streams.
 7. **Start date** - The date starting from which you'd like to replicate data.
 8. **Sandbox** - Turn on if you're going to replicate the data from the sandbox environment.
@@ -101,6 +101,19 @@ This Source is capable of syncing the following [Streams](https://developer.intu
 | `array`          | `array`      |       |
 | `object`         | `object`     |       |
 
+## Errors and troubleshooting
+
+| What you see | What it means | What to do |
+| :----------- | :------------ | :--------- |
+| `The QuickBooks OAuth grant is expired or revoked...` (HTTP 401) | Intuit invalidated the refresh token. Refresh tokens expire after 100 days of disuse, and are revoked if the app is disconnected in Intuit's **My Apps**. | Obtain a new refresh token and update the source. |
+| `QuickBooks rejected the app credentials...` (`errorCode=003200`) | Wrong **Client ID**/**Client Secret**, or development keys used against production (or the reverse). | Re-copy both keys from the matching environment on the app's **Keys** tab. |
+| `The QuickBooks user has not authorized this app for the configured company.` (`errorCode=003201`) | The company was never authorized for this app, or authorization was revoked. | Re-run the authorization flow for that company. |
+| `The QuickBooks OAuth grant lacks the accounting scope...` (HTTP 403) | The grant is missing `com.intuit.quickbooks.accounting`. | Re-authorize with the accounting scope selected. |
+| `QuickBooks does not recognize the configured Realm ID.` (HTTP 404) | The **Realm ID** does not exist in the environment being called — most often a sandbox realm with **Sandbox** turned off. | Correct the **Realm ID**, or toggle **Sandbox** to match it. |
+| Sync retries then fails with a throttling error | Intuit throttles at 500 requests per minute per realm. | Reduce concurrent syncs against the same company; the connector already retries with exponential backoff. |
+
+Deleted records: QuickBooks soft deletes by setting `Active` to `false`, and those updates do sync. Records that are permanently deleted in QuickBooks are only reported by Intuit's change-data-capture endpoint, which this connector does not read, so they remain in the destination.
+
 ## IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
@@ -112,6 +125,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                            |
 |:------------|:-----------|:---------------------------------------------------------| :----------------------------------------------------------------- |
+| 4.2.0 | 2026-08-31 | [85216](https://github.com/airbytehq/airbyte/pull/85216) | Add actionable error handling for Intuit fault codes and HTTP statuses, drop unnecessary required spec fields, refresh the SDM base image, and unpin the registry overrides |
 | 4.1.8 | 2025-05-24 | [60468](https://github.com/airbytehq/airbyte/pull/60468) | Update dependencies |
 | 4.1.7 | 2025-05-10 | [60170](https://github.com/airbytehq/airbyte/pull/60170) | Update dependencies |
 | 4.1.6 | 2025-05-03 | [59500](https://github.com/airbytehq/airbyte/pull/59500) | Update dependencies |
