@@ -56,7 +56,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1c5d8316-ed42-4473-8fbc-2626f03f070c
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-linear
   githubIssueLabel: source-linear
   icon: icon.svg
@@ -105,7 +105,7 @@ data:
       type: api_deprecations
     - title: Linear GraphQL schema (linear/linear SDK)
       url: https://github.com/linear/linear
-      type: spec_repository
+      type: other
     - title: Linear Status
       url: https://linearstatus.com/
       type: status_page
