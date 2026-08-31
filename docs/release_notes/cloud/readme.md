@@ -2,6 +2,13 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## August 31, 2026
+
+Platform
+
+- If your organization is on a capacity-based plan, the Usage page in Organization settings now offers 1Q and 1Y date ranges alongside 1D, 1W, and 1M, so you can review data worker usage across a full quarter or year.
+- The Plus and Pro cards on the Plan page in Organization settings now list the support coverage each plan includes. Hover over the info icon next to a support line to see the exact hours and response times.
+
 ## August 12, 2026
 
 Connections
