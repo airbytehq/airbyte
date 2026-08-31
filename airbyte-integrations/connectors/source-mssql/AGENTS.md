@@ -11,7 +11,7 @@ see the repo-root [`CONTRIBUTING.md`](../../../CONTRIBUTING.md) and the
 ```bash
 ./gradlew :airbyte-integrations:connectors:source-mssql:test
 ./gradlew :airbyte-integrations:connectors:source-mssql:assemble
-./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx
 ```
 
 Test fixtures use `org.testcontainers:mssqlserver` — see
@@ -27,8 +27,9 @@ skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
 
 - [`source-mssql-e2e-tests`](.agents/skills/source-mssql-e2e-tests/SKILL.md) —
   the generic harness. Stands up a SQL Server 2022 container
-  (`source-mssql-db-backend`), applies SQL fixtures via `sqlcmd`, and runs
-  one Airbyte protocol command (`spec` / `check` / `discover` / `read`)
+  (`source-mssql-db-backend`), applies SQL fixtures via `sqlcmd`, and
+  sweeps the Airbyte protocol commands (`spec` → `check` → `discover` →
+  `read`, or just one of them)
   against `airbyte/source-mssql:<tag>` using the
   [`airbyte-internal-ops`](https://github.com/airbytehq/airbyte-ops-mcp)
   CLI's `airbyte-ops cloud connector regression-test --skip-compare=True`.
@@ -104,13 +105,19 @@ directly.
   script in the generic skill handles this: it inspects the backend's
   bridge IP and substitutes it into the config template before each
   invocation.
-- **Connector run on `4.3.x` rejects the catalog with `Validation error(s)`.**
-  Bulk-CDK on `4.3.x` requires `is_file_based`, `generation_id`,
+- **A connector run rejects the catalog with `Validation error(s)`.**
+  Bulk-CDK requires `is_file_based`, `cursor_field`, `generation_id`,
   `minimum_generation_id`, `sync_id`, `destination_object_name`, and
-  `include_files` to be present on every configured stream.
-  `4.4.x` made these nullable. The catalog fixtures shipped with the
-  CDC skill populate all of them so the same fixtures drive repros on
-  both major versions.
+  `include_files` on every configured stream, and rejects them as null
+  with `code: 1021`. This is not limited to `4.3.x` — `4.4.12` and
+  `5.0.0` reject them too. `discover` never emits `is_file_based`, so
+  `make-catalog.sh` fills it in; the catalog fixtures shipped with the
+  CDC skill populate all of them.
+- **A `check` that fails still exits 0 in single-version mode.** The CDK
+  emits `CONNECTION_STATUS` with `status: FAILED` and exits 0, so the
+  harness cannot surface it as a non-zero exit. Assert on the status
+  message when a repro hinges on `check`. Comparison mode reads the
+  report's verdict instead, so it does fail.
 - **Debezium engine starts but produces no records.** SQL Server CDC
   capture / cleanup are SQL Server Agent jobs. The backend container
   must be started with `MSSQL_AGENT_ENABLED=true` (the generic skill's
@@ -132,8 +139,35 @@ directly.
 
 The same `airbyte-ops cloud connector regression-test` command is used
 by `/ai-prove-fix` for comparison-style work (target image vs. control
-image). For per-bug repro driver scripts that's not normally needed —
-they all pass `--skip-compare=True` via the generic skill's
-`run-protocol-cmd.sh`. To reach for the comparison path manually, drop
-`--skip-compare=True` and supply both `--test-image` and
-`--control-image`; the CLI's `--help` covers the additional flags.
+image). Per-bug repro driver scripts don't normally need it and stay on
+the single-version path, which passes `--skip-compare=True`.
+
+For a prove-fix comparison, use the generic skill's one-shot entrypoint
+with a control version:
+
+```bash
+cd airbyte-integrations/connectors/source-mssql
+
+# Non-CDC (default). Both images run against one backend and airbyte-ops
+# emits the built-in target-vs-control diff.
+poe e2e-local --test-version=dev --control-version=5.0.0 \
+  --fixture=.agents/skills/source-mssql-e2e-tests/fixtures/sql/00-init-base.sql
+
+# CDC. Two single-version sweeps with a fixture reset between them, so
+# the target does not read against the control's warm capture instance.
+poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
+  --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/00-init-cdc.sql \
+  --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
+```
+
+Both runs must observe equivalent backend state. Under
+`--reset=none` (the default) the two images share the backend, which is
+safe for a full-refresh read but not for CDC — a shared capture instance
+and an advanced log position make the diff look clean while being
+meaningless. `--reset=fixture` drops every non-system database and
+re-applies the fixtures between the two runs (fast; the log-LSN clock
+still ticks server-wide); `--reset=backend` also recreates the backend
+container (~15s extra, resets the LSN clock). Pick `--reset=fixture` for
+CDC unless the reproduction depends on matching LSN sequences. See
+[`SKILL.md`](.agents/skills/source-mssql-e2e-tests/SKILL.md#comparison-modes-with---control-version)
+for the full breakdown.

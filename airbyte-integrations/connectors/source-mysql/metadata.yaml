@@ -93,4 +93,7 @@ data:
     - title: MySQL authentication
       url: https://dev.mysql.com/doc/refman/8.0/en/access-control.html
       type: authentication_guide
+    - title: MySQL server source code
+      url: https://github.com/mysql/mysql-server
+      type: code_repository
 metadataSpecVersion: "1.0"

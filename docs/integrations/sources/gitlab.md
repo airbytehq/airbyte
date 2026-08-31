@@ -206,36 +206,36 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 4.4.5 | 2025-08-02 | [64222](https://github.com/airbytehq/airbyte/pull/64222) | Update dependencies |
 | 4.4.4 | 2025-07-26 | [63913](https://github.com/airbytehq/airbyte/pull/63913) | Update dependencies |
 | 4.4.3 | 2025-07-19 | [63489](https://github.com/airbytehq/airbyte/pull/63489) | Update dependencies |
-| 4.4.2 | 2025-07-15 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
+| 4.4.2 | 2025-07-18 | [63309](https://github.com/airbytehq/airbyte/pull/63309) | Adds `type` property to `config_normalization_rules` in manifest |
 | 4.4.1 | 2025-07-12 | [61471](https://github.com/airbytehq/airbyte/pull/61471) | Update dependencies |
 | 4.4.0 | 2025-07-07 | [62831](https://github.com/airbytehq/airbyte/pull/62831) | Promoting release candidate 4.4.0-rc.1 to a main version. |
 | 4.4.0-rc.1 | 2025-07-02 | [62480](https://github.com/airbytehq/airbyte/pull/62480) | Migrate to manifest-only |
-| 4.3.7 | 2025-05-31 | [57264](https://github.com/airbytehq/airbyte/pull/57264) | Update dependencies |
+| 4.3.7 | 2025-06-02 | [57264](https://github.com/airbytehq/airbyte/pull/57264) | Update dependencies |
 | 4.3.6 | 2025-03-29 | [54945](https://github.com/airbytehq/airbyte/pull/54945) | Update dependencies |
-| 4.3.5 | 2025-02-22 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |
-| 4.3.4 | 2025-01-11 | [44671](https://github.com/airbytehq/airbyte/pull/44671) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
-| 4.3.3 | 2024-08-17 | [44207](https://github.com/airbytehq/airbyte/pull/44207) | Update dependencies |
+| 4.3.5 | 2025-02-23 | [51695](https://github.com/airbytehq/airbyte/pull/51695) | Update dependencies |
+| 4.3.4 | 2025-01-15 | [44671](https://github.com/airbytehq/airbyte/pull/44671) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 4.3.3 | 2024-08-18 | [44207](https://github.com/airbytehq/airbyte/pull/44207) | Update dependencies |
 | 4.3.2 | 2024-08-12 | [43856](https://github.com/airbytehq/airbyte/pull/43856) | Update dependencies |
-| 4.3.1 | 2024-08-03 | [43058](https://github.com/airbytehq/airbyte/pull/43058) | Update dependencies |
+| 4.3.1 | 2024-08-04 | [43058](https://github.com/airbytehq/airbyte/pull/43058) | Update dependencies |
 | 4.3.0 | 2024-07-31 | [42920](https://github.com/airbytehq/airbyte/pull/42920) | Migrate to CDK v4.1.0 |
-| 4.2.2 | 2024-07-27 | [42601](https://github.com/airbytehq/airbyte/pull/42601) | Update dependencies |
-| 4.2.1 | 2024-07-20 | [42295](https://github.com/airbytehq/airbyte/pull/42295) | Update dependencies |
+| 4.2.2 | 2024-07-28 | [42601](https://github.com/airbytehq/airbyte/pull/42601) | Update dependencies |
+| 4.2.1 | 2024-07-21 | [42295](https://github.com/airbytehq/airbyte/pull/42295) | Update dependencies |
 | 4.2.0 | 2024-07-17 | [42085](https://github.com/airbytehq/airbyte/pull/42085) | Migrate to CDK v2.4.0 |
 | 4.1.0 | 2024-07-17 | [42021](https://github.com/airbytehq/airbyte/pull/42021) | Migrate to CDK v1.8.0 |
-| 4.0.8 | 2024-07-13 | [41835](https://github.com/airbytehq/airbyte/pull/41835) | Update dependencies |
-| 4.0.7 | 2024-07-10 | [41470](https://github.com/airbytehq/airbyte/pull/41470) | Update dependencies |
-| 4.0.6 | 2024-07-09 | [41100](https://github.com/airbytehq/airbyte/pull/41100) | Update dependencies |
-| 4.0.5 | 2024-07-06 | [40894](https://github.com/airbytehq/airbyte/pull/40894) | Update dependencies |
-| 4.0.4 | 2024-06-25 | [40417](https://github.com/airbytehq/airbyte/pull/40417) | Update dependencies |
-| 4.0.3 | 2024-06-22 | [40102](https://github.com/airbytehq/airbyte/pull/40102) | Update dependencies |
-| 4.0.2 | 2024-04-24 | [36637](https://github.com/airbytehq/airbyte/pull/36637) | Schema descriptions and CDK 0.80.0 |
+| 4.0.8 | 2024-07-14 | [41835](https://github.com/airbytehq/airbyte/pull/41835) | Update dependencies |
+| 4.0.7 | 2024-07-11 | [41470](https://github.com/airbytehq/airbyte/pull/41470) | Update dependencies |
+| 4.0.6 | 2024-07-10 | [41100](https://github.com/airbytehq/airbyte/pull/41100) | Update dependencies |
+| 4.0.5 | 2024-07-07 | [40894](https://github.com/airbytehq/airbyte/pull/40894) | Update dependencies |
+| 4.0.4 | 2024-06-26 | [40417](https://github.com/airbytehq/airbyte/pull/40417) | Update dependencies |
+| 4.0.3 | 2024-06-23 | [40102](https://github.com/airbytehq/airbyte/pull/40102) | Update dependencies |
+| 4.0.2 | 2024-05-07 | [36637](https://github.com/airbytehq/airbyte/pull/36637) | Schema descriptions and CDK 0.80.0 |
 | 4.0.1 | 2024-04-23 | [37505](https://github.com/airbytehq/airbyte/pull/37505) | Set error code `500` as retryable |
-| 4.0.0 | 2024-03-25 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code |
-| 3.0.0 | 2024-01-25 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request |
-| 2.1.2 | 2024-02-12 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry. |
-| 2.1.1 | 2024-01-12 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib |
-| 2.1.0 | 2023-12-20 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
-| 2.0.0 | 2023-10-23 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams |
+| 4.0.0 | 2024-04-01 | [35989](https://github.com/airbytehq/airbyte/pull/35989) | Migrate to low-code |
+| 3.0.0 | 2024-02-15 | [34548](https://github.com/airbytehq/airbyte/pull/34548) | Fix merge_request_commits stream to return commits for each merge request |
+| 2.1.2 | 2024-02-13 | [35167](https://github.com/airbytehq/airbyte/pull/35167) | Manage dependencies with Poetry. |
+| 2.1.1 | 2024-01-16 | [34203](https://github.com/airbytehq/airbyte/pull/34203) | prepare for airbyte-lib |
+| 2.1.0 | 2024-01-09 | [33676](https://github.com/airbytehq/airbyte/pull/33676) | Add fields to Commits (extended_trailers), Groups (emails_enabled, service_access_tokens_expiration_enforced) and Projects (code_suggestions, model_registry_access_level) streams |
+| 2.0.0 | 2023-10-26 | [31700](https://github.com/airbytehq/airbyte/pull/31700) | Add correct date-time format for Deployments, Projects and Groups Members streams |
 | 1.8.4 | 2023-10-19 | [31599](https://github.com/airbytehq/airbyte/pull/31599) | Base image migration: remove Dockerfile and use the python-connector-base image |
 | 1.8.3 | 2023-10-18 | [31547](https://github.com/airbytehq/airbyte/pull/31547) | Add validation for invalid `groups_list` and/or `projects_list` |
 | 1.8.2 | 2023-10-17 | [31492](https://github.com/airbytehq/airbyte/pull/31492) | Expand list of possible error status codes when handling expired `access_token` |
