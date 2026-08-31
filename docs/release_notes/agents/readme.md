@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## August 31, 2026
+
+Web app
+
+- The skills page now warns you when a published skill can't be served to agents because your organization is missing one or more connectors the skill depends on, so you can set up those connectors before your agents need them.
+
+Connectors
+
+- The Greenhouse connector now signs in with OAuth and uses Greenhouse's latest Harvest API, adding access to interviews and file attachments alongside candidates, applications, jobs, and offers.
+- Credential checks for connectors that sign in with OAuth are now more reliable. When a quick validation can't safely use your credentials, the check automatically falls back to a full validation instead of failing.
+
 ## August 12, 2026
 
 Web app
