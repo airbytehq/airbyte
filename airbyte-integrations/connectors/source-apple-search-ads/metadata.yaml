@@ -32,7 +32,12 @@ data:
   releaseStage: alpha
   releases:
     rolloutConfiguration:
-      enableProgressiveRollout: false
+      enableProgressiveRollout: true
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
     breakingChanges:
       2.0.0:
         message: Date and datetime fields are now declared with JSON Schema formats, so destinations write them as dates and timestamps instead of strings. The `endTime` field, previously typed `null`, is now a nullable timestamp. To migrate, refresh the source schema and clear the affected streams. For more info please follow the process in the migration guide.
