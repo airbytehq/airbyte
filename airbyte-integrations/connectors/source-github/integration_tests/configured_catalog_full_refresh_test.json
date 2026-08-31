@@ -81,6 +81,17 @@
     },
     {
       "stream": {
+        "name": "commit_details",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor_field": ["created_at"],
+        "source_defined_primary_key": [["sha"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "contributor_activity",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],

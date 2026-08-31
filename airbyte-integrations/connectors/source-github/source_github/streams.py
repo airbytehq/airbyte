@@ -111,6 +111,11 @@ class GithubStreamABC(HttpStream, ABC):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
+        # The CDK IGNORE action logs and then hands the non-2xx response straight to
+        # parse_response, and GitHub answers errors with a JSON object rather than an array.
+        # Every override below that does not delegate here repeats this guard.
+        if not response.ok:
+            return
         for record in response.json():  # GitHub puts records in an array.
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -150,6 +155,10 @@ class GithubStreamABC(HttpStream, ABC):
             if not hasattr(e, "_exception") or getattr(e._exception, "response", None) is None:
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
+                # A plain 404 no longer reaches here: it resolves to IGNORE and is logged with
+                # stream and URL context by GithubStreamABCErrorHandler. This branch still covers
+                # a 404 that arrived with `X-RateLimit-Remaining: 0`, which is classified
+                # RATE_LIMITED and surfaces wrapped once the retry budget runs out.
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
                 if isinstance(self, Organizations):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
@@ -182,6 +191,12 @@ class GithubStreamABC(HttpStream, ABC):
                         f"GitHub message: {api_message!r}"
                     )
             elif e._exception.response.status_code == requests.codes.UNAUTHORIZED:
+                # Only reachable now via rate-limit retry exhaustion: a plain 401 resolves to
+                # FAIL, and the AirbyteTracedException the CDK raises for FAIL wraps no
+                # response, so the guard above re-raises before reaching here. A 401 that also
+                # carries `X-RateLimit-Remaining: 0` is classified RATE_LIMITED, retried, and
+                # arrives here wrapped once the budget runs out. The same hint is in
+                # GITHUB_DEFAULT_ERROR_MAPPING[401] for the fail-fast path.
                 api_message = (e._exception.response.json() or {}).get("message", "")
                 if self.access_token_type == constants.PERSONAL_ACCESS_TOKEN_TITLE:
                     self.logger.error(
@@ -302,6 +317,7 @@ class GithubStream(GithubStreamABC):
     ) -> Iterable[Mapping]:
         if is_conflict_with_empty_repository(response) or is_gone_with_feature_disabled(response):
             # The CDK IGNORE action still calls parse_response; guard against non-array error bodies.
+            # `response.ok` itself is covered by the base implementation this delegates to.
             return
         yield from super().parse_response(
             response=response,
@@ -433,6 +449,8 @@ class RepositoryStats(GithubStream):
         return f"repos/{stream_slice['repository']}"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield response.json()
 
 
@@ -489,6 +507,8 @@ class Organizations(GithubStreamABC):
         return f"orgs/{stream_slice['organization']}"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield response.json()
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -518,6 +538,8 @@ class Teams(Organizations):
         return f"orgs/{stream_slice['organization']}/teams"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -531,6 +553,8 @@ class Users(Organizations):
         return f"orgs/{stream_slice['organization']}/members"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
@@ -1807,6 +1831,8 @@ class TeamMemberships(GithubStream):
                 yield {"organization": record["organization"], "team_slug": record["team_slug"], "username": record["login"]}
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
         yield self.transform(response.json(), stream_slice=stream_slice)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -1927,3 +1953,61 @@ class IssueTimelineEvents(GithubStream):
         for event in events_list:
             record[event["event"]] = event
         yield record
+
+
+class CommitDetails(SemiIncrementalMixin, GithubStream):
+    """
+    API docs: https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit
+
+    Fetches full per-commit detail (stats and per-file changes) for each commit produced by the
+    Commits stream. The list-commits endpoint returns neither `stats` nor `files`, so one
+    get-a-commit call per SHA is the only way to obtain them; sync cost therefore scales with
+    commit volume, and `files` is capped at 300 entries per commit by GitHub.
+
+    Not in `metadata.yaml`'s `suggestedStreams` on purpose: that list is pre-selected for new
+    connections, and one request per commit is too expensive to enable without an explicit choice.
+    """
+
+    primary_key = "sha"
+    cursor_field = "created_at"
+    slice_keys = ["repository", "branch"]
+
+    def __init__(self, parent: Commits, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/commits/{stream_slice['sha']}"
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._starting_point_cache.clear()
+        # `kwargs` carries this stream's own `stream_state`, which `Commits` then reads to build
+        # its `since` parameter. That is load-bearing rather than incidental: both streams key
+        # state on ["repository", "branch"] with a `created_at` cursor, so the shapes are
+        # interchangeable and the parent lists only commits newer than what this stream has
+        # already detailed. Without it every sync would re-list every commit and the semi-
+        # incremental filter would drop the records only after paying for the detail request.
+        for stream_slice in self.parent.stream_slices(**kwargs):
+            for record in self.parent.read_records(stream_slice=stream_slice, **kwargs):
+                yield {"repository": record["repository"], "sha": record["sha"], "branch": record["branch"]}
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        if not response.ok:
+            return
+        yield self.transform(record=response.json(), stream_slice=stream_slice)
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record = super().transform(record=record, stream_slice=stream_slice)
+        record["branch"] = stream_slice["branch"]
+        record["created_at"] = record["commit"]["author"]["date"]
+        return record
+
+    def _get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        repository = latest_record["repository"]
+        branch = latest_record["branch"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(repository, {}).get(branch, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(repository, {}).setdefault(branch, {})[self.cursor_field] = updated_state
+        return current_stream_state

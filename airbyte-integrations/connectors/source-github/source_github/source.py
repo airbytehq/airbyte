@@ -36,6 +36,7 @@ from .streams import (
     Comments,
     CommitCommentReactions,
     CommitComments,
+    CommitDetails,
     Commits,
     ContributorActivity,
     Deployments,
@@ -390,6 +391,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
+        commits_stream = Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", []))
 
         self._sync_manifest_config(config)
 
@@ -401,7 +403,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
             CommitComments(**repository_args_with_start_date),
-            Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
+            commits_stream,
+            CommitDetails(parent=commits_stream, **repository_args_with_start_date),
             ContributorActivity(**repository_args),
             Deployments(**repository_args_with_start_date),
             Events(**repository_args_with_start_date),

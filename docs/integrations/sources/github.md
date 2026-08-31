@@ -67,7 +67,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commit_details`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
 
    - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
@@ -119,6 +119,7 @@ This connector outputs the following incremental streams:
 - [Commit comment reactions](https://docs.github.com/en/rest/reference/reactions?apiVersion=2022-11-28#list-reactions-for-a-commit-comment)
 - [Commit comments](https://docs.github.com/en/rest/commits/comments?apiVersion=2022-11-28#list-commit-comments-for-a-repository)
 - [Commits](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#list-commits)
+- [Commit details](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit)
 - [Deployments](https://docs.github.com/en/rest/deployments/deployments?apiVersion=2022-11-28#list-deployments)
 - [Events](https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events)
 - [Issue comment reactions](https://docs.github.com/en/rest/reactions/reactions?apiVersion=2022-11-28#list-reactions-for-an-issue-comment)
@@ -178,7 +179,13 @@ This connector outputs the following incremental streams:
    - `teams`
    - `users`
 
-5. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
+5. The `commit_details` stream costs one API request per commit, because GitHub's list-commits
+   endpoint returns neither `stats` nor `files` and only [get-a-commit](https://docs.github.com/en/rest/commits/commits?apiVersion=2022-11-28#get-a-commit)
+   does. It is not selected by default for that reason: enable it only if you need per-commit
+   line counts or changed files, and expect the sync to consume roughly as many requests as
+   there are new commits. GitHub caps `files` at 300 entries per commit.
+
+6. Adding a repository or organization to a connection that has already synced does not backfill its history. See [Adding repositories or organizations to an existing connection](#adding-repositories-or-organizations-to-an-existing-connection).
 
 ## IP allow list
 
@@ -259,6 +266,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.0 | 2026-08-28 | [81717](https://github.com/airbytehq/airbyte/pull/81717) | Add the `commit_details` stream (per-commit `stats` and changed `files`, opt-in because it costs one request per commit); fail fast on HTTP 401 with an actionable message instead of retrying a credential that cannot be rotated; skip HTTP 404 immediately instead of retrying five times, naming the stream and URL in the skip log |
 | 2.2.0 | 2026-08-27 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |
 | 2.1.42 | 2026-08-25 | [85011](https://github.com/airbytehq/airbyte/pull/85011) | Update dependencies |
 | 2.1.41 | 2026-08-18 | [84569](https://github.com/airbytehq/airbyte/pull/84569) | Update dependencies |

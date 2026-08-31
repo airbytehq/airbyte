@@ -21,6 +21,7 @@ from source_github.streams import (
     Comments,
     CommitCommentReactions,
     CommitComments,
+    CommitDetails,
     Commits,
     ContributorActivity,
     Deployments,
@@ -340,6 +341,42 @@ def test_error_handler_410_unknown_body_returns_fail():
     assert result.failure_type == FailureType.config_error
 
 
+def _mock_404_response(url):
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = requests.codes.NOT_FOUND
+    response_mock.headers = {}
+    response_mock.url = url
+    response_mock.text = '{"message": "Not Found"}'
+    response_mock.ok = False
+    response_mock.json = lambda: json.loads(response_mock.text)
+    return response_mock
+
+
+def test_error_handler_404_ignores_with_stream_and_url_context():
+    """The static mapping cannot name the stream, and the CDK logs nothing but `error_message` on
+    IGNORE, so the handler has to build the skip message itself."""
+    stream = RepositoryStats(repositories=["org/missing"], page_size_for_large_streams=30)
+
+    result = stream.get_error_handler().interpret_response(_mock_404_response("https://api.github.com/repos/org/missing"))
+
+    assert result.response_action == ResponseAction.IGNORE
+    assert "Skipping `repository_stats`" in result.error_message
+    assert "repos/org/missing" in result.error_message
+
+
+def test_error_handler_404_on_graphql_fails_instead_of_skipping():
+    """`/graphql` exists everywhere, so a 404 there means `api_url` is wrong rather than a
+    missing resource. Skipping it would also feed an error envelope to the GraphQL streams'
+    `parse_response`/`next_page_token`, which index `response.json()["data"]` unguarded."""
+    stream = Reviews(repositories=["org/repo"], page_size_for_large_streams=30, start_date="2021-01-01T00:00:00Z")
+
+    result = stream.get_error_handler().interpret_response(_mock_404_response("https://api.github.com/graphql"))
+
+    assert result.response_action == ResponseAction.FAIL
+    assert result.failure_type == FailureType.config_error
+    assert "API URL" in result.error_message
+
+
 @patch("time.sleep")
 def test_retry_after_rate_limit(time_mock, requests_mock):
     """
@@ -403,9 +440,13 @@ def test_read_records_404_message_for_repository_stream(time_mock, caplog, reque
     )
 
     list(read_full_refresh(stream))
+    # 404 resolves to IGNORE, so the skip is logged by GithubStreamABCErrorHandler rather than by
+    # read_records. The stream name and the slice (via the URL) must survive that move.
     assert any(
-        "Skipping `Tags` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
+        "Skipping `tags` for" in msg and "org/missing-repo" in msg and "GitHub returned 404 Not Found" in msg for msg in caplog.messages
     )
+    # IGNORE, not RETRY: a GitHub 404 is deterministic, so the five retries were pure waste.
+    assert requests_mock.call_count == 1
 
 
 @patch("time.sleep")
@@ -523,7 +564,7 @@ def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
 
 
 @patch("time.sleep")
-def test_stream_teams_404(time_mock, requests_mock):
+def test_stream_teams_404(time_mock, caplog, requests_mock):
     organization_args = {"organizations": ["org_name"]}
     stream = Teams(**organization_args)
 
@@ -534,8 +575,11 @@ def test_stream_teams_404(time_mock, requests_mock):
     )
 
     assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
+    assert requests_mock.call_count == 1
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org_name/teams?per_page=100"
+    # `Teams.parse_response` does not delegate to the base implementation, so it carries its own
+    # `response.ok` guard; without it the IGNOREd error object would be iterated as records.
+    assert any("Skipping `teams` for" in msg and "org_name" in msg for msg in caplog.messages)
 
 
 @patch("time.sleep")
@@ -572,9 +616,16 @@ def test_stream_organizations_read(requests_mock):
 
 
 @patch("time.sleep")
-def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
-    """Replaces the deleted test_stream_repositories_401: GithubStreamABC.read_records still logs
-    the PAT-renewal hint on 401 and re-raises, for every stream still on the Python path."""
+def test_stream_401_fails_fast_with_pat_renewal_hint(time_mock, requests_mock):
+    """A 401 fails on the first response instead of retrying five times.
+
+    Retrying could only help if the retry landed on a different credential, and it cannot:
+    `HttpClient._send` re-signs the request on every attempt, but
+    `RateLimitedMultipleTokenAuthenticator._acquire_call` keeps the same `_active_token` while
+    that token's quota is healthy, which a rejected credential's is. So the PAT-renewal hint
+    moved from `read_records` (which never sees a FAIL, since the CDK raises without wrapping the
+    response) into GITHUB_DEFAULT_ERROR_MAPPING[401].
+    """
     stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
 
     requests_mock.get(
@@ -583,10 +634,31 @@ def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
         json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
     )
 
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        list(read_full_refresh(stream))
+
+    assert requests_mock.call_count == 1
+    assert "GitHub returned 401 Unauthorized" in exc_info.value.message
+    assert "Personal Access Token may need to be renewed" in exc_info.value.message
+    assert exc_info.value.failure_type == FailureType.config_error
+
+
+@patch("time.sleep")
+def test_stream_401_with_exhausted_rate_limit_still_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
+    """A 401 that also reports an exhausted quota is classified RATE_LIMITED, not FAIL, so it is
+    retried and reaches `read_records` wrapped. That branch must keep logging the hint."""
+    stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
+
+    requests_mock.get(
+        "https://api.github.com/orgs/org1/members",
+        status_code=requests.codes.UNAUTHORIZED,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+        headers={"X-RateLimit-Remaining": "0", "Retry-After": "0"},
+    )
+
     with pytest.raises(AirbyteTracedException):
         list(read_full_refresh(stream))
 
-    # 1 initial attempt + GithubStreamABC.max_retries (5), matching GITHUB_DEFAULT_ERROR_MAPPING[401] = RETRY.
     assert requests_mock.call_count == 6
     assert any(
         "GitHub authentication failed (HTTP 401) for stream" in message and "Personal Access Token may need to be renewed" in message
@@ -872,6 +944,259 @@ def test_stream_pull_request_commits(requests_mock):
         {"sha": 3, "repository": "organization/repository", "pull_number": 3},
         {"sha": 4, "repository": "organization/repository", "pull_number": 3},
     ]
+
+
+def test_stream_commit_details(requests_mock):
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+    }
+    repository_args_with_start_date = {**repository_args, "start_date": "2022-02-01T00:00:00Z"}
+
+    commits_stream = Commits(**repository_args_with_start_date, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **repository_args)
+
+    # Branches + repo stats needed by Commits._validate_branches_to_pull
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository",
+        json={"full_name": "organization/repository", "default_branch": "main"},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/branches",
+        json=[{"name": "main", "repository": "organization/repository"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits",
+        json=[
+            {
+                "sha": "abc123",
+                "commit": {"author": {"date": "2022-02-02T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/abc123",
+                "url": "https://api.github.com/repos/organization/repository/commits/abc123",
+                "node_id": "node1",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/abc123/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            }
+        ],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/abc123",
+        json={
+            "sha": "abc123",
+            "node_id": "node1",
+            "url": "https://api.github.com/repos/organization/repository/commits/abc123",
+            "html_url": "https://github.com/organization/repository/commit/abc123",
+            "comments_url": "https://api.github.com/repos/organization/repository/commits/abc123/comments",
+            "commit": {"author": {"date": "2022-02-02T10:00:00Z"}, "message": "init"},
+            "author": None,
+            "committer": None,
+            "parents": [],
+            "stats": {"additions": 10, "deletions": 2, "total": 12},
+            "files": [
+                {
+                    "sha": "filesha1",
+                    "filename": "README.md",
+                    "status": "modified",
+                    "additions": 10,
+                    "deletions": 2,
+                    "changes": 12,
+                    "patch": "@@ -1 +1 @@\n-old\n+new",
+                }
+            ],
+        },
+    )
+
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    record = records[0]
+    assert record["sha"] == "abc123"
+    assert record["repository"] == "organization/repository"
+    assert record["branch"] == "main"
+    assert record["stats"] == {"additions": 10, "deletions": 2, "total": 12}
+    assert len(record["files"]) == 1
+    assert record["files"][0]["filename"] == "README.md"
+
+
+def test_stream_commit_details_schema_declares_the_cursor_and_resolves_refs():
+    """`created_at` is synthesized in `transform`, so it is easy to leave out of the schema - and
+    the connector test suite fails a stream whose cursor field is not declared. Also asserts the
+    `$ref: user.json` pointers actually resolve, since the loader inlines them."""
+    stream = CommitDetails(
+        parent=Commits(repositories=["org/repo"], page_size_for_large_streams=100, start_date="", branches_to_pull=[]),
+        repositories=["org/repo"],
+        page_size_for_large_streams=100,
+    )
+
+    schema = stream.get_json_schema()
+
+    assert stream.cursor_field in schema["properties"]
+    assert stream.primary_key in schema["properties"]
+    assert "$ref" not in schema["properties"]["author"]
+    assert "login" in schema["properties"]["author"]["properties"]
+
+
+def test_stream_commit_details_path():
+    repository_args = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+    commits_stream = Commits(**repository_args, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **{k: v for k, v in repository_args.items() if k != "start_date"})
+    assert stream.path(stream_slice={"repository": "org/repo", "sha": "deadbeef", "branch": "main"}) == ("repos/org/repo/commits/deadbeef")
+
+
+def test_stream_commit_details_incremental(requests_mock):
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+    commits_stream = Commits(**repository_args_with_start_date, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **repository_args_with_start_date)
+
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository",
+        json={"full_name": "organization/repository", "default_branch": "main"},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/branches",
+        json=[{"name": "main", "repository": "organization/repository"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits",
+        json=[
+            {
+                "sha": "abc1",
+                "commit": {"author": {"date": "2022-02-02T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/abc1",
+                "url": "https://api.github.com/repos/organization/repository/commits/abc1",
+                "node_id": "node1",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/abc1/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            },
+            {
+                "sha": "abc2",
+                "commit": {"author": {"date": "2022-02-03T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/abc2",
+                "url": "https://api.github.com/repos/organization/repository/commits/abc2",
+                "node_id": "node2",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/abc2/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            },
+        ],
+    )
+
+    def make_detail(sha, date):
+        return {
+            "sha": sha,
+            "node_id": f"node_{sha}",
+            "url": f"https://api.github.com/repos/organization/repository/commits/{sha}",
+            "html_url": f"https://github.com/organization/repository/commit/{sha}",
+            "comments_url": f"https://api.github.com/repos/organization/repository/commits/{sha}/comments",
+            "commit": {"author": {"date": date}, "message": "msg"},
+            "author": None,
+            "committer": None,
+            "parents": [],
+            "stats": {"additions": 1, "deletions": 0, "total": 1},
+            "files": [],
+        }
+
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/abc1",
+        json=make_detail("abc1", "2022-02-02T10:00:00Z"),
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/abc2",
+        json=make_detail("abc2", "2022-02-03T10:00:00Z"),
+    )
+
+    expected_state = {"organization/repository": {"main": {"created_at": "2022-02-03T10:00:00Z"}}}
+
+    stream_state = {}
+    records = read_incremental(stream, stream_state)
+    assert [r["sha"] for r in records] == ["abc1", "abc2"]
+    assert stream_state == expected_state
+    # `read_incremental` keeps its own dict, so assert the stream's own state too: that is what
+    # `SemiIncrementalMixin.read_records` writes and what the CDK actually checkpoints.
+    assert stream.state == expected_state
+
+    detail_calls_after_first_read = len([r for r in requests_mock._adapter.request_history if r.path.endswith("/commits/abc1")])
+    assert detail_calls_after_first_read == 1
+
+    records = read_incremental(stream, stream_state)
+    assert records == []
+    assert stream_state == expected_state
+
+    # The parent `Commits` stream reads its `since` out of the *child's* state, which is what
+    # keeps a second sync from paying for a detail request per already-detailed commit. Pin it:
+    # the list-commits request must carry the cursor this stream stored.
+    list_commits_requests = [r for r in requests_mock._adapter.request_history if r.path.endswith("/repository/commits")]
+    assert list_commits_requests[-1].qs["since"] == ["2022-02-03t10:00:00z"]
+    # requests_mock ignores `since` and re-serves both commits, so the parent's semi-incremental
+    # filter is what drops them here. Either way no new detail request may be issued.
+    assert len([r for r in requests_mock._adapter.request_history if r.path.endswith("/commits/abc1")]) == 1
+
+
+def test_stream_commit_details_created_at_in_record(requests_mock):
+    repository_args_with_start_date = {
+        "repositories": ["organization/repository"],
+        "page_size_for_large_streams": 100,
+        "start_date": "2022-02-01T00:00:00Z",
+    }
+    commits_stream = Commits(**repository_args_with_start_date, branches_to_pull=[])
+    stream = CommitDetails(parent=commits_stream, **repository_args_with_start_date)
+
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository",
+        json={"full_name": "organization/repository", "default_branch": "main"},
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/branches",
+        json=[{"name": "main", "repository": "organization/repository"}],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits",
+        json=[
+            {
+                "sha": "sha1",
+                "commit": {"author": {"date": "2022-02-02T10:00:00Z"}},
+                "html_url": "https://github.com/organization/repository/commit/sha1",
+                "url": "https://api.github.com/repos/organization/repository/commits/sha1",
+                "node_id": "n1",
+                "comments_url": "https://api.github.com/repos/organization/repository/commits/sha1/comments",
+                "author": None,
+                "committer": None,
+                "parents": [],
+            }
+        ],
+    )
+    requests_mock.get(
+        "https://api.github.com/repos/organization/repository/commits/sha1",
+        json={
+            "sha": "sha1",
+            "node_id": "n1",
+            "url": "https://api.github.com/repos/organization/repository/commits/sha1",
+            "html_url": "https://github.com/organization/repository/commit/sha1",
+            "comments_url": "https://api.github.com/repos/organization/repository/commits/sha1/comments",
+            "commit": {"author": {"date": "2022-02-02T10:00:00Z"}, "message": "init"},
+            "author": None,
+            "committer": None,
+            "parents": [],
+            "stats": {"additions": 5, "deletions": 1, "total": 6},
+            "files": [],
+        },
+    )
+
+    records = list(read_full_refresh(stream))
+    assert len(records) == 1
+    assert records[0]["created_at"] == "2022-02-02T10:00:00Z"
 
 
 def test_stream_project_columns(requests_mock):
@@ -1560,8 +1885,16 @@ def test_stream_team_members_full_refresh(time_mock, caplog, rate_limit_mock_res
         {"username": "login2", "organization": "org1", "team_slug": "team1"},
         {"username": "login2", "organization": "org1", "team_slug": "team2"},
     ]
-    expected_message = "Syncing `TeamMemberships` stream for organization `org1`, team `team2` and user `login3` isn't available: User has no team membership. Skipping..."
-    assert expected_message in caplog.messages
+    # Master logged "Syncing `TeamMemberships` stream for organization `org1`, team `team2` and
+    # user `login3` isn't available" from read_records. With 404 -> IGNORE that branch is no
+    # longer reached, so the same organization/team/user context has to come from the handler's
+    # message, which carries the request URL.
+    assert any(
+        "Skipping `team_memberships` for" in msg
+        and "orgs/org1/teams/team2/memberships/login3" in msg
+        and "GitHub returned 404 Not Found" in msg
+        for msg in caplog.messages
+    )
 
 
 def test_stream_commit_comment_reactions_incremental_read(requests_mock):
