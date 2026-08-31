@@ -18,7 +18,7 @@ from airbyte_cdk.sources.declarative.auth.token_provider import TokenProvider
 from airbyte_cdk.sources.streams.http import HttpClient
 from airbyte_cdk.utils import AirbyteTracedException
 
-from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, TypeSalesforceException
+from .exceptions import AUTHENTICATION_ERROR_MESSAGE_MAPPING, JWT_AUTHENTICATION_FAILED_MESSAGE, TypeSalesforceException
 from .rate_limiting import SalesforceErrorHandler
 from .utils import filter_streams_by_criteria
 
@@ -285,6 +285,10 @@ class SalesforceTokenProvider(TokenProvider):
     def credentials_permanently_failed(self) -> bool:
         return self._sf_api.login_permanently_failed
 
+    @property
+    def authentication_error_message(self) -> str:
+        return self._sf_api.authentication_error_message
+
     def force_refresh(self) -> bool:
         """Force an immediate token refresh, returning True if a token was obtained.
 
@@ -358,6 +362,15 @@ class Salesforce:
     def login_permanently_failed(self) -> bool:
         """True once login has failed with a credential error; it cannot recover within this process."""
         return self._login_permanently_failed
+
+    @property
+    def authentication_error_message(self) -> str:
+        """User-facing message for a permanently rejected login, worded for the configured auth type."""
+        return (
+            JWT_AUTHENTICATION_FAILED_MESSAGE
+            if self._use_jwt_auth()
+            else AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"]
+        )
 
     def set_refresh_token_observer(self, observer: Callable[[str], None]) -> None:
         """Register a callback invoked with the new refresh token whenever login() rotates it."""
@@ -438,7 +451,7 @@ class Salesforce:
                 # not redeem a grant another thread just saw rejected (under Refresh Token Rotation,
                 # reusing a rotated-out token revokes the whole grant).
                 raise AirbyteTracedException(
-                    message=AUTHENTICATION_ERROR_MESSAGE_MAPPING["expired access/refresh token"],
+                    message=self.authentication_error_message,
                     internal_message="Skipping Salesforce login: credentials already failed permanently in this process.",
                     failure_type=FailureType.config_error,
                 )

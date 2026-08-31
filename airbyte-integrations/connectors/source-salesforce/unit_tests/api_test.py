@@ -38,6 +38,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
     Type,
 )
@@ -147,6 +148,18 @@ def _generate_rsa_private_key_pem():
         encryption_algorithm=serialization.NoEncryption(),
     )
     return pem.decode(), key.public_key()
+
+
+def _jwt_salesforce(**overrides):
+    config = {
+        "auth_type": "JWT",
+        "client_id": "consumer_key",
+        "username": "user@example.com",
+        "private_key": _generate_rsa_private_key_pem()[0],
+        "is_sandbox": False,
+    }
+    config.update(overrides)
+    return Salesforce(**config)
 
 
 @pytest.mark.parametrize(
@@ -274,6 +287,60 @@ def test_client_login_requires_required_fields(client_id, client_secret, refresh
 
     assert "Client authentication requires" in err.value.message
     assert expected_field in err.value.message
+
+
+@pytest.mark.parametrize(
+    "error_description, expected_message_fragment",
+    [
+        pytest.param("invalid assertion", "matches the certificate uploaded", id="bad_signature_or_expired_assertion"),
+        pytest.param("Invalid assertion", "matches the certificate uploaded", id="capitalized_by_salesforce"),
+        pytest.param("invalid audience", "Set the Sandbox option", id="wrong_audience"),
+        pytest.param("invalid user", "does not recognize the configured Username", id="unknown_username"),
+        pytest.param("user hasn't approved this consumer", "not authorized for the connected app", id="user_not_pre_authorized"),
+    ],
+)
+def test_jwt_login_rejection_reports_actionable_message(requests_mock, error_description, expected_message_fragment):
+    """Salesforce rejects a JWT grant with a terse invalid_grant description that names no remedy;
+    unmapped descriptions surface as the raw response body, which is not actionable."""
+    sf = _jwt_salesforce()
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"error": "invalid_grant", "error_description": error_description},
+        status_code=400,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert err.value.failure_type == FailureType.config_error
+    assert expected_message_fragment in err.value.message
+    assert requests_mock.call_count == 1, "a rejected grant must not be retried"
+
+
+def test_jwt_permanent_failure_message_is_not_refresh_token_wording(requests_mock):
+    """Once the grant is rejected the failure latches and later logins raise the permanent-failure
+    message. Telling a JWT user to re-authenticate is a dead end: this flow has no refresh token and
+    no consent screen, so the connected app or the JWT inputs are what must change."""
+    sf = _jwt_salesforce()
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"error": "invalid_grant", "error_description": "invalid user"},
+        status_code=400,
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        sf.login()
+    assert sf.login_permanently_failed is True
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert err.value.failure_type == FailureType.config_error
+    assert "Re-authenticate" not in err.value.message
+    assert "JWT Bearer" in err.value.message
+    assert requests_mock.call_count == 1, "the rejected grant must not be redeemed again"
 
 
 def _register_login(requests_mock, **extra):
