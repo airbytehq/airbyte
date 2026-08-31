@@ -11,7 +11,6 @@ import io.airbyte.cdk.load.dataflow.aggregate.StoreKey
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergTableWriterFactory
 import io.airbyte.cdk.load.toolkits.iceberg.parquet.io.IcebergUtil
 import io.airbyte.cdk.load.write.StreamStateStore
-import io.airbyte.integrations.destination.gcs_data_lake.spec.DEFAULT_STAGING_BRANCH
 import io.airbyte.integrations.destination.gcs_data_lake.write.GcsDataLakeStreamState
 import jakarta.inject.Singleton
 
@@ -33,15 +32,22 @@ class GcsDataLakeAggregateFactory(
                 table = state.table,
                 generationId = icebergUtil.constructGenerationIdSuffix(stream),
                 importType = stream.tableSchema.importType,
-                schema = state.schema
+                schema = state.schema,
+                positionalDeleteRef = state.positionalDeleteState?.let { state.stagingBranchName },
+                positionalDeleteState = state.positionalDeleteState,
+                allowWholeFileSupersession =
+                    state.positionalDeleteState != null && state.suppressDeletedPositions,
+                suppressDeletedPositions = state.suppressDeletedPositions,
             )
 
         return GcsDataLakeAggregate(
             stream = stream,
             table = state.table,
             schema = state.schema,
-            stagingBranchName = DEFAULT_STAGING_BRANCH,
+            stagingBranchName = state.stagingBranchName,
             writer = writer,
+            positionalDeletesEnabled = state.positionalDeleteState != null,
+            deleteIndex = state.positionalDeleteState?.deleteIndex,
         )
     }
 }

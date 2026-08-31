@@ -11,6 +11,8 @@ import io.airbyte.cdk.load.dataflow.config.model.DataFlowSocketConfig
 import io.airbyte.cdk.load.dataflow.config.model.MediumConverterConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.integrations.destination.gcs_data_lake.spec.GcsDataLakeConfiguration
+import io.airbyte.integrations.destination.gcs_data_lake.spec.MergeOnReadDeleteEncoding
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
@@ -22,12 +24,13 @@ class GcsDataLakeBeanFactory {
     private val log = KotlinLogging.logger {}
 
     @Singleton
-    fun aggregatePublishingConfig(): AggregatePublishingConfig {
-        log.info { "NOOP code change for CI to pick up" }
+    fun aggregatePublishingConfig(config: GcsDataLakeConfiguration): AggregatePublishingConfig {
+        val maxRecords = config.resolvedMaxRecordsPerFlush
+        log.info { "Configured max records per flush: $maxRecords" }
 
         // NOT speed mode
         return AggregatePublishingConfig(
-            maxRecordsPerAgg = 10_000_000_000L,
+            maxRecordsPerAgg = maxRecords,
             maxEstBytesPerAgg = 150_000_000L,
             maxEstBytesAllAggregates = 150_000_000L * 5,
             maxBufferedAggregates = 5,
@@ -46,23 +49,47 @@ class GcsDataLakeBeanFactory {
             extractedAtAsTimestampWithTimezone = false,
         )
 
-    /**
-     * Socket configuration for GCS Data Lake destination.
-     * - In test environments: this bean is not created, so all sockets are used
-     * - In production with dedup streams: limits to 1 socket for data consistency
-     * - In production without dedup streams: uses all available sockets
-     */
+    /** Preserve the production one-socket invariant for all Dedupe streams. */
     @Singleton
     @Requires(notEnv = [Environment.TEST])
     fun dataFlowSocketConfig(catalog: DestinationCatalog): DataFlowSocketConfig {
-        val hasDedupStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
-        return if (hasDedupStreams) {
+        val hasDedupeStreams = catalog.streams.any { it.tableSchema.importType is Dedupe }
+        return if (hasDedupeStreams) {
             log.info { "Dedup streams detected, limiting to 1 socket for data consistency" }
             object : DataFlowSocketConfig {
                 override val numSockets: Int = 1
             }
         } else {
-            log.info { "No dedup streams detected, using all available sockets" }
+            log.info { "No socket restriction required, using all available sockets" }
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = Int.MAX_VALUE
+            }
+        }
+    }
+
+    /** Positional Dedupe also requires one socket in connector tests. */
+    @Singleton
+    @Requires(env = [Environment.TEST])
+    fun positionalTestDataFlowSocketConfig(
+        catalog: DestinationCatalog,
+        config: GcsDataLakeConfiguration,
+    ): DataFlowSocketConfig {
+        val positionalEncoding =
+            when (config.mergeOnReadDeleteEncoding) {
+                // TK-TODO: AUTOMATIC is temporarily wired to positional for prerelease testing;
+                // flip it back to equality before release.
+                MergeOnReadDeleteEncoding.AUTOMATIC,
+                MergeOnReadDeleteEncoding.POSITIONAL -> true
+                MergeOnReadDeleteEncoding.EQUALITY -> false
+            }
+        val hasPositionalDedupeStreams =
+            positionalEncoding && catalog.streams.any { it.tableSchema.importType is Dedupe }
+        return if (hasPositionalDedupeStreams) {
+            log.info { "Positional dedup streams detected, limiting to 1 test socket" }
+            object : DataFlowSocketConfig {
+                override val numSockets: Int = 1
+            }
+        } else {
             object : DataFlowSocketConfig {
                 override val numSockets: Int = Int.MAX_VALUE
             }
