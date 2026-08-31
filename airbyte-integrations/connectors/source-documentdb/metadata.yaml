@@ -15,7 +15,7 @@ data:
   dockerRepository: airbyte/source-documentdb
   documentationUrl: https://docs.airbyte.com/integrations/sources/documentdb
   githubIssueLabel: source-documentdb
-  icon: icon.png
+  icon: icon.svg
   license: ELv2
   name: DocumentDB
   registryOverrides:
