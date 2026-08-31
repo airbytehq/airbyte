@@ -1,0 +1,28 @@
+connector_image: airbyte/source-airmeet:dev
+custom_environment_variables:
+  CONNECTOR_TESTING_AVOID_WRITING_SECRET_TO_DISK: "true"
+
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_airmeet/spec.json"
+  
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+        timeout_seconds: 30
+  
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: 30
+  
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "airmeets"
+            bypass_reason: "Requires valid API credentials"
+        timeout_seconds: 60
