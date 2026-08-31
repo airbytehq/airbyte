@@ -12,7 +12,7 @@ data:
   suggestedStreams:
     streams:
       - channels
-      - videos
+      - video
       - comments
       - channel_comments
   remoteRegistries:
