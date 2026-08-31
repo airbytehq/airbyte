@@ -107,6 +107,10 @@ definitions:
           http_method: GET
           request_parameters:
             additional-fields[profile]: subscriptions
+            filter: >-
+              greater-than(updated,{{
+              stream_interval.start_time }})
+            sort: "updated"
           request_headers:
             Accept: application/json
             Revision: "2024-10-15"
