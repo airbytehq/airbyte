@@ -60,8 +60,7 @@ class ShopifyOAuth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
     """
 
     def get_auth_header(self) -> Mapping[str, Any]:
-        token = self.access_token if self._is_access_token_flow else self.get_access_token()
-        return {"X-Shopify-Access-Token": token}
+        return {"X-Shopify-Access-Token": self.get_access_token()}
 
 
 def build_shopify_authenticator(config: Mapping[str, Any]) -> Union[ShopifyAuthenticator, ShopifyOAuth2Authenticator]:
