@@ -69,7 +69,7 @@ Five Fivetran tables are intentionally not replicated. Justifications:
 
 ## Breaking-change assessment (1.4.0)
 
-Two 1.4.0 changes were evaluated against the breaking-change checklist; both ship as non-breaking:
+Two 1.4.0 areas were evaluated against the breaking-change checklist; both ship as non-breaking:
 
-- **`pointsOfInterest` removed from the `extensiveCalls` request body and schema** — non-breaking upstream deletion. Gong removed the field from `/v2/calls/extensive` in January 2025 (deadline 2025-01-23, tracked in oncall#10402; Gong's release notes and deprecations articles are linked from `metadata.yaml` `externalDocumentationUrls`). A live probe on 2026-08-30 confirmed 0 of 100 recent calls return the field, so no destination loses data — the column has been null since January 2025.
+- **`pointsOfInterest` retained despite upstream deletion** — Gong removed the field from `/v2/calls/extensive` in January 2025 (deadline 2025-01-23, tracked in oncall#10402; Gong's release notes and deprecations articles are linked from `metadata.yaml` `externalDocumentationUrls`). A live probe on 2026-08-30 confirmed 0 of 100 recent calls return the field — the column has been null since January 2025. The field stays in the request body and the `extensiveCalls` schema so existing destination columns are preserved; removing it is deferred to a future MAJOR version with a declared breaking change.
 - **Unset `start_date` scope** — a `ConfigMigration` in the spec pins `start_date: 1970-01-01T00:00:00Z` onto any config that omits it, so no connection's data scope changes. Note the consequence: the migration applies to all configs (new ones included), so unset-start-date behavior remains "sync all history" for everyone; the manifest's two-years fallback in `start_datetime` is defense in depth and is not reachable in normal operation.

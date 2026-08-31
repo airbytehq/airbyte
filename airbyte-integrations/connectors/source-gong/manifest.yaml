@@ -165,6 +165,7 @@ definitions:
                   structure: true
                   highlights: true
                   callOutcome: true
+                  pointsOfInterest: true
                   trackerOccurrences: true
                 parties: true
                 interaction:
@@ -1134,6 +1135,36 @@ schemas:
                   type:
                     - number
                     - "null"
+          pointsOfInterest:
+            type:
+              - object
+              - "null"
+            properties:
+              actionItems:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    snippet:
+                      type:
+                        - string
+                        - "null"
+                    snippetEndTime:
+                      type:
+                        - number
+                        - "null"
+                    snippetStartTime:
+                      type:
+                        - number
+                        - "null"
+                    speakerID:
+                      type:
+                        - string
+                        - "null"
           topics:
             type:
               - array
