@@ -77,14 +77,29 @@ jobs:
           # fetch the default branch from upstream
           git fetch --quiet upstream master
 
-      - id: cdk-changes
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d # v4.0.1
+      - name: Detect Changed Paths
+        id: cdk-changes
+        uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4.0.3
         with:
+          # 'some-with-excludes': a filter matches when a changed file matches at
+          # least one of its patterns and none of its negated patterns. This does
+          # not affect the 'java-cdk' filter, which has no negated patterns.
+          predicate-quantifier: "some-with-excludes"
           # Note: expressions within a filter are OR'ed
           filters: |
             java-cdk:
               - 'airbyte-cdk/java/**/**/src/main/**/*'
               - 'airbyte-cdk/bulk/**/**/src/main/**/*'
+            connectors:
+              # Mirrors the connector-path and ignore rules in
+              # poe-tasks/get-modified-connectors.sh, so that this is true exactly
+              # when that script is expected to return at least one connector.
+              - added|modified: 'airbyte-integrations/connectors/source-*/**'
+              - added|modified: 'airbyte-integrations/connectors/destination-*/**'
+              - '!**/.coveragerc'
+              - '!**/poe_tasks.toml'
+              - '!airbyte-integrations/connectors/*/README.md'
+              - '!airbyte-integrations/connectors/*/CONTRIBUTING.md'
 
       - name: Generate Connector Matrix from Changes
         id: generate-matrix
@@ -101,6 +116,16 @@ jobs:
           fi
 
           echo "non_jvm_connectors_matrix=$(./poe-tasks/get-modified-connectors.sh --json --no-java)" | tee -a $GITHUB_OUTPUT
+
+      - name: Check Connector Matrix Coverage
+        id: check-matrix
+        env:
+          CONNECTORS_MATRIX: ${{ steps.generate-matrix.outputs.connectors_matrix }}
+        run: |
+          # The matrix holds a single empty entry when no connector is modified,
+          # so only non-empty entries count as connectors under test.
+          connectors_found="$(jq -r '([.connector[] | select(. != "")] | length) > 0' <<<"$CONNECTORS_MATRIX")"
+          echo "connectors-found=${connectors_found}" | tee -a "$GITHUB_OUTPUT"
 
       - name: Set JVM Runner Type
         id: set-jvm-runner-type
@@ -120,6 +145,11 @@ jobs:
       # The commit SHA of the current branch, used to report test results:
       commit-sha: ${{ steps.checkout.outputs.commit }}
       creds-available: ${{ (secrets.GCP_PROJECT_ID == '') && (vars.GCP_PROJECT_ID == '') && 'false' || 'true' }}
+      # Whether the matrix contains at least one connector to test:
+      connectors-found: ${{ steps.check-matrix.outputs.connectors-found }}
+      # Whether the PR added or modified connector code. Always 'false' on the
+      # workflow_call path, where paths-filter has no pull request to diff.
+      connector-files-changed: ${{ steps.cdk-changes.outputs.connectors }}
 
   jvm-connectors-test:
     needs: [generate-matrix]
@@ -482,14 +512,16 @@ jobs:
         # Most connectors can't pass lint checks, so this is non-blocking for now
         continue-on-error: true
 
-  pre-release-checks:
-    if: github.event.pull_request.draft == false
+  # Blocking: the result of this job is evaluated by 'connector-ci-checks-summary'.
+  # Unlike the non-blocking checks below, it has no draft-PR guard, so that a PR
+  # that is marked ready for review can never be merged on a stale QA result.
+  connector-qa-checks:
     needs: [generate-matrix]
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 10 # Limit number of parallel jobs
       fail-fast: false # Don't stop on first failure
-    name: ${{ matrix.connector || 'No-Op' }} Pre-Release Checks
+    name: ${{ matrix.connector || 'No-Op' }} QA Checks
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout Airbyte
@@ -522,8 +554,44 @@ jobs:
           connector_name=${{ matrix.connector }}
           airbyte-ops local connector qa --name ${connector_name%-strict-encrypt}
 
-      - name: Detect Python CDK Prerelease Versions
+  # Non-blocking by design: pinning a connector to a Python CDK prerelease and
+  # merging is a supported development workflow, so this job is deliberately
+  # excluded from the 'needs' of 'connector-ci-checks-summary'. A pin is
+  # surfaced as a warning annotation on the run rather than as a merge gate.
+  # The pin must still be removed before the connector is published.
+  cdk-prerelease-check:
+    if: github.event.pull_request.draft == false
+    needs: [generate-matrix]
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
+      max-parallel: 10 # Limit number of parallel jobs
+      fail-fast: false # Don't stop on first failure
+    name: ${{ matrix.connector || 'No-Op' }} CDK Prerelease Check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout Airbyte
         if: matrix.connector
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
+          fetch-depth: 0
+
+      - name: Install uv
+        if: matrix.connector
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Poe
+        if: matrix.connector
+        run: |
+          # Install Poe so we can run the connector tasks:
+          uv tool install poethepoet
+
+      - name: Detect Python CDK Prerelease Versions
+        id: detect-cdk-prerelease
+        if: matrix.connector
+        continue-on-error: true
         working-directory: airbyte-integrations/connectors/${{ matrix.connector }}
         run: |
           # Exit with code 1 if the CDK is not pinned to a standard version.
@@ -533,6 +601,15 @@ jobs:
           else
             echo "Skipping CDK pre-release check for non-Python connector."
           fi
+
+      - name: Warn on Python CDK Prerelease Pin
+        if: matrix.connector && steps.detect-cdk-prerelease.outcome == 'failure'
+        env:
+          CONNECTOR: ${{ matrix.connector }}
+        run: >
+          echo "::warning title=Python CDK prerelease pin::${CONNECTOR} is pinned to a
+          non-production Python CDK reference. This does not block the merge, but the
+          pin must be removed before the connector is published."
 
   # --- Soft launch: ops CLI artifact generation + validation (parallel job) ---
   # Runs alongside existing pre-release checks to validate the new ops CLI path.
@@ -634,22 +711,32 @@ jobs:
       - generate-matrix
       - jvm-connectors-test
       - non-jvm-connectors-test
-      - pre-release-checks
+      - connector-qa-checks
       - connectors-lint
     runs-on: ubuntu-24.04
     outputs:
       result: ${{ steps.evaluate-status.outputs.result }}
     steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
+          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
+          fetch-depth: 1
+
       - name: Evaluate Status
         id: evaluate-status
-        run: |
-          if [[ "${{ needs.jvm-connectors-test.result }}" == "success" &&
-                "${{ needs.non-jvm-connectors-test.result }}" == "success" &&
-                "${{ needs.connectors-lint.result }}" == "success" ]]; then
-            echo "result=success" | tee -a $GITHUB_OUTPUT
-          else
-            echo "result=failure" | tee -a $GITHUB_OUTPUT
-          fi
+        env:
+          GENERATE_MATRIX_RESULT: ${{ needs.generate-matrix.result }}
+          JVM_CONNECTORS_TEST_RESULT: ${{ needs.jvm-connectors-test.result }}
+          NON_JVM_CONNECTORS_TEST_RESULT: ${{ needs.non-jvm-connectors-test.result }}
+          CONNECTORS_LINT_RESULT: ${{ needs.connectors-lint.result }}
+          CONNECTOR_QA_CHECKS_RESULT: ${{ needs.connector-qa-checks.result }}
+          CONNECTOR_FILES_CHANGED: ${{ needs.generate-matrix.outputs.connector-files-changed }}
+          CONNECTORS_FOUND: ${{ needs.generate-matrix.outputs.connectors-found }}
+        # See the script for the per-job gating policy, including how
+        # 'skipped' and 'cancelled' results are treated.
+        run: ./.github/scripts/evaluate-connector-ci-status.sh
 
       # In slash commands and when not running within a fork, we want to upload
       # a check status report to the PR.
