@@ -150,11 +150,26 @@ releases:
 This change only breaks the `users` stream - all other streams are unaffected. A user can safely ignore the breaking change
 if they are not syncing the `users` stream.
 
+For example, a destination Snowflake connector removing username/password authentication can scope its impact to
+actors whose stored configuration uses that authentication method:
+
+```yaml
+scopedImpact:
+  - scopeType: config
+    impactedScopes:
+      - path: credentials.auth_type
+        equals: "Username and Password"
+```
+
+The platform release supporting the `config` scope type must be deployed before a connector publishes a breaking change
+that uses it.
+
 The supported scope types are listed below.
 
 | Scope Type | Value Type  | Value Description    |
 | ---------- | ----------- | -------------------- |
 | stream     | `list[str]` | List of stream names |
+| config     | `list[{path: str, equals?: any}]` | Actors whose stored configuration has a value at `path`, optionally equal to `equals` |
 
 #### `remoteRegistries`
 
