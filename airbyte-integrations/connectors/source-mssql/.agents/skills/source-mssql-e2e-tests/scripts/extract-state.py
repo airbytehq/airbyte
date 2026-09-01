@@ -1,8 +1,18 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python3
 # MSSQL engine shim; implementation moved to db-harness-lib.
-set -euo pipefail
+import os
+import subprocess
+import sys
 
-SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-REPO_ROOT="$(git -C "$SKILL_DIR" rev-parse --show-toplevel)"
+SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+REPO_ROOT = subprocess.run(
+    ["git", "-C", SKILL_DIR, "rev-parse", "--show-toplevel"],
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout.strip()
 
-exec "$REPO_ROOT/airbyte-integrations/db-harness-lib/scripts/extract-state.py" "$@"
+TARGET = os.path.join(
+    REPO_ROOT, "airbyte-integrations", "db-harness-lib", "scripts", "extract-state.py"
+)
+os.execv(TARGET, [TARGET, *sys.argv[1:]])
