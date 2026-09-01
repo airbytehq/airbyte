@@ -719,15 +719,20 @@ jobs:
     steps:
       # Gating policy:
       #
-      # | Job                        | Blocking | 'skipped' or 'cancelled' |
-      # | -------------------------- | -------- | ------------------------- |
-      # | generate-matrix            | yes      | failure                  |
-      # | jvm-connectors-test        | yes      | failure                  |
-      # | non-jvm-connectors-test    | yes      | failure                  |
-      # | connectors-lint            | yes      | failure                  |
-      # | connector-qa-checks        | yes      | failure                  |
-      # | cdk-prerelease-check       | no       | not evaluated            |
-      # | build-and-verify-artifacts | no       | not evaluated            |
+      # | Job                        | Fails the summary | 'skipped' or 'cancelled' |
+      # | -------------------------- | ----------------- | ------------------------ |
+      # | generate-matrix            | yes               | failure                  |
+      # | jvm-connectors-test        | yes               | failure                  |
+      # | non-jvm-connectors-test    | yes               | failure                  |
+      # | connectors-lint            | yes (*)           | failure                  |
+      # | connector-qa-checks        | yes               | failure                  |
+      # | cdk-prerelease-check       | no                | not evaluated            |
+      # | build-and-verify-artifacts | no                | not evaluated            |
+      #
+      # (*) The result of 'connectors-lint' is evaluated here, as it was before
+      # this change, but its lint step runs with 'continue-on-error: true', so
+      # lint rule violations do not fail the job and do not block a merge today.
+      # Only an infrastructure failure of that job fails the summary.
       #
       # Every blocking job runs its matrix once as a no-op when no connector is
       # modified, so none of them has a legitimate reason to be skipped or
