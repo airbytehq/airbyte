@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/scripts/**"
+      - ".github/workflows/connector-ci-checks.yml"
       - ".github/workflows/ci-scripts-tests.yml"
 
 permissions:
@@ -23,4 +24,4 @@ jobs:
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Run CI script tests
-        run: uvx --with pytest pytest .github/scripts/tests
+        run: uvx --with pytest --with pyyaml pytest .github/scripts/tests

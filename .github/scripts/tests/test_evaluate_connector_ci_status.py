@@ -6,9 +6,10 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pytest
+import yaml
 
 
-SCRIPT = Path(__file__).parents[1] / "evaluate-connector-ci-status.sh"
+WORKFLOW = Path(__file__).parents[3] / ".github" / "workflows" / "connector-ci-checks.yml"
 BASE_ENV = {
     "GENERATE_MATRIX_RESULT": "success",
     "JVM_CONNECTORS_TEST_RESULT": "success",
@@ -26,22 +27,30 @@ BLOCKING_JOB_RESULTS = [
 ]
 
 
+def evaluate_status_script() -> str:
+    """Return the bash body of the summary job's 'Evaluate Status' step."""
+    steps = yaml.safe_load(WORKFLOW.read_text())["jobs"]["connector-ci-checks-summary"]["steps"]
+    return next(step["run"] for step in steps if step.get("id") == "evaluate-status")
+
+
+EVALUATE_STATUS_SCRIPT = evaluate_status_script()
+
+
 def run_script(**env):
     with TemporaryDirectory() as directory:
         output_file = Path(directory) / "github-output"
         completed = subprocess.run(
-            [str(SCRIPT)],
+            ["bash", "-c", EVALUATE_STATUS_SCRIPT],
             capture_output=True,
             check=True,
             env={**os.environ, **BASE_ENV, **env, "GITHUB_OUTPUT": str(output_file)},
             text=True,
         )
-        completed.output_file_contents = output_file.read_text()
-        return completed
+        return completed, output_file.read_text()
 
 
 def run(**env):
-    output = run_script(**env).output_file_contents
+    _, output = run_script(**env)
     return output.strip().removeprefix("result=")
 
 
@@ -77,5 +86,9 @@ def test_workflow_call_with_no_paths_filter_value_succeeds():
 
 
 def test_qa_failure_emits_error_annotation():
-    completed = run_script(CONNECTOR_QA_CHECKS_RESULT="failure")
+    completed, _ = run_script(CONNECTOR_QA_CHECKS_RESULT="failure")
     assert "::error::Job 'connector-qa-checks' reported 'failure', expected 'success'." in completed.stdout
+
+
+def test_evaluate_status_script_does_not_interpolate_expressions():
+    assert "${{" not in EVALUATE_STATUS_SCRIPT

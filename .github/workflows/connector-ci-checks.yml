@@ -717,13 +717,21 @@ jobs:
     outputs:
       result: ${{ steps.evaluate-status.outputs.result }}
     steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          repository: ${{ inputs.repo || github.event.pull_request.head.repo.full_name }}
-          ref: ${{ inputs.gitref || github.head_ref || github.ref_name }}
-          fetch-depth: 1
-
+      # Gating policy:
+      #
+      # | Job                        | Blocking | 'skipped' or 'cancelled' |
+      # | -------------------------- | -------- | ------------------------- |
+      # | generate-matrix            | yes      | failure                  |
+      # | jvm-connectors-test        | yes      | failure                  |
+      # | non-jvm-connectors-test    | yes      | failure                  |
+      # | connectors-lint            | yes      | failure                  |
+      # | connector-qa-checks        | yes      | failure                  |
+      # | cdk-prerelease-check       | no       | not evaluated            |
+      # | build-and-verify-artifacts | no       | not evaluated            |
+      #
+      # Every blocking job runs its matrix once as a no-op when no connector is
+      # modified, so none of them has a legitimate reason to be skipped or
+      # cancelled: any result other than 'success' fails the summary.
       - name: Evaluate Status
         id: evaluate-status
         env:
@@ -734,9 +742,31 @@ jobs:
           CONNECTOR_QA_CHECKS_RESULT: ${{ needs.connector-qa-checks.result }}
           CONNECTOR_FILES_CHANGED: ${{ needs.generate-matrix.outputs.connector-files-changed }}
           CONNECTORS_FOUND: ${{ needs.generate-matrix.outputs.connectors-found }}
-        # See the script for the per-job gating policy, including how
-        # 'skipped' and 'cancelled' results are treated.
-        run: ./.github/scripts/evaluate-connector-ci-status.sh
+        run: |
+          result=success
+
+          fail() {
+            echo "::error::$1"
+            result=failure
+          }
+
+          for job in \
+            "generate-matrix=${GENERATE_MATRIX_RESULT:-}" \
+            "jvm-connectors-test=${JVM_CONNECTORS_TEST_RESULT:-}" \
+            "non-jvm-connectors-test=${NON_JVM_CONNECTORS_TEST_RESULT:-}" \
+            "connectors-lint=${CONNECTORS_LINT_RESULT:-}" \
+            "connector-qa-checks=${CONNECTOR_QA_CHECKS_RESULT:-}"; do
+            [[ "${job#*=}" == "success" ]] && continue
+            fail "Job '${job%%=*}' reported '${job#*=}', expected 'success'."
+          done
+
+          # A pull request that adds or modifies connector code must produce a
+          # non-empty connector matrix. An empty one means no connector was tested.
+          if [[ "${CONNECTOR_FILES_CHANGED:-}" == "true" && "${CONNECTORS_FOUND:-}" != "true" ]]; then
+            fail "Connector files were added or modified, but the connector matrix was empty, so no connector was tested."
+          fi
+
+          echo "result=${result}" | tee -a "$GITHUB_OUTPUT"
 
       # In slash commands and when not running within a fork, we want to upload
       # a check status report to the PR.
