@@ -67,7 +67,7 @@ A typical entry looks like this.
   "id": "8478fcbd-d369-4bda-8d9b-b782cea5ad40",
   "timestamp": 1746724563299,
   "actor": {
-    "actorId": "1c26c465-58h8-43e6-8jko-2252b7g8a9e2",
+    "actorId": "1c26c465-58a8-43e6-8fc0-2252b7c8a9e2",
     "email": "user@example.com",
     "ipAddress": "192.0.2.0",
     "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36"
