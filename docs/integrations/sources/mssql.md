@@ -535,6 +535,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Changelog
 
+:::warning
+Starting with version 5.1.0, the connector runs on an updated Java runtime that, in line with current security standards, no longer allows TLS connections using RSA key exchange (`TLS_RSA_*` cipher suites) or SHA-1 handshake signatures (see the [JDK 21.0.10 release notes](https://www.oracle.com/java/technologies/javase/21-0-10-relnotes.html)). Older SQL Server deployments that support only these legacy TLS features — typically SQL Server 2014 and earlier without recent TLS updates, or instances running on legacy Windows Server versions — will no longer be able to establish encrypted connections. To continue syncing from these servers, update them to support TLS 1.2 with modern cipher suites, as described in Microsoft's [TLS 1.2 support for Microsoft SQL Server](https://learn.microsoft.com/en-us/troubleshoot/sql/database-engine/connect/tls-1-2-support-microsoft-sql-server).
+:::
+
 <details>
   <summary>Expand to review</summary>
 
