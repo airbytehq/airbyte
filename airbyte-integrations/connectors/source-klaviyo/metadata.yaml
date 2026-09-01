@@ -68,7 +68,7 @@ data:
       url: https://community.klaviyo.com/groups/developer-group-64
     - title: Klaviyo OpenAPI specification repository
       url: https://github.com/klaviyo/openapi
-      type: spec_repository
+      type: openapi_spec
   tags:
     - cdk:low-code
     - language:manifest-only
