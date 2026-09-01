@@ -583,6 +583,17 @@ definitions:
       schema:
         $ref: "#/schemas/ad_group_criterion_label"
 
+  asset_group_stream:
+    $ref: "#/definitions/incremental_stream_base"
+    name: asset_group
+    primary_key:
+      - asset_group.id
+      - segments.date
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/asset_group"
+
   audience_stream:
     $ref: "#/definitions/full_refresh_stream_base"
     name: audience
@@ -1300,6 +1311,7 @@ streams:
   - "#/definitions/ad_group_label_stream"
   - "#/definitions/ad_group_criterion_label_stream"
   - "#/definitions/ad_listing_group_criterion_stream"
+  - "#/definitions/asset_group_stream"
   - "#/definitions/audience_stream"
   - "#/definitions/campaign_stream"
   - "#/definitions/campaign_bidding_strategy_stream"
@@ -1507,6 +1519,90 @@ schemas:
           type: string
       segments.date:
         description: The date segment for the data.
+        type:
+          - "null"
+          - string
+        format: date
+    additionalProperties: true
+
+  asset_group:
+    $schema: http://json-schema.org/schema#
+    type: object
+    properties:
+      asset_group.id:
+        description: The ID of the asset group.
+        type:
+          - "null"
+          - integer
+      asset_group.name:
+        description: Required. Name of the asset group.
+        type:
+          - "null"
+          - string
+      asset_group.campaign:
+        description: The campaign with which this asset group is associated.
+        type:
+          - "null"
+          - string
+      asset_group.status:
+        description: The status of the asset group.
+        type:
+          - "null"
+          - string
+      asset_group.primary_status:
+        description: The primary status of the asset group.
+        type:
+          - "null"
+          - string
+      asset_group.primary_status_reasons:
+        description: Reasons for the primary status of the asset group.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      asset_group.ad_strength:
+        description: Overall ad strength of this asset group.
+        type:
+          - "null"
+          - string
+      asset_group.final_urls:
+        description: A list of final URLs after all cross domain redirects.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      asset_group.final_mobile_urls:
+        description: A list of final mobile URLs after all cross domain redirects.
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - string
+      asset_group.path1:
+        description: First part of text that may appear appended to the url displayed in the ad.
+        type:
+          - "null"
+          - string
+      asset_group.path2:
+        description: Second part of text that may appear appended to the url displayed in the ad.
+        type:
+          - "null"
+          - string
+      asset_group.resource_name:
+        description: The resource name of the asset group.
+        type:
+          - "null"
+          - string
+      segments.date:
+        description: Date to which the record belongs.
         type:
           - "null"
           - string
