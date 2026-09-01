@@ -23,6 +23,7 @@ import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.airbyte.integrations.destination.postgres.sql.COUNT_TOTAL_ALIAS
 import io.airbyte.integrations.destination.postgres.sql.PostgresDirectLoadSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
+import io.micronaut.context.annotation.Value
 import jakarta.inject.Singleton
 import java.sql.ResultSet
 import java.sql.SQLException
@@ -40,7 +41,15 @@ class PostgresAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: PostgresDirectLoadSqlGenerator,
     private val columnManager: PostgresColumnManager,
-    private val postgresConfiguration: PostgresConfiguration
+    private val postgresConfiguration: PostgresConfiguration,
+    /**
+     * Feature flag for the pre-direct-load meta column repair in [ensureSchemaMatches]. Off by
+     * default: only customers migrating from a pre-direct-load connector version need the repair,
+     * and it is enabled for them by setting the env var
+     * `AIRBYTE_DESTINATION_POSTGRES_META_COLUMN_REPAIR=true`.
+     */
+    @Value("\${airbyte.destination.postgres.meta-column-repair:false}")
+    private val metaColumnRepairEnabled: Boolean = false,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     companion object {
@@ -179,17 +188,17 @@ class PostgresAirbyteClient(
 
     /**
      * Tables created by pre-direct-load connector versions may lack the `_airbyte_meta` and
-     * `_airbyte_generation_id` columns. Schema evolution can't repair them because
-     * [getColumnsFromDb] and the stream's final schema both exclude the meta columns, so we detect
-     * and add missing meta columns here, before the schema diff runs.
+     * `_airbyte_generation_id` columns. The schema diff can't repair them because the stream's
+     * final schema excludes the meta columns, so [ensureSchemaMatches] detects and adds missing
+     * meta columns before the diff DDL runs, reusing the diff's column fetch.
      */
-    override suspend fun ensureMetaColumnsExist(stream: DestinationStream, tableName: TableName) {
-        // getColumnsFromDbForDiscovery returns ALL columns, unlike getColumnsFromDb which
-        // filters out the meta columns.
-        val existingColumns = getColumnsFromDbForDiscovery(tableName).keys
+    private fun repairMissingMetaColumns(
+        tableName: TableName,
+        columnsInDb: Map<String, ColumnType>
+    ) {
         val missingMetaColumns =
             columnManager.getMetaColumns().filterKeys { metaColumn ->
-                existingColumns.none { it.equals(metaColumn, ignoreCase = true) }
+                columnsInDb.keys.none { it.equals(metaColumn, ignoreCase = true) }
             }
         if (missingMetaColumns.isNotEmpty()) {
             log.info {
@@ -206,8 +215,16 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        ensureMetaColumnsExist(stream, tableName)
-        val columnsInDb = getColumnsFromDb(tableName)
+        // A single fetch of ALL columns (including the airbyte meta columns) serves both the meta
+        // column repair and, with the meta columns filtered out, the schema diff.
+        val allColumnsInDb = getColumnsFromDbForDiscovery(tableName)
+
+        if (metaColumnRepairEnabled) {
+            repairMissingMetaColumns(tableName, allColumnsInDb)
+        }
+
+        val metaColumnNames = columnManager.getMetaColumnNames()
+        val columnsInDb = allColumnsInDb.filterKeys { it !in metaColumnNames }
         // In raw tables mode, finalSchema contains just {_airbyte_data -> JSONB}
         // In typed mode, finalSchema contains the mapped user columns
         val columnsInStream = stream.tableSchema.columnSchema.finalSchema
@@ -289,10 +306,10 @@ class PostgresAirbyteClient(
     }
 
     /**
-     * Gets columns from the database including their types for schema discovery. Unlike
-     * [getColumnsFromDb], this returns all columns including Airbyte metadata columns.
+     * Gets all of a table's columns from the database, including their types and the Airbyte
+     * metadata columns.
      */
-    private fun getColumnsFromDbForDiscovery(tableName: TableName): Map<String, ColumnType> =
+    internal fun getColumnsFromDbForDiscovery(tableName: TableName): Map<String, ColumnType> =
         executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
             val columnsInDb: MutableMap<String, ColumnType> = mutableMapOf()
             while (rs.next()) {
@@ -375,26 +392,6 @@ class PostgresAirbyteClient(
         }
     }
 
-    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> =
-        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
-            val columnsInDb = mutableMapOf<String, ColumnType>()
-            val defaultColumnNames = columnManager.getMetaColumnNames()
-            while (rs.next()) {
-                val columnName = rs.getString(COLUMN_NAME_COLUMN)
-
-                // Filter out airbyte columns
-                if (defaultColumnNames.contains(columnName)) {
-                    continue
-                }
-                val dataType = rs.getString("data_type")
-                val isNullable = rs.getString("is_nullable") == "YES"
-
-                columnsInDb[columnName] = ColumnType(normalizePostgresType(dataType), isNullable)
-            }
-
-            columnsInDb
-        }
-
     /**
      * Normalizes PostgreSQL type names from information_schema to match internal type names.
      *
@@ -451,7 +448,7 @@ class PostgresAirbyteClient(
                 0L
             } else if (isUndefinedColumn(e)) {
                 // Tables created by pre-direct-load connector versions lack the
-                // _airbyte_generation_id column. This is queried before ensureMetaColumnsExist
+                // _airbyte_generation_id column. This is queried before ensureSchemaMatches
                 // has had a chance to repair the table, so treat it as generation 0 (the repair
                 // happens later in the sync, and a generation of 0 routes truncate syncs down
                 // the overwrite path, which recreates the table with the full schema).

@@ -10,6 +10,7 @@ import io.airbyte.cdk.load.message.Meta
 import io.airbyte.cdk.load.schema.TableSchemaFactory
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.integrations.destination.postgres.client.PostgresAirbyteClient
+import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import javax.sql.DataSource
 import kotlinx.coroutines.test.runTest
@@ -21,10 +22,11 @@ import org.junit.jupiter.api.Test
 /**
  * Tables created by pre-direct-load connector versions lack the `_airbyte_meta` and
  * `_airbyte_generation_id` columns. These tests verify that [PostgresAirbyteClient] repairs such
- * tables during `ensureSchemaMatches`, and tolerates the missing generation id column before the
- * repair has run.
+ * tables during `ensureSchemaMatches` when the repair feature flag (off by default) is enabled, and
+ * tolerates the missing generation id column before the repair has run.
  */
 @MicronautTest(environments = ["component"], resolveParameters = false)
+@Property(name = "airbyte.destination.postgres.meta-column-repair", value = "true")
 class PostgresMetaColumnRepairTest(
     private val client: PostgresAirbyteClient,
     private val testClient: PostgresTestTableOperationsClient,

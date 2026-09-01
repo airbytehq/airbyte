@@ -509,17 +509,16 @@ internal class PostgresAirbyteClientTest {
     }
 
     @Test
-    fun testGetColumnsFromDb() {
+    fun testGetColumnsFromDbForDiscovery() {
         val tableName = TableName(namespace = "test_namespace", name = "test_table")
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen true andThen true andThen false
         every { resultSet.close() } just Runs
-        val defaultColumnName = "default_column_name"
         every { resultSet.getString("column_name") } returns
             "col1" andThen
-            defaultColumnName andThen
+            COLUMN_NAME_AB_RAW_ID andThen
             "col2"
-        every { resultSet.getString("data_type") } returns "varchar" andThen "bigint"
+        every { resultSet.getString("data_type") } returns "varchar" andThen "text" andThen "bigint"
         every { resultSet.getString("is_nullable") } returns "YES" andThen "YES" andThen "YES"
 
         val statement =
@@ -534,18 +533,22 @@ internal class PostgresAirbyteClientTest {
 
         every { dataSource.connection } returns connection
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { columnManager.getMetaColumnNames() } returns setOf(defaultColumnName)
 
-        val result = client.getColumnsFromDb(tableName)
+        val result = client.getColumnsFromDbForDiscovery(tableName)
 
+        // ALL columns are returned, including the airbyte meta columns.
         val expectedColumns =
-            mapOf("col1" to ColumnType("varchar", true), "col2" to ColumnType("bigint", true))
+            mapOf(
+                "col1" to ColumnType("varchar", true),
+                COLUMN_NAME_AB_RAW_ID to ColumnType("text", true),
+                "col2" to ColumnType("bigint", true),
+            )
 
         assertEquals(expectedColumns, result)
     }
 
     @Test
-    fun testGetColumnsFromDbWithPostgresTypeNormalization() {
+    fun testGetColumnsFromDbForDiscoveryWithPostgresTypeNormalization() {
         val tableName = TableName(namespace = "test_namespace", name = "test_table")
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen true andThen true andThen false
@@ -570,9 +573,8 @@ internal class PostgresAirbyteClientTest {
 
         every { dataSource.connection } returns connection
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { columnManager.getMetaColumnNames() } returns emptySet()
 
-        val result = client.getColumnsFromDb(tableName)
+        val result = client.getColumnsFromDbForDiscovery(tableName)
 
         // Types should be normalized to internal representation
         val expectedColumns =
@@ -625,7 +627,8 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "test_ns", name = "test_table")
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        // Mock getColumnsFromDb
+        // Mock the table columns query (a single fetch serving the meta column repair check and
+        // the schema diff)
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen true andThen false
         every { resultSet.getString("column_name") } returns "col1" andThen "col2"
@@ -646,7 +649,6 @@ internal class PostgresAirbyteClientTest {
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns
-                    emptyDiscoveryResultSet() andThen
                     resultSet andThen
                     pkResultSet andThen
                     cursorResultSet
@@ -695,6 +697,9 @@ internal class PostgresAirbyteClientTest {
                     cursorColumnName = null
                 )
             }
+            // The table columns are fetched once, serving both the meta column repair check and
+            // the schema diff; the pk/cursor index queries are skipped (stream has no pk/cursor).
+            verify(exactly = 1) { statement.executeQuery(any()) }
         }
     }
 
@@ -704,7 +709,8 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "test_ns", name = "test_table")
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        // Mock getColumnsFromDb - table has col1 only
+        // Mock the table columns query (a single fetch serving the meta column repair check and
+        // the schema diff) - table has col1 only
         val tableColumnsResultSet = mockk<ResultSet>()
         every { tableColumnsResultSet.next() } returns true andThen false
         every { tableColumnsResultSet.getString("column_name") } returns "col1"
@@ -725,7 +731,6 @@ internal class PostgresAirbyteClientTest {
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns
-                    emptyDiscoveryResultSet() andThen
                     tableColumnsResultSet andThen
                     pkResultSet andThen
                     cursorResultSet
@@ -782,7 +787,8 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "test_ns", name = "test_table")
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        // Mock getColumnsFromDb
+        // Mock the table columns query (a single fetch serving the meta column repair check and
+        // the schema diff)
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen false
         every { resultSet.getString("column_name") } returns "col1"
@@ -804,7 +810,6 @@ internal class PostgresAirbyteClientTest {
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns
-                    emptyDiscoveryResultSet() andThen
                     resultSet andThen
                     pkResultSet andThen
                     cursorResultSet
@@ -860,7 +865,8 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "test_ns", name = "test_table")
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        // Mock getColumnsFromDb
+        // Mock the table columns query (a single fetch serving the meta column repair check and
+        // the schema diff)
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen false
         every { resultSet.getString("column_name") } returns "col1"
@@ -882,7 +888,6 @@ internal class PostgresAirbyteClientTest {
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns
-                    emptyDiscoveryResultSet() andThen
                     resultSet andThen
                     pkResultSet andThen
                     cursorResultSet
@@ -938,7 +943,8 @@ internal class PostgresAirbyteClientTest {
         val tableName = TableName(namespace = "test_ns", name = "test_table")
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        // Mock getColumnsFromDb - table has col1 and old_col but not new_col
+        // Mock the table columns query (a single fetch serving the meta column repair check and
+        // the schema diff) - table has col1 and old_col but not new_col
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returns true andThen true andThen false
         every { resultSet.getString("column_name") } returns "col1" andThen "old_col"
@@ -961,7 +967,6 @@ internal class PostgresAirbyteClientTest {
         val statement =
             mockk<Statement> {
                 every { executeQuery(any()) } returns
-                    emptyDiscoveryResultSet() andThen
                     resultSet andThen
                     pkResultSet andThen
                     cursorResultSet
@@ -1012,12 +1017,6 @@ internal class PostgresAirbyteClientTest {
         }
     }
 
-    /** For ensureMetaColumnsExist's discovery query, which runs before the schema diff. */
-    private fun emptyDiscoveryResultSet(): ResultSet = mockk {
-        every { next() } returns false
-        every { close() } just Runs
-    }
-
     private fun mockDiscoveryResultSet(columnNames: List<String>): ResultSet {
         val resultSet = mockk<ResultSet>()
         every { resultSet.next() } returnsMany (List(columnNames.size) { true } + false)
@@ -1036,71 +1035,37 @@ internal class PostgresAirbyteClientTest {
             COLUMN_NAME_AB_GENERATION_ID to ColumnType("bigint", false),
         )
 
-    @Test
-    fun `ensureMetaColumnsExist adds missing meta columns`() {
-        val tableName = TableName(namespace = "test_ns", name = "test_table")
-
-        // Pre-direct-load-shaped table: only _airbyte_raw_id and _airbyte_extracted_at.
-        val discoveryResultSet =
-            mockDiscoveryResultSet(listOf(COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_AB_EXTRACTED_AT, "id"))
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns discoveryResultSet
-                every { execute(any()) } returns true
-                every { close() } just Runs
+    /** A stream with final schema {col1: text} and no primary key or cursor. */
+    private fun mockStream(): DestinationStream {
+        val columnSchema =
+            ColumnSchema(emptyMap(), emptyMap(), mapOf("col1" to ColumnType("text", true)))
+        val streamTableSchema =
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { this@mockk.getPrimaryKey() } returns emptyList()
+                every { this@mockk.getCursor() } returns emptyList()
             }
-        val connection = mockk<Connection>()
-        every { connection.createStatement() } returns statement
-        every { connection.close() } just Runs
-        every { dataSource.connection } returns connection
-
-        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { columnManager.getMetaColumns() } returns schemaModeMetaColumns
-
-        val expectedMissing =
-            mapOf(
-                COLUMN_NAME_AB_META to ColumnType("jsonb", false),
-                COLUMN_NAME_AB_GENERATION_ID to ColumnType("bigint", false),
-            )
-        val alterSql = "ALTER_META_SQL"
-        every { sqlGenerator.addMetaColumns(tableName, expectedMissing) } returns alterSql
-
-        runBlocking { client.ensureMetaColumnsExist(mockk<DestinationStream>(), tableName) }
-
-        verify(exactly = 1) { sqlGenerator.addMetaColumns(tableName, expectedMissing) }
-        verify(exactly = 1) { statement.execute(alterSql) }
+        return mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
     }
 
-    @Test
-    fun `ensureMetaColumnsExist is a noop when all meta columns exist`() {
-        val tableName = TableName(namespace = "test_ns", name = "test_table")
-
-        val discoveryResultSet = mockDiscoveryResultSet(schemaModeMetaColumns.keys.toList() + "id")
-        val statement =
-            mockk<Statement> {
-                every { executeQuery(any()) } returns discoveryResultSet
-                every { close() } just Runs
-            }
-        val connection = mockk<Connection>()
-        every { connection.createStatement() } returns statement
-        every { connection.close() } just Runs
-        every { dataSource.connection } returns connection
-
-        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { columnManager.getMetaColumns() } returns schemaModeMetaColumns
-
-        runBlocking { client.ensureMetaColumnsExist(mockk<DestinationStream>(), tableName) }
-
-        verify(exactly = 0) { sqlGenerator.addMetaColumns(any(), any()) }
-    }
+    /** The meta column repair is off by default; these tests opt in. */
+    private fun clientWithRepairEnabled() =
+        PostgresAirbyteClient(
+            dataSource,
+            sqlGenerator,
+            columnManager,
+            postgresConfiguration,
+            metaColumnRepairEnabled = true,
+        )
 
     @Test
     fun `ensureSchemaMatches repairs meta columns before diffing`() {
-        val stream = mockk<DestinationStream>()
+        val stream = mockStream()
         val tableName = TableName(namespace = "test_ns", name = "test_table")
         val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
 
-        // Discovery for the meta column repair: table is missing _airbyte_generation_id.
+        // Pre-direct-load-shaped table: missing _airbyte_generation_id. The single column fetch
+        // serves both the meta column repair and the schema diff.
         val discoveryResultSet =
             mockDiscoveryResultSet(
                 listOf(
@@ -1110,19 +1075,11 @@ internal class PostgresAirbyteClientTest {
                     "col1",
                 )
             )
-        // Schema diff discovery (getColumnsFromDb).
-        val tableColumnsResultSet = mockDiscoveryResultSet(listOf("col1"))
-        val pkResultSet = emptyDiscoveryResultSet()
-        val cursorResultSet = emptyDiscoveryResultSet()
 
         val alterSql = "ALTER_META_SQL"
         val statement =
             mockk<Statement> {
-                every { executeQuery(any()) } returns
-                    discoveryResultSet andThen
-                    tableColumnsResultSet andThen
-                    pkResultSet andThen
-                    cursorResultSet
+                every { executeQuery(any()) } returns discoveryResultSet
                 every { execute(any()) } returns true
                 every { close() } just Runs
             }
@@ -1132,34 +1089,113 @@ internal class PostgresAirbyteClientTest {
         every { dataSource.connection } returns connection
 
         every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
-        every { sqlGenerator.getPrimaryKeyIndexColumns(tableName) } returns MOCK_SQL_QUERY
-        every { sqlGenerator.getCursorIndexColumn(tableName) } returns MOCK_SQL_QUERY
         every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
             MOCK_SQL_QUERY
 
         every { columnManager.getMetaColumns() } returns schemaModeMetaColumns
+        every { columnManager.getMetaColumnNames() } returns schemaModeMetaColumns.keys
         val expectedMissing = mapOf(COLUMN_NAME_AB_GENERATION_ID to ColumnType("bigint", false))
         every { sqlGenerator.addMetaColumns(tableName, expectedMissing) } returns alterSql
 
-        val finalSchema = mapOf("col1" to ColumnType("text", true))
-        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
-        val streamTableSchema =
-            mockk<StreamTableSchema> {
-                every { this@mockk.columnSchema } returns columnSchema
-                every { this@mockk.getPrimaryKey() } returns emptyList()
-                every { this@mockk.getCursor() } returns emptyList()
-            }
-        every { stream.tableSchema } returns streamTableSchema
         every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
         every { sqlGenerator.getCursorColumnName(stream) } returns null
 
-        runBlocking { client.ensureSchemaMatches(stream, tableName, columnNameMapping) }
+        runBlocking {
+            clientWithRepairEnabled().ensureSchemaMatches(stream, tableName, columnNameMapping)
+        }
 
         verify(exactly = 1) { sqlGenerator.addMetaColumns(tableName, expectedMissing) }
         // The meta column repair must run before the schema diff is applied.
         verifyOrder {
             statement.execute(alterSql)
             statement.execute(MOCK_SQL_QUERY)
+        }
+        // The repair reuses the schema diff's column fetch instead of querying again.
+        verify(exactly = 1) { statement.executeQuery(any()) }
+    }
+
+    @Test
+    fun `ensureSchemaMatches does not repair a table that has all meta columns`() {
+        val stream = mockStream()
+        val tableName = TableName(namespace = "test_ns", name = "test_table")
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        val discoveryResultSet =
+            mockDiscoveryResultSet(schemaModeMetaColumns.keys.toList() + "col1")
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns discoveryResultSet
+                every { execute(any()) } returns true
+                every { close() } just Runs
+            }
+        val connection = mockk<Connection>()
+        every { connection.createStatement() } returns statement
+        every { connection.close() } just Runs
+        every { dataSource.connection } returns connection
+
+        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
+        every { columnManager.getMetaColumns() } returns schemaModeMetaColumns
+        every { columnManager.getMetaColumnNames() } returns schemaModeMetaColumns.keys
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
+        every { sqlGenerator.getCursorColumnName(stream) } returns null
+
+        runBlocking {
+            clientWithRepairEnabled().ensureSchemaMatches(stream, tableName, columnNameMapping)
+        }
+
+        verify(exactly = 0) { sqlGenerator.addMetaColumns(any(), any()) }
+        // The meta columns are filtered out of the diff, so nothing is added or modified.
+        verify(exactly = 1) {
+            sqlGenerator.matchSchemas(
+                tableName = tableName,
+                columnsToAdd = emptyMap(),
+                columnsToModify = emptyMap(),
+                recreatePrimaryKeyIndex = false,
+                primaryKeyColumnNames = emptyList(),
+                recreateCursorIndex = false,
+                cursorColumnName = null,
+            )
+        }
+        verify(exactly = 1) { statement.executeQuery(any()) }
+    }
+
+    @Test
+    fun `ensureSchemaMatches skips the meta column repair by default`() {
+        val stream = mockStream()
+        val tableName = TableName(namespace = "test_ns", name = "test_table")
+        val columnNameMapping = mockk<ColumnNameMapping>(relaxed = true)
+
+        // Pre-direct-load-shaped table missing _airbyte_meta and _airbyte_generation_id.
+        val discoveryResultSet =
+            mockDiscoveryResultSet(
+                listOf(COLUMN_NAME_AB_RAW_ID, COLUMN_NAME_AB_EXTRACTED_AT, "col1")
+            )
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns discoveryResultSet
+                every { execute(any()) } returns true
+                every { close() } just Runs
+            }
+        val connection = mockk<Connection>()
+        every { connection.createStatement() } returns statement
+        every { connection.close() } just Runs
+        every { dataSource.connection } returns connection
+
+        every { sqlGenerator.getTableSchema(tableName) } returns MOCK_SQL_QUERY
+        every { sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any()) } returns
+            MOCK_SQL_QUERY
+        every { sqlGenerator.getPrimaryKeysColumnNames(stream) } returns emptyList()
+        every { sqlGenerator.getCursorColumnName(stream) } returns null
+
+        // The setup's client is constructed without opting into the repair.
+        runBlocking { client.ensureSchemaMatches(stream, tableName, columnNameMapping) }
+
+        verify(exactly = 0) { sqlGenerator.addMetaColumns(any(), any()) }
+        // The regular schema diff still runs.
+        verify(exactly = 1) {
+            sqlGenerator.matchSchemas(any(), any(), any(), any(), any(), any(), any())
         }
     }
 
