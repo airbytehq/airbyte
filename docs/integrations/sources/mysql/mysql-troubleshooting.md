@@ -110,16 +110,16 @@ Global transaction identifiers \(GTIDs\) uniquely identify transactions that occ
 
 ### (Advanced) Initial Load Timeout in Hours
 
-When a CDC connection syncs for the first time, or when you add a stream to it, the connector snapshots the affected tables before it starts reading the binlog. `Initial Load Timeout in Hours` limits how long that snapshot runs in a single attempt. The default is 8 hours, and the valid range is 4 to 24 hours.
+When a CDC connection syncs for the first time, or when you add a stream to it, the connector takes an initial load of the affected tables before it starts reading the binlog. `Initial Load Timeout in Hours` sets how long the initial load is allowed to continue before the connector moves on to catching up on the CDC logs. The default is 8 hours, and the valid range is 4 to 24 hours.
 
-Raise this value if you're snapshotting very large tables and your binlog retention covers the whole snapshot. Lower it if your binlog retention is short and you want the connector to start reading the binlog sooner.
+If you're loading very large tables, make sure your binlog retention covers the initial load as well. Otherwise the binlog position the connector needs can expire before the load finishes. See [Under CDC incremental mode, there are still full refresh syncs](#under-cdc-incremental-mode-there-are-still-full-refresh-syncs) for retention settings.
 
 ### (Advanced) Invalid CDC Position Behavior
 
 If the binlog position the connector saved in state is no longer available on the server — usually because the binlog expired while the connection was paused or failing — the connector can't continue incrementally. `Invalid CDC Position Behavior` controls what happens next:
 
-- `Fail sync` (default): the sync fails. Clear your connection's state and sync again to recover.
-- `Re-sync data`: Airbyte automatically re-reads the affected data. This increases sync duration and cost, and rows deleted from the source while the saved position was unavailable aren't emitted as CDC deletions, so they can remain in your destination.
+- `Fail sync` (default): the sync fails, and you have to reset the connection manually before it can sync again.
+- `Re-sync data`: Airbyte automatically triggers a refresh instead of failing. This avoids the manual reset, but it can lead to higher costs and data loss.
 
 ### (Advanced) Set up server timezone
 

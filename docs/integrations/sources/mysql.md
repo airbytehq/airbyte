@@ -128,7 +128,7 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 <FieldAnchor field="table_filters">
 
-By default, the connector discovers every table and view in the configured database that your MySQL user can read. In databases with a very large number of tables, this makes schema discovery slow. Use `Table Filters` to narrow discovery to the tables you care about.
+By default, the connector discovers every table and view in the configured database that your MySQL user can read. In databases with a very large number of tables, this can make schema discovery slow. Use `Table Filters` to narrow discovery to the tables you care about.
 
 Each filter has two parts:
 
