@@ -22,8 +22,11 @@ Test fixtures use `org.testcontainers:mssqlserver` — see
 ## Reproducing bugs locally
 
 Most reported bugs against `source-mssql` are CDC-mode bugs, but the same
-local-harness pattern is useful for non-CDC bugs too. Two co-located agent
-skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
+local-harness pattern is useful for non-CDC bugs too. The
+engine-independent orchestration now lives in
+[`airbyte-integrations/db-harness-lib/`](../../db-harness-lib/), while the
+co-located agent skills under [`.agents/skills/`](.agents/skills/) keep the
+MSSQL backend lifecycle, fixtures, and config templates:
 
 - [`source-mssql-e2e-tests`](.agents/skills/source-mssql-e2e-tests/SKILL.md) —
   the generic harness. Stands up a SQL Server 2022 container

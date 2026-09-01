@@ -5,7 +5,11 @@ description: Stand up a local SQL Server 2022 backend, apply SQL fixtures, and s
 
 # source-mssql-e2e-tests
 
-Local end-to-end test harness for `source-mssql`. Stands up a SQL Server
+Local end-to-end test harness for `source-mssql`. The engine-independent
+orchestration lives in
+[`airbyte-integrations/db-harness-lib/`](../../../../db-harness-lib/);
+this skill keeps the MSSQL backend lifecycle scripts, fixtures, and config
+templates. It stands up a SQL Server
 2022 container named `source-mssql-db-backend`, lets you apply arbitrary
 SQL fixtures, and runs Airbyte protocol commands against any
 `airbyte/source-mssql:<tag>` image via
@@ -42,12 +46,12 @@ source-mssql-e2e-tests/
 │   ├── start-backend.sh        # docker run mcr…/mssql/server:2022-latest as source-mssql-db-backend
 │   ├── stop-backend.sh         # docker rm -f source-mssql-db-backend
 │   ├── apply-sql.sh            # docker cp + docker exec sqlcmd -i
-│   ├── render-config.sh        # jq the backend bridge IP into a config template
-│   ├── make-catalog.sh         # configured catalog derived from a discover run's CATALOG message
 │   ├── reset-databases.sh      # docker exec sqlcmd → drop every non-system database (used by run.sh --reset=fixture)
-│   ├── extract-state.py        # pull STATE messages out of a read step's stdout.txt (for multi-phase drivers)
-│   ├── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
-│   └── run.sh                  # one-shot: backend → fixtures → config → spec/check/discover → catalog → read → teardown
+│   ├── run.sh                  # forwarding shim to db-harness-lib orchestration
+│   ├── run-protocol-cmd.sh     # forwarding shim to db-harness-lib
+│   ├── make-catalog.sh         # forwarding shim to db-harness-lib
+│   ├── render-config.sh        # forwarding shim to db-harness-lib
+│   └── extract-state.py        # forwarding shim to db-harness-lib
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
@@ -56,13 +60,15 @@ source-mssql-e2e-tests/
         └── 00-init-base.sql    # CREATE DATABASE TestDb + dbo.sample table
 ```
 
+The forwarding shims for the shared orchestration remain in this skill's
+`scripts/` directory so documented entrypoint paths stay stable.
 The skill expects all script paths relative to the skill root.
 
 ## Conventions
 
 - Container name: `source-mssql-db-backend`. Hard-coded in
-  `scripts/start-backend.sh`, `stop-backend.sh`, `apply-sql.sh`, and
-  `render-config.sh`. Override via `BACKEND_NAME=…` only for parallel
+  `scripts/start-backend.sh`, `stop-backend.sh`, and `apply-sql.sh`.
+  Override via `BACKEND_NAME=…` only for parallel
   test isolation; don't use customer connection names.
 - Working directory for rendered configs and run output:
   `${REPRO_OUT:-/tmp/source-mssql-repro}`. A `run.sh` invocation writes
@@ -142,14 +148,14 @@ Instead of driver scripts hand-rolling `grep -q '<substring>' || exit 1`
 against each command's artifacts, `run.sh` accepts a small set of
 expectation flags that it enforces itself before returning:
 
-| Flag | Effect |
-|---|---|
-| `--expect-test=pass\|fail` | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed. |
-| `--expect-control=pass\|fail` | Same for the control sweep (comparison-mode runs only; requires `--control-version`). |
-| `--min-records=N` | Target read's `stdout.txt` must contain ≥N `RECORD` messages. |
-| `--min-states=N` | Target read's `stdout.txt` must contain ≥N `STATE` messages. |
+| Flag                                               | Effect                                                                                                                                                                                                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--expect-test=pass\|fail`                         | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed.                                                                                                                          |
+| `--expect-control=pass\|fail`                      | Same for the control sweep (comparison-mode runs only; requires `--control-version`).                                                                                                                                              |
+| `--min-records=N`                                  | Target read's `stdout.txt` must contain ≥N `RECORD` messages.                                                                                                                                                                      |
+| `--min-states=N`                                   | Target read's `stdout.txt` must contain ≥N `STATE` messages.                                                                                                                                                                       |
 | `--expect-match=[<command>:]<channel>:<regex>[:N]` | Target's `<command>` step's `<channel>` (`stdout` \| `stderr` \| `any`) must match `<regex>` at least N times (default 1). `<command>` (`spec` \| `check` \| `discover` \| `read`) is optional and defaults to `read`. Repeatable. |
-| `--forbid-match=[<command>:]<channel>:<regex>` | Same shape but must match zero times. Repeatable. |
+| `--forbid-match=[<command>:]<channel>:<regex>`     | Same shape but must match zero times. Repeatable.                                                                                                                                                                                  |
 
 All match assertions run against the **target-side** artifacts of the
 named command (or `read` if no `<command>` prefix). Under

@@ -5,8 +5,11 @@ description: Reproduce CDC bugs against source-mssql by enabling CDC on the loca
 
 # source-mssql-e2e-cdc-tests
 
-Local CDC bug-reproduction harness for `source-mssql`. Builds on
-[`source-mssql-e2e-tests`](../source-mssql-e2e-tests/SKILL.md): the
+Local CDC bug-reproduction harness for `source-mssql`. Builds on the
+engine-independent orchestration in
+[`airbyte-integrations/db-harness-lib/`](../../../../db-harness-lib/) and
+the MSSQL engine skill
+([`source-mssql-e2e-tests`](../source-mssql-e2e-tests/SKILL.md)):
 generic skill stands up the SQL Server backend and runs the connector;
 this skill adds CDC enable, CDC-aware config / catalog templates, and
 per-bug **case scripts** under `cases/` that call `run.sh` with the
@@ -17,7 +20,7 @@ appropriate fixtures and `--expect-*` assertions.
 - Reproducing a CDC-mode bug against `source-mssql` locally.
 - Verifying a fix by re-running an existing case with
   `VERSION=dev ./cases/<id>.sh` (after `:dockerBuildx`).
-- Verifying that a fix which *loosens* CDC offset validation still
+- Verifying that a fix which _loosens_ CDC offset validation still
   rejects genuinely invalid state — `cases/11451.sh` is the
   invalid-state case for LSN availability; see
   [Invalid-state case](#invalid-state-case-for-lsn-availability-fixes).
@@ -58,7 +61,8 @@ source-mssql-e2e-cdc-tests/
         └── repro-12162-spaces-in-name.sql
 ```
 
-`extract-state.py` lives in the generic skill
+`extract-state.py` is implemented in `db-harness-lib` and forwarded by the
+generic skill
 ([`../source-mssql-e2e-tests/scripts/extract-state.py`](../source-mssql-e2e-tests/scripts/extract-state.py)) —
 it walks Airbyte STATE messages, which is protocol-level and not
 CDC-specific.
@@ -181,8 +185,9 @@ lives in the bulk-CDK `extract-cdc` toolkit.
 1. Baseline `read` on clean CdcTest (`BASELINE_VERSION`, default `4.4.2`).
    Case asserts `--expect-test=pass --min-states=1` so a missing STATE
    fails the case immediately rather than later at replay.
-2. `extract-state.py` on the baseline stdout, then `apply-sql.sh
-   repro-11451-lsn-cleanup.sql` runs `sys.sp_cdc_cleanup_change_table`
+2. `extract-state.py` on the baseline stdout, then
+   `apply-sql.sh repro-11451-lsn-cleanup.sql` runs
+   `sys.sp_cdc_cleanup_change_table`
    with a `low_water_mark` past the saved LSN — advancing
    `fn_cdc_get_min_lsn('dbo_users')` past the baseline offset.
 3. Replay `read` on `TARGET_VERSION` (default `4.3.4`) with the stale
@@ -202,7 +207,7 @@ still present. Investigation lives at
 
 #### Invalid-state case for LSN-availability fixes
 
-This case's Phase 3 is a *genuinely* expired saved offset: Phase 2
+This case's Phase 3 is a _genuinely_ expired saved offset: Phase 2
 advances `fn_cdc_get_min_lsn` past the captured LSN, so rejecting the
 replay is the correct behavior, not the bug. That makes it the
 invalid-state counterpart to any repro built around a saved LSN that is
@@ -262,7 +267,7 @@ the three primitives it composes are:
   `$REPRO_OUT/<bug>/`. `cases/11451.sh` uses `11451/baseline` and
   `11451/stale`; a new case would use its own bug number and phase
   names.
-- **`extract-state.py`** (in the generic skill) — reads a phase's
+- **`extract-state.py`** (implemented in `db-harness-lib`) — reads a phase's
   `read/stdout.txt` and emits a JSON array of AirbyteStateMessage
   objects, which is what `run.sh --state=PATH` expects.
 - **`--skip-fixtures`** on the second/later `run.sh` invocation —
