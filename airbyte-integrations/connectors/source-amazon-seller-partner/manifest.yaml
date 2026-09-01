@@ -46,8 +46,10 @@ spec:
         type: string
         order: 1
       region:
-        title: AWS Region
-        description: Select the AWS Region.
+        title: Marketplace
+        description: Select the Amazon marketplace to sync. Each source replicates a
+          single marketplace; to sync several, create one source per marketplace.
+          This is not an AWS infrastructure region.
         enum:
         - AE
         - AU

@@ -18,7 +18,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 **For Airbyte Cloud:**
 
 - AWS Environment
-- AWS Region
+- Marketplace
 - AWS Seller Partner Account Type
 - Granted OAuth access
 
@@ -29,7 +29,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 **For Airbyte Open Source:**
 
 - AWS Environment
-- AWS Region
+- Marketplace
 - AWS Seller Partner Account Type
 - LWA Client Id
 - LWA Client Secret
@@ -37,9 +37,11 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 <!-- /env:oss -->
 
-## Supported regions
+## Supported marketplaces
 
-The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+Each source replicates a single Amazon marketplace, selected with the **Marketplace** setting. To sync several marketplaces, create one source per marketplace.
+
+The connector supports the following Amazon marketplaces: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
 
 Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
 
