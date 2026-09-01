@@ -257,7 +257,7 @@ class MarketoExportBase(IncrementalMarketoStream):
                         f"(date range {stream_slice.get('startAt')} to {stream_slice.get('endAt')}) "
                         f"entered terminal status: {status}."
                     ),
-                    failure_type=FailureType.system_error,
+                    failure_type=FailureType.transient_error,
                 )
 
             elif status == "Completed":

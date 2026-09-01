@@ -252,9 +252,9 @@ def test_export_sleep(send_email_stream, job_statuses):
                 if terminal_status in ("Cancelled", "Failed"):
                     with pytest.raises(AirbyteTracedException) as exc_info:
                         send_email_stream.sleep_till_export_completed(stream_slice)
-                    assert exc_info.value.failure_type == FailureType.system_error
+                    assert exc_info.value.failure_type == FailureType.transient_error
                     assert terminal_status.lower() in exc_info.value.message
-                    assert "1" in exc_info.value.internal_message
+                    assert "Export job 1" in exc_info.value.internal_message
                 else:
                     assert send_email_stream.sleep_till_export_completed(stream_slice) is True
                 export_start.assert_called()
