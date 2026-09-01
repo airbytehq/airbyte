@@ -55,7 +55,13 @@ class RedshiftAirbyteClient(
             // users with only USAGE+CREATE on a pre-created schema would fail check/sync.
             // Use svv_all_schemas (not information_schema.schemata) — Redshift only lists
             // owned schemas in information_schema, so granted-but-not-owned schemas are missed.
-            if (!namespaceExists(namespace)) {
+            // Inline the existence query (instead of calling suspend namespaceExists) to avoid a
+            // SpotBugs NP_NONNULL_PARAM_VIOLATION false positive on Kotlin coroutine state machines.
+            val exists =
+                executeQuery(sqlGenerator.namespaceExists(namespace)) { rs ->
+                    rs.next() && rs.getBoolean(1)
+                }
+            if (!exists) {
                 execute(sqlGenerator.createNamespace(namespace))
             }
         } catch (e: SQLException) {
