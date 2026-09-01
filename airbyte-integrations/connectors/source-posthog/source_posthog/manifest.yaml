@@ -94,6 +94,8 @@ definitions:
       name: "insights"
       path: "insights"
 
+  # Original events stream using deprecated /events endpoint
+  # Note: This endpoint is deprecated but kept for backwards compatibility
   events_stream:
     $parameters:
       name: "events"
@@ -159,12 +161,52 @@ definitions:
           field_name: "offset"
           inject_into: "request_parameter"
 
+  # Events V2 stream using PostHog Query API (HogQL)
+  # This is the recommended stream for new integrations.
+  # Requires project_id config when using project-scoped personal API keys.
+  events_v2_stream:
+    $parameters:
+      name: "events_v2"
+    primary_key: "id"
+    incremental_sync:
+      type: CustomIncrementalSync
+      class_name: source_posthog.components.EventsV2CartesianProductStreamSlicer
+      config: "{{ config }}"
+      cursor_field: timestamp
+      stream_slicers:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - stream: "#/definitions/projects_stream"
+              parent_key: "id"
+              partition_field: "project_id"
+        - type: DatetimeBasedCursor
+          start_datetime:
+            datetime: "{{ config['start_date'] }}"
+            datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+          end_datetime:
+            datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+            datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+          cursor_datetime_formats:
+            - "%Y-%m-%dT%H:%M:%S.%f%z"
+            - "%Y-%m-%dT%H:%M:%S+00:00"
+          cursor_granularity: "PT0.000001S"
+          step: "P{{ config.get('events_time_step', 30) }}D"
+          cursor_field: timestamp
+    schema_loader:
+      $ref: "#/definitions/schema_loader"
+    retriever:
+      type: CustomRetriever
+      class_name: source_posthog.components.EventsV2Retriever
+      config: "{{ config }}"
+
 streams:
   - "#/definitions/projects_stream"
   - "#/definitions/cohorts_stream"
   - "#/definitions/feature_flags_stream"
   - "#/definitions/persons_stream"
   - "#/definitions/events_stream"
+  - "#/definitions/events_v2_stream"
   - "#/definitions/annotations_stream"
   - "#/definitions/insights_stream"
 
