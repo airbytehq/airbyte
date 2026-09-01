@@ -115,6 +115,12 @@ The Leads stream schema includes all fields from the static schema (standard Mar
 
 Starting in version 2.1.1, every request to Marketo uses a 30-second connection timeout and a 300-second read timeout. The read timeout applies to the gap between chunks of a response, not to the total download time, so bulk export files can still take as long as they need as long as Marketo keeps sending data. If a connection stalls, the request fails and Airbyte retries it, instead of the sync hanging indefinitely. Repeated timeout errors in your sync logs usually point to network problems between Airbyte and Marketo, rather than a configuration issue.
 
+### Activity streams: attribute columns and value conversion
+
+Each `activities_X` stream builds its schema from the attribute metadata Marketo reports for that activity type. Attributes become top-level columns with snake_case names, alongside the fields every activity has: `marketoGUID`, `leadId`, `activityDate`, `activityTypeId`, `campaignId`, `primaryAttributeValueId`, and `primaryAttributeValue`. Because attribute values arrive inside a JSON blob in the bulk export file, an attribute that Marketo describes as a boolean can be delivered as `0` or `1` instead of `"true"` or `"false"`. Starting in version 2.1.2, the connector converts numbers to booleans and writes `null` for values it can't convert, rather than failing the sync. See [Data type map](#data-type-map) for the full conversion rules.
+
+If you add an attribute to an activity type in Marketo, refresh the source schema in Airbyte so the new column appears in the stream.
+
 ### Program Tokens stream performance
 
 The Program Tokens stream makes one API call per program in your Marketo instance. If you have a large number of programs, this stream may take longer to sync and consume more of your daily API quota.
@@ -140,13 +146,15 @@ If these limits are too restrictive, contact your Marketo account manager for a 
 
 | Integration Type | Airbyte Type | Notes |
 | :--------------- | :----------- | :---- |
-| `string`, `text`, `url`, `phone`, `email`, `reference` | `string` | |
-| `integer`, `percent`, `score` | `integer` | |
-| `float`, `currency` | `number` | |
-| `boolean` | `boolean` | |
+| `string`, `text`, `textarea`, `url`, `phone`, `email`, `reference`, `lead_function` | `string` | Marketo types the connector doesn't recognize are also mapped to `string`. |
+| `integer`, `percent`, `score` | `integer` | Decimals arriving as strings are truncated, so `"4.7"` becomes `4`. Anything else the connector can't read as a whole number, including a JSON float in an activity attribute, becomes `null`. |
+| `float`, `currency` | `number` | Values the connector can't parse as a number become `null`. |
+| `boolean` | `boolean` | Strings become `true` only when they read `true`, in any capitalization; every other string becomes `false`. Numbers follow `0` is `false` and anything else is `true`. Values of any other type become `null`. |
 | `date` | `string` | Format: `date` |
 | `datetime` | `string` | Format: `date-time` |
 | `array` | `array` | Primitive arrays are converted into arrays of the types described in this table. |
+
+Empty values, empty strings, and the literal string `null` are always synced as `null`.
 
 ## IP allow list
 
@@ -159,7 +167,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
-| 2.1.2 | 2026-08-27 | [85097](https://github.com/airbytehq/airbyte/pull/85097) | Handle numeric and other non-string values for boolean-typed fields in activity streams instead of failing the sync. |
+| 2.1.2 | 2026-08-28 | [85097](https://github.com/airbytehq/airbyte/pull/85097) | Handle numeric and other non-string values for boolean-typed fields in activity streams instead of failing the sync. |
 | 2.1.1 | 2026-07-27 | [80926](https://github.com/airbytehq/airbyte/pull/80926) | Configure HTTP streaming and read timeouts for Marketo requests to detect stalled connections. |
 | 2.1.0 | 2026-07-27 | [78362](https://github.com/airbytehq/airbyte/pull/78362) | Expose Bulk Export Window in Days so large incremental Marketo syncs can use smaller Bulk Extract jobs. |
 | 2.0.1 | 2026-06-04 | [78428](https://github.com/airbytehq/airbyte/pull/78428) | Stream Marketo bulk export downloads to reduce memory usage for large CSV exports. |
