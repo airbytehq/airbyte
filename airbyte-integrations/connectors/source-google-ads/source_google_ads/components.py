@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import codecs
 import io
 import json
 import logging
@@ -74,11 +75,13 @@ def _mount_timeout_adapter(requester: Any) -> None:
 REPORT_MAPPING = {
     "account_performance_report": "customer",
     "ad_group_ad_legacy": "ad_group_ad",
+    "ad_performance": "ad_group_ad",
     "ad_group_bidding_strategy": "ad_group",
     "ad_listing_group_criterion": "ad_group_criterion",
     "campaign_real_time_bidding_settings": "campaign",
     "campaign_bidding_strategy": "campaign",
     "geographic_view_with_metrics": "geographic_view",
+    "geo_performance": "geographic_view",
     "service_accounts": "customer",
 }
 
@@ -1196,9 +1199,15 @@ class GoogleAdsStreamingDecoder(Decoder):
         results_state = ResultsArrayState()
         record_state = RecordParseState()
         top_level_state = TopLevelObjectState()
+        decoder = codecs.getincrementaldecoder(encoding)(errors="replace")
 
-        for chunk in byte_iter:
-            for char in chunk.decode(encoding, errors="replace"):
+        def decoded_chunks() -> Iterable[str]:
+            for chunk in byte_iter:
+                yield decoder.decode(chunk)
+            yield decoder.decode(b"", final=True)
+
+        for decoded_chunk in decoded_chunks():
+            for char in decoded_chunk:
                 self._append_to_current_record_if_any(char, record_state)
 
                 if self._update_string_state(char, string_state):

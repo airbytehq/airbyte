@@ -121,6 +121,39 @@ def test_migrate_empty_string_state(config, state, expected_should_migrate, expe
         assert state_migration.migrate(stream_state=state) == expected_state
 
 
+@pytest.mark.parametrize(
+    "raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema",
+    [
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            True,
+            {"type": ["null", "string"]},
+            {"type": ["null", "string"]},
+            id="custom_objects_toggle_on",
+        ),
+        pytest.param(
+            [{"name": "num_field", "type": "number"}, {"name": "bool_field", "type": "boolean"}],
+            False,
+            {"type": ["null", "number"]},
+            {"type": ["null", "boolean"]},
+            id="custom_objects_toggle_off",
+        ),
+    ],
+)
+def test_hubspot_custom_objects_schema_loader_respects_toggle(
+    components_module, raw_fields, treat_as_string, expected_number_schema, expected_boolean_schema
+):
+    config = {"treat_numbers_and_booleans_as_strings": treat_as_string}
+    loader = components_module.HubspotCustomObjectsSchemaLoader(
+        config=config,
+        parameters={"schema_properties": raw_fields},
+    )
+    schema = loader.get_json_schema()
+    properties = schema["properties"]["properties"]["properties"]
+    assert properties["num_field"] == expected_number_schema
+    assert properties["bool_field"] == expected_boolean_schema
+
+
 def test_hubspot_rename_properties_transformation(components_module):
     expected_properties = {
         "properties_amount": {"type": ["null", "number"]},

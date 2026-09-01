@@ -89,13 +89,6 @@ Table "issue_fields" {
     "untranslatedName" string
 }
 
-Table "issue_field_configurations" {
-    "id" integer [pk]
-    "name" string
-    "description" string
-    "isDefault" boolean
-}
-
 Table "issue_link_types" {
     "id" string [pk]
     "name" string

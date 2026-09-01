@@ -68,7 +68,7 @@ class TestFullRefresh:
     @staticmethod
     def _read(config_: ConfigBuilder, expecting_exception: bool = False) -> EntrypointOutput:
         return read_output(
-            config_builder=config_,
+            config_builder=config_.with_account_type("Vendor"),
             stream_name=_STREAM_NAME,
             sync_mode=SyncMode.full_refresh,
             expecting_exception=expecting_exception,
@@ -167,7 +167,7 @@ class TestIncremental:
         config_: ConfigBuilder, state: Optional[List[AirbyteStateMessage]] = None, expecting_exception: bool = False
     ) -> EntrypointOutput:
         return read_output(
-            config_builder=config_,
+            config_builder=config_.with_account_type("Vendor"),
             stream_name=_STREAM_NAME,
             sync_mode=SyncMode.incremental,
             state=state,

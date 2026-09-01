@@ -64,13 +64,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                            |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------|
-| 0.2.1   | 2026-06-09 | [79330](https://github.com/airbytehq/airbyte/pull/79330) | Progressive rollout e2e test     |
-| 0.2.0   | 2026-04-28 | [75542](https://github.com/airbytehq/airbyte/pull/75542) | Add wide schema flavor with configurable column count; fix null safety in partition reader; cache codec references; bump CDK to 1.1.6 |
-| 0.1.6   | 2025-10-23 | [68611](https://github.com/airbytehq/airbyte/pull/68611) | Update cdk version                 |
-| 0.1.5   | 2025-10-21 | [68581](https://github.com/airbytehq/airbyte/pull/68581) | Update dataChannel version         |
-| 0.1.4   | 2025-10-16 | [68131](https://github.com/airbytehq/airbyte/pull/68131) | Increment naming fix               |
-| 0.1.3   | 2025-10-16 | [68129](https://github.com/airbytehq/airbyte/pull/68129) | Increment encoding fix             |
-| 0.1.2   | 2025-10-14 | [67720](https://github.com/airbytehq/airbyte/pull/67720) | Removal of Array type              |
-| 0.1.1   | 2025-10-13 | [67110](https://github.com/airbytehq/airbyte/pull/67110) | Addition of proto types            |
-| 0.1.0   | 2025-09-29 | [66331](https://github.com/airbytehq/airbyte/pull/66331) | Creation of initial DataGen Source |
+| 0.2.2 | 2026-07-10 | [81656](https://github.com/airbytehq/airbyte/pull/81656) | chore(source-datagen): dummy version bump for progressive rollout (autopilot) testing |
+| 0.2.1 | 2026-06-09 | [79330](https://github.com/airbytehq/airbyte/pull/79330) | Progressive rollout e2e test |
+| 0.2.0 | 2026-04-28 | [75542](https://github.com/airbytehq/airbyte/pull/75542) | Add wide schema flavor with configurable column count; fix null safety in partition reader; cache codec references; bump CDK to 1.1.6 |
+| 0.1.6 | 2025-10-23 | [68611](https://github.com/airbytehq/airbyte/pull/68611) | Update cdk version |
+| 0.1.5 | 2025-10-21 | [68581](https://github.com/airbytehq/airbyte/pull/68581) | Update dataChannel version |
+| 0.1.4 | 2025-10-16 | [68131](https://github.com/airbytehq/airbyte/pull/68131) | Increment naming fix |
+| 0.1.3 | 2025-10-16 | [68129](https://github.com/airbytehq/airbyte/pull/68129) | Increment encoding fix |
+| 0.1.2 | 2025-10-14 | [67720](https://github.com/airbytehq/airbyte/pull/67720) | Removal of Array type |
+| 0.1.1 | 2025-10-13 | [67110](https://github.com/airbytehq/airbyte/pull/67110) | Addition of proto types |
+| 0.1.0 | 2025-09-29 | [66331](https://github.com/airbytehq/airbyte/pull/66331) | Creation of initial DataGen Source |
 </details>

@@ -9,6 +9,10 @@ Use `connectors describe` to inspect a configured connector before executing act
 
 Run this command before executing. Entity names, action names, parameters, and field names vary by connector.
 
+:::note describe vs. skill docs
+`describe` returns the connector's raw `schema` — the machine-readable entity, action, and parameter contract you use when writing `execute` calls by hand or in a script. This is different from the connector's **skill docs**, which are prose guidance written for an AI agent to read at runtime. When you build an agent, prefer skill docs (through `build_connector_tools` in the [SDK](../sdk/execute), or the inspect and read-docs steps in the [API](../api/execute) and [MCP](../mcp)). Reach for `describe` when you want the schema itself.
+:::
+
 ## Describe by name
 
 ```bash
