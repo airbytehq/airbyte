@@ -59,7 +59,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -144,7 +144,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -203,7 +203,7 @@ class TestGlobalExclusionsStream(TestCase):
 
         Given: No previous state (first sync)
         When: Running an incremental sync
-        Then: The connector should use start_date from config and emit state message
+        Then: The connector should request the full suppression list and emit state message
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
@@ -212,7 +212,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -378,6 +378,62 @@ class TestGlobalExclusionsStream(TestCase):
         http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
+    def test_stateless_read_is_not_bounded_by_start_date(self, http_mocker: HttpMocker):
+        """
+        A stateless read should return suppressed profiles older than the configured start date.
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+        request = (
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
+            .build()
+        )
+        http_mocker.get(
+            request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "profile",
+                                "id": "profile_before_start_date",
+                                "attributes": {
+                                    "email": "older@example.com",
+                                    "updated": "2020-01-02T00:00:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2020-01-02T00:00:00+00:00"}]
+                                            }
+                                        },
+                                        "sms": {"marketing": {}},
+                                    },
+                                },
+                            }
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "profile_before_start_date"
+        http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
         """
         Test that connector fetches all pages when pagination is present.
@@ -465,7 +521,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -540,7 +596,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint("invalid_key")
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -583,7 +639,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -623,7 +679,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-31T00:00:00+0000)",
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
