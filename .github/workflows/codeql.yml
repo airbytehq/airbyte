@@ -113,6 +113,7 @@ jobs:
           languages: java-kotlin
           build-mode: manual
           config-file: ./.github/codeql/codeql-config.yml
+          queries: security-and-quality
 
       - name: Build (compile only, continue past failures)
         # Preserve partial extraction when an unrelated monorepo module fails.
@@ -150,6 +151,7 @@ jobs:
           languages: python
           build-mode: none
           config-file: ./.github/codeql/codeql-config.yml
+          queries: security-extended
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
@@ -176,6 +178,7 @@ jobs:
           languages: javascript-typescript
           build-mode: none
           config-file: ./.github/codeql/codeql-config.yml
+          queries: security-extended
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
@@ -202,6 +205,7 @@ jobs:
           languages: actions
           build-mode: none
           config-file: ./.github/codeql/codeql-config.yml
+          queries: security-and-quality
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@54f647b7e1bb85c95cddabcd46b0c578ec92bc1a # v4.36.3
