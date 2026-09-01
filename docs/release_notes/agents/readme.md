@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## September 1, 2026
+
+Web app
+
+- Your connectors and Context Store now stay marked Ready when synced data hasn't been searched for a while. Previously they looked like they were still building, even though your agents could still search that data.
+
 ## August 12, 2026
 
 Web app
