@@ -405,8 +405,11 @@ definitions:
                   - string
 
   # Shared partition routers. Repo-scoped streams reference
-  # `repository_partition_router`; org-scoped streams reference
-  # `organization_partition_router`.
+  # `repository_partition_router`. For orgs there are deliberately two routers with
+  # different audiences: the `repositories` stream references
+  # `organization_partition_router` (config-derived candidates), the org-scoped Python
+  # streams reference `organization_resolution_partition_router` (payload-confirmed).
+  # Picking the wrong one for an org-scoped stream is what broke 2.2.0 — see below.
   #
   # `repository_partition_router` yields the deduplicated union of
   # wildcard-expanded repos and validated explicit repos.
