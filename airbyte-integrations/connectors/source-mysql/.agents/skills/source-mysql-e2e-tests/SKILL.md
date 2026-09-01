@@ -41,7 +41,6 @@ source-mysql-e2e-tests/
 ├── SKILL.md
 ├── scripts/
 │   ├── start-backend.sh        # docker run mysql:8.0 with ROW binlog + GTIDs
-│   ├── stop-backend.sh         # docker rm -f source-mysql-db-backend
 │   ├── apply-sql.sh            # docker exec mysql on stdin
 │   ├── reset-databases.sh      # drop and recreate non-system databases
 │   └── run.sh                  # engine shim to db-harness-lib orchestration
@@ -189,10 +188,11 @@ in single-version mode.
 
 ## Teardown
 
-`stop-backend.sh` is idempotent:
+The shared library's default `stop-backend.sh` is idempotent:
 
 ```bash
-"$SKILL/scripts/stop-backend.sh"
+BACKEND_NAME=source-mysql-db-backend \
+  airbyte-integrations/db-harness-lib/scripts/stop-backend.sh
 rm -rf "$REPRO_OUT"
 unset REPRO_OUT
 ```
