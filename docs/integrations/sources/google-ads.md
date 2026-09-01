@@ -400,7 +400,7 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.2.0 | 2026-09-01 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `asset_group` stream |
+| 6.2.0 | 2026-09-01 | [85243](https://github.com/airbytehq/airbyte/pull/85243) | Add `asset_group` stream |
 | 6.1.1 | 2026-08-25 | [85023](https://github.com/airbytehq/airbyte/pull/85023) | Fixed multi-byte UTF-8 characters being corrupted at chunk boundaries in large streamed responses. |
 | 6.1.0 | 2026-07-06 | [80952](https://github.com/airbytehq/airbyte/pull/80952) | Add `ad_performance` and `geo_performance` streams. |
 | 6.0.0 | 2026-05-29 | [78504](https://github.com/airbytehq/airbyte/pull/78504) | Clamp incremental report dates to Google Ads' 37-month granular data retention window. |
