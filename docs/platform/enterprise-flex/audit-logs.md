@@ -18,10 +18,10 @@ Airbyte produces several kinds of logs, and audit logs are the narrowest of them
 | Log type | What it contains | Where you find it |
 | --- | --- | --- |
 | Audit logs | Management operations: who changed a workspace, connection, connector, user, permission, or setting | **Settings** > **Organization** > **Audit Logs** |
-| Sync logs (job logs) | What happened during one sync, check, or discover job, including connector output | The **Job History** tab of a connection |
+| Sync logs (job logs) | What happened during one sync, check, or discover job, including connector output | A connection's [Timeline](/platform/cloud/managing-airbyte-cloud/review-connection-timeline) |
 | Data plane logs | Platform logs your Airbyte data plane pods write to stdout in your own infrastructure | Your own observability stack. See [Collect logs from a Flex data plane](/platform/enterprise-flex/log-collection). |
 
-Audit logs never contain the records your connections read or write. If you need to troubleshoot a failing sync, use the connection's job logs instead.
+Audit logs never contain the records your connections read or write. If you need to troubleshoot a failing sync, use the connection's sync logs instead.
 
 ## View your audit logs
 
