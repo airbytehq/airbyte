@@ -226,7 +226,10 @@ open class MsSqlServerJdbcPartitionFactory(
             return null
         }
 
-        if (opaqueStateValue == null) {
+        // A GLOBAL state message carries `{}` for streams that have not checkpointed yet (e.g. an
+        // initial snapshot interrupted before its first checkpoint). It must not be mistaken for
+        // a completed snapshot, which is always a non-empty object.
+        if (opaqueStateValue == null || opaqueStateValue.isEmpty) {
             return coldStart(streamState)
         }
 

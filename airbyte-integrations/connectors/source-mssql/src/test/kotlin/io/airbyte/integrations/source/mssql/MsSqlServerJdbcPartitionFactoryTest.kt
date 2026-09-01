@@ -441,6 +441,24 @@ class MsSqlServerJdbcPartitionFactoryTest {
     }
 
     @Test
+    fun testEmptyCdcStreamStateRestartsSnapshot() {
+        // GLOBAL state messages emit `{}` for streams that never checkpointed, e.g. when the
+        // initial snapshot failed mid-way. This must restart the snapshot, not skip the stream.
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(stream, Jsons.objectNode())
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcCdcSnapshotPartition)
+    }
+
+    @Test
+    fun testEmptyCursorBasedStreamStateRestartsSnapshot() {
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(streamFeedBootstrap(stream, Jsons.objectNode()))
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
+    }
+
+    @Test
     fun testResumeFromCompletedCursorBasedReadBinary() {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
