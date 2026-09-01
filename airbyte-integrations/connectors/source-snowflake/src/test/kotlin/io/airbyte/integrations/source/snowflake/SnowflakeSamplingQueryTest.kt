@@ -5,7 +5,7 @@
 package io.airbyte.integrations.source.snowflake
 
 import io.airbyte.cdk.data.LocalDateCodec
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.IntFieldType
 import io.airbyte.cdk.jdbc.LocalDateFieldType
 import io.airbyte.cdk.jdbc.StringFieldType
@@ -24,7 +24,11 @@ class SnowflakeSamplingQueryTest {
         // Test traditional sampling without a WHERE clause
         val querySpec =
             SelectQuerySpec(
-                select = SelectColumns(Field("id", IntFieldType), Field("name", StringFieldType)),
+                select =
+                    SelectColumns(
+                        EmittedField("id", IntFieldType),
+                        EmittedField("name", StringFieldType)
+                    ),
                 from =
                     FromSample(
                         name = "users",
@@ -48,7 +52,7 @@ class SnowflakeSamplingQueryTest {
     @Test
     fun testSamplingQueryWithWhereClause() {
         // Test sampling with a WHERE clause (incremental sync scenario)
-        val cursorField = Field("updated_at", LocalDateFieldType)
+        val cursorField = EmittedField("updated_at", LocalDateFieldType)
         val whereClause =
             Where(Greater(cursorField, LocalDateCodec.encode(LocalDate.parse("2025-01-01"))))
 
@@ -56,8 +60,8 @@ class SnowflakeSamplingQueryTest {
             SelectQuerySpec(
                 select =
                     SelectColumns(
-                        Field("id", IntFieldType),
-                        Field("name", StringFieldType),
+                        EmittedField("id", IntFieldType),
+                        EmittedField("name", StringFieldType),
                         cursorField
                     ),
                 from =
@@ -85,9 +89,9 @@ class SnowflakeSamplingQueryTest {
     @Test
     fun testSamplingQueryWithComplexWhereClause() {
         // Test sampling with a complex WHERE clause (multiple conditions)
-        val idField = Field("id", IntFieldType)
-        val statusField = Field("status", StringFieldType)
-        val dateField = Field("created_date", LocalDateFieldType)
+        val idField = EmittedField("id", IntFieldType)
+        val statusField = EmittedField("status", StringFieldType)
+        val dateField = EmittedField("created_date", LocalDateFieldType)
 
         val whereClause =
             Where(
@@ -126,8 +130,8 @@ class SnowflakeSamplingQueryTest {
     @Test
     fun testIncrementalPartitionSamplingQuery() {
         // Test the exact scenario from the GitHub issue
-        val cursorField = Field("airdate", LocalDateFieldType)
-        val uuidField = Field("uuid", StringFieldType)
+        val cursorField = EmittedField("airdate", LocalDateFieldType)
+        val uuidField = EmittedField("uuid", StringFieldType)
 
         // Simulate cursor bounds for incremental sync
         val lowerBound = LocalDate.parse("2025-08-07")
@@ -173,11 +177,11 @@ class SnowflakeSamplingQueryTest {
     @Test
     fun testSamplingWithNoSampleRate() {
         // Test when sample rate is 1 (no sampling)
-        val whereClause = Where(Greater(Field("id", IntFieldType), Jsons.numberNode(100)))
+        val whereClause = Where(Greater(EmittedField("id", IntFieldType), Jsons.numberNode(100)))
 
         val querySpec =
             SelectQuerySpec(
-                select = SelectColumns(Field("id", IntFieldType)),
+                select = SelectColumns(EmittedField("id", IntFieldType)),
                 from =
                     FromSample(
                         name = "test_table",
@@ -204,11 +208,12 @@ class SnowflakeSamplingQueryTest {
     @Test
     fun testSamplingQueryWithNullNamespace() {
         // Test sampling query without namespace
-        val whereClause = Where(Equal(Field("status", StringFieldType), Jsons.textNode("active")))
+        val whereClause =
+            Where(Equal(EmittedField("status", StringFieldType), Jsons.textNode("active")))
 
         val querySpec =
             SelectQuerySpec(
-                select = SelectColumns(Field("id", IntFieldType)),
+                select = SelectColumns(EmittedField("id", IntFieldType)),
                 from =
                     FromSample(
                         name = "users",
@@ -235,10 +240,14 @@ class SnowflakeSamplingQueryTest {
         // Test that regular queries (non-sampling) still work correctly
         val querySpec =
             SelectQuerySpec(
-                select = SelectColumns(Field("id", IntFieldType), Field("name", StringFieldType)),
+                select =
+                    SelectColumns(
+                        EmittedField("id", IntFieldType),
+                        EmittedField("name", StringFieldType)
+                    ),
                 from = From(name = "users", namespace = "public"),
-                where = Where(Greater(Field("id", IntFieldType), Jsons.numberNode(100))),
-                orderBy = OrderBy(Field("id", IntFieldType)),
+                where = Where(Greater(EmittedField("id", IntFieldType), Jsons.numberNode(100))),
+                orderBy = OrderBy(EmittedField("id", IntFieldType)),
                 limit = Limit(10)
             )
 
@@ -260,7 +269,11 @@ class SnowflakeSamplingQueryTest {
         // This simulates a fresh snapshot with no lower/upper bounds
         val querySpec =
             SelectQuerySpec(
-                select = SelectColumns(Field("id", IntFieldType), Field("name", StringFieldType)),
+                select =
+                    SelectColumns(
+                        EmittedField("id", IntFieldType),
+                        EmittedField("name", StringFieldType)
+                    ),
                 from =
                     FromSample(
                         name = "users",
@@ -270,7 +283,7 @@ class SnowflakeSamplingQueryTest {
                         where = NoWhere
                     ),
                 where = NoWhere,
-                orderBy = OrderBy(Field("id", IntFieldType))
+                orderBy = OrderBy(EmittedField("id", IntFieldType))
             )
 
         val query = queryGenerator.generate(querySpec)
@@ -285,7 +298,7 @@ class SnowflakeSamplingQueryTest {
 
         assertEquals(expectedSql, query.sql)
         assertEquals(
-            listOf(Field("id", IntFieldType), Field("name", StringFieldType)),
+            listOf(EmittedField("id", IntFieldType), EmittedField("name", StringFieldType)),
             query.columns
         )
     }

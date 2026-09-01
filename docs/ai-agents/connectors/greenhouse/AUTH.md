@@ -7,21 +7,29 @@ This page documents the authentication and configuration options for the Greenho
 In hosted mode, create the connector through the Airbyte Agent CLI or API, then execute operations using the CLI, Python SDK, or API. If you need a step-by-step guide, see the [developer quickstart](https://docs.airbyte.com/ai-agents/get-started/developer-quickstart/).
 
 ### OAuth
-This authentication method isn't available for this connector.
+Use the CLI for hosted OAuth connector creation when possible. It opens the hosted setup flow and avoids passing connector secrets through the command line:
 
+```bash
+airbyte-agent login
+airbyte-agent connectors create --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "greenhouse"
+}'
+```
 
-### Token
-Create a connector with Token credentials.
-
+For API-first use cases, create a connector with OAuth credentials directly.
 
 `credentials` fields you need:
 
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Greenhouse Harvest API Key from the Dev Center |
+| `client_id` | `str` | Yes | Client ID from the Greenhouse OAuth application |
+| `client_secret` | `str` | Yes | Client secret from the Greenhouse OAuth application |
+| `refresh_token` | `str` | Yes | Refresh token generated through the Greenhouse OAuth consent flow |
+| `access_token` | `str` | No | Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided) |
 
 Example request:
-
 
 ```bash
 curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
@@ -32,10 +40,19 @@ curl -X POST "https://api.airbyte.ai/api/v1/integrations/connectors" \
     "connector_type": "Greenhouse",
     "name": "My Greenhouse Connector",
     "credentials": {
-      "api_key": "<Your Greenhouse Harvest API Key from the Dev Center>"
+      "client_id": "<Client ID from the Greenhouse OAuth application>",
+      "client_secret": "<Client secret from the Greenhouse OAuth application>",
+      "refresh_token": "<Refresh token generated through the Greenhouse OAuth consent flow>",
+      "access_token": "<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     }
   }'
 ```
+
+
+
+
+### Token
+This authentication method isn't available for this connector.
 
 ### Execution
 
@@ -352,15 +369,16 @@ curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/<connector_i
 In open source mode, provide API credentials directly to the connector.
 
 ### OAuth
-This authentication method isn't available for this connector.
-
-### Token
 
 `credentials` fields you need:
 
+
 | Field Name | Type | Required | Description |
 |------------|------|----------|-------------|
-| `api_key` | `str` | Yes | Your Greenhouse Harvest API Key from the Dev Center |
+| `client_id` | `str` | Yes | Client ID from the Greenhouse OAuth application |
+| `client_secret` | `str` | Yes | Client secret from the Greenhouse OAuth application |
+| `refresh_token` | `str` | Yes | Refresh token generated through the Greenhouse OAuth consent flow |
+| `access_token` | `str` | No | Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided) |
 
 Example request:
 
@@ -370,8 +388,14 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 ```
+
+### Token
+This authentication method isn't available for this connector.
 
