@@ -3,9 +3,10 @@
 #
 # Runs the same sweep the ops repo's `connector-regression-test.yml`
 # workflow runs — SPEC → CHECK → DISCOVER → configured catalog derived
-# from the discover output → READ — around a local SQL Server backend
-# that this script owns: start it, apply the SQL fixtures, render the
-# config, run every command against that one backend, tear it down.
+# from the discover output → READ — around a local database backend that
+# this script owns (via the engine's lifecycle scripts): start it, apply
+# the SQL fixtures, render the config, run every command against that one
+# backend, tear it down.
 #
 # The step order, the per-command artifact layout, the per-command
 # timeouts, the "keep going and report every command" behaviour, and the
@@ -251,7 +252,7 @@ fi
 # shellcheck disable=SC2329
 cleanup() {
   if [[ "$KEEP_BACKEND" == true ]]; then
-    echo "[run] --keep-backend: leaving the backend up; stop it with scripts/stop-backend.sh" >&2
+    echo "[run] --keep-backend: leaving the backend up; stop it with $ENGINE_SCRIPTS_DIR/stop-backend.sh" >&2
   else
     "$ENGINE_SCRIPTS_DIR/stop-backend.sh" || true
   fi
