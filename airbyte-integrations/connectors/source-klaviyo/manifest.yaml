@@ -168,6 +168,7 @@ definitions:
           - "%Y-%m-%dT%H:%M:%S%z"
           - "%Y-%m-%d %H:%M:%S%z"
         datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+        lookback_window: PT1H
         start_datetime:
           type: MinMaxDatetime
           # Suppression list is synced in full on a stateless read; `start_date` does not bound this stream.

@@ -273,7 +273,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-30T00:00:00+0000)",
+                    "filter": "greater-than(updated,2024-05-29T23:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -331,7 +331,7 @@ class TestGlobalExclusionsStream(TestCase):
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
             .with_query_params(
                 {
-                    "filter": "greater-than(updated,2024-05-30T08:00:00+0000)",
+                    "filter": "greater-than(updated,2024-05-30T07:00:00+0000)",
                     "sort": "updated",
                     "additional-fields[profile]": "subscriptions",
                     "page[size]": "100",
@@ -376,6 +376,62 @@ class TestGlobalExclusionsStream(TestCase):
         assert len(output.records) == 1
         assert output.records[0].record.data["id"] == "profile_cursor_boundary"
         http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_incremental_request_applies_one_hour_lookback_to_state_cursor(self, http_mocker: HttpMocker):
+        """The request boundary is the stored cursor minus the PT1H lookback so an equal-cursor record is re-read."""
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 30, tzinfo=timezone.utc)).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-30T08:00:00+00:00"}).build()
+        request = (
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,2024-05-30T07:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
+            .build()
+        )
+        http_mocker.get(
+            request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "profile",
+                                "id": "profile_at_cursor",
+                                "attributes": {
+                                    "email": "cursor@example.com",
+                                    "updated": "2024-05-30T08:00:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-30T08:00:00+00:00"}]
+                                            }
+                                        },
+                                        "sms": {"marketing": {}},
+                                    },
+                                },
+                            }
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog, state=state)
+
+        http_mocker.assert_number_of_calls(request, 1)
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "profile_at_cursor"
+        assert output.most_recent_state.stream_state.__dict__["updated"] == "2024-05-30T08:00:00+0000"
 
     @HttpMocker()
     def test_stateless_read_is_not_bounded_by_start_date(self, http_mocker: HttpMocker):
