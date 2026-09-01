@@ -19,9 +19,10 @@ BACKEND_DB="${BACKEND_DB:-test_db}"
 BACKEND_PORT="${BACKEND_PORT:-3306}"
 BACKEND_IMAGE="${BACKEND_IMAGE:-mysql:8.0}"
 
-if docker inspect "$BACKEND_NAME" >/dev/null 2>&1; then
-  echo "[start-backend] $BACKEND_NAME already exists; reusing." >&2
+if [[ "$(docker inspect -f '{{.State.Running}}' "$BACKEND_NAME" 2>/dev/null || echo false)" == "true" ]]; then
+  echo "[start-backend] $BACKEND_NAME already running; reusing." >&2
 else
+  docker rm -f "$BACKEND_NAME" >/dev/null 2>&1 || true
   docker run -d --rm \
     --name "$BACKEND_NAME" \
     -e MYSQL_ROOT_PASSWORD="$BACKEND_PASSWORD" \

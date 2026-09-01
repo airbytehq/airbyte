@@ -128,14 +128,14 @@ Instead of driver scripts hand-rolling `grep -q '<substring>' || exit 1`
 against command artifacts, `run.sh` accepts expectation flags that it
 enforces before returning:
 
-| Flag                                               | Effect                                                            |
-| -------------------------------------------------- | ----------------------------------------------------------------- |
-| `--expect-test=pass\|fail`                         | Overall target verdict.                                           |
-| `--expect-control=pass\|fail`                      | Control verdict in comparison mode; requires `--control-version`. |
-| `--min-records=N`                                  | Target read must contain at least N `RECORD` messages.            |
-| `--min-states=N`                                   | Target read must contain at least N `STATE` messages.             |
-| `--expect-match=[<command>:]<channel>:<regex>[:N]` | Target command output must match the regex at least N times.      |
-| `--forbid-match=[<command>:]<channel>:<regex>`     | Target command output must not match the regex.                   |
+| Flag                                               | Effect                                                                                                       |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `--expect-test=pass\|fail`                         | Overall target verdict.                                                                                      |
+| `--expect-control=pass\|fail`                      | Control verdict in comparison mode; requires `--control-version` and `--reset=fixture` or `--reset=backend`. |
+| `--min-records=N`                                  | Target read must contain at least N `RECORD` messages.                                                       |
+| `--min-states=N`                                   | Target read must contain at least N `STATE` messages.                                                        |
+| `--expect-match=[<command>:]<channel>:<regex>[:N]` | Target command output must match the regex at least N times.                                                 |
+| `--forbid-match=[<command>:]<channel>:<regex>`     | Target command output must not match the regex.                                                              |
 
 Match assertions use the target-side artifacts for the named command and
 default to `read` when no command prefix is supplied. The accepted
