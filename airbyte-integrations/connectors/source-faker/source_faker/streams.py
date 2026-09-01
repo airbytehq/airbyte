@@ -14,6 +14,45 @@ from .user_generator import UserGenerator
 from .utils import format_airbyte_time, generate_estimate, read_json
 
 
+MAKE_COLORS: Dict[str, str] = {
+    "Audi": "Silver",
+    "BMW": "Black",
+    "Buick": "Burgundy",
+    "Cadillac": "Black",
+    "Chevrolet": "Red",
+    "Chrysler": "White",
+    "Dodge": "Orange",
+    "Ford": "Blue",
+    "GMC": "Gray",
+    "Honda": "White",
+    "Isuzu": "White",
+    "Jeep": "Green",
+    "Lexus": "Silver",
+    "Lincoln": "Black",
+    "Mazda": "Red",
+    "Mercedes-Benz": "Silver",
+    "Mitsubishi": "Gray",
+    "Nissan": "Blue",
+    "Pontiac": "Red",
+    "Porsche": "Yellow",
+    "Saturn": "Gold",
+    "Subaru": "Blue",
+    "Suzuki": "White",
+    "Toyota": "Silver",
+    "Volkswagen": "White",
+}
+
+MAKE_BASE_WEIGHT: Dict[str, float] = {
+    "Audi": 1620.0, "BMW": 1580.0, "Buick": 1750.0, "Cadillac": 1900.0,
+    "Chevrolet": 1650.0, "Chrysler": 1700.0, "Dodge": 1680.0, "Ford": 1640.0,
+    "GMC": 1850.0, "Honda": 1350.0, "Isuzu": 1800.0, "Jeep": 1900.0,
+    "Lexus": 1700.0, "Lincoln": 1850.0, "Mazda": 1400.0, "Mercedes-Benz": 1750.0,
+    "Mitsubishi": 1500.0, "Nissan": 1450.0, "Pontiac": 1550.0, "Porsche": 1500.0,
+    "Saturn": 1300.0, "Subaru": 1550.0, "Suzuki": 1200.0, "Toyota": 1500.0,
+    "Volkswagen": 1450.0,
+}
+
+
 class Products(Stream, IncrementalMixin):
     primary_key = "id"
     cursor_field = "updated_at"
@@ -51,12 +90,18 @@ class Products(Stream, IncrementalMixin):
         products = self.load_products()
         updated_at = ""
 
-        median_record_byte_size = 180
+        median_record_byte_size = 210
         rows_to_emit = len(products)
         yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
 
         for product in products:
             if product["id"] <= self.count:
+                color = MAKE_COLORS.get(product["make"])
+                if color is None:
+                    continue
+                base_weight = MAKE_BASE_WEIGHT.get(product["make"], 1500.0)
+                product["color"] = color
+                product["weight_kg"] = round(base_weight + (product["price"] / 100), 1)
                 updated_at = format_airbyte_time(datetime.datetime.now())
                 product["updated_at"] = updated_at
                 yield product
