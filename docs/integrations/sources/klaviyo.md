@@ -16,7 +16,26 @@ This page contains the setup guide and reference information for the [Klaviyo](h
 ### Step 1: Set up Klaviyo
 
 1. Create a [Klaviyo account](https://www.klaviyo.com)
-2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). Make sure you selected all [scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283) corresponding to the streams you would like to replicate. You can find which scope is required for a specific stream by navigating to the relevant API documentation for the streams Airbyte supports.
+2. Create a [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3). Grant it read access for every stream you want to replicate, as listed in [Required API key scopes](#required-api-key-scopes). If the key is missing a scope, Klaviyo rejects that stream's requests with a `403` error and the sync fails.
+
+### Required API key scopes
+
+Klaviyo private API keys carry [per-object scopes](https://help.klaviyo.com/hc/en-us/articles/7423954176283). Each stream needs read access to the objects behind the endpoints it calls:
+
+| Stream                        | Required scopes                  |
+| :---------------------------- | :------------------------------- |
+| Campaigns, Campaigns Detailed | `campaigns:read`                 |
+| Campaign Values Reports       | `campaigns:read`, `metrics:read` |
+| Email Templates               | `templates:read`                 |
+| Events, Events Detailed       | `events:read`                    |
+| Flows                         | `flows:read`                     |
+| Flow Series Reports           | `flows:read`, `metrics:read`     |
+| GlobalExclusions, Profiles    | `profiles:read`                  |
+| Lists, Lists Detailed         | `lists:read`                     |
+| Metrics                       | `metrics:read`                   |
+| Segments                      | `segments:read`                  |
+
+The two report streams also need `metrics:read`, because the connector lists your account's metrics to decide which conversion metrics to request reports for. Klaviyo publishes the scopes each endpoint requires in its [API reference](https://developers.klaviyo.com/en/reference/api_overview) and in its [OpenAPI specification](https://github.com/klaviyo/openapi).
 
 ### Step 2: Set up the Klaviyo connector in Airbyte
 
@@ -82,8 +101,6 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 The **Metrics** stream always syncs all metric definitions, regardless of the configured **Start Date**. Metric definitions are reference data needed to interpret other streams (for example, joining `relationships.data.metric.id` in `events` to a metric name), and the Klaviyo API does not support filtering metrics by date. On subsequent incremental syncs, only new and updated metric definitions are emitted. If older metric definitions are missing after upgrading from a previous connector version, clear/reset the `metrics` stream to backfill them.
 
-This stream requires the `metrics:read` scope on your API key.
-
 ### Streams that filter incrementally after fetching
 
 The **Metrics**, **Lists**, **Lists Detailed**, and **Segments** streams request every record from Klaviyo on each sync and then discard records older than the cursor position. **Start Date** and incremental sync therefore reduce how many records these streams emit, but not how many API requests they make. Expect sync duration for these streams to scale with the total number of lists, segments, and metrics in your account rather than with the amount of new data.
@@ -102,17 +119,10 @@ Report periods always cover whole calendar days in your Klaviyo account's (compa
 
 Klaviyo keeps revising conversion attribution after a send, by default for up to 5 days and up to 90 days if you have raised the attribution window in your account settings. Numbers first reported for a day therefore keep changing for a while. Use **Reporting Lookback Window (Days)** to re-sync the last few days of Flow Series Reports on every incremental run and pick those revisions up; set it to at least your attribution window. On a destination that deduplicates on the primary key, each re-synced day replaces the row already written for it; in append mode each re-synced day adds an extra row per sync instead. This setting does not apply to Campaign Values Reports, because that endpoint reports a single aggregate per requested period rather than per-day values, so a re-read there could only add a second row covering the same days.
 
-These streams require the following API key scopes:
-
-- **Campaign Values Reports**: `campaigns:read`
-- **Flow Series Reports**: `flows:read`
-
-Both streams also need `metrics:read`, because the connector lists your account's metrics to decide which conversion metrics to request reports for.
-
 Both streams partition data by conversion metric. By default, the connector fetches reports for all metrics in your account. You can use the optional **Report Stream Conversion Metric IDs** configuration field to specify a comma-separated list of metric IDs (for example, `RESQ6t,ABC123`) to limit reporting to specific conversion metrics.
 
 :::warning
-These analytics endpoints have strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)): 1 request per second burst, 2 requests per minute steady, and 225 requests per day. Because the connector makes a separate API request for each metric and each time window, syncing all metrics can take several hours and may exceed the daily rate limit. Specify only the conversion metrics you need using the **Report Stream Conversion Metric IDs** field.
+These analytics endpoints have strict Klaviyo API rate limits ([see documentation](https://developers.klaviyo.com/en/reference/query_campaign_values)): 1 request per second burst, 2 requests per minute steady, and 225 requests per day. Because the connector makes a separate API request for each metric and each time window, syncing all metrics can take several hours and may exhaust the daily quota, which fails the sync with a rate limit error. See [Performance considerations](#performance-considerations). Specify only the conversion metrics you need using the **Report Stream Conversion Metric IDs** field.
 :::
 
 Not all Klaviyo metrics support conversion value queries. For example, metrics without a `$value` property cannot be queried for values data. The connector automatically skips these unsupported metrics and continues syncing the remaining ones. If you see fewer results than expected, verify that your selected metrics support values data in Klaviyo.
@@ -126,7 +136,7 @@ To find your conversion metric IDs:
 
 ### Event stream filtering
 
-The **Events** and **Events Detailed** streams can filter server-side by metric ID, using the **Event Stream Metric IDs** configuration field. Both streams require the `events:read` scope on your API key.
+The **Events** and **Events Detailed** streams can filter server-side by metric ID, using the **Event Stream Metric IDs** configuration field.
 
 Klaviyo's `metric_id` filter only supports the `equals` operator, so the connector issues a separate set of requests for each metric ID you configure. Each additional metric ID multiplies the number of API requests per sync. If syncs hit Klaviyo [rate limits](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling), reduce the number of configured metrics or lower the **Number of concurrent threads** setting.
 
@@ -140,9 +150,11 @@ To find metric IDs, go to **Analytics** > **Metrics** in your Klaviyo account, o
 
 ## Performance considerations
 
-The connector is restricted by Klaviyo [rate limits](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling).
+The connector is restricted by Klaviyo [rate limits](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling). When Klaviyo answers a request with `429`, the connector waits for the number of seconds in the response's `Retry-After` header and then retries. Burst and steady limit waits are typically seconds to about a minute, so syncs usually recover from them without any action from you.
 
-The Klaviyo connector should not run into Klaviyo API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
+The connector waits at most 10 minutes for any single retry. When `Retry-After` asks for longer than that, the sync fails with a rate limit error instead of idling. In practice this happens on the reporting endpoints behind the **Campaign Values Reports** and **Flow Series Reports** streams, which enforce a daily quota of 225 requests on top of the burst and steady limits: once a sync exhausts that quota, `Retry-After` holds the seconds remaining until the next daily reset, which can be many hours. To stay inside the quota, narrow the conversion metrics you request with **Report Stream Conversion Metric IDs**, sync these two streams less frequently, or move them to their own connection so a quota failure doesn't interrupt your other streams. Connector versions before 3.0.1 waited for the full `Retry-After` value on every stream, which stalled the sync until Airbyte stopped the attempt and restarted it.
+
+[Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter rate limit issues that aren't retried successfully.
 
 The `Campaigns Detailed` stream contains fields `estimated_recipient_count` and `campaign_message` in addition to info from the `Campaigns` stream. Additional time is needed to fetch extra data.
 
@@ -177,6 +189,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
 | 3.0.0 | 2026-08-14 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Emit one record per calendar day with scalar statistics in `flow_series_reports`, add a reporting lookback window for that stream, and align both report streams to whole-day windows to stop boundary double-counting (refresh the schema and clear both report streams) |
 | 2.21.1 | 2026-08-11 | [83991](https://github.com/airbytehq/airbyte/pull/83991) | Update dependencies |
 | 2.21.0 | 2026-08-07 | [75301](https://github.com/airbytehq/airbyte/pull/75301) | Add optional metric ID filtering for the `events` and `events_detailed` streams |

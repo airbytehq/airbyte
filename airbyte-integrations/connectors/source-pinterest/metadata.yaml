@@ -5,7 +5,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
-  dockerImageTag: 2.2.12
+  dockerImageTag: 2.3.0
   dockerRepository: airbyte/source-pinterest
   connectorBuildOptions:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
@@ -68,6 +68,9 @@ data:
     - title: Pinterest API Changelog
       url: https://developers.pinterest.com/docs/changelog/
       type: api_release_history
+    - title: Pinterest API generated client (spec-derived)
+      url: https://github.com/pinterest/pinterest-python-generated-api-client
+      type: spec_repository
   tags:
     - language:manifest-only
     - cdk:low-code

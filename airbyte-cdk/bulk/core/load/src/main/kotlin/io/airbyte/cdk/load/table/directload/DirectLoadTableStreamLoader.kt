@@ -301,17 +301,6 @@ class DirectLoadTableDedupTruncateStreamLoader(
     private val streamStateStore: StreamStateStore<DirectLoadTableExecutionConfig>,
     private val tempTableNameGenerator: TempTableNameGenerator,
 ) : StreamLoader {
-    // can't use lateinit because of weird kotlin reasons.
-    /**
-     * Indicates whether the real table potentially has the correct generation ID. This is
-     * determined during start() based on whether we had a temp table initially.
-     * - true: Real table may have correct generation, will check in close() before deciding final
-     * approach
-     * - false: Real table definitely has incorrect generation, will use temp-temp approach in
-     * close()
-     */
-    private var shouldCheckRealTableGeneration: Boolean = false
-
     override suspend fun start() {
         logger.info {
             "DedupTruncateStreamLoader starting for stream ${stream.mappedDescriptor.toPrettyString()}"
@@ -341,7 +330,6 @@ class DirectLoadTableDedupTruncateStreamLoader(
                     )
                 }
             }
-            shouldCheckRealTableGeneration = false
         } else {
             logger.info {
                 "Creating new temp table: ${tempTableName.toPrettyString()} for stream ${stream.mappedDescriptor.toPrettyString()}"
@@ -352,7 +340,6 @@ class DirectLoadTableDedupTruncateStreamLoader(
                 columnNameMapping,
                 replace = true,
             )
-            shouldCheckRealTableGeneration = true
         }
 
         logger.info {
@@ -365,7 +352,7 @@ class DirectLoadTableDedupTruncateStreamLoader(
 
     override suspend fun teardown(completedSuccessfully: Boolean) {
         if (completedSuccessfully) {
-            if (shouldCheckRealTableGeneration && shouldUpsertDirectly()) {
+            if (shouldUpsertDirectly()) {
                 // Direct upsert path for simpler cases
                 logger.info {
                     "Upserting directly to real table for stream ${stream.mappedDescriptor.toPrettyString()}"

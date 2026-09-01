@@ -7,9 +7,12 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-### 1.0.25 — 2026-08-19
+### 1.0.26 — 2026-08-19
 
 [#84897](https://github.com/airbytehq/airbyte/pull/84897) — Add `ensureMetaColumnsExist` hook to `TableSchemaEvolutionClient`; the default `ensureSchemaMatches` invokes it before schema discovery so destinations can repair tables created by pre-direct-load connector versions that lack some `_airbyte_*` meta columns.
+### 1.0.25 — 2026-08-20
+
+Fix: truncate-refresh dedup syncs no longer replace an already-committed real table with an empty or partial result on a later job attempt.
 
 ### 1.0.24 — 2026-08-10
 

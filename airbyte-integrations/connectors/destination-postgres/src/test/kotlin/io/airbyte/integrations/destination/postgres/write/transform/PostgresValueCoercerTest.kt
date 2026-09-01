@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.NumberType
 import io.airbyte.cdk.load.data.NumberValue
 import io.airbyte.cdk.load.data.ObjectType
+import io.airbyte.cdk.load.data.ObjectTypeWithoutSchema
 import io.airbyte.cdk.load.data.ObjectValue
 import io.airbyte.cdk.load.data.StringType
 import io.airbyte.cdk.load.data.StringValue
@@ -75,6 +76,78 @@ internal class PostgresValueCoercerTest {
         val result = coercer.map(enrichedAirbyteValue)
         assertEquals(enrichedAirbyteValue, result)
         assertEquals(StringType, result.abValue.airbyteType)
+    }
+
+    @Test
+    fun testMapRemovesNestedNullCharacters() {
+        val objectValue =
+            ObjectValue(
+                linkedMapOf(
+                    "objectValue" to StringValue("before\u0000after"),
+                    "arrayValue" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nested" to StringValue("a\u0000b"))))
+                        )
+                )
+            )
+        val enrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                abValue = objectValue,
+                type = ObjectTypeWithoutSchema,
+                name = "test",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        coercer.map(enrichedAirbyteValue)
+
+        assertEquals(
+            ObjectValue(
+                linkedMapOf(
+                    "objectValue" to StringValue("beforeafter"),
+                    "arrayValue" to
+                        ArrayValue(listOf(ObjectValue(linkedMapOf("nested" to StringValue("ab")))))
+                )
+            ),
+            enrichedAirbyteValue.abValue
+        )
+    }
+
+    @Test
+    fun testMapRemovesNullCharactersFromObjectKeys() {
+        // No NUL in any value, so this also covers the containsNullCharacter() pre-check
+        // noticing a key-only NUL.
+        val objectValue =
+            ObjectValue(
+                linkedMapOf(
+                    "key\u0000name" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nested\u0000key" to StringValue("v"))))
+                        )
+                )
+            )
+        val enrichedAirbyteValue =
+            EnrichedAirbyteValue(
+                abValue = objectValue,
+                type = ObjectTypeWithoutSchema,
+                name = "test",
+                changes = mutableListOf(),
+                airbyteMetaField = null,
+            )
+
+        coercer.map(enrichedAirbyteValue)
+
+        assertEquals(
+            ObjectValue(
+                linkedMapOf(
+                    "keyname" to
+                        ArrayValue(
+                            listOf(ObjectValue(linkedMapOf("nestedkey" to StringValue("v"))))
+                        )
+                )
+            ),
+            enrichedAirbyteValue.abValue
+        )
     }
 
     @Test
