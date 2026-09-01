@@ -7,7 +7,7 @@ description: Reproduce CDC bugs against source-mssql by enabling CDC on the loca
 
 Local CDC bug-reproduction harness for `source-mssql`. Builds on the
 engine-independent orchestration in
-[`airbyte-integrations/db-harness-lib/`](../../../../db-harness-lib/) and
+[`airbyte-integrations/db-harness-lib/`](../../../../../db-harness-lib/) and
 the MSSQL engine skill
 ([`source-mssql-e2e-tests`](../source-mssql-e2e-tests/SKILL.md)):
 generic skill stands up the SQL Server backend and runs the connector;
@@ -61,9 +61,8 @@ source-mssql-e2e-cdc-tests/
         └── repro-12162-spaces-in-name.sql
 ```
 
-`extract-state.py` is implemented in `db-harness-lib` and forwarded by the
-generic skill
-([`../source-mssql-e2e-tests/scripts/extract-state.py`](../source-mssql-e2e-tests/scripts/extract-state.py)) —
+`extract-state.py` is implemented in
+[`airbyte-integrations/db-harness-lib/scripts/extract-state.py`](../../../../../db-harness-lib/scripts/extract-state.py);
 it walks Airbyte STATE messages, which is protocol-level and not
 CDC-specific.
 
@@ -96,9 +95,11 @@ CDC-specific.
   discover-time signatures.
 - Multi-phase cases (`11451.sh`, and any future read → mutate →
   read-with-state repros) capture Airbyte STATE messages between reads
-  via the generic skill's `extract-state.py` (`uv`-PEP-723 standalone;
-  run with `./scripts/extract-state.py <stdout.txt>` or pipe stdin) and
-  feed the file back into the second read with `run.sh --state=PATH`.
+  via the shared
+  [`extract-state.py`](../../../../../db-harness-lib/scripts/extract-state.py)
+  (`uv`-PEP-723 standalone; pass `<stdout.txt>` as its argument or pipe
+  stdin) and feed the file back into the second read with
+  `run.sh --state=PATH`.
   Use `--step-name=<bug>/<phase>` to give each phase its own artifact
   subtree.
 

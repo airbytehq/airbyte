@@ -79,7 +79,8 @@ the reported symptom (drop into
 [`source-mssql-e2e-cdc-tests/fixtures/sql/`](.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/)),
 add a driver script alongside (`repro-<oncall-id>.sh`), and assert on the
 relevant `stdout.txt` / `stderr.txt` / exit-code shape. Each driver
-script wraps the generic skill's `run-protocol-cmd.sh`, so the connector
+script invokes the engine shim, which delegates orchestration to
+`airbyte-integrations/db-harness-lib/scripts/run.sh`, so the connector
 lifecycle (image pull, AirbyteMessage parsing, exit-code surfacing) is
 already handled.
 
@@ -104,18 +105,20 @@ directly.
   `--network` (tracked in
   [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765)).
   Until it does, both containers share Docker's default `bridge` network
-  and the connector resolves the source by IP. The `render-config.sh`
-  script in the generic skill handles this: it inspects the backend's
-  bridge IP and substitutes it into the config template before each
-  invocation.
+  and the connector resolves the source by IP. The shared library's
+  [`render-config.sh`](../../db-harness-lib/scripts/render-config.sh)
+  handles this: it inspects the backend's bridge IP and substitutes it
+  into the config template before each invocation.
 - **A connector run rejects the catalog with `Validation error(s)`.**
   Bulk-CDK requires `is_file_based`, `cursor_field`, `generation_id`,
   `minimum_generation_id`, `sync_id`, `destination_object_name`, and
   `include_files` on every configured stream, and rejects them as null
   with `code: 1021`. This is not limited to `4.3.x` — `4.4.12` and
-  `5.0.0` reject them too. `discover` never emits `is_file_based`, so
-  `make-catalog.sh` fills it in; the catalog fixtures shipped with the
-  CDC skill populate all of them.
+  `5.0.0` reject them too. `discover` never emits `is_file_based`, so the
+  shared library's
+  [`make-catalog.sh`](../../db-harness-lib/scripts/make-catalog.sh) fills
+  it in; the catalog fixtures shipped with the CDC skill populate all of
+  them.
 - **A `check` that fails still exits 0 in single-version mode.** The CDK
   emits `CONNECTION_STATUS` with `status: FAILED` and exits 0, so the
   harness cannot surface it as a non-zero exit. Assert on the status

@@ -47,11 +47,7 @@ source-mssql-e2e-tests/
 │   ├── stop-backend.sh         # docker rm -f source-mssql-db-backend
 │   ├── apply-sql.sh            # docker cp + docker exec sqlcmd -i
 │   ├── reset-databases.sh      # docker exec sqlcmd → drop every non-system database (used by run.sh --reset=fixture)
-│   ├── run.sh                  # forwarding shim to db-harness-lib orchestration
-│   ├── run-protocol-cmd.sh     # forwarding shim to db-harness-lib
-│   ├── make-catalog.sh         # forwarding shim to db-harness-lib
-│   ├── render-config.sh        # forwarding shim to db-harness-lib
-│   └── extract-state.py        # forwarding shim to db-harness-lib
+│   └── run.sh                  # engine shim to db-harness-lib orchestration
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
@@ -60,8 +56,9 @@ source-mssql-e2e-tests/
         └── 00-init-base.sql    # CREATE DATABASE TestDb + dbo.sample table
 ```
 
-The forwarding shims for the shared orchestration remain in this skill's
-`scripts/` directory so documented entrypoint paths stay stable.
+The engine shim and lifecycle scripts remain in this skill's `scripts/`
+directory; the shared orchestration and protocol helpers live in
+[`airbyte-integrations/db-harness-lib/`](../../../../../db-harness-lib/).
 The skill expects all script paths relative to the skill root.
 
 ## Conventions
@@ -81,7 +78,8 @@ The skill expects all script paths relative to the skill root.
   it per command.
 - Both containers (the SQL Server backend and the connector launched by
   `airbyte-ops`) share Docker's default `bridge` network. The connector
-  resolves the backend by its bridge IP, which `render-config.sh`
+  resolves the backend by its bridge IP, which the shared
+  [`render-config.sh`](../../../../../db-harness-lib/scripts/render-config.sh)
   substitutes into the working config at runtime. Tracked upstream in
   [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765);
   once `--network` is supported the bridge-IP dance can collapse.
@@ -183,8 +181,7 @@ Any expectation failure exits non-zero regardless of the command-level
 verdicts and appends an `**Expectation failures:**` section to the
 summary. Migrating an existing driver script's `grep -q '<X>' || exit 1`
 block is straightforward — drop the block and add
-`--expect-match=stderr:X` to the `run.sh` (or `run-protocol-cmd.sh`)
-invocation.
+`--expect-match=stderr:X` to the shared `run.sh` invocation.
 
 ### Multi-phase drivers
 
@@ -192,15 +189,18 @@ invocation.
 (read → mutate → read-with-state) by calling `run.sh` more than once
 with `--step-name` for each invocation and `--state=` to feed the
 second read the state extracted from the first. `extract-state.py`
-lives in this skill because it walks Airbyte STATE messages, which is
-a protocol-level operation and not CDC-specific.
+lives in
+[`airbyte-integrations/db-harness-lib/scripts/extract-state.py`](../../../../../db-harness-lib/scripts/extract-state.py)
+because it walks Airbyte STATE messages, which is a protocol-level
+operation and not CDC-specific.
 
-The CDC skill's [`repro-11451.sh`](../source-mssql-e2e-cdc-tests/scripts/repro-11451.sh)
-is a worked example: it invokes `run-protocol-cmd.sh` around an
-intermediate `apply-sql.sh` mutation and `extract-state.py` step, and
-asserts inline on the connector's stderr. New multi-phase drivers can
-follow the same shape but call `run.sh --state=PATH` directly instead
-of smuggling `--state-path` through trailing args.
+The CDC skill's [`cases/11451.sh`](../source-mssql-e2e-cdc-tests/cases/11451.sh)
+is a worked example: it invokes the engine shim's `run.sh` around an
+intermediate `apply-sql.sh` mutation and the shared
+`db-harness-lib/scripts/extract-state.py` step, and asserts on the
+connector's stderr. New multi-phase drivers can follow the same shape
+but call `run.sh --state=PATH` directly instead of smuggling
+`--state-path` through trailing args.
 
 ### Comparison modes with `--control-version`
 
