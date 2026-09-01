@@ -56,7 +56,8 @@ class RedshiftAirbyteClient(
             // Use svv_all_schemas (not information_schema.schemata) — Redshift only lists
             // owned schemas in information_schema, so granted-but-not-owned schemas are missed.
             // Inline the existence query (instead of calling suspend namespaceExists) to avoid a
-            // SpotBugs NP_NONNULL_PARAM_VIOLATION false positive on Kotlin coroutine state machines.
+            // SpotBugs NP_NONNULL_PARAM_VIOLATION false positive on Kotlin coroutine state
+            // machines.
             val exists =
                 executeQuery(sqlGenerator.namespaceExists(namespace)) { rs ->
                     rs.next() && rs.getBoolean(1)
