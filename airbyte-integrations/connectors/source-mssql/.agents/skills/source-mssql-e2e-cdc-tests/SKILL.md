@@ -108,6 +108,7 @@ CDC-specific.
 ```bash
 SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-cdc-tests
 GENERIC=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
+LIB=airbyte-integrations/db-harness-lib
 export REPRO_OUT=/tmp/source-mssql-repro
 
 # 1. Bring up the backend (once per session). Cases pass --keep-backend,
@@ -125,7 +126,7 @@ export REPRO_OUT=/tmp/source-mssql-repro
 VERSION=dev "$SKILL/cases/12162.sh"
 
 # 4. Tear down.
-"$GENERIC/scripts/stop-backend.sh"
+BACKEND_NAME=source-mssql-db-backend "$LIB/scripts/stop-backend.sh"
 rm -rf "$REPRO_OUT"
 ```
 
@@ -248,7 +249,7 @@ the valid-LSN repro cannot distinguish that from a correct fix.
    ```bash
    "$GENERIC/scripts/start-backend.sh"
    "$SKILL/cases/<issue-number>.sh"
-   "$GENERIC/scripts/stop-backend.sh"
+   BACKEND_NAME=source-mssql-db-backend "$LIB/scripts/stop-backend.sh"
    ```
 5. Note the worked example in this `SKILL.md`'s "Worked examples"
    section with: customer-symptom one-liner, `--expect-*` assertions

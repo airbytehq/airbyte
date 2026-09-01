@@ -71,7 +71,8 @@ CDC_SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mss
 "$CDC_SKILL/scripts/repro-11451.sh"
 
 # Cleanup
-"$SKILL/scripts/stop-backend.sh"
+BACKEND_NAME=source-mssql-db-backend \
+  airbyte-integrations/db-harness-lib/scripts/stop-backend.sh
 ```
 
 To investigate a new bug, write the smallest SQL fixture that produces

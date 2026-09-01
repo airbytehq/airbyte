@@ -44,7 +44,6 @@ source-mssql-e2e-tests/
 ├── SKILL.md
 ├── scripts/
 │   ├── start-backend.sh        # docker run mcr…/mssql/server:2022-latest as source-mssql-db-backend
-│   ├── stop-backend.sh         # docker rm -f source-mssql-db-backend
 │   ├── apply-sql.sh            # docker cp + docker exec sqlcmd -i
 │   ├── reset-databases.sh      # docker exec sqlcmd → drop every non-system database (used by run.sh --reset=fixture)
 │   └── run.sh                  # engine shim to db-harness-lib orchestration
@@ -56,17 +55,20 @@ source-mssql-e2e-tests/
         └── 00-init-base.sql    # CREATE DATABASE TestDb + dbo.sample table
 ```
 
-The engine shim and lifecycle scripts remain in this skill's `scripts/`
-directory; the shared orchestration and protocol helpers live in
+The engine shim and backend lifecycle scripts remain in this skill's
+`scripts/` directory; the shared orchestration, default teardown, and
+protocol helpers live in
 [`airbyte-integrations/db-harness-lib/`](../../../../../db-harness-lib/).
 The skill expects all script paths relative to the skill root.
 
 ## Conventions
 
 - Container name: `source-mssql-db-backend`. Hard-coded in
-  `scripts/start-backend.sh`, `stop-backend.sh`, and `apply-sql.sh`.
-  Override via `BACKEND_NAME=…` only for parallel
-  test isolation; don't use customer connection names.
+  `scripts/start-backend.sh` and `apply-sql.sh`. The shared
+  `db-harness-lib/scripts/stop-backend.sh` removes this container by
+  `BACKEND_NAME`; the engine shim supplies the default. Override via
+  `BACKEND_NAME=…` only for parallel test isolation; don't use customer
+  connection names.
 - Working directory for rendered configs and run output:
   `${REPRO_OUT:-/tmp/source-mssql-repro}`. A `run.sh` invocation writes
   everything under `$REPRO_OUT/<step-name>/`: the rendered `config.json`,
@@ -286,6 +288,7 @@ nothing behind unless you passed `--keep-backend`. After a
 
 ```bash
 SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
-"$SKILL/scripts/stop-backend.sh"   # idempotent; docker rm -f no-ops when absent
+LIB=airbyte-integrations/db-harness-lib
+BACKEND_NAME=source-mssql-db-backend "$LIB/scripts/stop-backend.sh"   # idempotent; docker rm -f no-ops when absent
 rm -rf "${REPRO_OUT:-/tmp/source-mssql-repro}"
 ```
