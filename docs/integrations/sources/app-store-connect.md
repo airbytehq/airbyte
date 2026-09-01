@@ -99,6 +99,6 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                 |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------ |
-| 0.1.0   | 2026-09-01 | PR_PLACEHOLDER | Add App Store Connect source connector (manifest-only) |
+| 0.1.0   | 2026-09-01 | [85279](https://github.com/airbytehq/airbyte/pull/85279) | Add App Store Connect source connector (manifest-only) |
 
 </details>
