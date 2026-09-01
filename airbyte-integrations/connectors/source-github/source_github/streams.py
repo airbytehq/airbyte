@@ -213,10 +213,26 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
+            self._close_slice_after_swallowed_error(stream_slice)
         # Exhausting every token no longer raises a connector-specific exception here: the
         # shared authenticator raises AirbyteTracedException(transient_error) itself, which the
         # `except AirbyteTracedException` branch above re-raises untouched (it carries no
         # response to classify).
+
+    def _close_slice_after_swallowed_error(self, stream_slice: Optional[Mapping[str, Any]]) -> None:
+        """Mark the slice complete when `read_records` skipped it instead of raising.
+
+        `HttpStream._read_pages` closes a resumable-full-refresh slice only after the last
+        page, so an error swallowed mid-slice leaves the partition's cursor state empty and
+        `CursorBasedCheckpointReader._find_next_slice` hands the same partition back forever
+        — no record, no STATE, and the platform kills the attempt on the source heartbeat.
+        Closing the slice makes a swallowed error terminal, as the warning above implies.
+        """
+        cursor = self.get_cursor()
+        if not isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            return
+        partition, _, _ = self._extract_slice_fields(stream_slice=stream_slice or {})
+        cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
 
 
 class GithubStream(GithubStreamABC):
