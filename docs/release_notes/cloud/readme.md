@@ -2,6 +2,17 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 1, 2026
+
+Connections
+
+- When you authenticate the Salesforce source or the HubSpot destination with OAuth, the consent step now completes. Airbyte previously formatted part of the authorization request in a way these providers reject, which could cause the authorization to fail.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, the data worker usage chart in your organization's Usage settings has a new Compare to previous period option. Turning it on shows the selected period next to the equivalent previous day, week, month, quarter, or year, so you can see whether your peak capacity usage is trending up or down.
+- The Billing page now shows the date your next invoice is scheduled to be issued. You see the same date in the confirmation messages when you cancel your subscription or delete a workspace.
+
 ## August 12, 2026
 
 Connections
