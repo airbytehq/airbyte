@@ -87,8 +87,8 @@ To fill out the required information:
 
 1. Enter the hostname, port number, and name for your MySQL database.
 2. Enter the username and password you created in [Step 1](#step-1-create-a-dedicated-read-only-mysql-user).
-3. Select an SSL mode. You will most frequently choose `require` or `verify-ca`. Both of these always require encryption. `verify-ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
-4. Select `Read Changes using Binary Log (CDC)` from available replication methods.
+3. Select an SSL mode. You will most frequently choose `required` or `verify_ca`. Both of these always require encryption. `verify_ca` also requires certificates from your MySQL database. See [here](#ssl-modes) to learn about other SSL modes and SSH tunneling.
+4. Select `Read Changes using Change Data Capture (CDC)` from available replication methods.
 
 <!-- env:cloud -->
 
@@ -121,6 +121,21 @@ Airbyte offers incremental replication using a custom cursor available in your s
 
 - Your MySQL server does not expose the binlog.
 - Your data set is small, and you just want snapshot of your table in the destination.
+
+</FieldAnchor>
+
+## Limiting which tables Airbyte discovers
+
+<FieldAnchor field="table_filters">
+
+By default, the connector discovers every table and view in the configured database that your MySQL user can read. In databases with a very large number of tables, this makes schema discovery slow. Use `Table Filters` to narrow discovery to the tables you care about.
+
+Each filter has two parts:
+
+- `Database Name`: the database the filter applies to. This must match the database you entered in the `Database` field.
+- `Table Filter Patterns`: one or more table name patterns, written as SQL `LIKE` patterns. `%` matches any sequence of characters and `_` matches a single character. For example, `orders_%` matches `orders_2024` and `orders_2025`.
+
+Filters are inclusive: when you set at least one pattern, only the tables matching a pattern are discovered. Filters apply during schema discovery, so they determine which streams are available to select in a connection.
 
 </FieldAnchor>
 
@@ -230,7 +245,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                          |
 |:------------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.53.4      | 2026-08-27 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
+| 3.53.4      | 2026-09-01 | [81413](https://github.com/airbytehq/airbyte/pull/81413)   | Retry CDC syncs that fail with an EOF error while reading the MySQL binlog instead of failing as a config error.                                 |
 | 3.53.3      | 2026-08-11 | [84207](https://github.com/airbytehq/airbyte/pull/84207)   | Promote to Bulk CDK 1.1.10: fix CDC meta-field decoration of full refresh streams with no source-defined primary key in speed mode.              |
 | 3.53.2      | 2026-08-06 | [83239](https://github.com/airbytehq/airbyte/pull/83239)   | Fix error 1267 (illegal mix of collations) when partitioning text primary keys with utf8mb3 or other legacy charset columns.                     |
 | 3.53.1      | 2026-07-13 | [80858](https://github.com/airbytehq/airbyte/pull/80858)   | Fix CDC sync failure on non-nullable DATE/DATETIME columns when zero-dates (0000-00-00) convert to null.                                         |
