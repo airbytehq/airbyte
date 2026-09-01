@@ -79,9 +79,9 @@ The root causes is that the binglogs needed for the incremental sync have been r
 
 When a sync runs for the first time using CDC, Airbyte performs an initial consistent snapshot of your database. Airbyte doesn't acquire any table locks \(for tables defined with MyISAM engine, the tables would still be locked\) while creating the snapshot to allow writes by other database clients. But in order for the sync to work without any error/unexpected behaviour, it is assumed that no schema changes are happening while the snapshot is running.
 
-The connector treats a connection that drops or truncates while it reads data as a transient failure rather than a configuration problem. A sync that hits one ends with a message such as `The sync encountered a communication issue while reading data from the MySQL server, will retry.` and Airbyte retries it. Underlying `EOFException` messages include `Can not read response from server. Expected to read N bytes`, `Failed to read remaining N of M bytes from position`, and `Failed to read next byte from position`. Occasional retries of this kind need no action from you.
+The connector treats specific `EOFException` failures from reading the binlog as transient rather than as configuration problems. A sync that hits one ends with a message such as `The sync encountered a communication issue while reading data from the MySQL server, will retry.` and Airbyte retries it. The messages handled this way are `Can not read response from server. Expected to read N bytes`, `Failed to read remaining N of M bytes from position`, and `Failed to read next byte from position`. Occasional retries of this kind need no action from you. `SocketException` failures and `EventDataDeserializationException` failures aren't classified as transient, so they end the sync.
 
-If these errors happen often enough that syncs can't finish, or you see `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySql server_ timeout values by running:
+If these errors happen often enough that syncs can't finish, or you see `EventDataDeserializationException` errors intermittently with root cause `EOFException` or `SocketException`, you may need to extend the following _MySQL server_ timeout values by running:
 
 **For MySQL 8.0.26 and later:**
 
@@ -110,7 +110,7 @@ Global transaction identifiers \(GTIDs\) uniquely identify transactions that occ
 
 ### (Advanced) Initial Load Timeout in Hours
 
-When a CDC connection syncs for the first time, or when you add a stream to it, the connector takes an initial load of the affected tables before it starts reading the binlog. `Initial Load Timeout in Hours` sets how long the initial load is allowed to continue before the connector moves on to catching up on the CDC logs. The default is 8 hours, and the valid range is 4 to 24 hours.
+When a CDC connection syncs for the first time, or when you add a stream to it, the connector takes an initial load of the affected tables before it starts reading the binlog. `Initial Load Timeout in Hours` limits how long that initial load may run within a single sync attempt. When the limit is reached, the attempt ends with a retryable error and the initial load continues in the next attempt. The default is 8 hours, and the valid range is 4 to 24 hours.
 
 If you're loading very large tables, make sure your binlog retention covers the initial load as well. Otherwise the binlog position the connector needs can expire before the load finishes. See [Under CDC incremental mode, there are still full refresh syncs](#under-cdc-incremental-mode-there-are-still-full-refresh-syncs) for retention settings.
 
@@ -119,7 +119,7 @@ If you're loading very large tables, make sure your binlog retention covers the 
 If the binlog position the connector saved in state is no longer available on the server — usually because the binlog expired while the connection was paused or failing — the connector can't continue incrementally. `Invalid CDC Position Behavior` controls what happens next:
 
 - `Fail sync` (default): the sync fails, and you have to reset the connection manually before it can sync again.
-- `Re-sync data`: Airbyte automatically triggers a refresh instead of failing. This avoids the manual reset, but it can lead to higher costs and data loss.
+- `Re-sync data`: Airbyte resets the CDC state for the connection and re-snapshots every CDC stream in it, not just the stream that hit the invalid position. This avoids the manual reset, but it increases sync duration and cost, and it can lead to data loss.
 
 ### (Advanced) Set up server timezone
 
