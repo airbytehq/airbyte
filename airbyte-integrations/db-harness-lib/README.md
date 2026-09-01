@@ -25,6 +25,34 @@ library scripts own protocol orchestration, catalog derivation, config
 rendering, and state extraction. `BACKEND_NAME` and the other usual harness
 environment variables may be overridden by callers for test isolation.
 
+## Minimal engine shim example
+
+A connector-specific skill can keep its engine scripts and fixtures while
+delegating orchestration to this library:
+
+```bash
+#!/usr/bin/env bash
+# PostgreSQL engine shim; orchestration lives in db-harness-lib.
+set -euo pipefail
+
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO_ROOT="$(git -C "$SKILL_DIR" rev-parse --show-toplevel)"
+export CONNECTOR=source-postgres
+export ENGINE_SCRIPTS_DIR="$SKILL_DIR/scripts"
+export DEFAULT_CONFIG_TEMPLATE="$SKILL_DIR/fixtures/configs/base.template.json"
+export DEFAULT_FIXTURE="$SKILL_DIR/fixtures/sql/00-init-base.sql"
+export BACKEND_NAME="${BACKEND_NAME:-source-postgres-db-backend}"
+
+exec "$REPO_ROOT/airbyte-integrations/db-harness-lib/scripts/run.sh" "$@"
+```
+
+For an engine whose config places the host differently, override the jq
+mutation used by the renderer:
+
+```bash
+export CONFIG_HOST_JQ='.host = $h | .port = 5432'
+```
+
 ## Scripts
 
 - `run.sh` runs the spec, check, discover, and read sweep while preserving

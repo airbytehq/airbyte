@@ -7,6 +7,7 @@ on:
         description: "Connector. Database connector directory, for example source-mssql."
         required: true
         type: string
+      # `latest` is intentional for CI; local runs default to `dev`, which needs a local `:dev` build.
       test-version:
         description: "Test version. Connector image tag to run."
         required: false
@@ -28,6 +29,7 @@ on:
         description: "Connector. Database connector directory, for example source-mssql."
         required: true
         type: string
+      # `latest` is intentional for CI; local runs default to `dev`, which needs a local `:dev` build.
       test-version:
         description: "Test version. Connector image tag to run."
         required: false

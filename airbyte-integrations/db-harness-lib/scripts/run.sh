@@ -192,6 +192,10 @@ if [[ -n "$EXPECT_CONTROL" && -z "$CONTROL_VERSION_ARG" ]]; then
   echo "[run] --expect-control requires --control-version" >&2
   exit 2
 fi
+if [[ -n "$EXPECT_CONTROL" && "$RESET" == none ]]; then
+  echo "[run] --expect-control requires --reset=fixture or --reset=backend" >&2
+  exit 2
+fi
 for n in "$MIN_RECORDS" "$MIN_STATES"; do
   [[ "$n" == -1 || "$n" =~ ^[0-9]+$ ]] || {
     echo "[run] --min-records / --min-states must be a non-negative integer (got '$n')" >&2
