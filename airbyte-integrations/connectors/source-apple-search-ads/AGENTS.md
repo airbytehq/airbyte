@@ -10,7 +10,7 @@ Apple Ads uses two-legged OAuth: the API user's client id and client secret are 
 
 There is deliberately no three-legged OAuth (`oauth_connector_input_specification`, and so no Cloud "Authenticate" button). Apple has no consent flow to delegate to: an account administrator invites an API user, uploads a public key, and mints a client secret out of band ([Implementing OAuth](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)). The credentials belong to the customer's own API user, not to an Airbyte-owned application, so there is nothing Airbyte can supply on the user's behalf. `client_id` and `client_secret` are therefore user-entered and both are marked `airbyte_secret`.
 
-`token_refresh_endpoint` exists only so deployments that must proxy outbound calls to Apple's token endpoint can redirect them. It is `airbyte_hidden` with an HTTPS-only `pattern`, since overriding it points authentication at a third-party host.
+`token_refresh_endpoint` exists only so deployments that must proxy outbound calls to Apple's token endpoint can redirect them. It is `airbyte_hidden`, since overriding it points authentication at a third-party host. HTTPS is stated in the field description rather than enforced with a `pattern`: adding a `pattern` narrows what an already-saved config may hold, which invalidates any existing source using a non-HTTPS proxy at validation time — a config break, whereas this version's declared breaking change is schema-only.
 
 ## Incremental Stream Considerations
 

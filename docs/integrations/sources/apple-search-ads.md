@@ -32,7 +32,7 @@ The connector authenticates to the Apple Ads Campaign Management API using OAuth
 9. (Optional) For **Number of Workers**, enter a value between 1 and 20 (default `2`). This controls how many partitions (campaigns or ad groups) the connector fetches in parallel. Increase it for accounts with many campaigns or ad groups to shorten sync time, at the cost of higher API request volume.
 10. Click **Set up source**.
 
-**Token Refresh Endpoint** is hidden in the UI. Override it through the API only if outbound requests to Apple's token endpoint must be proxied; the value must be an `https://` URL.
+**Token Refresh Endpoint** is hidden in the UI. Override it through the API only if outbound requests to Apple's token endpoint must be proxied; use an `https://` URL.
 
 ## Supported sync modes
 
@@ -94,7 +94,7 @@ For programmatic configuration, use these parameter names:
 | `timezone` | No | Reporting time zone. Valid values are `UTC` and `ORTZ`. Defaults to `UTC`. |
 | `lookback_window` | No | Number of days to sync again on incremental report streams. Valid values are `1` through `30`. Defaults to `30`. |
 | `backoff_factor` | No | Exponential retry delay factor for Apple Ads API errors that Airbyte can retry. Valid values are `1` through `20`. Defaults to `5`. Hidden in the UI. |
-| `token_refresh_endpoint` | No | OAuth token endpoint. Must be an `https://` URL. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. Hidden in the UI; set it only when outbound calls to Apple's token endpoint must be proxied. |
+| `token_refresh_endpoint` | No | OAuth token endpoint. Use an `https://` URL. Defaults to Apple's token endpoint with the `client_credentials` grant and `searchadsorg` scope. Hidden in the UI; set it only when outbound calls to Apple's token endpoint must be proxied. |
 | `num_workers` | No | Number of concurrent workers for partitioned streams. Valid values are `1` through `20`. Defaults to `2`. |
 
 ## Changelog

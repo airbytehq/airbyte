@@ -821,11 +821,10 @@ spec:
         type: string
         description: >-
           Override the default Apple token endpoint only when token requests must
-          be proxied. The value must be an HTTPS URL.
+          be proxied. Use an HTTPS URL.
         title: Token Refresh Endpoint
         default: >-
           https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg
-        pattern: ^https://
         order: 8
         airbyte_hidden: true
       num_workers:
