@@ -15,6 +15,7 @@ import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeC
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeTestTableOperationsClient
 import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
+import io.micronaut.context.annotation.Property
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import javax.sql.DataSource
 import kotlinx.coroutines.test.runTest
@@ -28,9 +29,11 @@ import org.junit.jupiter.api.parallel.ExecutionMode
 /**
  * Tables created by connector versions prior to 3.10.0 lack the `_AIRBYTE_META` and
  * `_AIRBYTE_GENERATION_ID` columns. These tests verify that [SnowflakeAirbyteClient] repairs such
- * tables during `ensureSchemaMatches`, and that the write path works after the repair.
+ * tables during `ensureSchemaMatches` when the repair feature flag (off by default) is enabled, and
+ * that the write path works after the repair.
  */
 @MicronautTest(environments = ["component"], resolveParameters = false)
+@Property(name = "airbyte.destination.snowflake.meta-column-repair", value = "true")
 @Execution(ExecutionMode.CONCURRENT)
 class SnowflakeMetaColumnRepairTest(
     private val client: SnowflakeAirbyteClient,
