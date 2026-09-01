@@ -326,7 +326,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------------------------|
-| 0.5.33 | 2026-09-01 | TBD | Raise check and discover memory limits to 4Gi to avoid OOM during schema inference |
+| 0.5.33 | 2026-08-30 | TBD | Raise check and discover memory limits to 4Gi to avoid OOM during schema inference |
 | 0.5.32 | 2026-08-25 | [85013](https://github.com/airbytehq/airbyte/pull/85013) | Update dependencies |
 | 0.5.31 | 2026-08-18 | [83838](https://github.com/airbytehq/airbyte/pull/83838) | Resolve Google-native export extensions before computing file-transfer paths |
 | 0.5.30 | 2026-08-18 | [84602](https://github.com/airbytehq/airbyte/pull/84602) | Update dependencies |
