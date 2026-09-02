@@ -34,7 +34,7 @@ class IdTypeTest {
 
   @Test
   void supported() {
-    assertEquals("objectId, string, int, long, binData", IdType.SUPPORTED);
+    assertEquals("objectId, string, int, long, binData, object", IdType.SUPPORTED);
   }
 
   @Test

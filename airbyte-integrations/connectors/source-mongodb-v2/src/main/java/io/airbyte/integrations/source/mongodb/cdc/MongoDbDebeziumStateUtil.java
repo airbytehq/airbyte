@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
 import org.bson.BsonDocument;
@@ -168,7 +169,7 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
     OffsetStorageReaderImpl offsetStorageReader = null;
 
     try {
-      fileOffsetBackingStore = getFileOffsetBackingStore(properties);
+      fileOffsetBackingStore = getFileOffsetBackingStore(withOffsetStoreDefaults(properties));
       offsetStorageReader = getOffsetStorageReader(fileOffsetBackingStore, properties);
 
       final Configuration config = Configuration.from(properties);
@@ -204,6 +205,22 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
         fileOffsetBackingStore.stop();
       }
     }
+  }
+
+  /**
+   * Kafka Connect 4.x (pulled in by Debezium 3.x) no longer provides a default for
+   * {@code bootstrap.servers} and rejects a worker configuration without it, even though the
+   * file-based offset backing store never connects to Kafka. Supplies a placeholder so that the
+   * offset file can be read.
+   *
+   * @param properties The Debezium properties.
+   * @return A copy of the properties suitable for configuring the offset backing store.
+   */
+  private static Properties withOffsetStoreDefaults(final Properties properties) {
+    final Properties offsetStoreProperties = new Properties();
+    offsetStoreProperties.putAll(properties);
+    offsetStoreProperties.putIfAbsent(WorkerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+    return offsetStoreProperties;
   }
 
   private static List<Object> generateOffsetKey(final String serverId) {

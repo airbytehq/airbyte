@@ -550,44 +550,6 @@ class MongoDbCdcInitializerTest {
             MULTIPLE_DB_CONFIG));
   }
 
-  @Test
-  void testUnsupportedIdTypeThrowsExceptionSingleDB() {
-    setupSingleDatabase();
-    final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"exotic\"}, \"count\": 1}");
-
-    when(aggregateCursor.hasNext()).thenReturn(true, false);
-    when(aggregateCursor.next()).thenReturn(aggregate);
-    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
-    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
-    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
-
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
-
-    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
-            SINGLE_DB_CONFIG));
-    assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
-  }
-
-  @Test
-  void testUnsupportedIdTypeThrowsExceptionMultipleDB() {
-    setupMultipleDatabases();
-    final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"exotic\"}, \"count\": 1}");
-
-    when(aggregateCursor.hasNext()).thenReturn(true, false);
-    when(aggregateCursor.next()).thenReturn(aggregate);
-    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
-    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
-    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
-
-    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, MULTIPLE_DB_CONFIG);
-
-    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
-        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
-            MULTIPLE_DB_CONFIG));
-    assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
-  }
-
   private static JsonNode createInitialDebeziumStateSingleDB(final InitialSnapshotStatus initialSnapshotStatus) {
     final StreamDescriptor streamDescriptor = new StreamDescriptor().withNamespace(STREAM_NAMESPACE).withName(STREAM_NAME);
     final MongoDbCdcState cdcState = new MongoDbCdcState(MongoDbDebeziumStateUtil.formatState("mongodb://host:12345/", RESUME_TOKEN1));

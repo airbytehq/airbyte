@@ -28,7 +28,7 @@ public enum IdType {
   INT("int", "Integer"),
   LONG("long", "Long"),
   BINARY("binData", "Binary"),
-  OBJECT("object", "Document"),;
+  OBJECT("object", "Document");
 
   private static final Map<String, IdType> byBsonType = new HashMap<>();
   static {
@@ -95,7 +95,7 @@ public enum IdType {
         strId = getEncoder().encodeToString(binLastId.getData());
       }
     } else if (idType == IdType.OBJECT) {
-        strId = ((Document)id).toBsonDocument().toJson(JsonWriterSettings.builder().outputMode(JsonMode.EXTENDED).build());
+      strId = ((Document) id).toBsonDocument().toJson(JsonWriterSettings.builder().outputMode(JsonMode.EXTENDED).build());
     } else {
       strId = id.toString();
     }

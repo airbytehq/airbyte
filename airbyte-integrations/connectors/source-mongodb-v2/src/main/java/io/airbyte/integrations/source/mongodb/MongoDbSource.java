@@ -97,8 +97,9 @@ public class MongoDbSource extends BaseConnector implements Source {
               .withStatus(AirbyteConnectionStatus.Status.FAILED);
         }
 
-        if (!ClusterType.REPLICA_SET.equals(mongoClient.getClusterDescription().getType())) {
-          LOGGER.warn("Target MongoDB instance is not a replica set cluster.{}", mongoClient.getClusterDescription().getType());
+        final ClusterType clusterType = mongoClient.getClusterDescription().getType();
+        if (!ClusterType.REPLICA_SET.equals(clusterType)) {
+          LOGGER.warn("MongoDB instance is not a replica set cluster (cluster type: {}).", clusterType);
         }
       } catch (final MongoSecurityException e) {
         LOGGER.error("Unable to perform source check operation.", e);

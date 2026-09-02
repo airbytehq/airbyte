@@ -133,7 +133,6 @@ public class MongoDbInitialLoadRecordIterator extends AbstractIterator<Document>
 
   private MongoCursor<Document> buildNewQueryIterator() {
     Bson filter = buildFilter();
-    LOGGER.info("filter: {}", filter);
     return isEnforceSchema ? collection.find()
         .filter(filter)
         .projection(fields)
