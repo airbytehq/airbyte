@@ -11,15 +11,19 @@ import io.airbyte.cdk.load.config.DataChannelMedium
 import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
+import io.airbyte.integrations.destination.snowflake.auth.SnowflakeOAuthTokenProvider
+import io.airbyte.integrations.destination.snowflake.auth.snowflakeTokenRequestUri
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
+import io.airbyte.integrations.destination.snowflake.spec.OAuthAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Requires
 import io.micronaut.context.annotation.Value
@@ -27,8 +31,11 @@ import jakarta.inject.Named
 import jakarta.inject.Singleton
 import java.io.File
 import java.io.PrintWriter
+import java.net.http.HttpClient
 import java.nio.charset.StandardCharsets
 import java.sql.Connection
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.sql.DataSource
@@ -42,6 +49,7 @@ internal const val DATA_SOURCE_IDLE_TIMEOUT_MS = 600000L
 internal const val DATA_SOURCE_PROPERTY_ABORT_DETACHED_QUERY = "ABORT_DETACHED_QUERY"
 internal const val DATA_SOURCE_PROPERTY_APPLICATION = "application"
 internal const val DATA_SOURCE_PROPERTY_DATABASE = "database"
+internal const val DATA_SOURCE_PROPERTY_AUTHENTICATOR = "authenticator"
 internal const val DATA_SOURCE_PROPERTY_JDBC_QUERY_RESULT_FORMAT = "JDBC_QUERY_RESULT_FORMAT"
 internal const val DATA_SOURCE_PROPERTY_MULTI_STATEMENT_COUNT = "MULTI_STATEMENT_COUNT"
 internal const val DATA_SOURCE_PROPERTY_NETWORK_TIMEOUT = "networkTimeout"
@@ -54,6 +62,8 @@ internal const val DATA_SOURCE_PROPERTY_WAREHOUSE = "warehouse"
 internal const val JSON_FORMAT = "JSON"
 internal const val NETWORK_TIMEOUT_MINUTES: Long = 1L
 internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
+
+private val logger = KotlinLogging.logger {}
 
 @Factory
 class SnowflakeBeanFactory {
@@ -106,6 +116,16 @@ class SnowflakeBeanFactory {
         snowflakePrivateKeyFileName: String = PRIVATE_KEY_FILE_NAME,
         @Value("\${airbyte.edition:COMMUNITY}") airbyteEdition: String,
     ): HikariDataSource {
+        val oauthTokenProvider =
+            (snowflakeConfiguration.authType as? OAuthAuthConfiguration)?.let { auth ->
+                SnowflakeOAuthTokenProvider(
+                    tokenRequestUri = snowflakeTokenRequestUri(snowflakeConfiguration.host),
+                    clientId = auth.clientId,
+                    clientSecret = auth.clientSecret,
+                    refreshToken = auth.refreshToken,
+                    httpClient = HttpClient.newHttpClient(),
+                )
+            }
         val snowflakeJdbcUrl =
             "jdbc:snowflake://${snowflakeConfiguration.host}/?${snowflakeConfiguration.jdbcUrlParams}"
         val datasourceConfig =
@@ -146,6 +166,11 @@ class SnowflakeBeanFactory {
                     is UsernamePasswordAuthConfiguration -> {
                         username = snowflakeConfiguration.username
                         password = snowflakeConfiguration.authType.password
+                    }
+                    is OAuthAuthConfiguration -> {
+                        addDataSourceProperty(DATA_SOURCE_PROPERTY_AUTHENTICATOR, "oauth")
+                        username = snowflakeConfiguration.username
+                        password = checkNotNull(oauthTokenProvider).getAccessToken()
                     }
                 }
 
@@ -188,7 +213,10 @@ class SnowflakeBeanFactory {
                 addDataSourceProperty(DATA_SOURCE_PROPERTY_ABORT_DETACHED_QUERY, "true")
             }
 
-        return HikariDataSource(datasourceConfig)
+        return oauthTokenProvider?.let { tokenProvider ->
+            OAuthHikariDataSource(datasourceConfig, tokenProvider)
+        }
+            ?: HikariDataSource(datasourceConfig)
     }
 
     @Singleton
@@ -223,5 +251,34 @@ class SnowflakeBeanFactory {
                 maxBufferedAggregates = 6,
             )
         }
+    }
+}
+
+private class OAuthHikariDataSource(
+    datasourceConfig: HikariConfig,
+    tokenProvider: SnowflakeOAuthTokenProvider,
+) : HikariDataSource(datasourceConfig) {
+    private val refreshExecutor =
+        Executors.newSingleThreadScheduledExecutor { runnable ->
+            Thread(runnable, "snowflake-oauth-token-refresh").apply { isDaemon = true }
+        }
+    private val refreshFuture =
+        refreshExecutor.scheduleAtFixedRate(
+            {
+                try {
+                    hikariConfigMXBean.setPassword(tokenProvider.getAccessToken())
+                } catch (e: Exception) {
+                    logger.warn(e) { "Failed to refresh Snowflake OAuth access token" }
+                }
+            },
+            5,
+            5,
+            TimeUnit.MINUTES,
+        )
+
+    override fun close() {
+        refreshFuture.cancel(false)
+        refreshExecutor.shutdownNow()
+        super.close()
     }
 }
