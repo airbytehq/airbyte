@@ -117,7 +117,7 @@ Starting in version 2.1.1, every request to Marketo uses a 30-second connection 
 
 ### Failed or cancelled bulk export jobs
 
-The Leads and Activities streams create a Marketo Bulk Extract job for each date window, then poll the job until Marketo reports it as `Completed`. If Marketo instead reports the job as `Failed` or `Cancelled`, the sync stops with an error that names the affected stream. The log message for the error also includes the export job ID and the date range of the window. Starting in version 2.1.3, the connector reports this as a transient error rather than a configuration error, so Airbyte can retry the sync. If the same stream and date window fails repeatedly, the job is failing on the Marketo side. Check the export job in Marketo, and consider reducing [**Bulk Export Window in Days**](#advanced-configuration) so each job exports less data.
+The Leads and Activities streams create a Marketo Bulk Extract job for each date window, then poll the job until Marketo reports it as `Completed`. If Marketo instead reports the job as `Failed` or `Cancelled`, the sync stops with an error that names the affected stream. The log message for the error also includes the export job ID and the date range of the window. Starting in version 2.1.3, the connector reports this as a transient error rather than a configuration error, because the failure is usually temporary and doesn't indicate a problem with your connector settings. If the same stream and date window fails repeatedly, the job is failing on the Marketo side. Check the export job in Marketo, and consider reducing [**Bulk Export Window in Days**](#advanced-configuration) so each job exports less data.
 
 ### Activity streams: attribute columns and value conversion
 
