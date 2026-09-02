@@ -2,64 +2,92 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
-from typing import Iterable, Optional
+from dataclasses import InitVar, dataclass, field
+from typing import Any, Iterable, List, Mapping, MutableMapping
 
-from airbyte_cdk.models import SyncMode
+import requests
+
+from airbyte_cdk.sources.declarative.decoders import Decoder, JsonDecoder
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
-from airbyte_cdk.sources.declarative.transformations.transformation import RecordTransformation
-from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.declarative.types import Config, StreamSlice
+from airbyte_cdk.sources.types import Record
 
 
 @dataclass
-class SubscriptionUsageTransformation(RecordTransformation):
-    subscription_id: str
+class SubscriptionUsageRecordExtractor(RecordExtractor):
+    """
+    Custom record extractor for the subscription_usage stream.
 
-    def transform(
-        self,
-        record: Record,
-        config: Optional[Config] = None,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> Record:
-        # for each top level response record, there can be multiple sub-records depending
-        # on granularity and other input params. This function yields one transformed record
-        # for each subrecord in the response.
+    The Orb API returns records in the shape:
+        {"data": [{"billable_metric": {...}, "usage": [{"quantity": ..., "timeframe_start": ..., ...}, ...]}, ...]}
 
-        subrecords = record.get("usage", [])
-        del record["usage"]
-        for subrecord in subrecords:
-            # skip records that don't contain any actual usage
-            if subrecord.get("quantity", 0) > 0:
-                # Merge the parent record with the sub record
-                output = record.update(subrecord)
+    This extractor performs 1:N expansion: each top-level data item is expanded
+    into one output record per usage sub-record that has quantity > 0.  Parent-level
+    fields (billable_metric name/id) are merged into each output record.
 
-                # Add the subscription ID to the output
-                output["subscription_id"] = self.subscription_id
+    This cannot be done with built-in declarative components because
+    RecordTransformation.transform() only supports 1:1 in-place mutation, and no
+    built-in extractor supports nested array expansion with parent-field merging.
+    """
 
-                # Un-nest billable_metric -> name,id into billable_metric_name and billable_metric_id
-                nested_billable_metric_name = output["billable_metric"]["name"]
-                nested_billable_metric_id = output["billable_metric"]["id"]
-                del output["billable_metric"]
-                output["billable_metric_name"] = nested_billable_metric_name
-                output["billable_metric_id"] = nested_billable_metric_id
+    config: Config
+    parameters: InitVar[Mapping[str, Any]]
+    decoder: Decoder = field(default_factory=lambda: JsonDecoder(parameters={}))
 
-                # If a group_by key is specified, un-nest it
-                if config.subscription_usage_grouping_key:
-                    nested_key = output["metric_group"]["property_key"]
-                    nested_value = output["metric_group"]["property_value"]
-                    del output["metric_group"]
-                    output[nested_key] = nested_value
-                yield output
-        yield from []
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._parameters = parameters
+
+    def extract_records(self, response: requests.Response) -> Iterable[MutableMapping[str, Any]]:
+        for body in self.decoder.decode(response):
+            data_items: List[Any] = body.get("data", [])
+            for item in data_items:
+                billable_metric = item.get("billable_metric", {})
+                billable_metric_name = billable_metric.get("name", "")
+                billable_metric_id = billable_metric.get("id", "")
+
+                usage_records = item.get("usage", [])
+                for subrecord in usage_records:
+                    if subrecord.get("quantity", 0) > 0:
+                        output: MutableMapping[str, Any] = {}
+                        output.update(subrecord)
+                        output["billable_metric_name"] = billable_metric_name
+                        output["billable_metric_id"] = billable_metric_id
+                        yield output
 
 
 @dataclass
 class SubscriptionUsagePartitionRouter(StreamSlicer):
-    plans_stream: Stream
-    subscriptions_stream: Stream
+    plans_stream: Any  # Stream or DefaultStream depending on CDK execution context
+    subscriptions_stream: Any  # Stream or DefaultStream depending on CDK execution context
     config: Config
+
+    @staticmethod
+    def _to_dict(record: Any) -> Mapping[str, Any]:
+        """Extract a plain dict from a record."""
+        if isinstance(record, Record):
+            return record.data  # type: ignore[return-value]
+        if isinstance(record, Mapping):
+            return record
+        return dict(record)  # type: ignore[arg-type]
+
+    def _read_records(self, stream: Any) -> Iterable[Mapping[str, Any]]:
+        """Read records from a stream, handling both Stream and DefaultStream types.
+
+        In CDK 6.x, parent streams injected into custom partition routers may be
+        either ``Stream`` (with ``read_only_records()``) or ``DefaultStream``
+        (concurrent wrapper with only ``generate_partitions()``).  This helper
+        abstracts the difference so ``stream_slices`` works in both contexts.
+        """
+        if hasattr(stream, "read_only_records"):
+            for record in stream.read_only_records():
+                yield self._to_dict(record)
+        elif hasattr(stream, "generate_partitions"):
+            for partition in stream.generate_partitions():
+                for record in partition.read():
+                    yield self._to_dict(record)
+        else:
+            raise AttributeError(f"Stream {type(stream).__name__} has no supported method for reading records")
 
     def stream_slices(self) -> Iterable[StreamSlice]:
         """
@@ -77,7 +105,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
         if self.config.get("subscription_usage_grouping_key"):
             metric_ids_by_plan_id = {}
 
-            for plan in plans_stream.read_records(sync_mode=SyncMode.full_refresh):
+            for plan in self._read_records(plans_stream):
                 # if a plan_id filter is specified, skip any plan that doesn't match
                 if self.config.get("plan_id") and plan["id"] != self.config.get("plan_id"):
                     continue
@@ -85,7 +113,7 @@ class SubscriptionUsagePartitionRouter(StreamSlicer):
                 prices = plan.get("prices", [])
                 metric_ids_by_plan_id[plan["id"]] = [(price.get("billable_metric") or {}).get("id") for price in prices]
 
-        for subscription in subscriptions_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for subscription in self._read_records(subscriptions_stream):
             subscription_id = subscription["id"]
             subscription_plan_id = subscription["plan_id"]
 
