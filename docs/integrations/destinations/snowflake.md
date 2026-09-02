@@ -115,6 +115,9 @@ to role identifier($airbyte_role);
 commit;
 ```
 
+The password in this script is for the Snowflake user itself. Airbyte authenticates with a key pair;
+see [Key pair authentication](#key-pair-authentication).
+
 3. Run the script using the [Worksheet page](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) or [Snowsight](https://docs.snowflake.com/en/user-guide/ui-snowsight-gs.html).
   Make sure to select the **All Queries** checkbox if using the Classic Console or select and highlight the entire query if you are using Snowsight.
 
@@ -143,10 +146,9 @@ Make sure the database and schema have the `USAGE` privilege.
 
 ### Step 3: Set up Snowflake as a destination in Airbyte
 
-Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
-username/password or key pair authentication:
+Navigate to the Airbyte UI to set up Snowflake as a destination. Select Key Pair Authentication:
 
-### Login and Password
+### Connection settings
 
 | Field | Description |
 | :---- | :---------- |
@@ -156,7 +158,6 @@ username/password or key pair authentication:
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
 | [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
 | Username | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
-| Password | The password associated with the username. |
 | CDC deletion mode | Whether to execute CDC deletions as hard deletes or soft deletes. Hard deletes propagate source deletions to the destination. Soft deletes leave a tombstone record in the destination. Defaults to hard deletes. |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
@@ -164,6 +165,8 @@ username/password or key pair authentication:
 | Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 | Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
+
+For authentication settings, see [Key pair authentication](#key-pair-authentication).
 
 ### Key pair authentication
 

@@ -1,5 +1,33 @@
 # Snowflake Migration Guide
 
+## Upgrading to 5.0.0
+
+Username and password authentication is removed in this version. Key Pair Authentication is the only
+supported authentication method.
+
+Snowflake is enforcing MFA for password-based service users as part of its
+[MFA rollout](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). This change affects only
+destinations configured with Username and Password. Destinations configured with Key Pair Authentication
+are not affected and do not need any action.
+
+Before upgrading:
+
+1. Generate an RSA key pair using the
+   [Snowflake key-pair authentication guide](https://docs.snowflake.com/en/user-guide/key-pair-auth).
+2. Register the public key on your Snowflake user:
+
+   ```sql
+   ALTER USER <user> SET RSA_PUBLIC_KEY='...'
+   ```
+
+3. Edit the destination in Airbyte, select Key Pair Authentication, paste the private key and optional
+   passphrase, then test and save the destination.
+4. Upgrade the destination after reconfiguring it.
+
+After the upgrade deadline, connections that still use password authentication are disabled until you
+reconfigure them. This change does not modify data or tables. You do not need to clear or refresh any
+connections.
+
 ## Upgrading to 4.0.0
 
 This version upgrades Destination Snowflake to the [Direct-Load](/platform/using-airbyte/core-concepts/direct-load-tables) paradigm, which improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that document for more information about how direct-load differs from Typing and Deduping.

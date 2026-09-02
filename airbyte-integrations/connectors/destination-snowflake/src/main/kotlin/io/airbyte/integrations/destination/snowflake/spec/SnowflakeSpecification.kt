@@ -162,10 +162,6 @@ open class SnowflakeSpecification : ConfigurationSpecification() {
 )
 @JsonSubTypes(
     JsonSubTypes.Type(value = KeyPairAuthSpecification::class, name = "Key Pair Authentication"),
-    JsonSubTypes.Type(
-        value = UsernamePasswordAuthSpecification::class,
-        name = "Username and Password"
-    )
 )
 sealed class CredentialsSpecification(
     @Suppress("PropertyName") @param:JsonProperty("auth_type") val auth_type: Type
@@ -173,7 +169,6 @@ sealed class CredentialsSpecification(
     /** Enumeration of possible credential types. */
     enum class Type(@get:JsonValue val authTypeName: String) {
         PRIVATE_KEY("Key Pair Authentication"),
-        USERNAME_PASSWORD("Username and Password"),
     }
 }
 
@@ -195,16 +190,6 @@ class KeyPairAuthSpecification(
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification(Type.PRIVATE_KEY)
-
-@JsonSchemaTitle("Username and Password")
-@JsonSchemaDescription("Configuration details for the Username and Password Authentication.")
-class UsernamePasswordAuthSpecification(
-    @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Enter the password associated with the username.")
-    @get:JsonProperty("password")
-    @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
-    val password: String = ""
-) : CredentialsSpecification(Type.USERNAME_PASSWORD)
 
 enum class CdcDeletionMode(@Suppress("unused") @get:JsonValue val cdcDeletionMode: String) {
     HARD_DELETE("Hard delete"),

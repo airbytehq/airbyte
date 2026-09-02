@@ -9,7 +9,9 @@ import io.airbyte.integrations.destination.snowflake.spec.CredentialsSpecificati
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthSpecification
 import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
-import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthSpecification
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
+import io.airbyte.integrations.destination.snowflake.spec.USERNAME_PASSWORD_AUTH_TYPE
+import io.airbyte.integrations.destination.snowflake.spec.USERNAME_PASSWORD_REMOVED_MESSAGE
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -25,17 +27,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
 
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
-        assertDoesNotThrow {
-            val spec = supplier.get()
-            assertEquals(
-                CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
-            )
-            assertEquals(
-                "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
-            )
-        }
+        assertAuthenticationRemoved(supplier)
     }
 
     @Test
@@ -49,17 +41,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
 
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
-        assertDoesNotThrow {
-            val spec = supplier.get()
-            assertEquals(
-                CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
-            )
-            assertEquals(
-                "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
-            )
-        }
+        assertAuthenticationRemoved(supplier)
     }
 
     @Test
@@ -108,18 +90,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
 
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
-        assertDoesNotThrow {
-            val spec = supplier.get()
-            assertEquals(
-                CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
-            )
-            assertEquals(UsernamePasswordAuthSpecification::class.java, spec.credentials?.javaClass)
-            assertEquals(
-                "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
-            )
-        }
+        assertAuthenticationRemoved(supplier)
     }
 
     @Test
@@ -131,38 +102,16 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
 
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
-        assertDoesNotThrow {
-            val spec = supplier.get()
-            assertEquals(
-                CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
-            )
-            assertEquals(UsernamePasswordAuthSpecification::class.java, spec.credentials?.javaClass)
-            assertEquals(
-                "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
-            )
-        }
+        assertAuthenticationRemoved(supplier)
     }
 
     @Test
     fun testCredentialsWithAuthType() {
-        val json =
-            this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText()
-
         val supplier =
-            SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
-        assertDoesNotThrow {
-            val spec = supplier.get()
-            assertEquals(
-                CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
+            SnowflakeMigratingConfigurationSpecificationSupplier(
+                jsonPropertyValue = usernamePasswordJson()
             )
-            assertEquals(
-                "test-password",
-                ((spec.credentials) as UsernamePasswordAuthSpecification).password
-            )
-        }
+        assertAuthenticationRemoved(supplier)
     }
 
     @Test
@@ -187,19 +136,11 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
     @Test
     fun testCredentialsWithAuthTypeFlat() {
         val json =
-            unprettyPrintJson(
-                this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText()
-            )
+            unprettyPrintJson(usernamePasswordJson())
 
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
-        assertDoesNotThrow {
-            val spec = supplier.get()
-            assertEquals(
-                CredentialsSpecification.Type.USERNAME_PASSWORD,
-                spec.credentials?.auth_type
-            )
-        }
+        assertAuthenticationRemoved(supplier)
     }
 
     @Test
@@ -207,7 +148,9 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
         // Missing `number_data_type` parses as null and defaults to FLOAT.
         val json =
             unprettyPrintJson(
-                this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText()
+                this.javaClass
+                    .getResource("/config_with_credentials_auth_type_key_pair.json")!!
+                    .readText()
             )
 
         val supplier =
@@ -244,6 +187,39 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
 
         assertThrows<ConfigErrorException> { supplier.get() }
     }
+
+    @Test
+    fun testMissingCredentials() {
+        val exception =
+            assertThrows<ConfigErrorException> {
+                SnowflakeConfigurationFactory()
+                    .makeWithoutExceptionHandling(SnowflakeSpecification())
+            }
+        assertEquals(USERNAME_PASSWORD_REMOVED_MESSAGE, exception.message)
+    }
+
+    private fun assertAuthenticationRemoved(
+        supplier: SnowflakeMigratingConfigurationSpecificationSupplier
+    ) {
+        val exception = assertThrows<ConfigErrorException> { supplier.get() }
+        assertEquals(USERNAME_PASSWORD_REMOVED_MESSAGE, exception.message)
+    }
+
+    private fun usernamePasswordJson() =
+        """
+        {
+          "host": "testhost.snowflakecomputing.com",
+          "role": "AIRBYTE_ROLE",
+          "warehouse": "AIRBYTE_WAREHOUSE",
+          "database": "AIRBYTE_DATABASE",
+          "schema": "RESTRICTED_SCHEMA",
+          "username": "AIRBYTE_USER",
+          "credentials": {
+            "auth_type": "$USERNAME_PASSWORD_AUTH_TYPE",
+            "password": "test-password"
+          }
+        }
+        """.trimIndent()
 
     private fun unprettyPrintJson(json: String) =
         json

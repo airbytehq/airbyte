@@ -4,10 +4,15 @@
 
 package io.airbyte.integrations.destination.snowflake.spec
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationConfiguration
 import io.airbyte.cdk.load.command.DestinationConfigurationFactory
 import io.airbyte.cdk.load.table.DEFAULT_AIRBYTE_INTERNAL_NAMESPACE
 import jakarta.inject.Singleton
+
+internal const val USERNAME_PASSWORD_REMOVED_MESSAGE =
+    "Key pair authentication credentials are required. Username and password authentication is no longer supported; see https://docs.airbyte.com/integrations/destinations/snowflake-migrations#upgrading-to-500"
+internal const val USERNAME_PASSWORD_AUTH_TYPE = "Username and Password"
 
 data class SnowflakeConfiguration(
     val host: String,
@@ -33,10 +38,6 @@ data class KeyPairAuthConfiguration(
     val privateKeyPassword: String?,
 ) : AuthTypeConfiguration
 
-data class UsernamePasswordAuthConfiguration(
-    val password: String,
-) : AuthTypeConfiguration
-
 @Singleton
 class SnowflakeConfigurationFactory :
     DestinationConfigurationFactory<SnowflakeSpecification, SnowflakeConfiguration> {
@@ -54,15 +55,8 @@ class SnowflakeConfigurationFactory :
                         keyPairAuthSpec.privateKeyPassword
                     )
                 }
-                is UsernamePasswordAuthSpecification -> {
-                    // Despite what Kotlin thinks, this cast is necessary
-                    @Suppress("USELESS_CAST")
-                    val usernamePasswordAuthSpec =
-                        pojo.credentials as UsernamePasswordAuthSpecification
-                    UsernamePasswordAuthConfiguration(usernamePasswordAuthSpec.password)
-                }
                 null -> {
-                    UsernamePasswordAuthConfiguration("")
+                    throw ConfigErrorException(USERNAME_PASSWORD_REMOVED_MESSAGE)
                 }
             }
 

@@ -13,6 +13,8 @@ import io.airbyte.cdk.command.ValidatedJsonUtils
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.destination.snowflake.spec.CredentialsSpecification
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
+import io.airbyte.integrations.destination.snowflake.spec.USERNAME_PASSWORD_AUTH_TYPE
+import io.airbyte.integrations.destination.snowflake.spec.USERNAME_PASSWORD_REMOVED_MESSAGE
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Replaces
 import io.micronaut.context.annotation.Value
@@ -25,7 +27,6 @@ internal const val CREDENTIALS_PROPERTY = "\"credentials\""
 internal const val PASSWORD_PROPERTY = "\"password\""
 
 internal val CREDENTIALS_REGEX = """$CREDENTIALS_PROPERTY\s*:\s*\{\s*([^}]*)""".toRegex()
-internal val PASSWORD_REGEX = """$PASSWORD_PROPERTY\s*:\s*"([^"}]*)""".toRegex()
 
 private val logger = KotlinLogging.logger {}
 
@@ -46,14 +47,13 @@ internal fun migrationMissingAuthType(json: String): String {
     val result = CREDENTIALS_REGEX.find(json)
     return result?.let {
         val credentials = result.groupValues[1]
-        val authType =
-            if (credentials.contains(PASSWORD_PROPERTY))
-                CredentialsSpecification.Type.USERNAME_PASSWORD.authTypeName
-            else CredentialsSpecification.Type.PRIVATE_KEY.authTypeName
+        if (credentials.contains(PASSWORD_PROPERTY)) {
+            throw ConfigErrorException(USERNAME_PASSWORD_REMOVED_MESSAGE)
+        }
         json.replace(
             CREDENTIALS_REGEX,
             Regex.escapeReplacement(
-                "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"$authType\",$credentials}"
+                "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"${CredentialsSpecification.Type.PRIVATE_KEY.authTypeName}\",$credentials}"
             )
         )
     }
@@ -64,23 +64,13 @@ internal fun migrateRootLevelPassword(json: String): String {
     logger.info {
         "Detected legacy specification with root level password.  Attempting to migration configuration..."
     }
-    val result = PASSWORD_REGEX.find(json)
-    return result?.let {
-        val password = result.groupValues[1]
-        json
-            .replace(
-                PASSWORD_REGEX,
-                "$CREDENTIALS_PROPERTY:{$AUTH_TYPE_PROPERTY:\"${CredentialsSpecification.Type.USERNAME_PASSWORD.authTypeName}\",$PASSWORD_PROPERTY:\"$password\"}"
-            )
-            .replace("}\"", "}")
-    }
-        ?: json
+    throw ConfigErrorException(USERNAME_PASSWORD_REMOVED_MESSAGE)
 }
 /**
  * This is a custom override of the [ConfigurationSpecificationSupplier] in the CDK in order to
- * handle multiple types of legacy configurations for the Snowflake destination and coerce them into
- * the current configuration that is strongly typed/validated. This implementation handles two
- * specific legacy cases:
+ * reject legacy configurations that use password authentication and coerce key-pair configurations
+ * into the current configuration that is strongly typed/validated. This implementation handles
+ * these legacy cases:
  *
  * <ol>
  * ```
@@ -89,8 +79,8 @@ internal fun migrateRootLevelPassword(json: String): String {
  * ```
  * </ol>
  *
- * In both cases, this implementation attempts to find and extract the data listed above and convert
- * it to conform with the current [SnowflakeSpecification] format.
+ * Password-based configurations are rejected with an actionable configuration error. Key-pair
+ * configurations without an auth type are converted to the current [SnowflakeSpecification] format.
  */
 @Singleton
 @Replaces(ConfigurationSpecificationSupplier::class)
@@ -115,7 +105,12 @@ class SnowflakeMigratingConfigurationSpecificationSupplier(
                 )
             }
         }
-        val json: String = migrateJson(jsonPropertyValue ?: jsonMicronautFallback)
-        return ValidatedJsonUtils.parseUnvalidated(json, specificationJavaClass)
+        val migratedJson: String = migrateJson(jsonPropertyValue ?: jsonMicronautFallback)
+        val authType =
+            Jsons.readTree(migratedJson).path("credentials").path("auth_type").asText()
+        if (authType == USERNAME_PASSWORD_AUTH_TYPE) {
+            throw ConfigErrorException(USERNAME_PASSWORD_REMOVED_MESSAGE)
+        }
+        return ValidatedJsonUtils.parseUnvalidated(migratedJson, specificationJavaClass)
     }
 }

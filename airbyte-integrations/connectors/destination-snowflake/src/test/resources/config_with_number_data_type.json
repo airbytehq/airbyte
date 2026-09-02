@@ -7,7 +7,7 @@
   "username": "AIRBYTE_USER",
   "number_data_type": "NUMBER(38,9)",
   "credentials": {
-    "auth_type": "Username and Password",
-    "password": "test-password"
+    "auth_type": "Key Pair Authentication",
+    "private_key": "test-private-key"
   }
 }

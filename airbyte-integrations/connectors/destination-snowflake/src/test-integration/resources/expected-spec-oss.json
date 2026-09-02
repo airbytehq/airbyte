@@ -85,26 +85,6 @@
             }
           },
           "required" : [ "auth_type", "private_key" ]
-        }, {
-          "title" : "Username and Password",
-          "type" : "object",
-          "additionalProperties" : true,
-          "description" : "Configuration details for the Username and Password Authentication.",
-          "properties" : {
-            "auth_type" : {
-              "type" : "string",
-              "enum" : [ "Username and Password" ],
-              "default" : "Username and Password"
-            },
-            "password" : {
-              "type" : "string",
-              "description" : "Enter the password associated with the username.",
-              "title" : "Password",
-              "order" : 0,
-              "airbyte_secret" : true
-            }
-          },
-          "required" : [ "auth_type", "password" ]
         } ],
         "description" : "Determines the type of authentication that should be used.",
         "title" : "Authorization Method",

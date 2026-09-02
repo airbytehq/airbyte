@@ -6,7 +6,7 @@ data:
   connectorSubtype: database
   connectorType: destination
   definitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerImageTag: 4.1.2
+  dockerImageTag: 5.0.0
   dockerRepository: airbyte/destination-snowflake
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   githubIssueLabel: destination-snowflake
@@ -48,6 +48,12 @@ data:
       4.0.0:
         message: "The connector now requires ALTER TABLE permissions, so you must grant this permission to the Snowflake user. Otherwise, if you never interact with the raw tables, you can upgrade without taking any action. If you _do_ use the raw tables, make sure to read the migration guide for more details."
         upgradeDeadline: "2026-01-06"
+      5.0.0:
+        message: "Username and password authentication has been removed because Snowflake is blocking password-only logins for service users (see Snowflake's MFA rollout, Aug–Oct 2026). Destinations using **Key Pair Authentication** are not affected and need no action. Destinations using **Username and Password** must switch to Key Pair Authentication before upgrading: generate an RSA key pair, register the public key on your Snowflake user, then edit the destination and select Key Pair Authentication. See the [migration guide](https://docs.airbyte.com/integrations/destinations/snowflake-migrations#upgrading-to-500)."
+        upgradeDeadline: "2026-10-15"
+        deadlineAction: disable
+        scopedImpact:
+          - scopeType: configSpec
   resourceRequirements:
     jobSpecific:
       - jobType: sync

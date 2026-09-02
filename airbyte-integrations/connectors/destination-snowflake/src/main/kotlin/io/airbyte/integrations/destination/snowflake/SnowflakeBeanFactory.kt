@@ -16,7 +16,6 @@ import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibl
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
-import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRawRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeSchemaRecordFormatter
@@ -142,10 +141,6 @@ class SnowflakeBeanFactory {
                             )
                         }
                         username = snowflakeConfiguration.username
-                    }
-                    is UsernamePasswordAuthConfiguration -> {
-                        username = snowflakeConfiguration.username
-                        password = snowflakeConfiguration.authType.password
                     }
                 }
 
