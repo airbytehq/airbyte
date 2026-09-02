@@ -183,6 +183,23 @@ Scopes are combined as a union: a connector is affected if _any_ scope in `scope
 if _any_ of its `impactedScopes` entries matches (for example, syncing any one of the listed streams). There is no way to
 express an intersection, such as "syncs stream X _and_ uses a given configuration value".
 
+Each scope can optionally include a `message` with additional guidance. This message is shown only to users whose actor
+matched that scope. The breaking change's top-level `message` is rendered first, followed by an `Additional details`
+heading and the messages from each matched scope in metadata order. The additional details section is omitted when no
+matched scope declares a message. The `message` property applies to every scope type, for example:
+
+```yaml
+scopedImpact:
+  - scopeType: configValue
+    message: "This destination uses Username and Password authentication, which is no longer supported. Switch it to Key Pair Authentication."
+    impactedScopes:
+      - path: credentials.auth_type
+        value: "Username and Password"
+  - scopeType: configKey
+    message: "A legacy `password` field is still set on this destination. Edit and re-save it with Key Pair Authentication."
+    impactedScopes: [password, credentials.password]
+```
+
 The supported scope types are listed below.
 
 | Scope Type | Value Type  | Value Description    |
