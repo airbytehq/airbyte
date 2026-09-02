@@ -120,7 +120,9 @@ class MsSqlServerSourceConfigurationSpecificationTest {
             Assertions.assertThrows(ConfigErrorException::class.java) {
                 MsSqlServerSourceConfigurationFactory().make(supplier.get())
             }
-        Assertions.assertTrue(exception.message?.contains("must be 0 (unbounded) or a positive number") == true)
+        Assertions.assertTrue(
+            exception.cause?.message?.contains("must be 0 (unbounded) or a positive number") == true
+        )
     }
 
     @Test

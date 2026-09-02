@@ -36,7 +36,7 @@ DECLARE @tableName NVARCHAR(128);
 DECLARE @sql NVARCHAR(MAX);
 WHILE @i <= 350
 BEGIN
-    SET @tableName = N'catalog_static_13433_' + RIGHT('000' + CAST(@i AS VARCHAR(3)), 3);
+    SET @tableName = N'catalog_static_13433_' + RIGHT('0000' + CAST(@i AS VARCHAR(4)), 4);
     IF OBJECT_ID(N'dbo.' + @tableName, 'U') IS NULL
     BEGIN
         SET @sql = N'CREATE TABLE dbo.' + QUOTENAME(@tableName) +
