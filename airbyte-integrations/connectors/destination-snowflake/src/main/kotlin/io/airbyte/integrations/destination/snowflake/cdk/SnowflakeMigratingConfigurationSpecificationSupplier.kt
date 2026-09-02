@@ -42,7 +42,7 @@ fun migrateJson(json: String): String =
 
 internal fun migrationMissingAuthType(json: String): String {
     logger.info {
-        "Detected legacy specification with credentials without auth type.  Attempting to migration configuration..."
+        "Detected legacy specification with credentials without auth type. Rejecting configuration: username/password authentication is no longer supported."
     }
     val result = CREDENTIALS_REGEX.find(json)
     return result?.let {
@@ -62,7 +62,7 @@ internal fun migrationMissingAuthType(json: String): String {
 
 internal fun migrateRootLevelPassword(json: String): String {
     logger.info {
-        "Detected legacy specification with root level password.  Attempting to migration configuration..."
+        "Detected legacy specification with root level password. Rejecting configuration: username/password authentication is no longer supported."
     }
     throw ConfigErrorException(USERNAME_PASSWORD_REMOVED_MESSAGE)
 }
@@ -74,7 +74,7 @@ internal fun migrateRootLevelPassword(json: String): String {
  *
  * <ol>
  * ```
- *     <li>Configuration with the <code>password</code> field at the top level of the configuration JSON document/li>
+ *     <li>Configuration with the <code>password</code> field at the top level of the configuration JSON document</li>
  *     <li>Configuration with a credentials block without an <code>auth_type</code> property</li>
  * ```
  * </ol>
@@ -107,7 +107,11 @@ class SnowflakeMigratingConfigurationSpecificationSupplier(
         }
         val migratedJson: String = migrateJson(jsonPropertyValue ?: jsonMicronautFallback)
         val authType =
-            Jsons.readTree(migratedJson).path("credentials").path("auth_type").asText()
+            runCatching { Jsons.readTree(migratedJson) }
+                .getOrNull()
+                ?.path("credentials")
+                ?.path("auth_type")
+                ?.asText()
         if (authType == USERNAME_PASSWORD_AUTH_TYPE) {
             throw ConfigErrorException(USERNAME_PASSWORD_REMOVED_MESSAGE)
         }
