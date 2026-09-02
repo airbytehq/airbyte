@@ -5,6 +5,13 @@
     "title" : "Snowflake Specification",
     "type" : "object",
     "additionalProperties" : true,
+    "allOf" : [ {
+      "required" : [ "credentials" ]
+    }, {
+      "not" : {
+        "required" : [ "password" ]
+      }
+    } ],
     "properties" : {
       "host" : {
         "type" : "string",

@@ -18,6 +18,9 @@ import io.airbyte.protocol.models.v0.DestinationSyncMode
 import jakarta.inject.Singleton
 
 @Singleton
+@JsonSchemaInject(
+    json = """{"allOf": [{"required": ["credentials"]}, {"not": {"required": ["password"]}}]}"""
+)
 open class SnowflakeSpecification : ConfigurationSpecification() {
     @get:JsonSchemaTitle("Host")
     @get:JsonPropertyDescription(
