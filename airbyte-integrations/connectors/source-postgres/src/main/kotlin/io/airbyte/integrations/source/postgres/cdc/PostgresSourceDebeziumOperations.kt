@@ -39,6 +39,7 @@ import io.airbyte.cdk.read.cdc.ValidDebeziumWarmStartState
 import io.airbyte.cdk.ssh.TunnelSession
 import io.airbyte.cdk.util.Jsons
 import io.airbyte.integrations.source.postgres.PostgresSourceJdbcConnectionFactory
+import io.airbyte.integrations.source.postgres.PostgresSourceMetadataQuerier
 import io.airbyte.integrations.source.postgres.config.CdcIncrementalConfiguration
 import io.airbyte.integrations.source.postgres.config.PostgresSourceConfiguration
 import io.airbyte.integrations.source.postgres.operations.types.PostgresDoubleFieldType
@@ -142,6 +143,9 @@ class PostgresSourceDebeziumOperations(
     override fun startup(offset: DebeziumOffset) {
         // Need to validate replication slot even on cold start.
         // Debezium will retry in a loop if its invalid.
+        connectionFactory.get().use { conn ->
+            PostgresSourceMetadataQuerier.validateNoEmptyEnumTypes(conn)
+        }
         validate(offset)
         advanceReplicationSlot(offset)
     }
