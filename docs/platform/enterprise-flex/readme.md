@@ -31,7 +31,7 @@ Enterprise Flex addresses these needs by offering fully managed Cloud workspaces
 | Role-Based Access   | Manage user permissions and access across workspaces from a single pane of glass.                                                                                       |
 | Column Hashing      | Protect sensitive information by hashing personally identifiable information (PII) as it moves through your pipelines.                                                  |
 | External Secrets    | Bring your own secrets manager to securely reference your credentials for data sources and destinations.                                                                |
-| Audit trail logs    | Review [user and platform activity](/platform/access-management/audit-logs) to maintain compliance while using Airbyte.                                                 |
+| Audit logs          | Review [user and platform activity](/platform/access-management/audit-logs) to maintain compliance while using Airbyte.                                                 |
 | AWS PrivateLink     | Connect to data sources or destinations in your VPC securely to Airbyte data planes.                                                                                    |
 | Support with SLAs   | [Priority assistance](https://docs.airbyte.com/operator-guides/contact-support/#airbyte-enterprise-self-hosted-support) with deploying, managing and upgrading Airbyte. |
 
