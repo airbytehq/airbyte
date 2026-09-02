@@ -104,7 +104,13 @@ class StateManagerGlobalStatesTest {
     @Property(
         name = "airbyte.connector.state.json",
         value =
-            """[{"type":"STREAM","stream":{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},"stream_state":{}}},{"type":"STREAM","stream":{"stream_descriptor":{"name":"EVENTS","namespace":"PUBLIC"},"stream_state":null}}]""",
+            """[{"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "KV", "namespace": "PUBLIC" },
+    "stream_state": {}
+}}, {"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "EVENTS", "namespace": "PUBLIC" },
+    "stream_state": null
+}}]""",
     )
     fun testEmptyStreamStateIsIgnored() {
         val streams: Streams = prelude()
@@ -119,7 +125,11 @@ class StateManagerGlobalStatesTest {
     @Property(
         name = "airbyte.connector.state.json",
         value =
-            """{"type":"STREAM","stream":{"stream_descriptor":{"name":"BAR","namespace":"FOO"},"stream_state":{}}}""",
+            """
+{"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "BAR", "namespace": "FOO" },
+    "stream_state": {}
+}}""",
     )
     fun testEmptyStreamStateForStreamNotInCatalog() {
         val streams: Streams = prelude()
@@ -134,7 +144,11 @@ class StateManagerGlobalStatesTest {
     @Property(
         name = "airbyte.connector.state.json",
         value =
-            """{"type":"STREAM","stream":{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},"stream_state":{"cursor":"1"}}}""",
+            """
+{"type": "STREAM", "stream": {
+    "stream_descriptor": { "name": "KV", "namespace": "PUBLIC" },
+    "stream_state": { "cursor": "1" }
+}}""",
     )
     fun testNonEmptyStreamStateThrows() {
         val exception = Assertions.assertThrows(ConfigErrorException::class.java) { stateManager }

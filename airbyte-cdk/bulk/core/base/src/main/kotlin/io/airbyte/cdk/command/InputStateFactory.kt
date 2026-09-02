@@ -2,6 +2,7 @@
 package io.airbyte.cdk.command
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.StreamIdentifier
 import io.airbyte.cdk.util.Jsons
@@ -33,7 +34,10 @@ class InputStateFactory {
         @Value("\${${CONNECTOR_STATE_PREFIX}.json}") json: String?,
     ): InputState {
         val list: List<AirbyteStateMessage> =
-            ValidatedJsonUtils.parseList(AirbyteStateMessage::class.java, json ?: "[]")
+            ValidatedJsonUtils.parseList(
+                AirbyteStateMessage::class.java,
+                normalizeNullStreamStates(json ?: "[]"),
+            )
                 // Discard states messages with unset type to allow {} as a valid input state.
                 .filter { it.type != null }
         if (list.isEmpty()) {
@@ -75,6 +79,26 @@ class InputStateFactory {
         val globalStreams: Map<StreamIdentifier, OpaqueStateValue> =
             streamStates(globalState.streamStates)
         return GlobalInputState(globalStateValue, globalStreams, nonGlobalStreams)
+    }
+
+    private fun normalizeNullStreamStates(json: String): JsonNode {
+        val tree: JsonNode =
+            try {
+                Jsons.readTree(json)
+            } catch (e: Exception) {
+                throw ConfigErrorException(
+                    "malformed json value while parsing for ${AirbyteStateMessage::class.java}",
+                    e,
+                )
+            }
+        val messages: Iterable<JsonNode> = if (tree.isArray) tree else listOf(tree)
+        messages.forEach { message ->
+            val stream: JsonNode? = message["stream"]
+            if (stream?.get("stream_state")?.isNull == true) {
+                (stream as ObjectNode).replace("stream_state", Jsons.objectNode())
+            }
+        }
+        return tree
     }
 
     private fun streamStates(
