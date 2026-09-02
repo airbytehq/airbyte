@@ -9,7 +9,7 @@ To contribute a new connector in Connector Builder:
 2. When you're happy with the connector, press the **Publish -> Contribute to Marketplace** button.
 3. You'll be prompted for a connector description and your Github Access Token.
 4. Builder will make a new pull request on your behalf automatically!
-5. Airbyte Marketplace team will review the PR.
+5. The Airbyte team will review the PR.
 
 ### Obtaining your Github Access Token
 In order to contribute a new connector from the Airbyte UI, you'll need to obtain your [GitHub Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic). This will allow your GitHub user to author the contribution.

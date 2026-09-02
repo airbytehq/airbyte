@@ -9,7 +9,7 @@ see the repo-root [`CONTRIBUTING.md`](../../../CONTRIBUTING.md) and the
 ```bash
 ./gradlew :airbyte-integrations:connectors:source-mssql:test
 ./gradlew :airbyte-integrations:connectors:source-mssql:assemble
-./gradlew :airbyte-integrations:connectors:source-mssql:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx
 ```
 
 Test fixtures use `org.testcontainers:mssqlserver` — see

@@ -9,7 +9,7 @@ import logging
 import re
 from datetime import datetime, timedelta
 from typing import List
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import freezegun
 import pytest
@@ -17,7 +17,7 @@ import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import API_VERSION, Salesforce, SalesforceTokenProvider
+from source_salesforce.api import _LOGIN_DEDUP_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -199,7 +199,10 @@ def test_mid_sync_rotation_is_persisted(requests_mock, capsys):
     sf = source._get_sf_object(config)
 
     _register_login(requests_mock, refresh_token="rotated_twice")
-    sf.login()
+    # Mid-sync refreshes fire well after the post-login dedup window (they are triggered by
+    # staleness or a 401 on an old token), so move past it.
+    with patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _LOGIN_DEDUP_SECONDS + 1):
+        sf.login()
 
     assert config["refresh_token"] == "rotated_twice"
     assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
@@ -214,7 +217,8 @@ def test_token_provider_force_refresh_persists_rotation(requests_mock, capsys):
     sf = source._get_sf_object(config)
 
     _register_login(requests_mock, refresh_token="rotated_twice")
-    SalesforceTokenProvider(sf).force_refresh()
+    with patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _LOGIN_DEDUP_SECONDS + 1):
+        SalesforceTokenProvider(sf).force_refresh()
 
     assert config["refresh_token"] == "rotated_twice"
     assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
