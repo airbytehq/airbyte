@@ -127,7 +127,12 @@ CI the table is also appended to `$GITHUB_STEP_SUMMARY`. A run limited to
 one command instead exits with the connector's own exit code, so a repro
 can still assert on it.
 
-Build the target image first when using `--test-version=dev`, or pass
+Prefer a published tag over `--test-version=dev`: for code on a pushed PR
+branch, publish a pre-release and pass its `<version>-preview.<sha>` tag,
+which skips the Gradle build and gives reviewers a tag they can re-run
+against — see
+[Getting a target image](../../../AGENTS.md#getting-a-target-image). When
+you do use `--test-version=dev`, build the target image first, or pass
 `--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--skip-fixtures` (run against whatever state the backend already has;

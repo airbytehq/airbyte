@@ -26,6 +26,9 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
         get() = if (config.dropCascade) " CASCADE" else ""
 
     companion object {
+        /** Sentinel written to CSV for VARCHAR NULLs; mapped back to SQL NULL by `COPY NULL AS`. */
+        const val NULL_SENTINEL = "_AB_NULL_"
+
         private val EXTRACTED_AT_COLUMN_NAME = quoteIdentifier(COLUMN_NAME_AB_EXTRACTED_AT)
         private val DELETED_AT_COLUMN_NAME = quoteIdentifier(CDC_DELETED_AT_COLUMN)
 
@@ -558,7 +561,7 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
             |STATUPDATE OFF
             |ROUNDEC
             |IGNOREHEADER 1
-            |EMPTYASNULL;
+            |NULL AS '$NULL_SENTINEL';
         """.trimMargin()
 
     // ================================================================
