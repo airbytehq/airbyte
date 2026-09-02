@@ -359,17 +359,13 @@ class SnowflakeAirbyteClient(
      */
     private fun handleSnowflakePermissionError(e: SnowflakeSQLException): Nothing {
         val errorMessage = e.message?.lowercase() ?: ""
-
-        // Check for known permission-related error patterns
-        when {
-            errorMessage.contains("current role has no privileges on it") -> {
-                throw ConfigErrorException(e.message ?: "Permission error", e)
-            }
-            else -> {
-                // Not a known permission error, rethrow as-is
-                throw e
-            }
+        val isPermissionError =
+            e.sqlState == ACCESS_CONTROL_SQL_STATE ||
+                PERMISSION_ERROR_MESSAGE_PATTERNS.any { errorMessage.contains(it) }
+        if (isPermissionError) {
+            throw ConfigErrorException(e.message ?: "Permission error", e)
         }
+        throw e
     }
 }
 
@@ -377,6 +373,16 @@ fun DataSource.execute(query: String): ResultSet =
     this.connection.use { connection ->
         connection.createStatement().use { it.executeQuery(query) }
     }
+
+/** Snowflake SQLSTATE for access-control (insufficient privilege) errors. */
+private const val ACCESS_CONTROL_SQL_STATE = "42501"
+
+private val PERMISSION_ERROR_MESSAGE_PATTERNS =
+    listOf(
+        "current role has no privileges on it",
+        "insufficient privileges to operate on",
+        "must have ownership granted",
+    )
 
 /** NUMBER, NUMERIC and DECIMAL are synonyms in Snowflake */
 private val NUMBER_TYPE_SYNONYMS = setOf("NUMBER", "NUMERIC", "DECIMAL")
