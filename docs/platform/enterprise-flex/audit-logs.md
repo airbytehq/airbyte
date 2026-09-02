@@ -1,6 +1,6 @@
 ---
 products: enterprise-flex
-sidebar_label: Audit Logs
+sidebar_label: Audit logs
 ---
 
 # Audit logs
@@ -17,7 +17,7 @@ Airbyte produces several kinds of logs, and audit logs are the narrowest of them
 
 | Log type | What it contains | Where you find it |
 | --- | --- | --- |
-| Audit logs | Management operations: who changed a workspace, connection, connector, user, permission, or setting | **Settings** > **Organization** > **Audit Logs** |
+| Audit logs | Management operations: who changed a workspace, connection, connector, user, permission, or setting | **Organization settings** > **Audit logs** |
 | Sync logs (job logs) | What happened during one sync, check, or discover job, including connector output | A connection's [Timeline](/platform/cloud/managing-airbyte-cloud/review-connection-timeline) |
 | Data plane logs | Platform logs your Airbyte data plane pods write to stdout in your own infrastructure | Your own observability stack. See [Collect logs from a Flex data plane](/platform/enterprise-flex/log-collection). |
 
@@ -25,7 +25,7 @@ Audit logs never contain the records your connections read or write. If you need
 
 ## View your audit logs
 
-1. Click **Settings**, then click **Organization** > **Audit Logs**.
+1. In the navigation bar, click **Organization settings** > **Audit logs**.
 
 2. Set **Start time (UTC)** and **End time (UTC)** to the period you want to review. All timestamps and filters use UTC.
 
@@ -90,7 +90,7 @@ Airbyte audits operations that change your organization, including the following
 - Users and access: adding and removing users, changing roles and permissions, and managing user groups
 - Identity and security settings: single sign-on configuration, SCIM provisioning, and domain verification
 
-To see exactly which operations Airbyte records for your organization, open the **Operation** filter on the Audit Logs page.
+To see exactly which operations Airbyte records for your organization, open the **Operation** filter on the **Audit logs** page.
 
 ## What Airbyte doesn't record
 
