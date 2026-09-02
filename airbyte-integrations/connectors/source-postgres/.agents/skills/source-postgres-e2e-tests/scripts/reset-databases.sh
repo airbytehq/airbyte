@@ -12,6 +12,11 @@ BACKEND_NAME="${BACKEND_NAME:-source-postgres-db-backend}"
 BACKEND_PASSWORD="${BACKEND_PASSWORD:-test_password}"
 BACKEND_DB="${BACKEND_DB:-test_db}"
 
+if [[ "$BACKEND_DB" == "postgres" || "$BACKEND_DB" == "template0" || "$BACKEND_DB" == "template1" ]]; then
+  echo "[reset-databases] BACKEND_DB must not be a system database (got: $BACKEND_DB)" >&2
+  exit 1
+fi
+
 echo "[reset-databases] dropping non-system databases on $BACKEND_NAME" >&2
 docker exec -e PGPASSWORD="$BACKEND_PASSWORD" "$BACKEND_NAME" \
   psql -U postgres -d postgres -Atc \

@@ -14,7 +14,7 @@ config templates. It stands up a PostgreSQL 16 container named
 Airbyte protocol commands against any `airbyte/source-postgres:<tag>` image via
 `airbyte-ops cloud connector regression-test`.
 
-This pilot supports standard (non-CDC) local sweeps. CDC fixtures and
+This skill supports standard (non-CDC) local sweeps. CDC fixtures and
 replication setup are not yet stood up in this skill.
 
 ## When to use this skill
