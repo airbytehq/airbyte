@@ -75,9 +75,9 @@ class PostgresSourceMetadataQuerier(
             FROM pg_catalog.pg_type t
             JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace
             LEFT JOIN (SELECT enumtypid AS id, array_agg(enumlabel) AS vals
-                       FROM pg_catalog.pg_enum GROUP BY 1) ev ON t.oid = ev.id
+                       FROM pg_catalog.pg_enum GROUP BY enumtypid) ev ON t.oid = ev.id
             WHERE n.nspname <> 'pg_toast' AND t.typcategory = 'E' AND ev.vals IS NULL
-            ORDER BY 1, 2
+            ORDER BY schema_name, type_name
             """
 
         fun emptyEnumTypesError(types: List<String>): String =
