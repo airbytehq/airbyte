@@ -2,6 +2,21 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 2, 2026
+
+Connections
+
+- The setup guide panel that appears while you configure a source or destination now wraps very long values, such as lengthy OAuth URLs, instead of overflowing the panel. Links written as code inside tables, like the stream names in a connector's supported streams list, now render as clickable links instead of raw markdown.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, data worker usage now reflects the peak capacity your syncs used at any single point in time. Previously, the peak for each part of a sync was measured separately and added together, which could overstate your usage. This applies to usage recorded from now on.
+
+API
+
+- When you read a source or destination with `includeSecretCoordinates=true`, the response now includes secret coordinates for every secret field, including secrets that Airbyte stores for you. Previously, Airbyte-managed secrets were still masked. Coordinates are opaque pointers, not secret values, and they change whenever the secret is rewritten.
+- Secret coordinates are read-only. If you update a source or destination and include a coordinate that differs from the one already stored for that field, the request is now rejected with a 400 error. Sending the existing coordinate back unchanged, or the `**********` mask, leaves the stored secret as is.
+
 ## September 1, 2026
 
 Connections
