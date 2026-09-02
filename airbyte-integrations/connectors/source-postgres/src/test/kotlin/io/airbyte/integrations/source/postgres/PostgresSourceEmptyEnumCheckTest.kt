@@ -84,7 +84,7 @@ class PostgresSourceEmptyEnumCheckTest {
                             "empty-enum-test",
                         )
                     }
-                val rootCause = generateSequence(exception as Throwable) { it.cause }.last()
+                val rootCause = generateSequence(exception) { it.cause }.last()
                 assertTrue(rootCause is NullPointerException)
                 assertTrue(rootCause.message?.contains("getArray") == true)
 

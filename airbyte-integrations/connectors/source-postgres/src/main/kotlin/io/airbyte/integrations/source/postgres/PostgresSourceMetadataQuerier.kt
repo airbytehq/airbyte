@@ -30,19 +30,14 @@ class PostgresSourceMetadataQuerier(
     override fun extraChecks() {
         base.extraChecks()
         validateSslConfiguration()
-        if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration ||
-            postgresSourceConfig.cdc != null
-        ) {
-            base.conn.use { conn ->
-                if (postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration &&
-                    dbNumWraparound(conn) > 0
-                ) {
-                    throw ConfigErrorException(xminWraparoundError)
-                }
-                if (postgresSourceConfig.cdc != null) {
-                    validateNoEmptyEnumTypes(conn)
-                }
+        val isXmin = postgresSourceConfig.incrementalConfiguration is XminIncrementalConfiguration
+        val isCdc = postgresSourceConfig.cdc != null
+        if (!isXmin && !isCdc) return
+        base.conn.use { conn ->
+            if (isXmin && dbNumWraparound(conn) > 0) {
+                throw ConfigErrorException(xminWraparoundError)
             }
+            if (isCdc) validateNoEmptyEnumTypes(conn)
         }
     }
 
