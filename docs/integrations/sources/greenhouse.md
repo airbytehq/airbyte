@@ -132,12 +132,12 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 
 The connector can't renew its access token because Greenhouse rejected the refresh token. Starting with version 1.0.1, the connector reports this as a configuration error instead of a system error. The Greenhouse error code in the sync log tells you what to fix:
 
-- `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when the same refresh token was used elsewhere so Greenhouse rotated it out from under Airbyte. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Each Airbyte source needs its own consent grant; don't reuse one refresh token across sources or other tools.
+- `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when another tool used the same refresh token, which causes Greenhouse to issue a new one that Airbyte never receives. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
 - `invalid_client` or `unauthorized_client`: the **OAuth client ID** or **OAuth client secret** is wrong, or the client isn't allowed to use the refresh token grant. Check the credentials Greenhouse issued for your Harvest v3 app and re-enter them in the source settings, then authenticate again.
 
 ### Sync fails with a `403` configuration error on a stream
 
-The authorizing user isn't a Site Admin, or the consent grant is missing the scope for that stream. Compare the scopes in [Prerequisites](#prerequisites) with the ones your consent grant includes, then re-run the consent flow as a Site Admin.
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then re-run the consent flow as a Site Admin.
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
