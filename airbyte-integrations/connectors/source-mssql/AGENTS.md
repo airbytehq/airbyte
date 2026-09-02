@@ -36,7 +36,7 @@ skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
   Use this skill for any non-CDC bug or as a building block.
 - [`source-mssql-e2e-cdc-tests`](.agents/skills/source-mssql-e2e-cdc-tests/SKILL.md) —
   layers on top: enables CDC, ships CDC-aware config / catalog templates,
-  and contains per-bug fixtures and driver scripts. Three worked examples
+  and contains per-bug fixtures and driver scripts. Four worked examples
   ship today, each with inline pass / fail assertions:
   - `repro-12162.sh` — [`airbytehq/oncall#12162`](https://github.com/airbytehq/oncall/issues/12162)
     (whitespace in stream name → Debezium rejects `message.key.columns`).
@@ -45,6 +45,9 @@ skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
     configured catalog).
   - `repro-11451.sh` — [`airbytehq/oncall#11451`](https://github.com/airbytehq/oncall/issues/11451)
     (saved CDC offset rejected after `min_lsn` advances past it).
+  - `repro-13433.sh` — [`airbytehq/oncall#13433`](https://github.com/airbytehq/oncall/issues/13433)
+    (CDC log full of transactions on capture instances outside the
+    catalog → heartbeats progress for hours with no RECORD / STATE).
 
 **Never** repro against a customer connection or against an Airbyte Cloud
 instance.
@@ -66,6 +69,7 @@ CDC_SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mss
 "$CDC_SKILL/scripts/repro-12162.sh"
 "$CDC_SKILL/scripts/repro-12094.sh"
 "$CDC_SKILL/scripts/repro-11451.sh"
+"$CDC_SKILL/scripts/repro-13433.sh"
 
 # Cleanup
 "$SKILL/scripts/stop-backend.sh"
