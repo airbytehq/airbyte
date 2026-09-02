@@ -137,10 +137,7 @@ class StateManagerGlobalStatesTest {
             """{"type":"STREAM","stream":{"stream_descriptor":{"name":"KV","namespace":"PUBLIC"},"stream_state":{"cursor":"1"}}}""",
     )
     fun testNonEmptyStreamStateThrows() {
-        val exception =
-            Assertions.assertThrows(ConfigErrorException::class.java) {
-                stateManager
-            }
+        val exception = Assertions.assertThrows(ConfigErrorException::class.java) { stateManager }
         Assertions.assertTrue(exception.message!!.contains("configured to use global state"))
     }
 
