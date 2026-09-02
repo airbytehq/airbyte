@@ -1,5 +1,142 @@
 # Airbyte Agents release notes
 
+## September 2, 2026
+
+Web app
+
+- Chat now searches across all of your indexed data by default, so your agent can pull in relevant records from every connector in your workspace without you turning on a setting first. Workspace-wide searches also no longer time out in workspaces with several connectors.
+- Everyone in your organization can now view the API client ID and secret on the Profile page. Previously only administrators could see them, and other members saw an empty page.
+
+## September 1, 2026
+
+Web app
+
+- Your connectors and Context Store now stay marked Ready when synced data hasn't been searched for a while. Previously they looked like they were still building, even though your agents could still search that data.
+
+## August 31, 2026
+
+Web app
+
+- The skills page now warns you when a published skill can't be served to agents because your organization is missing one or more connectors the skill depends on, so you can set up those connectors before your agents need them.
+
+Connectors
+
+- The Greenhouse connector now signs in with OAuth and uses Greenhouse's latest Harvest API, adding access to interviews and file attachments alongside candidates, applications, jobs, and offers.
+- Credential checks for connectors that sign in with OAuth are now more reliable. When a quick validation can't safely use your credentials, the check automatically falls back to a full validation instead of failing.
+
+## August 28, 2026
+
+Web app
+
+- The Connectors page no longer shows an error on a connector whose data is ready and searchable again, so the status you see reflects how the connector is working now rather than a problem that has already been resolved.
+
+## August 27, 2026
+
+Web app
+
+- Chat now keeps up with your skills while a conversation is open. If you add, edit, disable, or remove a skill mid-chat, your agent picks up the change on your next message instead of continuing to follow the old instructions. If the skill list can't be loaded for a message, the agent tells you it's temporarily unavailable and asks you to try again rather than answering from skill content it saw earlier.
+
+SDK
+
+- Search filters now separate text matching from list matching. Use `contains` to match part of a text field, ignoring capitalization, and the new `array_contains` to check whether a list field includes an exact value. If you previously used `contains` against a list field, switch that filter to `array_contains`.
+- When you run connectors with credentials supplied from your own environment, you can now keep those credentials in Google Cloud Secret Manager in addition to AWS Secrets Manager.
+
+## August 26, 2026
+
+Connectors
+
+- Your agents can now search Notion comments by meaning, so they can find relevant discussion without matching exact keywords.
+- Your agents can now search Sentry issues by meaning, including the issue title and where the error happened, so they can find related problems without knowing the exact error text.
+- Your agents can now search your Facebook Marketing ad creative text by meaning, including headlines and body copy, so they can find ads with similar messaging without matching exact wording.
+- Your agents can now search your Customer.io campaign email content by meaning, including subject lines and message bodies, so they can find campaigns on a similar topic without matching exact wording.
+
+Other
+
+- Context Store data that gets stuck partway through an update now recovers on its own, so your agents keep searching current data without anyone needing to restart it.
+
+## August 25, 2026
+
+Connectors
+
+- You can now search by meaning, not just exact keywords, across Slack, HubSpot, Intercom, Monday.com, Asana, Greenhouse, and TikTok Marketing. Your agents can find relevant Slack messages and threads, HubSpot tickets, notes, calls, emails, and meetings, Intercom conversations, Monday.com boards, items, and updates, Asana tasks and projects, Greenhouse job posts, and TikTok ad text without matching the wording exactly.
+
+Other
+
+- Search now handles content that was written as rich text, such as job descriptions and email bodies, more accurately. Formatting is stripped into clean, readable text before it's indexed, so results better reflect what the content actually says.
+- Search results no longer drop identifying details, such as a record's title, from the record data they return. It's easier to tell results apart and act on the right one.
+
+## August 24, 2026
+
+SDK
+
+- Text filters when searching your synced data now use `startswith` and `endswith` for prefix and suffix matches, and `contains` for a case-insensitive substring match on text fields. These replace the previous `like` operator, so your filters no longer depend on wildcard patterns.
+
+## August 21, 2026
+
+Connectors
+
+- You can now search your Freshdesk data by meaning instead of exact keywords. Your agents can find relevant tickets, contact and company notes, and satisfaction survey feedback based on what the text is about, and narrow results by details like status, priority, or account tier.
+
+Other
+
+- When your agents filter a search-by-meaning request by a detail that isn't available, they now get a clear message listing the details you can filter on, instead of a confusing failure. Connector descriptions also list those filterable details up front, so agents pick valid ones the first time.
+
+## August 20, 2026
+
+Web app
+
+- Links in chat messages are now readable in dark mode.
+- Sortable column headings in tables now match the styling of the other headings instead of appearing in mixed case.
+
+Connectors
+
+- You can now search Twilio, Typeform, and incident.io by meaning. Your agents can find text message bodies, form questions and response answers, and incident names, alert descriptions, and incident updates without matching exact keywords.
+
+Other
+
+- When your agent searches your synced data using a field name that doesn't exist, it now gets the closest matching field names back so it can correct the search, instead of a generic failure.
+
+## August 19, 2026
+
+Web app
+
+- Pinning chats no longer stops at 50. Every chat you pin now shows up in the pinned group in the sidebar and reads as pinned in the chat header. Pinning and unpinning also take effect immediately, without waiting for the list to refresh.
+
+SDK
+
+- Google Ads list methods no longer take a page size, because Google fixes each page of results at its own size and rejects the setting. To get the next page, pass the page token from the previous response along with the same query.
+
+Connectors
+
+- Google Ads queries now page through large result sets correctly, so your agents return complete results instead of stopping after the first page. The connector also documents that it only reads accounts your sign-in has direct access to. Agents no longer retry accounts that are reachable only through a manager account.
+
+Other
+
+- When your agents match customers or companies across your connected apps, they now know which fields they can actually query and start from email addresses before trying other identifiers. Expect fewer failed lookups and quicker answers.
+
+## August 18, 2026
+
+Web app
+
+- Fixed an issue where long-running chat responses could be cut off before the agent finished answering.
+
+SDK
+
+- Searches against your synced data now filter out weakly related results by default, so agents get more relevant matches. You can adjust or turn off this minimum similarity cutoff when you need broader results.
+
+## August 17, 2026
+
+Web app
+
+- When connector setup fails because of a configuration problem, such as a missing or invalid credential, the error now appears on the credentials page right away instead of only after repeated retry attempts.
+- The custom plan on the plans page no longer shows a redundant "Custom" price above the "Talk to sales" button.
+
+## August 13, 2026
+
+Connectors
+
+- You can now search Zendesk Support by meaning, including the text of ticket comments, so your agents can find relevant conversations without matching exact keywords. Each result carries details of the ticket it belongs to, such as the title, status, and priority, so your agents know which conversation a comment came from.
+
 ## August 12, 2026
 
 Web app

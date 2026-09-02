@@ -2,6 +2,98 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 1, 2026
+
+Connections
+
+- When you authenticate the Salesforce source or the HubSpot destination with OAuth, the consent step now completes. Airbyte previously formatted part of the authorization request in a way these providers reject, which could cause the authorization to fail.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, the data worker usage chart in your organization's Usage settings has a new Compare to previous period option. Turning it on shows the selected period next to the equivalent previous day, week, month, quarter, or year, so you can see whether your peak capacity usage is trending up or down.
+- The Billing page now shows the date your next invoice is scheduled to be issued. You see the same date in the confirmation messages when you cancel your subscription or delete a workspace.
+
+## August 31, 2026
+
+Platform
+
+- If your organization is on a capacity-based plan, the Usage page in Organization settings now offers 1Q and 1Y date ranges alongside 1D, 1W, and 1M, so you can review data worker usage across a full quarter or year.
+- The Plus and Pro cards on the Plan page in Organization settings now list the support coverage each plan includes. Hover over the info icon next to a support line to see the exact hours and response times.
+
+## August 27, 2026
+
+Platform
+
+- If your organization is on a capacity-based plan (Pro or Enterprise Flex), the workspace Usage page now shows which region the workspace runs in, alongside its data worker usage. This makes it easier to tell which region's capacity your workspace consumes.
+- If your organization signs in with single sign-on but your plan doesn't include role-based access control, people who sign in for the first time are now added as organization admins. Previously they could be left with a role that nobody in your organization was able to change.
+- If your organization is on the Plus plan, reported usage no longer schedules an unintended downgrade to the Standard plan. Your plan stays as you purchased it.
+
+## August 26, 2026
+
+Platform
+
+- If your organization has committed data worker capacity, you can now switch the data worker usage graphs between one-day, one-week, and one-month ranges instead of always seeing a fixed window.
+
+API
+
+- You can now choose the time zone for a cron sync schedule when you create or update a connection through the API, so your syncs run at the hour you expect in your own time zone rather than always in UTC. Error messages for invalid cron schedules also explain the requirements more clearly.
+
+## August 25, 2026
+
+Connections
+
+- When schema changes are applied to your connection, the affected incremental streams are now backfilled correctly so your destination data stays complete and accurate.
+- When you create a new private link for S3 storage, the DNS name Airbyte gives you is now correct. Previously, the provided hostname could cause connection checks to fail with a certificate error. Existing private links are not changed.
+
+Platform
+
+- The Data Worker usage chart on the workspace usage page now shows hourly usage as bars, matching the look of the organization usage chart, so it's easier to compare usage across the two views.
+
+## August 24, 2026
+
+Platform
+
+- If you're an organization admin on the Enterprise Flex plan, you can now view audit logs directly in Airbyte. The new Audit Logs page in your organization settings shows who changed what and when across your organization, with filters for date range, workspace, actor, and operation. Click any entry to see the full details of that event and copy them to your clipboard.
+
+## August 21, 2026
+
+Platform
+
+- The Data Worker usage chart on your organization's Usage page is easier to read. Each day now has a single bar for peak usage instead of stacked, color-coded workspace segments, and hovering over a bar shows your region's peak next to a per-workspace breakdown. The dates along the bottom of the chart also display correctly now. This chart is available if your plan includes contracted Data Worker capacity.
+
+## August 20, 2026
+
+Connections
+
+- When Airbyte provides its own OAuth application for a connector, the source and destination setup forms no longer show the manual authentication option. This prevents confusion by hiding fields that asked for developer credentials you don't need.
+
+Platform
+
+- If your organization manages users through your identity provider with SCIM, workspace settings now show a SCIM badge and no longer allow you to add or change workspace members directly in Airbyte. This keeps your membership consistent with your identity provider.
+- If you store audit logs in your own bucket on the Enterprise Flex plan, Airbyte now organizes those log files into folders by organization and date, making them easier to browse and manage.
+
+## August 19, 2026
+
+Connections
+
+- When a connector test or schema refresh hits an unexpected internal error, the job now fails immediately with a clear error message instead of appearing to run until it times out.
+
+## August 18, 2026
+
+Connections
+
+- Setting up or refreshing the schema for a source with a very large number of tables and columns is now more reliable. Previously, these requests could run out of memory and fail before the schema reached you.
+
+## August 14, 2026
+
+Connections
+
+- Your connections now recover immediately when Airbyte runs into a conflict while starting a sync. Previously, the connection paused for about 10 minutes in this situation, which delayed its next scheduled sync.
+
+Connector Builder
+
+- Fields that share a linked value keep that link when you switch between the UI and YAML views. Previously, the first switch to YAML could replace shared values with copies, so later edits to one field no longer updated the others.
+
 ## August 12, 2026
 
 Connections
