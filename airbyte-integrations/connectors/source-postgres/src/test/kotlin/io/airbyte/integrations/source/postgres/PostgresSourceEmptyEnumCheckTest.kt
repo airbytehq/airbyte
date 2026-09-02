@@ -12,7 +12,6 @@ import io.debezium.config.Configuration
 import io.debezium.connector.postgresql.PostgresConnectorConfig
 import io.debezium.connector.postgresql.PostgresValueConverter
 import io.debezium.connector.postgresql.connection.PostgresConnection
-import io.debezium.jdbc.JdbcConfiguration
 import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -70,20 +69,10 @@ class PostgresSourceEmptyEnumCheckTest {
             }
 
             try {
-                val debeziumConfig = debeziumConfig()
+                val connectorConfig = PostgresConnectorConfig(debeziumConfig())
                 val exception =
                     assertThrows(Exception::class.java) {
-                        PostgresConnection(
-                            JdbcConfiguration.adapt(debeziumConfig),
-                            { registry ->
-                                PostgresValueConverter.of(
-                                    PostgresConnectorConfig(debeziumConfig),
-                                    StandardCharsets.UTF_8,
-                                    registry,
-                                )
-                            },
-                            "empty-enum-test",
-                        )
+                        newDebeziumConnection(connectorConfig)
                     }
                 val rootCause = generateSequence<Throwable>(exception) { it.cause }.last()
                 assertInstanceOf(NullPointerException::class.java, rootCause) {
@@ -97,19 +86,7 @@ class PostgresSourceEmptyEnumCheckTest {
                     stmt.execute("ALTER TYPE public.empty_enum ADD VALUE 'a';")
                 }
 
-                val postgresConnection =
-                    PostgresConnection(
-                        JdbcConfiguration.adapt(debeziumConfig),
-                        { registry ->
-                            PostgresValueConverter.of(
-                                PostgresConnectorConfig(debeziumConfig),
-                                StandardCharsets.UTF_8,
-                                registry,
-                            )
-                        },
-                        "empty-enum-test",
-                    )
-                postgresConnection.close()
+                newDebeziumConnection(connectorConfig).close()
             } finally {
                 conn.createStatement().use { stmt ->
                     stmt.execute("DROP TYPE IF EXISTS public.empty_enum;")
@@ -131,6 +108,16 @@ class PostgresSourceEmptyEnumCheckTest {
             connectionFactory =
                 JdbcConnectionFactory(PostgresSourceConfigurationFactory().make(configSpec))
         }
+
+        /** Mirrors how Debezium's PostgresConnectorTask builds its connection at startup. */
+        private fun newDebeziumConnection(connectorConfig: PostgresConnectorConfig) =
+            PostgresConnection(
+                connectorConfig.jdbcConfig,
+                { registry ->
+                    PostgresValueConverter.of(connectorConfig, StandardCharsets.UTF_8, registry)
+                },
+                "empty-enum-test",
+            )
 
         private fun debeziumConfig(): Configuration =
             Configuration.create()
