@@ -71,9 +71,7 @@ class PostgresSourceEmptyEnumCheckTest {
             try {
                 val connectorConfig = PostgresConnectorConfig(debeziumConfig())
                 val exception =
-                    assertThrows(Exception::class.java) {
-                        newDebeziumConnection(connectorConfig)
-                    }
+                    assertThrows(Exception::class.java) { newDebeziumConnection(connectorConfig) }
                 val rootCause = generateSequence<Throwable>(exception) { it.cause }.last()
                 assertInstanceOf(NullPointerException::class.java, rootCause) {
                     exception.stackTraceToString()
