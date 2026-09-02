@@ -59,7 +59,7 @@ The Greenhouse user who approves the consent flow must be a Site Admin. Harvest 
 9. Click **Set up source**.
 
 :::warning
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
+Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces.
 :::
 
 ## Supported sync modes
@@ -125,6 +125,19 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`custom_field_options`** reads every custom field option in your account, which makes it a superset of `degrees`, `disciplines`, and `schools`. Those three streams read the same Greenhouse endpoint filtered to one field key and share the same primary keys, so enabling all four writes the same option rows to four destination tables. Enable only the ones you need.
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
 - **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
+
+## Troubleshooting
+
+### Sync fails with a configuration error asking you to re-authenticate
+
+The connector can't renew its access token because Greenhouse rejected the refresh token. Starting with version 1.0.1, the connector reports this as a configuration error instead of a system error. The Greenhouse error code in the sync log tells you what to fix:
+
+- `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when another tool used the same refresh token, which causes Greenhouse to issue a new one that Airbyte never receives. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
+- `invalid_client` or `unauthorized_client`: the **OAuth client ID** or **OAuth client secret** is wrong, or the client isn't allowed to use the refresh token grant. Check the credentials Greenhouse issued for your Harvest v3 app and re-enter them in the source settings, then authenticate again.
+
+### Sync fails with a `403` configuration error on a stream
+
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then re-run the consent flow as a Site Admin.
 
 ## Migration from Harvest v1 before the v1/v2 sunset
 
