@@ -197,7 +197,7 @@ constructor(
                     val maxIterationTransactions = incrementalSpec.maxIterationTransactions ?: 500
                     if (maxIterationTransactions < 0) {
                         throw ConfigErrorException(
-                            "Max transactions per CDC iteration ($maxIterationTransactions) must be 0 (unbounded) or a positive number."
+                            "Field \"Max Transactions per CDC Iteration\" must be 0 (unbounded) or a positive number."
                         )
                     }
                     val heartbeatIntervalMs =
