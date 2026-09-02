@@ -56,10 +56,6 @@ Harvest v3 rejects requests to its list endpoints from any user who isn't a Site
 7. Optionally change **Number of concurrent threads**. The connector syncs with 2 threads by default and accepts 1 to 8. All threads share one Greenhouse rate limit, so raise this only if your Greenhouse account can absorb more API traffic, and lower it to 1 if syncs fail with rate-limit errors.
 8. Click **Set up source**.
 
-:::note
-Self-Managed deployments can't complete the consent flow because it depends on Airbyte's Greenhouse partner credentials, and Greenhouse doesn't issue partner credentials to customers. Don't request credentials from Greenhouse or try to register your own application for this connector. Support for the Greenhouse custom-integration (client credentials) authentication that Self-Managed deployments would use is planned for a future release.
-:::
-
 :::warning
 Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces.
 :::
