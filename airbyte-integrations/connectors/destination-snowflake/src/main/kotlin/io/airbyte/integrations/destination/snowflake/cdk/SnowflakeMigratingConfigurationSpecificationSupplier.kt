@@ -33,7 +33,7 @@ private val logger = KotlinLogging.logger {}
 @VisibleForTesting
 fun migrateJson(json: String): String =
     if (!json.contains(CREDENTIALS_PROPERTY) && json.contains(PASSWORD_PROPERTY)) {
-        migrateRootLevelPassword(json)
+        migrateRootLevelPassword()
     } else if (json.contains(CREDENTIALS_PROPERTY) && !json.contains(AUTH_TYPE_PROPERTY)) {
         migrationMissingAuthType(json)
     } else {
@@ -60,7 +60,7 @@ internal fun migrationMissingAuthType(json: String): String {
         ?: json
 }
 
-internal fun migrateRootLevelPassword(_json: String): String {
+internal fun migrateRootLevelPassword(): String {
     logger.info {
         "Detected legacy specification with root level password. Rejecting configuration: username/password authentication is no longer supported."
     }
