@@ -60,7 +60,7 @@ internal fun migrationMissingAuthType(json: String): String {
         ?: json
 }
 
-internal fun migrateRootLevelPassword(json: String): String {
+internal fun migrateRootLevelPassword(_json: String): String {
     logger.info {
         "Detected legacy specification with root level password. Rejecting configuration: username/password authentication is no longer supported."
     }
