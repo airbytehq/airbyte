@@ -53,7 +53,10 @@ data:
         upgradeDeadline: "2026-10-15"
         deadlineAction: disable
         scopedImpact:
-          - scopeType: configSpec
+          - scopeType: configValue
+            impactedScopes:
+              - path: credentials.auth_type
+                value: "Username and Password"
   resourceRequirements:
     jobSpecific:
       - jobType: sync
