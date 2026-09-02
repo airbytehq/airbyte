@@ -53,6 +53,7 @@ dependencies {
     dataGeneratorImplementation ('com.github.javafaker:javafaker:1.0.2') { exclude module: 'snakeyaml' }
     dataGeneratorImplementation 'io.github.oshai:kotlin-logging-jvm:5.1.0'
     dataGeneratorImplementation 'org.jetbrains.kotlinx:kotlinx-cli-jvm:0.3.5'
+    dataGeneratorImplementation 'org.mongodb:mongodb-driver-sync:5.9.2'
 
     debeziumTestImplementation 'io.debezium:debezium-embedded:3.6.2.Final'
     debeziumTestImplementation 'io.debezium:debezium-connector-mongodb:3.6.2.Final'
