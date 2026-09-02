@@ -89,7 +89,7 @@ class MongoDbDebeziumStateUtilTest {
     assertNotNull(initialState);
     assertEquals(1, initialState.size());
     final BsonTimestamp timestamp = ResumeTokens.getTimestamp(resumeTokenDocument);
-    final JsonNode offsetState = initialState.fields().next().getValue();
+    final JsonNode offsetState = initialState.properties().iterator().next().getValue();
     assertEquals(resumeToken, Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText());
     assertEquals(timestamp.getTime(), Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS).asInt());
     assertEquals(timestamp.getInc(), Jsons.deserialize(offsetState.asText()).get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT).asInt());
