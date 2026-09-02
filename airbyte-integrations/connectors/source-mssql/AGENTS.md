@@ -22,8 +22,11 @@ Test fixtures use `org.testcontainers:mssqlserver` — see
 ## Reproducing bugs locally
 
 Most reported bugs against `source-mssql` are CDC-mode bugs, but the same
-local-harness pattern is useful for non-CDC bugs too. Two co-located agent
-skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
+local-harness pattern is useful for non-CDC bugs too. The
+engine-independent orchestration now lives in
+[`airbyte-integrations/db-harness-lib/`](../../db-harness-lib/), while the
+co-located agent skills under [`.agents/skills/`](.agents/skills/) keep the
+MSSQL backend lifecycle, fixtures, and config templates:
 
 - [`source-mssql-e2e-tests`](.agents/skills/source-mssql-e2e-tests/SKILL.md) —
   the generic harness. Stands up a SQL Server 2022 container
@@ -51,14 +54,9 @@ instance.
 
 ### Getting a target image
 
-To test a fix that has not merged yet, publish a pre-release from its PR with
-the Airbyte Ops MCP tool `publish_connector_to_airbyte_registry` (the
-[`publish-connector-prerelease`](https://github.com/airbytehq/ai-skills/tree/main/.agents/skills/publish-connector-prerelease)
-skill in `airbytehq/ai-skills` covers the invocation), and pass the resulting
-`<version>-preview.<7-char-sha>` tag as `--test-version`. The harness pulls
-any published tag and only builds from the checkout when `--test-version` is
-literally `dev`, so this skips a cold Gradle build entirely and gives
-reviewers a tag they can re-run against. Build locally with
+Follow the shared
+[Getting a target image](../../db-harness-lib/README.md#getting-a-target-image)
+guidance. Build locally with
 `./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx` only
 for code that is not on a pushed PR branch.
 
@@ -81,7 +79,8 @@ CDC_SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mss
 "$CDC_SKILL/scripts/repro-11451.sh"
 
 # Cleanup
-"$SKILL/scripts/stop-backend.sh"
+BACKEND_NAME=source-mssql-db-backend \
+  airbyte-integrations/db-harness-lib/scripts/stop-backend.sh
 ```
 
 To investigate a new bug, write the smallest SQL fixture that produces
@@ -89,7 +88,8 @@ the reported symptom (drop into
 [`source-mssql-e2e-cdc-tests/fixtures/sql/`](.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/)),
 add a driver script alongside (`repro-<oncall-id>.sh`), and assert on the
 relevant `stdout.txt` / `stderr.txt` / exit-code shape. Each driver
-script wraps the generic skill's `run-protocol-cmd.sh`, so the connector
+script invokes the engine shim, which delegates orchestration to
+`airbyte-integrations/db-harness-lib/scripts/run.sh`, so the connector
 lifecycle (image pull, AirbyteMessage parsing, exit-code surfacing) is
 already handled.
 
@@ -114,18 +114,20 @@ directly.
   `--network` (tracked in
   [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765)).
   Until it does, both containers share Docker's default `bridge` network
-  and the connector resolves the source by IP. The `render-config.sh`
-  script in the generic skill handles this: it inspects the backend's
-  bridge IP and substitutes it into the config template before each
-  invocation.
+  and the connector resolves the source by IP. The shared library's
+  [`render-config.sh`](../../db-harness-lib/scripts/render-config.sh)
+  handles this: it inspects the backend's bridge IP and substitutes it
+  into the config template before each invocation.
 - **A connector run rejects the catalog with `Validation error(s)`.**
   Bulk-CDK requires `is_file_based`, `cursor_field`, `generation_id`,
   `minimum_generation_id`, `sync_id`, `destination_object_name`, and
   `include_files` on every configured stream, and rejects them as null
   with `code: 1021`. This is not limited to `4.3.x` — `4.4.12` and
-  `5.0.0` reject them too. `discover` never emits `is_file_based`, so
-  `make-catalog.sh` fills it in; the catalog fixtures shipped with the
-  CDC skill populate all of them.
+  `5.0.0` reject them too. `discover` never emits `is_file_based`, so the
+  shared library's
+  [`make-catalog.sh`](../../db-harness-lib/scripts/make-catalog.sh) fills
+  it in; the catalog fixtures shipped with the CDC skill populate all of
+  them.
 - **A `check` that fails still exits 0 in single-version mode.** The CDK
   emits `CONNECTION_STATUS` with `status: FAILED` and exits 0, so the
   harness cannot surface it as a non-zero exit. Assert on the status
