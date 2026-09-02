@@ -292,7 +292,7 @@ class CdcPartitionReader<T : PartiallyOrdered<T>>(
 
             val event = DebeziumEvent(changeEvent)
             val eventType: EventType = emitRecord(event)
-            if (eventType != EventType.HEARTBEAT && eventType != EventType.TOMBSTONE) {
+            if (eventType == EventType.RECORD_EMITTED) {
                 heartbeatMonitor.onRecord()
             }
             if (!engineShuttingDown.get()) {

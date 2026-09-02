@@ -42,6 +42,22 @@ class CdcHeartbeatMonitorTest {
     }
 
     @Test
+    fun slowStartupBeforeFirstHeartbeatDoesNotCauseImmediateClose() {
+        val monitor = monitor(Duration.ofSeconds(60))
+        now = now.plusMinutes(10)
+
+        assertNull(monitor.onHeartbeat(MonitorPosition(1)))
+        now = now.plusSeconds(5)
+        assertNull(monitor.onHeartbeat(MonitorPosition(2)))
+        now = now.plusSeconds(61)
+
+        assertEquals(
+            CdcPartitionReader.CloseReason.HEARTBEAT_PROGRESSING_WITHOUT_RECORDS,
+            monitor.onHeartbeat(MonitorPosition(3)),
+        )
+    }
+
+    @Test
     fun recordsResetTheNoRecordTimer() {
         val monitor = monitor()
 

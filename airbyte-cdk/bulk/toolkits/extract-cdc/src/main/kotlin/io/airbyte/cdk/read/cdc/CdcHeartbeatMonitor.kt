@@ -28,6 +28,9 @@ internal class CdcHeartbeatMonitor<T : PartiallyOrdered<T>>(
             lastHeartbeatPosition == null || currentPosition.isGreater(lastHeartbeatPosition)
         if (isProgressing) {
             val previousPosition = lastHeartbeatPosition
+            if (previousPosition == null) {
+                lastRecordTime = now
+            }
             lastHeartbeatPosition = currentPosition
             lastHeartbeatTime = now
             log.info { "Heartbeat progressing to position: $currentPosition" }
