@@ -36,7 +36,7 @@ definitions:
       - error_message_contains: "Unable to authenticate request"
         action: FAIL
         failure_type: config_error
-        error_message: Mixpanel rejected the provided credentials. Update the credentials in the source configuration.
+        error_message: Mixpanel rejected the provided credentials.
       - error_message_contains: "Query rate limit exceeded"
         action: RATE_LIMITED
         error_message: Query rate limit exceeded.
@@ -70,7 +70,7 @@ definitions:
       - error_message_contains: "Unable to authenticate request"
         action: FAIL
         failure_type: config_error
-        error_message: Mixpanel rejected the provided credentials. Update the credentials in the source configuration.
+        error_message: Mixpanel rejected the provided credentials.
       - error_message_contains: "Query rate limit exceeded"
         action: RATE_LIMITED
         error_message: Query rate limit exceeded.
