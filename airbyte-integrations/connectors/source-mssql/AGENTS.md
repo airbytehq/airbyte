@@ -54,14 +54,9 @@ instance.
 
 ### Getting a target image
 
-To test a fix that has not merged yet, publish a pre-release from its PR with
-the Airbyte Ops MCP tool `publish_connector_to_airbyte_registry` (the
-[`publish-connector-prerelease`](https://github.com/airbytehq/ai-skills/tree/main/.agents/skills/publish-connector-prerelease)
-skill in `airbytehq/ai-skills` covers the invocation), and pass the resulting
-`<version>-preview.<7-char-sha>` tag as `--test-version`. The harness pulls
-any published tag and only builds from the checkout when `--test-version` is
-literally `dev`, so this skips a cold Gradle build entirely and gives
-reviewers a tag they can re-run against. Build locally with
+Follow the shared
+[Getting a target image](../../db-harness-lib/README.md#getting-a-target-image)
+guidance. Build locally with
 `./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx` only
 for code that is not on a pushed PR branch.
 
