@@ -118,13 +118,7 @@ class RedshiftInsertBuffer(
             redshiftClient.uploadToS3(s3Config.s3BucketName, s3Key, csvBytes)
 
             // Step 3: Execute COPY
-            redshiftClient.copyFromS3(
-                tableName = tableName,
-                s3Path = s3Path,
-                accessKeyId = s3Config.accessKeyId,
-                secretAccessKey = s3Config.secretAccessKey,
-                region = s3Config.s3BucketRegion,
-            )
+            redshiftClient.copyFromS3(tableName = tableName, s3Path = s3Path)
 
             logger.info { "Loaded data into ${tableName.namespace}.${tableName.name}" }
 

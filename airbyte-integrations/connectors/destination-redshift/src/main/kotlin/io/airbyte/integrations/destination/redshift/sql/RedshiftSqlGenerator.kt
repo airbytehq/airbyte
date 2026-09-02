@@ -15,6 +15,7 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_META
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.integrations.destination.redshift.config.RedshiftConfiguration
+import io.airbyte.integrations.destination.redshift.config.S3AuthMode
 import io.airbyte.integrations.destination.redshift.schema.toRedshiftCompatibleName
 import jakarta.inject.Singleton
 
@@ -547,22 +548,34 @@ class RedshiftSqlGenerator(private val config: RedshiftConfiguration) {
     fun copyFromS3(
         tableName: TableName,
         s3Path: String,
-        accessKeyId: String,
-        secretAccessKey: String,
-        region: String,
-    ): String =
-        """
+    ): String {
+        val s3Config = config.uploadingMethod!!
+        return """
             |COPY ${getFullyQualifiedName(tableName)}
             |FROM '$s3Path'
-            |CREDENTIALS 'aws_access_key_id=$accessKeyId;aws_secret_access_key=$secretAccessKey'
+            |${copyAuthorization(s3Config.authMode)}
             |CSV GZIP
-            |REGION '$region'
+            |REGION '${s3Config.s3BucketRegion}'
             |TIMEFORMAT 'auto'
             |STATUPDATE OFF
             |ROUNDEC
             |IGNOREHEADER 1
             |NULL AS '$NULL_SENTINEL';
         """.trimMargin()
+    }
+
+    /** COPY auth clause: static credentials, else IAM role (configured ARN or cluster default). */
+    private fun copyAuthorization(authMode: S3AuthMode): String =
+        when (authMode) {
+            is S3AuthMode.StaticCredentials ->
+                "CREDENTIALS 'aws_access_key_id=" +
+                    "${RedshiftSqlEscapeUtils.escapeSqlString(authMode.accessKeyId)};" +
+                    "aws_secret_access_key=" +
+                    "${RedshiftSqlEscapeUtils.escapeSqlString(authMode.secretAccessKey)}'"
+            is S3AuthMode.IamRole ->
+                "IAM_ROLE '${RedshiftSqlEscapeUtils.escapeSqlString(authMode.roleArn)}'"
+            S3AuthMode.ClusterDefaultRole -> "IAM_ROLE default"
+        }
 
     // ================================================================
     // Internal helpers

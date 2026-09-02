@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.client
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.component.ColumnChangeset
@@ -16,6 +17,8 @@ import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAMES
 import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_GENERATION_ID
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.redshift.config.RedshiftConfiguration
+import io.airbyte.integrations.destination.redshift.config.S3AuthMode
 import io.airbyte.integrations.destination.redshift.sql.RedshiftSqlGenerator
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
@@ -40,10 +43,12 @@ private const val SQLSTATE_DEPENDENT_OBJECTS_STILL_EXIST = "2BP01"
 private const val SQLSTATE_UNDEFINED_TABLE = "42P01"
 
 @Singleton
+@SuppressFBWarnings(value = ["NP_NONNULL_PARAM_VIOLATION"], justification = "kotlin coroutines")
 class RedshiftAirbyteClient(
     private val dataSource: DataSource,
     private val sqlGenerator: RedshiftSqlGenerator,
     private val s3Client: S3Client,
+    private val configuration: RedshiftConfiguration,
 ) : TableSchemaEvolutionClient, TableOperationsClient {
 
     private val describeTableCache = ConcurrentHashMap<TableName, LinkedHashMap<String, String>>()
@@ -236,19 +241,16 @@ class RedshiftAirbyteClient(
     }
 
     /**
-     * Executes a Redshift COPY command to load data from S3. Logging is suppressed because the
-     * generated SQL contains plaintext AWS credentials in the CREDENTIALS clause.
+     * Executes a Redshift COPY command to load data from S3. Logging is suppressed when a static
+     * access key is configured, because the generated SQL then contains the plaintext credentials
+     * in its CREDENTIALS clause.
      */
-    suspend fun copyFromS3(
-        tableName: TableName,
-        s3Path: String,
-        accessKeyId: String,
-        secretAccessKey: String,
-        region: String,
-    ) {
+    suspend fun copyFromS3(tableName: TableName, s3Path: String) {
+        val containsSecrets =
+            configuration.uploadingMethod?.authMode is S3AuthMode.StaticCredentials
         execute(
-            sqlGenerator.copyFromS3(tableName, s3Path, accessKeyId, secretAccessKey, region),
-            logStatement = false,
+            sqlGenerator.copyFromS3(tableName, s3Path),
+            logStatement = !containsSecrets,
         )
     }
 
