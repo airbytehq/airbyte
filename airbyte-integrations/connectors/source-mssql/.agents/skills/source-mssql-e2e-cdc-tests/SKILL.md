@@ -44,7 +44,10 @@ source-mssql-e2e-cdc-tests/
 ├── cases/
 │   ├── 11451.sh                      # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+ (multi-phase; invalid-state case)
 │   ├── 12094.sh                      # airbytehq/oncall#12094 — schema-history bloat
-│   └── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
+│   ├── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
+│   └── 85286.sh                      # airbytehq/airbyte#85286 — `{}` stream state skips the snapshot (multi-phase; control vs target)
+├── scripts/
+│   └── blank-stream-state.py         # rewrite a GLOBAL state's per-stream state to `{}`
 └── fixtures/
     ├── configs/
     │   └── cdc.template.json
@@ -55,7 +58,9 @@ source-mssql-e2e-cdc-tests/
         ├── 00-init-cdc.sql
         ├── repro-11451-lsn-cleanup.sql
         ├── repro-12094-schema-history.sql
-        └── repro-12162-spaces-in-name.sql
+        ├── repro-12162-spaces-in-name.sql
+        ├── repro-85286-init-cdc-preseeded.sql
+        └── repro-85286-insert-after-snapshot.sql
 ```
 
 `extract-state.py` lives in the generic skill
@@ -222,6 +227,40 @@ asserts on. A pass here means the guard stopped firing on state it is
 supposed to reject, which turns an actionable "reset the connection"
 error into a silently incomplete sync — the symptom-gone evidence from
 the valid-LSN repro cannot distinguish that from a correct fix.
+
+### airbytehq/airbyte#85286 — `{}` stream state skips the snapshot
+
+`cases/85286.sh`. A GLOBAL state message carries `{}` as the
+`stream_state` of a stream that never checkpointed (initial snapshot
+interrupted before its first checkpoint). Up to `5.0.0`,
+`MsSqlServerJdbcPartitionFactory.create()` only cold-started on a
+*missing* state, so `{}` fell through to the CDC branch, parsed as
+`pk_name == null` and was treated as a completed snapshot: the stream
+got no partition and the retry silently emitted only the Debezium
+change stream. Multi-phase, driven with a known-bad `CONTROL_VERSION`
+(default `5.0.0`) and a `TARGET_VERSION` under test (default `dev`):
+
+1. Baseline `read` on `CONTROL_VERSION` against
+   `repro-85286-init-cdc-preseeded.sql` — seed rows are inserted
+   *before* `sp_cdc_enable_table`, so they exist only in the base
+   table and can never come out of the change stream. Asserts
+   `--expect-test=pass --min-records=3 --min-states=1`.
+2. `extract-state.py` → `scripts/blank-stream-state.py` rewrites the
+   stream's `stream_state` to `{}` (keeps `shared_state`), then
+   `repro-85286-insert-after-snapshot.sql` adds one CDC-visible row.
+3. Replay `{}` on `CONTROL_VERSION`: asserts the bug —
+   `--expect-match='stdout:dave@example.com'` and
+   `--forbid-match='stdout:alice@example.com'` (seed rows lost).
+4. Replay `{}` on `TARGET_VERSION`: asserts the snapshot restarted —
+   `--min-records=4 --min-states=1` plus `alice` and `dave` present.
+5. Replay the unmodified completed state on `TARGET_VERSION`: asserts
+   no re-snapshot — `dave` present, `alice` forbidden. This is the
+   counterpart to phase 4: a fix that widened the cold-start condition
+   too far would re-snapshot here.
+
+```bash
+CONTROL_VERSION=5.0.0 TARGET_VERSION=dev "$SKILL/cases/85286.sh"
+```
 
 ## Authoring a new repro
 
