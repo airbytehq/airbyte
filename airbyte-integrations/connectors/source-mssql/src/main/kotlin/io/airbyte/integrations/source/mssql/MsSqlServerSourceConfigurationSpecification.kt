@@ -380,6 +380,15 @@ class Cdc : IncrementalConfigurationSpecification {
     @JsonSchemaDefault("500")
     @JsonSchemaInject(json = """{"order":4, "max": 14999, "min": 100,"always_show": true}""")
     var pollIntervalMs: Int? = 500
+
+    @JsonProperty("max_iteration_transactions")
+    @JsonSchemaTitle("Max Transactions per CDC Iteration (Advanced)")
+    @JsonPropertyDescription(
+        "Maximum number of transactions Debezium reads from the CDC log in each iteration. Increase this (or set 0 for unbounded) to catch up faster on a large CDC backlog, especially when many CDC-enabled tables are not included in the connection; higher values use more memory. Defaults to 500.",
+    )
+    @JsonSchemaDefault("500")
+    @JsonSchemaInject(json = """{"order":5, "min": 0, "always_show": true}""")
+    var maxIterationTransactions: Int? = 500
 }
 
 @ConfigurationProperties("$CONNECTOR_CONFIG_PREFIX.replication_method")

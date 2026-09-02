@@ -3,6 +3,7 @@ package io.airbyte.integrations.source.mssql
 
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.command.ConfigurationSpecificationSupplier
+import io.airbyte.cdk.jdbc.JdbcConnectionFactory
 import io.airbyte.cdk.ssh.SshPasswordAuthTunnelMethod
 import io.airbyte.cdk.ssh.SshTunnelMethodConfiguration
 import io.micronaut.context.annotation.Property
@@ -94,6 +95,42 @@ class MsSqlServerSourceConfigurationSpecificationTest {
         val pojo: MsSqlServerSourceConfigurationSpecification = supplier.get()
         val replicationMethod: IncrementalConfigurationSpecification = pojo.getIncrementalValue()
         Assertions.assertTrue(replicationMethod is Cdc, replicationMethod::class.toString())
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_CDC_MAX_ZERO)
+    fun testCdcMaxIterationTransactionsZero() {
+        val config = MsSqlServerSourceConfigurationFactory().make(supplier.get())
+        val cdc = config.incrementalReplicationConfiguration as CdcIncrementalConfiguration
+        Assertions.assertEquals(0, cdc.maxIterationTransactions)
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_CDC)
+    fun testCdcMaxIterationTransactionsDefaultsTo500() {
+        val config = MsSqlServerSourceConfigurationFactory().make(supplier.get())
+        val cdc = config.incrementalReplicationConfiguration as CdcIncrementalConfiguration
+        Assertions.assertEquals(500, cdc.maxIterationTransactions)
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_CDC_MAX_NEGATIVE)
+    fun testCdcMaxIterationTransactionsRejectsNegative() {
+        val exception =
+            Assertions.assertThrows(ConfigErrorException::class.java) {
+                MsSqlServerSourceConfigurationFactory().make(supplier.get())
+            }
+        Assertions.assertTrue(exception.message?.contains("must be 0 (unbounded) or a positive number") == true)
+    }
+
+    @Test
+    @Property(name = "airbyte.connector.config.json", value = CONFIG_JSON_CDC_MAX_123)
+    fun testCdcMaxIterationTransactionsIsPassedToDebeziumProperties() {
+        val config = MsSqlServerSourceConfigurationFactory().make(supplier.get())
+        val properties =
+            MsSqlServerDebeziumOperations(JdbcConnectionFactory(config), config)
+                .generateWarmStartProperties(emptyList())
+        Assertions.assertEquals("123", properties["max.iteration.transactions"])
     }
 
     /**
@@ -273,6 +310,48 @@ class MsSqlServerSourceConfigurationSpecificationTest {
   "replication_method": {
     "method": "CDC"
   }
+}
+"""
+
+        const val CONFIG_JSON_CDC_MAX_ZERO: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "schemas": ["dbo"],
+  "ssl_mode": {"mode": "encrypted_trust_server_certificate"},
+  "replication_method": {"method": "CDC", "max_iteration_transactions": 0}
+}
+"""
+
+        const val CONFIG_JSON_CDC_MAX_NEGATIVE: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "schemas": ["dbo"],
+  "ssl_mode": {"mode": "encrypted_trust_server_certificate"},
+  "replication_method": {"method": "CDC", "max_iteration_transactions": -1}
+}
+"""
+
+        const val CONFIG_JSON_CDC_MAX_123: String =
+            """
+{
+  "host": "localhost",
+  "port": 1433,
+  "username": "sa",
+  "password": "Password123!",
+  "database": "master",
+  "schemas": ["dbo"],
+  "ssl_mode": {"mode": "encrypted_trust_server_certificate"},
+  "replication_method": {"method": "CDC", "max_iteration_transactions": 123}
 }
 """
 

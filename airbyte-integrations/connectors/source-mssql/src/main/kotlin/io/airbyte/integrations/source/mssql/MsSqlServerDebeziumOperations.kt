@@ -812,6 +812,12 @@ class MsSqlServerDebeziumOperations(
                     .pollIntervalMs
                     .toString()
             )
+            .with(
+                "max.iteration.transactions",
+                (configuration.incrementalReplicationConfiguration as CdcIncrementalConfiguration)
+                    .maxIterationTransactions
+                    .toString()
+            )
             // Enable heartbeat timeout for MSSQL to detect idle database states
             .with(
                 AIRBYTE_HEARTBEAT_TIMEOUT_SECONDS,
