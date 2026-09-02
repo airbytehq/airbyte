@@ -35,7 +35,8 @@ definitions:
     response_filters:
       - error_message_contains: "Unable to authenticate request"
         action: FAIL
-        error_message: Authentication has failed. Please update your config with valid credentials.
+        failure_type: config_error
+        error_message: Mixpanel rejected the provided credentials. Update the credentials in the source configuration.
       - error_message_contains: "Query rate limit exceeded"
         action: RATE_LIMITED
         error_message: Query rate limit exceeded.
@@ -48,7 +49,41 @@ definitions:
         error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
       - http_codes: [400]
         action: FAIL
-        error_message: Authentication has failed. Please update your config with valid credentials.
+        error_message: Mixpanel rejected the request as invalid (HTTP 400).
+      - http_codes: [402]
+        action: FAIL
+        error_message: Unable to perform a request. Payment Required.
+      - predicate: "{{ 'Retry-After' in headers }}"
+        action: RATE_LIMITED
+        error_message: Query rate limit exceeded.
+
+  funnels_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 30
+    response_filters:
+      - error_message_contains: "Invalid bookmark format"
+        action: IGNORE
+        error_message: Skipping saved funnel that Mixpanel rejected with "Invalid bookmark format"; it is not queryable as a single-metric funnel.
+      - error_message_contains: "Unable to authenticate request"
+        action: FAIL
+        failure_type: config_error
+        error_message: Mixpanel rejected the provided credentials. Update the credentials in the source configuration.
+      - error_message_contains: "Query rate limit exceeded"
+        action: RATE_LIMITED
+        error_message: Query rate limit exceeded.
+      - http_codes: [500]
+        error_message_contains: "unknown error"
+        action: RETRY
+        error_message: An unknown error occurred
+      - error_message_contains: "to_date cannot be later than today"
+        action: FAIL
+        error_message: Your project timezone must be misconfigured. Please set it to the one defined in your Mixpanel project settings.
+      - http_codes: [400]
+        action: FAIL
+        error_message: Mixpanel rejected the request as invalid (HTTP 400).
       - http_codes: [402]
         action: FAIL
         error_message: Unable to perform a request. Payment Required.
@@ -433,7 +468,7 @@ definitions:
         path: query/funnels
         authenticator: "#/definitions/authenticator"
         error_handler:
-          $ref: "#/definitions/default_error_handler"
+          $ref: "#/definitions/funnels_error_handler"
       record_selector:
         type: RecordSelector
         extractor:
