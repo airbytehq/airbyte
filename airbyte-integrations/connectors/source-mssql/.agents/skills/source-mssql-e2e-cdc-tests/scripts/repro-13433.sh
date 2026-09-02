@@ -111,7 +111,7 @@ start_epoch="$(date +%s)"
   --keep-backend
 end_epoch="$(date +%s)"
 
-python3 - "$REPRO_OUT" "$start_epoch" "$end_epoch" "$EXPECT" <<'PY'
+python3 - "$REPRO_OUT" "$start_epoch" "$end_epoch" "$EXPECT" <<'PY' | tee "$REPRO_OUT/summary.txt"
 import json
 import re
 import sys
