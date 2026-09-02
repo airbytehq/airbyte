@@ -3272,6 +3272,21 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            # Amazon requires reportPeriod, distributorView and sellingProgram for this report type.
+            reportOptions: >-
+              {%- set rt = "GET_VENDOR_SALES_REPORT" -%}
+              {%- set opts = {"distributorView": "MANUFACTURING", "sellingProgram": "RETAIL"} -%}
+              {%- for ro in config.get('report_options_list', []) -%}
+                {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+                  {%- for item in ro.get('options_list', []) -%}
+                    {%- if item['option_name'] in ["distributorView", "sellingProgram"] -%}
+                      {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {%- set _ = opts.update({"reportPeriod": "DAY"}) -%}
+              {{ opts }}
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3300,6 +3315,20 @@ definitions:
           request_body_json:
             reportType: GET_VENDOR_INVENTORY_REPORT
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions: >-
+              {%- set rt = "GET_VENDOR_INVENTORY_REPORT" -%}
+              {%- set opts = {"distributorView": "MANUFACTURING", "sellingProgram": "RETAIL"} -%}
+              {%- for ro in config.get('report_options_list', []) -%}
+                {%- if ro.get('stream_name') == rt or ro.get('report_name') == rt -%}
+                  {%- for item in ro.get('options_list', []) -%}
+                    {%- if item['option_name'] in ["distributorView", "sellingProgram"] -%}
+                      {%- set _ = opts.update({ item['option_name']: item['option_value'] }) -%}
+                    {%- endif -%}
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {%- set _ = opts.update({"reportPeriod": "DAY"}) -%}
+              {{ opts }}
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3346,6 +3375,8 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              reportPeriod: DAY
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder
@@ -3394,6 +3425,8 @@ definitions:
             dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
             dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
+            reportOptions:
+              reportPeriod: DAY
         download_decoder:
           type: CustomDecoder
           class_name: source_declarative_manifest.components.GzipJsonDecoder

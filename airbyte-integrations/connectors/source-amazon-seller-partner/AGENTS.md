@@ -125,6 +125,13 @@ day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INV
 `GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
 intentionally send no window at all.
 
+## 8. Vendor retail analytics reports require reportOptions
+
+Amazon requires `reportPeriod`, `distributorView`, and `sellingProgram` for vendor sales and inventory reports.
+Traffic and net pure product margin reports require `reportPeriod`; real-time inventory has no documented options.
+The daily streams use `DAY` for `reportPeriod`, and configured `distributorView`/`sellingProgram` values override
+their `MANUFACTURING`/`RETAIL` defaults.
+
 ## Incremental Stream Considerations
 
 The Amazon Seller Partner API uses an asynchronous report generation model. Most streams in the connector correspond to report types that are generated on-demand via `createReport` / `getReport`. The connector already uses `DatetimeBasedCursor` for 43 report streams. The remaining 8 FR parent streams are brand analytics and vendor reports that use different date range patterns not directly compatible with simple `updated_at` cursor filtering.
