@@ -57,6 +57,10 @@ data:
             impactedScopes:
               - path: credentials.auth_type
                 value: "Username and Password"
+          - scopeType: configKey
+            impactedScopes:
+              - password
+              - credentials.password
   resourceRequirements:
     jobSpecific:
       - jobType: sync
