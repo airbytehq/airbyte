@@ -81,10 +81,8 @@ class PostgresSourceMetadataQuerier(
             """
 
         fun emptyEnumTypesError(types: List<String>): String =
-            "CDC cannot start because the database contains enum type(s) with no labels: " +
-                types.joinToString(", ") +
-                ". The Debezium engine fails to initialize on such types even if they are not used by any synced table. " +
-                "Add at least one label (ALTER TYPE <type> ADD VALUE '<label>') or drop the type, then retry."
+            "Database contains enum type(s) with no labels (${types.joinToString(", ")}). " +
+                "CDC cannot initialize on such types, even if no synced table uses them."
 
         public fun dbNumWraparound(conn: Connection): Long {
             log.info { "Querying server xmin wraparound status" }
