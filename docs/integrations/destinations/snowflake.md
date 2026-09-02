@@ -8,46 +8,31 @@ connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
+:::danger Username & Password Authentication Deprecated
+Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** is now the recommended and default method for connecting to Snowflake.
+
+This change aligns with [Snowflake's own deprecation of single-factor password authentication](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-overview), which will block password-only logins beginning **October 2026**.
+
+If you are currently using username/password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
+:::
+
 ## Prerequisites
 
 - A Snowflake account with the
   [ACCOUNTADMIN](https://docs.snowflake.com/en/user-guide/security-access-control-considerations.html)
-  role. If you don’t have an account with the `ACCOUNTADMIN` role, contact your Snowflake
+  role. If you don't have an account with the `ACCOUNTADMIN` role, contact your Snowflake
   administrator to set one up for you.
-
-### Network policies
-
-By default, Snowflake allows users to connect to the service from any computer or device IP address.
-A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
-policy to allow or deny access to a single IP address or a list of addresses.
-
-If you're using Airbyte Cloud, add Airbyte's
-[IP addresses](/platform/operating-airbyte/ip-allowlist) to your Snowflake network policy allowlist.
-
-To determine whether a network policy is set on your account or for a specific user, execute the
-_SHOW PARAMETERS_ command.
-
-**Account**
-
-```
-SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
-```
-
-**User**
-
-```
-SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
-```
-
-To read more please check official
-[Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
 
 ## Setup guide
 
-### Step 1: Set up Airbyte-specific entities in Snowflake
+### Step 1: Set up key pair authentication
 
-To set up the Snowflake destination connector, you first need to create Airbyte-specific Snowflake
-entities (a warehouse, database, schema, user, and role) with the `OWNERSHIP` permission to write
+<KeypairExample/>
+
+### Step 2: Set up Airbyte-specific entities in Snowflake
+
+To set up the Snowflake destination connector, you need to create Airbyte-specific Snowflake
+entities (a warehouse, database, schema, service user, and role) with the `OWNERSHIP` permission to write
 data into Snowflake, track costs pertaining to Airbyte, and control permissions at a granular level.
 
 You can use the following script in a new
@@ -55,8 +40,8 @@ You can use the following script in a new
 entities:
 
 1.  [Log into your Snowflake account](https://www.snowflake.com/login/).
-2.  Edit the following script to change the password to a more secure password and to change the
-    names of other resources if you so desire.
+2.  Edit the following script to change the names of the resources if you so desire, and replace
+    `<public_key_value>` with the RSA public key you generated in Step 1.
 
     **Note:** Make sure you follow the
     [Snowflake identifier requirements](https://docs.snowflake.com/en/sql-reference/identifiers-syntax.html)
@@ -70,9 +55,6 @@ set airbyte_warehouse = 'AIRBYTE_WAREHOUSE';
 set airbyte_database = 'AIRBYTE_DATABASE';
 set airbyte_schema = 'AIRBYTE_SCHEMA';
 
--- set user password
-set airbyte_password = 'password';
-
 begin;
 
 -- create Airbyte role
@@ -80,13 +62,18 @@ use role securityadmin;
 create role if not exists identifier($airbyte_role);
 grant role identifier($airbyte_role) to role SYSADMIN;
 
--- create Airbyte user
+-- create Airbyte service user with key pair authentication
 create user if not exists identifier($airbyte_username)
-password = $airbyte_password
+type = service
 default_role = $airbyte_role
 default_warehouse = $airbyte_warehouse;
 
 grant role identifier($airbyte_role) to user identifier($airbyte_username);
+
+-- assign the RSA public key to the service user
+-- Replace <public_key_value> with the contents of your rsa_key.pub file (excluding the
+-- -----BEGIN PUBLIC KEY----- and -----END PUBLIC KEY----- header/footer lines).
+alter user identifier($airbyte_username) set rsa_public_key='<public_key_value>';
 
 -- change role to sysadmin for warehouse / database steps
 use role sysadmin;
@@ -133,30 +120,56 @@ tier and ensures the warehouse shuts down quickly after each load completes, min
 charges. The script above already configures this (`warehouse_size = xsmall`, `auto_suspend = 60`).
 :::
 
-### Step 2: Set up a data loading method
+### Step 3: Configure network policies
 
-Airbyte uses Snowflake’s
+By default, Snowflake allows users to connect to the service from any computer or device IP address.
+A security administrator (i.e. users with the SECURITYADMIN role) or higher can create a network
+policy to allow or deny access to a single IP address or a list of addresses.
+
+If you're using Airbyte Cloud, add Airbyte's
+[IP addresses](/platform/operating-airbyte/ip-allowlist) to your Snowflake network policy allowlist.
+
+To determine whether a network policy is set on your account or for a specific user, execute the
+_SHOW PARAMETERS_ command.
+
+**Account**
+
+```
+SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
+```
+
+**User**
+
+```
+SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
+```
+
+To read more please check official
+[Snowflake documentation](https://docs.snowflake.com/en/user-guide/network-policies.html#)
+
+### Step 4: Set up a data loading method
+
+Airbyte uses Snowflake's
 [Internal Stage](https://docs.snowflake.com/en/user-guide/data-load-local-file-system-create-stage.html)
 to load data.
 
 Make sure the database and schema have the `USAGE` privilege.
 
-### Step 3: Set up Snowflake as a destination in Airbyte
+### Step 5: Set up Snowflake as a destination in Airbyte
 
-Navigate to the Airbyte UI to set up Snowflake as a destination. You can authenticate using
-username/password or key pair authentication:
-
-### Login and Password
+Navigate to the Airbyte UI to set up Snowflake as a destination. Use the private key you generated
+in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 
 | Field | Description |
 | :---- | :---------- |
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html) | The host domain of the Snowflake instance, ending with `snowflakecomputing.com`. Use the format `accountname.snowflakecomputing.com` or, for accounts that use a region-based locator, `accountname.region.cloud.snowflakecomputing.com`. Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 1 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 1 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
+| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 2 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
 | [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
-| Username | The username you created in Step 1 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
-| Password | The password associated with the username. |
+| Username | The service user you created in Step 2 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
+| Private Key | The private key from the key pair you generated in Step 1. Paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. |
+| Private Key Password (Optional) | The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
 | CDC deletion mode | Whether to execute CDC deletions as hard deletes or soft deletes. Hard deletes propagate source deletions to the destination. Soft deletes leave a tombstone record in the destination. Defaults to hard deletes. |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
@@ -164,10 +177,6 @@ username/password or key pair authentication:
 | Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 | Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
-
-### Key pair authentication
-
-<KeypairExample/>
 
 ## Output schema
 
@@ -329,6 +338,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.0           | TBD        | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)      | Remove username/password authentication; key pair authentication is now the only supported auth method.                                                                                 |
 | 4.1.2           | 2026-08-24 | [84979](https://github.com/airbytehq/airbyte/pull/84979)   | Upgrade CDK to 1.0.25 (prevents truncate-refresh retries from replacing a populated table with an empty one)                                                                            |
 | 4.1.1           | 2026-08-18 | [76313](https://github.com/airbytehq/airbyte/pull/76313)   | Handle ANSI reserved keywords as column names by prefixing with underscore                                                                                                             |
 | 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |

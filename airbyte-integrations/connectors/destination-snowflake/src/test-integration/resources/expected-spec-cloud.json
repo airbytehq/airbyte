@@ -86,10 +86,10 @@
           },
           "required" : [ "auth_type", "private_key" ]
         }, {
-          "title" : "Username and Password",
+          "title" : "Username and Password (Deprecated)",
           "type" : "object",
           "additionalProperties" : true,
-          "description" : "Configuration details for the Username and Password Authentication.",
+          "description" : "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake will block password-only logins beginning October 2026. Migrate to Key Pair Authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details.",
           "properties" : {
             "auth_type" : {
               "type" : "string",
@@ -98,7 +98,7 @@
             },
             "password" : {
               "type" : "string",
-              "description" : "Enter the password associated with the username.",
+              "description" : "Deprecated. Enter the password associated with the username.",
               "title" : "Password",
               "order" : 0,
               "airbyte_secret" : true

@@ -196,11 +196,13 @@ class KeyPairAuthSpecification(
     val privateKeyPassword: String? = null
 ) : CredentialsSpecification(Type.PRIVATE_KEY)
 
-@JsonSchemaTitle("Username and Password")
-@JsonSchemaDescription("Configuration details for the Username and Password Authentication.")
+@JsonSchemaTitle("Username and Password (Deprecated)")
+@JsonSchemaDescription(
+    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake will block password-only logins beginning October 2026. Migrate to Key Pair Authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
+)
 class UsernamePasswordAuthSpecification(
     @get:JsonSchemaTitle("Password")
-    @get:JsonPropertyDescription("Enter the password associated with the username.")
+    @get:JsonPropertyDescription("Deprecated. Enter the password associated with the username.")
     @get:JsonProperty("password")
     @get:JsonSchemaInject(json = """{"order": 0, "airbyte_secret": true}""")
     val password: String = ""

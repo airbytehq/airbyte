@@ -1,5 +1,59 @@
 # Snowflake Migration Guide
 
+## Upgrading to 5.0.0
+
+This version removes username and password authentication. **Key pair authentication** is now the only supported method for connecting to Snowflake. This aligns with [Snowflake's own recommendation](https://docs.snowflake.com/en/user-guide/key-pair-auth) to use key pair authentication for programmatic access.
+
+### Who is affected
+
+If your Airbyte connection to Snowflake uses **username and password** credentials, you must migrate to key pair authentication before Oct 2026. Connections that already use key pair authentication are not affected.
+
+### Migration steps
+
+1. **Generate a key pair** if you don't already have one:
+
+   ```bash
+   # Generate an unencrypted private key
+   openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out rsa_key.p8 -nocrypt
+
+   # Generate the matching public key
+   openssl rsa -in rsa_key.p8 -pubout -out rsa_key.pub
+   ```
+
+   Alternatively, to generate an encrypted private key:
+
+   ```bash
+   openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v2 aes-256-cbc -out rsa_key.p8
+   ```
+
+   For a complete guide on key pair setup including key storage and verification, see [Step 1: Set up key pair authentication](./snowflake#step-1-set-up-key-pair-authentication) in the setup guide.
+
+2. **Assign the public key to your Snowflake user.** Run this SQL in Snowflake. Replace `<user_name>` with the Snowflake username configured in your Airbyte connection (you can find this on the destination configuration page in the Airbyte UI) and `<public_key_value>` with the contents of your `rsa_key.pub` file, **excluding** the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines:
+
+   ```sql
+   ALTER USER <user_name> SET rsa_public_key='<public_key_value>';
+   ```
+
+3. **Update the connection in Airbyte.** Edit the Snowflake destination settings in the Airbyte UI:
+   - Change the authentication method to **Key Pair Authentication**.
+   - Paste the contents of your `rsa_key.p8` private key file.
+   - If you used an encrypted key, enter the passphrase in the **Private Key Password** field.
+   - Save and test the connection.
+
+4. **(Optional) Remove the password from the Snowflake user** once you've confirmed the key pair connection works:
+
+   ```sql
+   ALTER USER <user_name> UNSET PASSWORD;
+   ```
+
+5. **(Optional) Set the user type to SERVICE** to indicate this is a programmatic service account:
+
+   ```sql
+   ALTER USER <user_name> SET TYPE = SERVICE;
+   ```
+
+For more details on key pair authentication troubleshooting, see [Snowflake's troubleshooting docs](https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting).
+
 ## Upgrading to 4.0.0
 
 This version upgrades Destination Snowflake to the [Direct-Load](/platform/using-airbyte/core-concepts/direct-load-tables) paradigm, which improves performance and reduces warehouse spend. If you have unusual requirements around record visibility or schema evolution, read that document for more information about how direct-load differs from Typing and Deduping.
