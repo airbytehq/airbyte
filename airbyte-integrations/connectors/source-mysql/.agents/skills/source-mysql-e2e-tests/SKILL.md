@@ -111,8 +111,14 @@ failed earlier is reported `SKIPPED`, not `ERROR`. Under CI the table is
 also appended to `$GITHUB_STEP_SUMMARY`. A run limited to one command
 instead exits with the connector's own exit code.
 
-Build the target image first when using `--test-version=dev`, or pass
-`--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
+Prefer a published target image for code on a pushed PR branch. Publish a
+pre-release from the PR with the Airbyte Ops MCP tool
+`publish_connector_to_airbyte_registry`, then pass the resulting
+`<version>-preview.<7-char-sha>` tag as `--test-version`. See
+[Getting a target image](../../../../../db-harness-lib/README.md#getting-a-target-image)
+for details. Build the target image first when using `--test-version=dev`, or
+pass `--build` to have `run.sh` run `:dockerBuildx` for code that is not on a
+pushed PR branch. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--skip-fixtures`, `--step-name`, `--catalog`, `--state=PATH`,
 `--sync-mode=incremental`, `--cursor-field`, `--streams`,
