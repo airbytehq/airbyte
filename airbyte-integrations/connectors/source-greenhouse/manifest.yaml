@@ -1548,7 +1548,7 @@ spec:
         order: 0
         oneOf:
           - title: OAuth
-            description: Authorize with Greenhouse and Airbyte manages the access and refresh tokens for you.
+            description: Click Authenticate and approve the Greenhouse consent flow as a Site Admin. Airbyte connects through its registered Greenhouse partner application and manages the access and refresh tokens for you; you don't need Greenhouse OAuth credentials of your own.
             type: object
             required:
               - auth_type
@@ -1563,13 +1563,13 @@ spec:
               client_id:
                 type: string
                 title: OAuth client ID
-                description: The client ID of your Greenhouse partner OAuth application.
+                description: Populated automatically by Airbyte from its registered Greenhouse partner application when you authorize above. Greenhouse issues Harvest v3 OAuth credentials only to partners, so you don't need to request or enter one.
                 airbyte_secret: true
                 order: 1
               client_secret:
                 type: string
                 title: OAuth client secret
-                description: The client secret of your Greenhouse partner OAuth application.
+                description: Populated automatically by Airbyte from its registered Greenhouse partner application when you authorize above. Greenhouse issues Harvest v3 OAuth credentials only to partners, so you don't need to request or enter one.
                 airbyte_secret: true
                 order: 2
               refresh_token:
