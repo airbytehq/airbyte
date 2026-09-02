@@ -150,19 +150,34 @@ releases:
 This change only breaks the `users` stream - all other streams are unaffected. A user can safely ignore the breaking change
 if they are not syncing the `users` stream.
 
-For example, a destination Snowflake connector removing username/password authentication can scope its impact to
-actors whose stored configuration uses that authentication method:
+Scopes can target streams or actors based on their stored configuration. For example:
 
 ```yaml
 scopedImpact:
-  - scopeType: config
+  - scopeType: stream
+    impactedScopes: ["users"]
+  - scopeType: configSpec
+  - scopeType: configKey
+    impactedScopes: ["credentials.password"]
+  - scopeType: configValue
     impactedScopes:
       - path: credentials.auth_type
-        equals: "Username and Password"
+        value: "Username and Password"
 ```
 
-The platform release supporting the `config` scope type must be deployed before a connector publishes a breaking change
-that uses it.
+The `configSpec` scope matches actors whose stored configuration fails validation against the new version's
+`connectionSpecification`. Secrets are validated as placeholder strings. Do not use `configSpec` on a version that also
+ships a config migration: the platform sees only the pre-migration configuration, so migrated configurations would be
+false positives. JSON Schema `additionalProperties` behavior also means silently dropped fields do not trigger this
+scope unless the specification explicitly rejects them, for example:
+
+```yaml
+properties:
+  old_field: false
+```
+
+The platform release supporting these configuration scope types must be deployed before a connector publishes a
+breaking change that uses them.
 
 Scopes are combined as a union: a connector is affected if _any_ scope in `scopedImpact` matches it, and a scope matches
 if _any_ of its `impactedScopes` entries matches (for example, syncing any one of the listed streams). There is no way to
@@ -173,7 +188,9 @@ The supported scope types are listed below.
 | Scope Type | Value Type  | Value Description    |
 | ---------- | ----------- | -------------------- |
 | stream     | `list[str]` | List of stream names |
-| config     | `list[{path: str, equals?: any}]` | Actors whose stored configuration has a value at `path`, optionally equal to `equals` |
+| configSpec | No value | Actors whose stored configuration fails validation against the new version's `connectionSpecification` |
+| configKey | `list[str]` | Actors whose stored configuration has a non-null value at any listed dot-separated path |
+| configValue | `list[{path: str, value: any}]` | Actors whose stored configuration has a value at `path` equal to `value` |
 
 #### `remoteRegistries`
 
