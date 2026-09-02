@@ -14,8 +14,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.Mockito.doCallRealMethod;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -23,7 +21,6 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
-import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ChangeStreamIterable;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoChangeStreamCursor;
@@ -41,6 +38,7 @@ import io.airbyte.cdk.integrations.source.relationaldb.streamstatus.StreamStatus
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
+import io.airbyte.integrations.source.mongodb.MongoConstants;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.IdType;
 import io.airbyte.integrations.source.mongodb.state.InitialSnapshotStatus;
@@ -67,8 +65,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
+import org.bson.BsonObjectId;
 import org.bson.BsonString;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -168,8 +167,7 @@ class MongoDbCdcInitializerTest {
   private MongoDbDebeziumStateUtil mongoDbDebeziumStateUtil;
   private MongoClient mongoClient;
   private MongoChangeStreamCursor<ChangeStreamDocument<BsonDocument>> mongoChangeStreamCursor;
-  private AggregateIterable<Document> aggregateIterable;
-  private MongoCursor<Document> aggregateCursor;
+  private FindIterable<BsonDocument> idTypeFindIterable;
   private MongoCursor<Document> findCursor;
   private ChangeStreamIterable<BsonDocument> changeStreamIterable;
   private MongoDbCdcConnectorMetadataInjector cdcConnectorMetadataInjector;
@@ -178,7 +176,6 @@ class MongoDbCdcInitializerTest {
   void setUp() {
     // Common setup for all tests
     final BsonDocument resumeTokenDocument = new BsonDocument("_data", new BsonString(RESUME_TOKEN1));
-    final Document aggregate = Document.parse("{\"_id\": {\"_id\": \"objectId\"}, \"count\": 1}");
 
     changeStreamIterable = mock(ChangeStreamIterable.class);
     mongoChangeStreamCursor = mock(MongoChangeStreamCursor.class);
@@ -186,8 +183,7 @@ class MongoDbCdcInitializerTest {
     findCursor = mock(MongoCursor.class);
     final ServerDescription serverDescription = mock(ServerDescription.class);
     final ClusterDescription clusterDescription = mock(ClusterDescription.class);
-    aggregateIterable = mock(AggregateIterable.class);
-    aggregateCursor = mock(MongoCursor.class);
+    idTypeFindIterable = mock(FindIterable.class);
     cdcConnectorMetadataInjector = mock(MongoDbCdcConnectorMetadataInjector.class);
 
     // Common mocking
@@ -199,11 +195,13 @@ class MongoDbCdcInitializerTest {
     when(clusterDescription.getType()).thenReturn(ClusterType.REPLICA_SET);
     when(mongoClient.getClusterDescription()).thenReturn(clusterDescription);
 
-    // Aggregate and find mocking
-    when(aggregateIterable.iterator()).thenReturn(aggregateCursor);
-    when(aggregateCursor.hasNext()).thenReturn(true, false);
-    when(aggregateCursor.next()).thenReturn(aggregate);
-    doCallRealMethod().when(aggregateIterable).forEach(any(Consumer.class));
+    // _id type detection seeks the smallest/largest _id on the _id index; default to a supported type
+    when(idTypeFindIterable.projection(any())).thenReturn(idTypeFindIterable);
+    when(idTypeFindIterable.sort(any())).thenReturn(idTypeFindIterable);
+    when(idTypeFindIterable.limit(anyInt())).thenReturn(idTypeFindIterable);
+    when(idTypeFindIterable.first()).thenReturn(new BsonDocument(MongoConstants.ID_FIELD, new BsonObjectId(new ObjectId(ID))));
+
+    // Find mocking
     when(findCursor.hasNext()).thenReturn(true);
     when(findCursor.next()).thenReturn(new Document("_id", new ObjectId(ID)));
 
@@ -225,7 +223,9 @@ class MongoDbCdcInitializerTest {
     when(mongoDatabase.watch(SINGLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoDatabase.getCollection(COLLECTION)).thenReturn(mongoCollection);
     when(mongoDatabase.getName()).thenReturn(DATABASE);
-    when(mongoCollection.aggregate(anyList())).thenReturn(aggregateIterable);
+    final MongoCollection<BsonDocument> bsonCollection = mock(MongoCollection.class);
+    when(mongoCollection.withDocumentClass(BsonDocument.class)).thenReturn(bsonCollection);
+    when(bsonCollection.find()).thenReturn(idTypeFindIterable);
     when(mongoCollection.find()).thenReturn(findIterable);
     when(changeStreamIterable.resumeAfter(resumeToken)).thenReturn(changeStreamIterable);
 
@@ -259,7 +259,9 @@ class MongoDbCdcInitializerTest {
     when(mongoDatabase1.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoDatabase1.getCollection(COLLECTION)).thenReturn(mongoCollection1);
     when(mongoDatabase1.getName()).thenReturn(DATABASE);
-    when(mongoCollection1.aggregate(anyList())).thenReturn(aggregateIterable);
+    final MongoCollection<BsonDocument> bsonCollection1 = mock(MongoCollection.class);
+    when(mongoCollection1.withDocumentClass(BsonDocument.class)).thenReturn(bsonCollection1);
+    when(bsonCollection1.find()).thenReturn(idTypeFindIterable);
     when(mongoCollection1.find()).thenReturn(findIterable1);
 
     // Setup second database (DATABASE_1)
@@ -267,7 +269,9 @@ class MongoDbCdcInitializerTest {
     when(mongoDatabase2.watch(MULTIPLE_DB_PIPELINE, BsonDocument.class)).thenReturn(changeStreamIterable);
     when(mongoDatabase2.getCollection(COLLECTION_1)).thenReturn(mongoCollection2);
     when(mongoDatabase2.getName()).thenReturn(DATABASE_1);
-    when(mongoCollection2.aggregate(anyList())).thenReturn(aggregateIterable);
+    final MongoCollection<BsonDocument> bsonCollection2 = mock(MongoCollection.class);
+    when(mongoCollection2.withDocumentClass(BsonDocument.class)).thenReturn(bsonCollection2);
+    when(bsonCollection2.find()).thenReturn(idTypeFindIterable);
     when(mongoCollection2.find()).thenReturn(findIterable2);
 
     // Resume token setup
@@ -548,6 +552,37 @@ class MongoDbCdcInitializerTest {
         () -> cdcInitializer.createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager,
             EMITTED_AT,
             MULTIPLE_DB_CONFIG));
+  }
+
+  @Test
+  void testUnsupportedIdTypeThrowsExceptionSingleDB() {
+    setupSingleDatabase();
+    // a date _id occupies a single-type bracket on the _id index and is not a supported _id type
+    when(idTypeFindIterable.first()).thenReturn(new BsonDocument(MongoConstants.ID_FIELD, new BsonDateTime(0L)));
+    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, SINGLE_DB_CONFIG);
+
+    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, SINGLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            SINGLE_DB_CONFIG));
+    assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
+  }
+
+  @Test
+  void testUnsupportedIdTypeThrowsExceptionMultipleDB() {
+    setupMultipleDatabases();
+    when(idTypeFindIterable.first()).thenReturn(new BsonDocument(MongoConstants.ID_FIELD, new BsonDateTime(0L)));
+    // Mock isValidResumeToken to return true (valid token) since the method now uses Debezium internals
+    doReturn(true).when(mongoDbDebeziumStateUtil).isValidResumeToken(any(), any(), any());
+
+    final MongoDbStateManager stateManager = MongoDbStateManager.createStateManager(null, MULTIPLE_DB_CONFIG);
+
+    final var thrown = assertThrows(ConfigErrorException.class, () -> cdcInitializer
+        .createCdcIterators(mongoClient, cdcConnectorMetadataInjector, MULTIPLE_DB_CONFIGURED_CATALOG_STREAMS, stateManager, EMITTED_AT,
+            MULTIPLE_DB_CONFIG));
+    assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
   private static JsonNode createInitialDebeziumStateSingleDB(final InitialSnapshotStatus initialSnapshotStatus) {

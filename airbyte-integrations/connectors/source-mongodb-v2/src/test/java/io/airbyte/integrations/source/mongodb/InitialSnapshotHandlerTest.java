@@ -10,6 +10,7 @@ import static io.airbyte.integrations.source.mongodb.MongoConstants.DATABASE_CON
 import static io.airbyte.integrations.source.mongodb.cdc.MongoDbCdcConnectorMetadataInjector.CDC_DEFAULT_CURSOR;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -19,6 +20,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.integrations.source.mongodb.cdc.MongoDbDebeziumConstants;
@@ -371,6 +373,64 @@ class InitialSnapshotHandlerTest {
     final AirbyteMessage collection4StateMessage = collection4.next();
     assertEquals(Type.STATE, collection3StateMessage.getType(), "State message is expected after all records in a stream are emitted");
     assertFalse(collection4.hasNext());
+  }
+
+  @Test
+  void testGetIteratorsThrowsExceptionWhenThereAreUnsupportedIdTypes() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(
+            CURSOR_FIELD, 0.1,
+            NAME_FIELD, NAME1))));
+
+    final InitialSnapshotHandler initialSnapshotHandler = new InitialSnapshotHandler();
+    final MongoDbStateManager stateManager = spy(MongoDbStateManager.class);
+
+    final var thrown = assertThrows(ConfigErrorException.class,
+        () -> initialSnapshotHandler.getIterators(STREAMS, stateManager, mongoClient.getDatabase(DB_NAME),
+            /* MongoConstants.CHECKPOINT_INTERVAL, true */ CONFIG, false, false, null, Optional.empty()));
+    assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
+  }
+
+  @Test
+  void testGetIdFieldTypesEmptyCollection() {
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of(), new InitialSnapshotHandler().getIdFieldTypes(collection));
+  }
+
+  @Test
+  void testGetIdFieldTypesSingleType() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID1, NAME_FIELD, NAME1)),
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID2, NAME_FIELD, NAME2)),
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID3, NAME_FIELD, NAME3))));
+
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of("objectId"), new InitialSnapshotHandler().getIdFieldTypes(collection));
+  }
+
+  @Test
+  void testGetIdFieldTypesNumericTypesInterleavedInOneBracket() {
+    // min (int 1) and max (int 3) are of the same type, but a double and a long interleave between
+    // them in the _id index; the numeric bracket must be probed per type
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(CURSOR_FIELD, 1, NAME_FIELD, NAME1)),
+        new Document(Map.of(CURSOR_FIELD, 1.5, NAME_FIELD, NAME2)),
+        new Document(Map.of(CURSOR_FIELD, 2L, NAME_FIELD, NAME3)),
+        new Document(Map.of(CURSOR_FIELD, 3, NAME_FIELD, NAME4))));
+
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of("int", "long", "double"), new InitialSnapshotHandler().getIdFieldTypes(collection));
+  }
+
+  @Test
+  void testGetIdFieldTypesMixedBrackets() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID1, NAME_FIELD, NAME1)),
+        new Document(Map.of(CURSOR_FIELD, "a-string-id", NAME_FIELD, NAME2)),
+        new Document(Map.of(CURSOR_FIELD, new Document("nested", 1), NAME_FIELD, NAME3))));
+
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of("string", "object", "objectId"), new InitialSnapshotHandler().getIdFieldTypes(collection));
   }
 
   private void assertConfiguredFieldsEqualsRecordDataFields(final Set<String> configuredStreamFields, final JsonNode recordMessageData) {
