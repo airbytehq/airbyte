@@ -164,6 +164,10 @@ scopedImpact:
 The platform release supporting the `config` scope type must be deployed before a connector publishes a breaking change
 that uses it.
 
+Scopes are combined as a union: a connector is affected if _any_ scope in `scopedImpact` matches it, and a scope matches
+if _any_ of its `impactedScopes` entries matches (for example, syncing any one of the listed streams). There is no way to
+express an intersection, such as "syncs stream X _and_ uses a given configuration value".
+
 The supported scope types are listed below.
 
 | Scope Type | Value Type  | Value Description    |
