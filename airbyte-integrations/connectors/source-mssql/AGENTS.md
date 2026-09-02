@@ -52,6 +52,14 @@ MSSQL backend lifecycle, fixtures, and config templates:
 **Never** repro against a customer connection or against an Airbyte Cloud
 instance.
 
+### Getting a target image
+
+Follow the shared
+[Getting a target image](../../db-harness-lib/README.md#getting-a-target-image)
+guidance. Build locally with
+`./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx` only
+for code that is not on a pushed PR branch.
+
 ### Quickstart
 
 ```bash
@@ -71,7 +79,8 @@ CDC_SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mss
 "$CDC_SKILL/scripts/repro-11451.sh"
 
 # Cleanup
-"$SKILL/scripts/stop-backend.sh"
+BACKEND_NAME=source-mssql-db-backend \
+  airbyte-integrations/db-harness-lib/scripts/stop-backend.sh
 ```
 
 To investigate a new bug, write the smallest SQL fixture that produces

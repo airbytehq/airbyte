@@ -1461,10 +1461,11 @@ definitions:
       refresh_token_error_status_codes:
         - 400
         - 401
-      refresh_token_error_key: message
+      refresh_token_error_key: error
       refresh_token_error_values:
-        - Bad Request Params
-        - Unauthorized
+        - invalid_grant
+        - invalid_client
+        - unauthorized_client
       refresh_token_updater:
         refresh_token_name: refresh_token
         access_token_config_path:

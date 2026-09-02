@@ -13,17 +13,34 @@ An engine shim must export:
 
 - `CONNECTOR`: connector image name without the `airbyte/` prefix.
 - `ENGINE_SCRIPTS_DIR`: directory containing `start-backend.sh`,
-  `apply-sql.sh`, `reset-databases.sh`, and `stop-backend.sh`.
+  `apply-sql.sh`, and `reset-databases.sh`. An engine-specific
+  `stop-backend.sh` is optional; the library's default is used when it is
+  absent.
 - `DEFAULT_CONFIG_TEMPLATE`: engine's default config template, required
   unless `--config-template` is supplied.
 - `DEFAULT_FIXTURE`: engine's default SQL fixture, required unless an
   explicit `--fixture` is supplied or `--skip-fixtures` is used.
 - `BACKEND_NAME`: backend container name, required by the config renderer.
 
-The engine scripts own backend lifecycle and fixture application. The
-library scripts own protocol orchestration, catalog derivation, config
+The engine scripts own backend startup, fixture application, and any
+engine-specific teardown. The library's default teardown removes the
+backend container when no engine-specific `stop-backend.sh` is provided.
+The library scripts own protocol orchestration, catalog derivation, config
 rendering, and state extraction. `BACKEND_NAME` and the other usual harness
 environment variables may be overridden by callers for test isolation.
+
+## Getting a target image
+
+To test a fix that has not merged yet, publish a pre-release from its PR with
+the Airbyte Ops MCP tool `publish_connector_to_airbyte_registry` (the
+[`publish-connector-prerelease`](https://github.com/airbytehq/ai-skills/tree/main/.agents/skills/publish-connector-prerelease)
+skill in `airbytehq/ai-skills` covers the invocation), and pass the resulting
+`<version>-preview.<7-char-sha>` tag as `--test-version`. The harness pulls
+any published tag and only builds from the checkout when `--test-version` is
+literally `dev`, so this skips a cold Gradle build entirely and gives
+reviewers a tag they can re-run against. Build locally with the connector's
+`./gradlew :airbyte-integrations:connectors:<connector>:dockerBuildx` only for
+code that is not on a pushed PR branch.
 
 ## Minimal engine shim example
 

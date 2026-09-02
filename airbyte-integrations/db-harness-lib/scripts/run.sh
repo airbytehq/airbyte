@@ -104,6 +104,8 @@ set -euo pipefail
 
 LIB_SCRIPTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENGINE_SCRIPTS_DIR="${ENGINE_SCRIPTS_DIR:?engine shim must export ENGINE_SCRIPTS_DIR}"
+STOP_BACKEND="$ENGINE_SCRIPTS_DIR/stop-backend.sh"
+[[ -x "$STOP_BACKEND" ]] || STOP_BACKEND="$LIB_SCRIPTS/stop-backend.sh"
 CONNECTOR="${CONNECTOR:?engine shim must export CONNECTOR}"
 REPRO_OUT="${REPRO_OUT:-/tmp/$CONNECTOR-repro}"
 export REPRO_OUT
@@ -256,9 +258,9 @@ fi
 # shellcheck disable=SC2329
 cleanup() {
   if [[ "$KEEP_BACKEND" == true ]]; then
-    echo "[run] --keep-backend: leaving the backend up; stop it with $ENGINE_SCRIPTS_DIR/stop-backend.sh" >&2
+    echo "[run] --keep-backend: leaving the backend up; stop it with $STOP_BACKEND" >&2
   else
-    "$ENGINE_SCRIPTS_DIR/stop-backend.sh" || true
+    "$STOP_BACKEND" || true
   fi
 }
 trap cleanup EXIT
@@ -416,7 +418,7 @@ reset_between_images() {
       ;;
     backend)
       echo "[run] --reset=backend: recreating the backend container" >&2
-      "$ENGINE_SCRIPTS_DIR/stop-backend.sh"
+      "$STOP_BACKEND"
       "$ENGINE_SCRIPTS_DIR/start-backend.sh"
       apply_fixtures
       # Backend recreation may have assigned a new bridge IP.
