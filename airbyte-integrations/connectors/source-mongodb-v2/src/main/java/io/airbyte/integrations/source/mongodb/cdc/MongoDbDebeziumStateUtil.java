@@ -212,9 +212,9 @@ public class MongoDbDebeziumStateUtil implements DebeziumStateUtil {
 
   /**
    * Rewrites the resume token of a Debezium offset into the connector's persisted form. Debezium 3.x
-   * emits offsets whose resume token is a base64-encoded BSON document and whose timestamp fields
-   * are unset; persisting the hex {@code _data} form together with the token's timestamp keeps the
-   * saved state identical in shape to the state written and read by earlier connector versions.
+   * emits offsets whose resume token is a base64-encoded BSON document and whose timestamp fields are
+   * unset; persisting the hex {@code _data} form together with the token's timestamp keeps the saved
+   * state identical in shape to the state written and read by earlier connector versions.
    *
    * @param offset The Debezium offset as emitted by the engine.
    * @return The offset with its resume token and timestamp fields normalized.

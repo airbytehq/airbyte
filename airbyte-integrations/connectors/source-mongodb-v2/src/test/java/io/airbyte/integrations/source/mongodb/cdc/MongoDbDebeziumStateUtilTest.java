@@ -226,4 +226,5 @@ class MongoDbDebeziumStateUtilTest {
     assertTrue(parsedOffset.isPresent());
     assertEquals(RESUME_TOKEN, parsedOffset.get().get("_data").asString().getValue());
   }
+
 }

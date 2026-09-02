@@ -11,16 +11,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.source.mongodb.MongoDbSourceConfig;
 import io.airbyte.integrations.source.mongodb.state.MongoDbStateManager;
 import io.airbyte.protocol.models.Jsons;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.debezium.connector.mongodb.ResumeTokens;
 import java.util.Map;
+import org.bson.BsonTimestamp;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.debezium.connector.mongodb.ResumeTokens;
-import org.bson.BsonTimestamp;
 
 class MongoDbCdcStateHandlerTest {
 
@@ -78,4 +78,5 @@ class MongoDbCdcStateHandlerTest {
     assertEquals(timestamp.getTime(), savedOffsetValue.get(MongoDbDebeziumConstants.OffsetState.VALUE_SECONDS).asInt());
     assertEquals(timestamp.getInc(), savedOffsetValue.get(MongoDbDebeziumConstants.OffsetState.VALUE_INCREMENT).asInt());
   }
+
 }

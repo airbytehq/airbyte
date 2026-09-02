@@ -102,8 +102,8 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
   }
 
   /**
-   * Parses the resume token stored in an offset, accepting both the hex {@code _data} form written
-   * by this connector and the base64 form emitted by Debezium 3.x.
+   * Parses the resume token stored in an offset, accepting both the hex {@code _data} form written by
+   * this connector and the base64 form emitted by Debezium 3.x.
    */
   private static BsonDocument getResumeToken(final Map<String, String> offset) {
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);

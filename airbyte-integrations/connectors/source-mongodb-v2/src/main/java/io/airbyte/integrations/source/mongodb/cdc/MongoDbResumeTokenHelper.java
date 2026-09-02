@@ -91,9 +91,9 @@ public class MongoDbResumeTokenHelper {
 
   /**
    * Parses a resume token as stored by Debezium in an offset. Debezium 2.x stored the hex
-   * {@code _data} string of the token, while Debezium 3.x stores the base64-encoded BSON document
-   * of the token (and still reads the old form). Accept both so that offsets and saved state written
-   * by either version can be read.
+   * {@code _data} string of the token, while Debezium 3.x stores the base64-encoded BSON document of
+   * the token (and still reads the old form). Accept both so that offsets and saved state written by
+   * either version can be read.
    *
    * @param value The resume token value as found in an offset.
    * @return The resume token document.
@@ -103,8 +103,8 @@ public class MongoDbResumeTokenHelper {
   }
 
   /**
-   * Returns the hex {@code _data} string of a resume token, which is the form in which this
-   * connector persists resume tokens in its state.
+   * Returns the hex {@code _data} string of a resume token, which is the form in which this connector
+   * persists resume tokens in its state.
    *
    * @param resumeToken The resume token document.
    * @return The hex {@code _data} value of the token.

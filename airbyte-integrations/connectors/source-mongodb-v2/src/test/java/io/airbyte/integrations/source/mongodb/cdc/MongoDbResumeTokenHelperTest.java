@@ -107,4 +107,5 @@ class MongoDbResumeTokenHelperTest {
     assertEquals(resumeToken, MongoDbResumeTokenHelper.resumeTokenFromOffsetValue(ResumeTokens.toBase64(resumeToken)));
     assertEquals(RESUME_TOKEN, MongoDbResumeTokenHelper.resumeTokenData(resumeToken));
   }
+
 }

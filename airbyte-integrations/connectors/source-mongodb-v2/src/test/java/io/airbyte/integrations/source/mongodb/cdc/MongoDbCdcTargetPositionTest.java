@@ -328,4 +328,5 @@ class MongoDbCdcTargetPositionTest {
     assertEquals(ResumeTokens.getTimestamp(resumeTokenDocument),
         targetPosition.extractPositionFromHeartbeatOffset(Map.of(MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN, base64ResumeToken)));
   }
+
 }
