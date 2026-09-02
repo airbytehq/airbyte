@@ -451,6 +451,10 @@ module.exports = {
                     },
                   ],
                 },
+                {
+                  type: "doc",
+                  id: "access-management/audit-logs",
+                },
               ],
             },
           ],
@@ -471,7 +475,6 @@ module.exports = {
             "enterprise-flex/data-plane",
             "enterprise-flex/data-plane-util",
             "enterprise-flex/log-collection",
-            "enterprise-flex/audit-logs",
           ],
         },
         {

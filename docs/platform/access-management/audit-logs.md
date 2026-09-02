@@ -1,5 +1,5 @@
 ---
-products: enterprise-flex
+products: cloud-teams
 sidebar_label: Audit logs
 ---
 
@@ -9,7 +9,7 @@ Audit logs record who did what in your Airbyte organization. Every time someone 
 
 Use audit logs to investigate unexpected changes, review administrative activity, and demonstrate to auditors that you have a record of configuration and access changes in Airbyte.
 
-Audit logging is available in Enterprise Flex. Only organization admins can view audit logs.
+Audit logging is available in Pro and Enterprise Flex. Only organization admins can view audit logs.
 
 ## Audit logs aren't sync logs
 
@@ -19,7 +19,7 @@ Airbyte produces several kinds of logs, and audit logs are the narrowest of them
 | --- | --- | --- |
 | Audit logs | Management operations: who changed a workspace, connection, connector, user, permission, or setting | **Organization settings** > **Audit logs** |
 | Sync logs (job logs) | What happened during one sync, check, or discover job, including connector output | A connection's [Timeline](/platform/cloud/managing-airbyte-cloud/review-connection-timeline) |
-| Data plane logs | Platform logs your Airbyte data plane pods write to stdout in your own infrastructure | Your own observability stack. See [Collect logs from a Flex data plane](/platform/enterprise-flex/log-collection). |
+| Data plane logs | Platform logs your Airbyte data plane pods write to stdout, if you run your own data planes in Enterprise Flex | Your own observability stack. See [Collect logs from a Flex data plane](/platform/enterprise-flex/log-collection). |
 
 Audit logs never contain the records your connections read or write. If you need to troubleshoot a failing sync, use the connection's sync logs instead.
 
@@ -99,12 +99,12 @@ Audit logs deliberately omit sensitive material. Airbyte doesn't record the foll
 - **Credentials and secrets**. Airbyte never writes connector configurations to an audit log. For sources and destinations, entries contain only identifying fields, like the source ID, name, and definition ID. Values such as `connectionConfiguration` and `secretId` are omitted, and a new secret-bearing field is omitted by default rather than logged. Airbyte also masks the client secret in single sign-on entries.
 - **Your data**. Audit logs contain no records, no rows, and no schema contents from your sources and destinations.
 - **Request and response bodies for some operations**. Where a body is large or sensitive, the entry records the actor and the operation without the body.
-- **Activity in your data planes**. Audit logs cover the Airbyte control plane. Syncs that run in your own infrastructure produce their own logs, which stay with you.
+- **Activity in your data planes**. Audit logs cover the Airbyte control plane. Syncs produce their own logs, and if you run Enterprise Flex data planes in your own infrastructure, those logs stay with you.
 
 ## Storage and data residency
 
-Airbyte stores audit logs in the Cloud control plane, in storage Airbyte manages and secures. Unlike your syncs, which run in your data planes, audit logs describe control plane activity, so they're written and retained by the control plane. You can't redirect them to your own bucket, and they aren't written to your data planes.
+Airbyte stores audit logs in the Cloud control plane, in storage Airbyte manages and secures. Audit logs describe control plane activity, so the control plane writes and retains them. You can't redirect them to your own bucket, and they aren't written to any data plane you run yourself.
 
 Airbyte retains audit log entries for 365 days, then deletes them. Export anything you need to keep for longer before it ages out.
 
-Because entries describe management operations rather than the data you move, they contain organization, workspace, connector, and user metadata, but none of the records that pass through your connections. Data your connections move continues to be governed by the [region](/platform/cloud/managing-airbyte-cloud/manage-data-residency) and [data plane](/platform/enterprise-flex/data-plane) you choose for each workspace.
+Because entries describe management operations rather than the data you move, they contain organization, workspace, connector, and user metadata, but none of the records that pass through your connections. Data your connections move continues to be governed by the [region](/platform/cloud/managing-airbyte-cloud/manage-data-residency) you choose for each workspace, and, in Enterprise Flex, the [data plane](/platform/enterprise-flex/data-plane) that runs it.

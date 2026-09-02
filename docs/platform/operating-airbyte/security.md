@@ -125,7 +125,7 @@ In addition, Airbyte Cloud and  Airbyte Enterprise support [role-based access co
 
 ### Audit logging
 
-Enterprise Flex organizations have [audit logs](/platform/enterprise-flex/audit-logs) that record who changed workspaces, connections, connectors, users, permissions, and settings. Airbyte stores these logs in the control plane and retains them for 365 days.
+Pro and Enterprise Flex organizations have [audit logs](/platform/access-management/audit-logs) that record who changed workspaces, connections, connectors, users, permissions, and settings. Airbyte stores these logs in the control plane and retains them for 365 days.
 
 ### Compliance
 
