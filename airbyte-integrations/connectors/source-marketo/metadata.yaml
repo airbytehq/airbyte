@@ -35,6 +35,13 @@ data:
           - scopeType: stream
             impactedScopes:
               - leads
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true
   remoteRegistries:
     pypi:
       enabled: true
