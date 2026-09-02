@@ -74,7 +74,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
   @Override
   public BsonTimestamp extractPositionFromHeartbeatOffset(final Map<String, ?> sourceOffset) {
     return ResumeTokens.getTimestamp(
-        ResumeTokens.fromData(
+        MongoDbResumeTokenHelper.resumeTokenFromOffsetValue(
             sourceOffset.get(MongoDbDebeziumConstants.ChangeEvent.SOURCE_RESUME_TOKEN).toString()));
   }
 
@@ -85,7 +85,7 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
     }
 
     return MongoDbResumeTokenHelper.extractTimestampFromEvent(event.getEventValueAsJson()).getValue() >= ResumeTokens
-        .getTimestamp(ResumeTokens.fromData(getResumeToken(offset))).getValue();
+        .getTimestamp(getResumeToken(offset)).getValue();
   }
 
   @Override
@@ -97,12 +97,18 @@ public class MongoDbCdcTargetPosition implements CdcTargetPosition<BsonTimestamp
       return false;
     }
 
-    return getResumeToken(offsetA).equals(getResumeToken(offsetB));
+    return MongoDbResumeTokenHelper.resumeTokenData(getResumeToken(offsetA))
+        .equals(MongoDbResumeTokenHelper.resumeTokenData(getResumeToken(offsetB)));
   }
 
-  private static String getResumeToken(final Map<String, String> offset) {
+  /**
+   * Parses the resume token stored in an offset, accepting both the hex {@code _data} form written
+   * by this connector and the base64 form emitted by Debezium 3.x.
+   */
+  private static BsonDocument getResumeToken(final Map<String, String> offset) {
     final JsonNode offsetJson = Jsons.deserialize((String) offset.values().toArray()[0]);
-    return offsetJson.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText();
+    return MongoDbResumeTokenHelper.resumeTokenFromOffsetValue(
+        offsetJson.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText());
   }
 
   @Override

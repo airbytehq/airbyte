@@ -205,4 +205,25 @@ class MongoDbDebeziumStateUtilTest {
     }
   }
 
+  @Test
+  void testSavedOffsetWithDebeziumBase64ResumeToken() {
+    final String base64ResumeToken = ResumeTokens.toBase64(ResumeTokens.fromData(RESUME_TOKEN));
+    final JsonNode config = Jsons.jsonNode(Map.of(
+        MongoDbDebeziumConstants.Configuration.CONNECTION_STRING_CONFIGURATION_KEY, "mongodb://host:12345/",
+        MongoDbDebeziumConstants.Configuration.DATABASE_CONFIGURATION_KEY, DATABASE));
+
+    // formatState accepts the base64 form and persists the hex form
+    final JsonNode state = MongoDbDebeziumStateUtil.formatState("mongodb://host:12345/", base64ResumeToken);
+    final JsonNode offsetValue = Jsons.deserialize(state.properties().iterator().next().getValue().asText());
+    assertEquals(RESUME_TOKEN, offsetValue.get(MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN).asText());
+
+    // a saved offset holding the base64 form (as emitted by Debezium 3.x) is read back correctly
+    final String offsetKey = state.fieldNames().next();
+    final JsonNode debeziumState = Jsons.jsonNode(Map.of(offsetKey,
+        Jsons.serialize(Map.of("sec", -1, "ord", -1, MongoDbDebeziumConstants.OffsetState.VALUE_RESUME_TOKEN, base64ResumeToken))));
+    final Optional<BsonDocument> parsedOffset =
+        mongoDbDebeziumStateUtil.savedOffset(new Properties(), SINGLE_DB_CONFIGURED_CATALOG, debeziumState, config);
+    assertTrue(parsedOffset.isPresent());
+    assertEquals(RESUME_TOKEN, parsedOffset.get().get("_data").asString().getValue());
+  }
 }
