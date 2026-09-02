@@ -16,6 +16,7 @@ import io.debezium.jdbc.JdbcConfiguration
 import java.nio.charset.StandardCharsets
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
@@ -85,8 +86,12 @@ class PostgresSourceEmptyEnumCheckTest {
                         )
                     }
                 val rootCause = generateSequence<Throwable>(exception) { it.cause }.last()
-                assertTrue(rootCause is NullPointerException)
-                assertTrue(rootCause.message?.contains("getArray") == true)
+                assertInstanceOf(NullPointerException::class.java, rootCause) {
+                    exception.stackTraceToString()
+                }
+                assertTrue(rootCause.message?.contains("getArray") == true) {
+                    exception.stackTraceToString()
+                }
 
                 conn.createStatement().use { stmt ->
                     stmt.execute("ALTER TYPE public.empty_enum ADD VALUE 'a';")
