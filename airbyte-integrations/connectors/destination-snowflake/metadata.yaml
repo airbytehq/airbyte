@@ -54,10 +54,12 @@ data:
         deadlineAction: disable
         scopedImpact:
           - scopeType: configValue
+            message: "This destination is configured with **Username and Password** authentication, which is no longer supported. Edit the destination and switch it to Key Pair Authentication."
             impactedScopes:
               - path: credentials.auth_type
                 value: "Username and Password"
           - scopeType: configKey
+            message: "This destination still has a legacy `password` field saved from an older version. Edit and re-save the destination with Key Pair Authentication to clear it."
             impactedScopes:
               - password
               - credentials.password
