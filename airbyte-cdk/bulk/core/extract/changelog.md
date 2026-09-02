@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.11 — 2026-09-02
+
+[#TBD](https://github.com/airbytehq/airbyte/pull/TBD) — Tolerate empty STREAM-typed input state in global (CDC) mode instead of failing.
+
 ### 1.1.10 — 2026-08-08
 
 [#80949](https://github.com/airbytehq/airbyte/pull/80949) — Field decoration for full refresh CDC streams with no primary key.
