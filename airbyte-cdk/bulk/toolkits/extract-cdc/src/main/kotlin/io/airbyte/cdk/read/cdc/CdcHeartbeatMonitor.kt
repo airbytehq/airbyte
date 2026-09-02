@@ -31,9 +31,10 @@ internal class CdcHeartbeatMonitor<T : PartiallyOrdered<T>>(
             lastHeartbeatPosition = currentPosition
             lastHeartbeatTime = now
             log.info { "Heartbeat progressing to position: $currentPosition" }
-            if (previousPosition != null && Duration.between(lastRecordTime, now) > timeout) {
+            val timeSinceLastRecord = Duration.between(lastRecordTime, now)
+            if (previousPosition != null && timeSinceLastRecord > timeout) {
                 log.info {
-                    "No records received for ${Duration.between(lastRecordTime, now).toMinutes()} minutes while heartbeat position advanced from $previousPosition to $currentPosition; closing engine to checkpoint progress."
+                    "No records received for ${timeSinceLastRecord.toSeconds()}s while heartbeat position advanced from $previousPosition to $currentPosition; closing engine to checkpoint progress."
                 }
                 return CdcPartitionReader.CloseReason.HEARTBEAT_PROGRESSING_WITHOUT_RECORDS
             }
