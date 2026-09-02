@@ -5,6 +5,7 @@ products: all
 import Tabs from "@theme/Tabs";
 import TabItem from "@theme/TabItem";
 import DocCardList from '@theme/DocCardList';
+import CaptureHarFile from '../_partials/_capture-har-file.md';
 
 # Add a connection
 
@@ -105,3 +106,27 @@ When you're ready to create the connection, click **Set up connection**. Airbyte
 ### Step 4: Review and manage rejected records {#da-rejected-records}
 
 Destinations may reject records. See [Rejected records](rejected-records) to learn more.
+
+## Troubleshooting
+
+If you contact [Airbyte Support](https://support.airbyte.com/) about a problem setting up a connection, including a HAR file and the details of the relevant network request helps Airbyte diagnose your issue and turn around a resolution faster.
+
+### Capture a HAR file
+
+<CaptureHarFile />
+
+### Find the schema discovery request
+
+When you choose a source and destination, Airbyte fetches your source's schema with a `discover_schema` request. If connection setup fails while Airbyte is fetching the schema, this request usually contains the underlying error.
+
+1. Open developer tools and click the **Network** tab, following the steps above to capture requests.
+
+2. In the filter box, type `discover_schema`.
+
+3. Reproduce the problem. For example, select your source and destination so Airbyte fetches the schema.
+
+4. Click the `discover_schema` request.
+
+5. Review the **Response** and **Preview** tabs for error messages, and the **Headers** tab for the request details.
+
+6. Include this request, along with the HAR file, in your support submission.

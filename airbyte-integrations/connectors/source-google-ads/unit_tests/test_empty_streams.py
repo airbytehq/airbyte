@@ -12,6 +12,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from .conftest import Obj, find_stream, get_source, read_full_refresh
 
 
+@freeze_time("2025-01-01")
 def test_query_shopping_performance_view_stream(customers, config, requests_mock):
     """
     Test that shopping_performance_view stream correctly processes and transforms data.
@@ -119,6 +120,7 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     assert request_json["query"] == expected_query
 
 
+@freeze_time("2025-01-01")
 def test_custom_query_stream(customers, config_for_custom_query_tests, requests_mock, mocker):
     """
     Test that custom query streams correctly generate schemas and execute queries.

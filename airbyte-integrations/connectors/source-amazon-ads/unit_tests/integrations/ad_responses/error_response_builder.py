@@ -22,6 +22,7 @@ class ErrorResponseBuilder(HttpResponseBuilder):
     ):
         super().__init__(template, records_path, pagination_strategy)
         self._records: Dict[str, Any] = {}
+        self._headers: Dict[str, str] = {}
 
     @classmethod
     def non_breaking_error_response(cls, pagination_strategy: Optional[PaginationStrategy] = None) -> "ErrorResponseBuilder":
@@ -35,6 +36,10 @@ class ErrorResponseBuilder(HttpResponseBuilder):
         self._records = record
         return self
 
+    def with_headers(self, headers: Dict[str, str]) -> "ErrorResponseBuilder":
+        self._headers = headers
+        return self
+
     def build(self) -> HttpResponse:
         self._records_path.update(self._response, self._records.build())
-        return HttpResponse(json.dumps(self._response), self._status_code)
+        return HttpResponse(json.dumps(self._response), self._status_code, self._headers)
