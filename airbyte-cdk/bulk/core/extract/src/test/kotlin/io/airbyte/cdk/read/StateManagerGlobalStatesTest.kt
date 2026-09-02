@@ -109,7 +109,7 @@ class StateManagerGlobalStatesTest {
     "stream_state": {}
 }}, {"type": "STREAM", "stream": {
     "stream_descriptor": { "name": "EVENTS", "namespace": "PUBLIC" },
-    "stream_state": null
+    "stream_state": {}
 }}]""",
     )
     fun testEmptyStreamStateIsIgnored() {
