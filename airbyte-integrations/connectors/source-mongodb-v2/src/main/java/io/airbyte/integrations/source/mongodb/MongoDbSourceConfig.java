@@ -87,6 +87,15 @@ public record MongoDbSourceConfig(JsonNode rawConfig) {
     }
   }
 
+  public Integer getDiscoverParallelism() {
+    if (rawConfig.has(DISCOVER_PARALLELISM_CONFIGURATION_KEY)) {
+      final int value = rawConfig.get(DISCOVER_PARALLELISM_CONFIGURATION_KEY).asInt(DEFAULT_DISCOVER_PARALLELISM);
+      return Math.max(1, value);
+    } else {
+      return DEFAULT_DISCOVER_PARALLELISM;
+    }
+  }
+
   public boolean getEnforceSchema() {
     return getDatabaseConfig().has(SCHEMA_ENFORCED_CONFIGURATION_KEY) ? getDatabaseConfig().get(SCHEMA_ENFORCED_CONFIGURATION_KEY).asBoolean(true)
         : true;
