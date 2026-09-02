@@ -38,7 +38,7 @@ class PostgresSourceEmptyEnumCheckTest {
                     PostgresSourceMetadataQuerier.findEmptyEnumTypes(conn),
                 )
                 val exception =
-                    assertThrows<ConfigErrorException> {
+                    assertThrows(ConfigErrorException::class.java) {
                         PostgresSourceMetadataQuerier.validateNoEmptyEnumTypes(conn)
                     }
                 assertTrue(exception.message!!.contains("public.empty_enum"))
@@ -71,7 +71,7 @@ class PostgresSourceEmptyEnumCheckTest {
             try {
                 val debeziumConfig = debeziumConfig()
                 val exception =
-                    assertThrows<Throwable> {
+                    assertThrows(Exception::class.java) {
                         PostgresConnection(
                             JdbcConfiguration.adapt(debeziumConfig),
                             { registry ->
