@@ -135,8 +135,7 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
 
     @Test
     fun testCredentialsWithAuthTypeFlat() {
-        val json =
-            unprettyPrintJson(usernamePasswordJson())
+        val json = unprettyPrintJson(usernamePasswordJson())
 
         val supplier =
             SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)

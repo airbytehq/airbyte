@@ -236,5 +236,4 @@ internal class SnowflakeBeanFactoryTest {
             stringWriter.toString()
         }
     }
-
 }
