@@ -141,6 +141,7 @@ class RedshiftCheckerTest {
                 ds,
                 RedshiftSqlGenerator(config),
                 S3Connect(config).createS3Client(),
+                config,
             )
         return RedshiftChecker(client, config)
     }

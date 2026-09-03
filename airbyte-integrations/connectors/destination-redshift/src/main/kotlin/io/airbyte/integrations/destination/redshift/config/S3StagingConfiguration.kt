@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.redshift.config
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonPropertyDescription
@@ -56,17 +57,26 @@ data class S3StagingConfiguration(
     @JsonProperty("access_key_id")
     @get:JsonSchemaTitle("S3 Access Key Id")
     @get:JsonPropertyDescription(
-        "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key."
+        "This ID grants access to the above S3 staging bucket. Airbyte requires Read and Write permissions to the given bucket. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key. Leave empty to use the AWS default credential chain."
     )
     @get:JsonSchemaInject(json = """{"order": 3, "airbyte_secret": true}""")
-    val accessKeyId: String = "",
+    val accessKeyId: String? = null,
     @JsonProperty("secret_access_key")
     @get:JsonSchemaTitle("S3 Secret Access Key")
     @get:JsonPropertyDescription(
-        "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key."
+        "The corresponding secret to the above access key id. See <a href=\"https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys\">AWS docs</a> on how to generate an access key ID and secret access key. Leave empty to use the AWS default credential chain."
     )
     @get:JsonSchemaInject(json = """{"order": 4, "airbyte_secret": true}""")
-    val secretAccessKey: String = "",
+    val secretAccessKey: String? = null,
+    @JsonProperty("iam_role_arn")
+    @get:JsonSchemaTitle("IAM Role for COPY")
+    @get:JsonPropertyDescription(
+        "Only used when no access key is configured. ARN of an <a href=\"https://docs.aws.amazon.com/redshift/latest/mgmt/copy-unload-iam-role.html\">IAM role attached to the Redshift cluster</a> that can read the staging bucket: the COPY command then runs as <code>IAM_ROLE '&lt;arn&gt;'</code>, or <code>IAM_ROLE default</code> when this field is also empty."
+    )
+    @get:JsonSchemaInject(
+        json = """{"order": 5, "examples":["arn:aws:iam::123456789012:role/my-redshift-role"]}"""
+    )
+    val iamRoleArn: String? = null,
     @JsonProperty("file_name_pattern")
     @get:JsonSchemaTitle("S3 Filename pattern")
     @get:JsonPropertyDescription(
@@ -74,7 +84,7 @@ data class S3StagingConfiguration(
     )
     @get:JsonSchemaInject(
         json =
-            """{"order": 5, "examples":["{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"]}"""
+            """{"order": 6, "examples":["{date}", "{date:yyyy_MM}", "{timestamp}", "{part_number}", "{sync_id}"]}"""
     )
     val fileNamePattern: String? = null,
     @JsonProperty("purge_staging_data")
@@ -82,6 +92,39 @@ data class S3StagingConfiguration(
     @get:JsonPropertyDescription(
         "Whether to delete the staging files from S3 after completing the sync. See <a href=\"https://docs.airbyte.com/integrations/destinations/redshift/#:~:text=the%20root%20directory.-,Purge%20Staging%20Data,-Whether%20to%20delete\"> docs</a> for details."
     )
-    @get:JsonSchemaInject(json = """{"order": 6, "default": true}""")
+    @get:JsonSchemaInject(json = """{"order": 7, "default": true}""")
     val purgeStagingData: Boolean? = true,
-) : UploadingMethod
+) : UploadingMethod {
+    /**
+     * Authentication mode derived once from the credential fields, shared by the S3 client and the
+     * COPY command so both always agree.
+     */
+    @get:JsonIgnore
+    val authMode: S3AuthMode
+        get() =
+            when {
+                !accessKeyId.isNullOrBlank() -> {
+                    require(!secretAccessKey.isNullOrBlank()) {
+                        "An S3 access key id is configured without its secret access key"
+                    }
+                    S3AuthMode.StaticCredentials(accessKeyId, secretAccessKey)
+                }
+                !iamRoleArn.isNullOrBlank() -> S3AuthMode.IamRole(iamRoleArn)
+                else -> S3AuthMode.ClusterDefaultRole
+            }
+}
+
+/** How the staging uploads and the COPY command authenticate against AWS. */
+sealed interface S3AuthMode {
+    /** Static key pair: used by the S3 client and inlined in the COPY CREDENTIALS clause. */
+    data class StaticCredentials(val accessKeyId: String, val secretAccessKey: String) : S3AuthMode
+
+    /**
+     * Keyless: the S3 client uses the AWS default credential chain and COPY authenticates with this
+     * IAM role attached to the Redshift cluster.
+     */
+    data class IamRole(val roleArn: String) : S3AuthMode
+
+    /** Keyless, with COPY authenticating through the cluster's default IAM role. */
+    data object ClusterDefaultRole : S3AuthMode
+}

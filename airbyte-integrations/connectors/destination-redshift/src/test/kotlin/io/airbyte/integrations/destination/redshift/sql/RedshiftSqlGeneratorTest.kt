@@ -16,6 +16,7 @@ import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.CDC_DELETED_AT_COLUMN
 import io.airbyte.integrations.destination.redshift.config.RedshiftConfiguration
+import io.airbyte.integrations.destination.redshift.config.S3StagingConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -31,8 +32,22 @@ internal class RedshiftSqlGeneratorTest {
 
     private lateinit var sqlGenerator: RedshiftSqlGenerator
 
-    private fun mockConfig(dropCascade: Boolean = false): RedshiftConfiguration =
-        mockk<RedshiftConfiguration> { every { this@mockk.dropCascade } returns dropCascade }
+    private fun mockConfig(
+        dropCascade: Boolean = false,
+        uploadingMethod: S3StagingConfiguration? = null,
+    ): RedshiftConfiguration =
+        mockk<RedshiftConfiguration> {
+            every { this@mockk.dropCascade } returns dropCascade
+            every { this@mockk.uploadingMethod } returns uploadingMethod
+        }
+
+    /** Renders the COPY command for a staging config against a fixed table and path. */
+    private fun copySql(s3Config: S3StagingConfiguration): String =
+        RedshiftSqlGenerator(mockConfig(uploadingMethod = s3Config))
+            .copyFromS3(
+                tableName = TableName(namespace = "ns", name = "tbl"),
+                s3Path = "s3://bucket/path/file.csv.gz",
+            )
 
     @BeforeEach
     fun setUp() {
@@ -725,12 +740,13 @@ internal class RedshiftSqlGeneratorTest {
     @Test
     fun `copyFromS3 generates COPY command`() {
         val sql =
-            sqlGenerator.copyFromS3(
-                tableName = TableName(namespace = "ns", name = "tbl"),
-                s3Path = "s3://bucket/path/file.csv.gz",
-                accessKeyId = "AKIATEST",
-                secretAccessKey = "secret123",
-                region = "us-east-1",
+            copySql(
+                S3StagingConfiguration(
+                    s3BucketName = "bucket",
+                    s3BucketRegion = "us-east-1",
+                    accessKeyId = "AKIATEST",
+                    secretAccessKey = "secret123",
+                )
             )
 
         assertTrue(sql.contains("""COPY "ns"."tbl""""))
@@ -745,6 +761,35 @@ internal class RedshiftSqlGeneratorTest {
         assertTrue(sql.contains("IGNOREHEADER 1"))
         assertTrue(sql.contains("NULL AS '${RedshiftSqlGenerator.NULL_SENTINEL}'"))
         assertFalse(sql.contains("EMPTYASNULL"))
+    }
+
+    @Test
+    fun `copyFromS3 uses the configured IAM role when no access key is set`() {
+        val sql =
+            copySql(
+                S3StagingConfiguration(
+                    s3BucketName = "bucket",
+                    s3BucketRegion = "us-east-1",
+                    iamRoleArn = "arn:aws:iam::123456789012:role/my-redshift-role",
+                )
+            )
+
+        assertTrue(sql.contains("IAM_ROLE 'arn:aws:iam::123456789012:role/my-redshift-role'"))
+        assertFalse(sql.contains("CREDENTIALS"))
+    }
+
+    @Test
+    fun `copyFromS3 falls back to the cluster default IAM role`() {
+        val sql =
+            copySql(
+                S3StagingConfiguration(
+                    s3BucketName = "bucket",
+                    s3BucketRegion = "us-east-1",
+                )
+            )
+
+        assertTrue(sql.contains("IAM_ROLE default"))
+        assertFalse(sql.contains("CREDENTIALS"))
     }
 
     @Test

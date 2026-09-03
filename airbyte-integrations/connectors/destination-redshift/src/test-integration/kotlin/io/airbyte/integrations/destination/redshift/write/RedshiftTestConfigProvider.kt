@@ -54,6 +54,6 @@ object RedshiftTestConfigProvider {
     fun airbyteClientFrom(spec: ConfigurationSpecification): RedshiftAirbyteClient {
         val config = configFrom(spec)
         val dataSource = RedshiftConnect(config).createDataSource()
-        return RedshiftAirbyteClient(dataSource, sqlGenerator(config), noOpS3Client)
+        return RedshiftAirbyteClient(dataSource, sqlGenerator(config), noOpS3Client, config)
     }
 }

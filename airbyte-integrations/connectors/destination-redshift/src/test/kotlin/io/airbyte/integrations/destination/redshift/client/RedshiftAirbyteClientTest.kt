@@ -17,6 +17,7 @@ import io.airbyte.cdk.load.schema.model.ColumnSchema
 import io.airbyte.cdk.load.schema.model.StreamTableSchema
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.table.ColumnNameMapping
+import io.airbyte.integrations.destination.redshift.config.S3StagingConfiguration
 import io.airbyte.integrations.destination.redshift.sql.RedshiftSqlGenerator
 import io.mockk.every
 import io.mockk.impl.annotations.MockK
@@ -70,7 +71,21 @@ internal class RedshiftAirbyteClientTest {
         every { mockPreparedStatement.close() } returns Unit
         every { mockResultSet.close() } returns Unit
 
-        client = RedshiftAirbyteClient(dataSource, sqlGenerator, s3Client)
+        client =
+            RedshiftAirbyteClient(
+                dataSource,
+                sqlGenerator,
+                s3Client,
+                mockk {
+                    every { uploadingMethod } returns
+                        S3StagingConfiguration(
+                            s3BucketName = "bucket",
+                            s3BucketRegion = "us-east-1",
+                            accessKeyId = "AKIA",
+                            secretAccessKey = "secret",
+                        )
+                },
+            )
     }
 
     // ================================================================
@@ -714,16 +729,12 @@ internal class RedshiftAirbyteClientTest {
 
     @Test
     fun `copyFromS3 delegates to sqlGenerator and suppresses logging`() = runTest {
-        every {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
-        } returns "COPY SQL"
+        every { sqlGenerator.copyFromS3(testTable, "s3://bucket/key") } returns "COPY SQL"
         every { mockStatement.execute("COPY SQL") } returns false
 
-        client.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
+        client.copyFromS3(testTable, "s3://bucket/key")
 
-        verify {
-            sqlGenerator.copyFromS3(testTable, "s3://bucket/key", "AKIA", "secret", "us-east-1")
-        }
+        verify { sqlGenerator.copyFromS3(testTable, "s3://bucket/key") }
         verify { mockStatement.execute("COPY SQL") }
     }
 
