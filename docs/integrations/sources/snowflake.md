@@ -14,7 +14,7 @@ If you are currently using username and password authentication, see the [Snowfl
 
 The Snowflake source allows you to sync data from Snowflake. It supports both Full Refresh and Incremental syncs. You can choose whether this connector will copy only new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This Snowflake source connector is built on top of the source-jdbc code base and is configured to rely on JDBC 3.23.1 [Snowflake driver](https://github.com/snowflakedb/snowflake-jdbc) as described in the Snowflake [documentation](https://docs.snowflake.com/en/user-guide/jdbc.html).
+This connector connects to Snowflake with the [Snowflake JDBC driver](https://github.com/snowflakedb/snowflake-jdbc) (version 4.0.2), as described in the Snowflake [JDBC documentation](https://docs.snowflake.com/en/user-guide/jdbc.html). It discovers both tables and views in the configured database.
 
 #### Resulting schema
 
@@ -34,38 +34,33 @@ The Snowflake source connector supports incremental sync, which allows you to re
 
 ### How Incremental Sync Works
 
-During incremental sync, the connector:
+At the start of each sync, the connector queries the current maximum value of the cursor column (`SELECT MAX(cursor_field)`) and uses it as the upper bound for that sync. It then reads rows where the cursor value is greater than the last checkpointed value and less than or equal to that upper bound, ordered by the cursor column. When the sync finishes, the upper bound becomes the starting point for the next sync.
 
-1. **Identifies new records**: Uses a `WHERE cursor_field > last_cursor_value` clause to fetch only records newer than the last synced value
-2. **Maintains order**: Applies `ORDER BY cursor_field ASC` to ensure records are processed in the correct sequence
-3. **Tracks state**: Stores the maximum cursor value from each sync to use as the starting point for the next sync
+The first sync of a stream reads the whole table. If the table has a primary key, the connector checkpoints its progress by primary key during this initial read so that an interrupted sync can resume where it left off.
 
 ### Supported Cursor Field Data Types
 
-The connector supports the following JDBC data types as cursor fields:
+You can use a column of any of the following Snowflake data types as a cursor field:
 
 **Date and Time Types:**
-- `TIMESTAMP_WITH_TIMEZONE`
-- `TIMESTAMP` 
-- `TIME_WITH_TIMEZONE`
-- `TIME`
+
 - `DATE`
+- `TIME`
+- `TIMESTAMP_NTZ` (also `TIMESTAMP` and `DATETIME`)
+- `TIMESTAMP_LTZ`
+- `TIMESTAMP_TZ`
 
 **Numeric Types:**
-- `TINYINT`
-- `SMALLINT` 
-- `INTEGER`
-- `BIGINT`
-- `FLOAT`
-- `DOUBLE`
-- `REAL`
-- `NUMERIC`
-- `DECIMAL`
+
+- `NUMBER` (also `DECIMAL` and `NUMERIC`)
+- `INT`, `INTEGER`, `BIGINT`, `SMALLINT`, `TINYINT`, `BYTEINT`
+- `FLOAT`, `FLOAT4`, `FLOAT8`, `DOUBLE`, `DOUBLE PRECISION`, `REAL`
 
 **String Types:**
-- `NVARCHAR`
-- `VARCHAR`
-- `LONGVARCHAR`
+
+- `VARCHAR` (also `CHAR`, `CHARACTER`, `STRING`, and `TEXT`)
+
+`BOOLEAN` columns can't be used as a cursor.
 
 ### Choosing a Cursor Field
 
@@ -77,18 +72,22 @@ For effective incremental sync, choose cursor fields that:
 - **Are indexed**: For better query performance on large tables
 
 **Good cursor field examples:**
+
 - `CREATED_AT` or `UPDATED_AT` timestamp columns
 - Auto-incrementing `ID` columns
 - Sequence-generated numeric fields
 
 **Avoid using:**
+
 - Fields that can be updated after creation
 - Fields with many duplicate values
 - Fields that can contain NULL values
 
 ### Snowflake-Specific Considerations
 
-**Timezone Handling**: The connector provides special handling for Snowflake's `TIMESTAMPLTZ` (timestamp with local timezone) data type, automatically converting it to `TIMESTAMP_WITH_TIMEZONE` for consistent processing.
+**Timezone Handling**: The connector reads `TIMESTAMP_LTZ` and `TIMESTAMP_TZ` columns as timestamps with time zone, expressed in UTC. `TIMESTAMP_NTZ` columns are read as timestamps without time zone.
+
+**Timestamp Precision**: Snowflake timestamps can have up to 9 fractional digits (nanoseconds), but Airbyte supports 6 (microseconds). The connector rounds timestamps up to the nearest microsecond. Rounding up rather than down means that a row whose timestamp falls between the truncated cursor value and the true value is not skipped by the next sync.
 
 **Data Type Precision**: Snowflake's numeric types maintain their precision during sync. Ensure your destination can handle the precision of your cursor fields.
 
@@ -108,11 +107,27 @@ The Airbyte UI will automatically validate that your chosen cursor field is comp
 
 **Cursor field validation errors**: If you receive an error about an invalid cursor field, ensure the field exists in your table and is one of the supported data types listed above.
 
-**Duplicate cursor values**: When multiple records have the same cursor value, the connector processes all records with that value. This may result in some records being synced multiple times across different sync runs.
+**Duplicate cursor values**: When multiple records have the same cursor value, the connector processes all records with that value. Rows that receive a cursor value equal to the previous sync's upper bound after that sync has finished are not picked up by the next sync.
 
 **NULL cursor values**: Records with NULL cursor field values are excluded from incremental sync. Ensure your cursor field has a NOT NULL constraint or default value.
 
 **State reset**: If you need to re-sync all data, you can reset the connection's state in the Airbyte UI, which will cause the next sync to behave like a full refresh.
+
+## Data type mapping
+
+| Snowflake type                                                             | Airbyte type                  | Notes                                                                  |
+| :------------------------------------------------------------------------- | :---------------------------- | :--------------------------------------------------------------------- |
+| `VARCHAR`, `CHAR`, `CHARACTER`, `STRING`, `TEXT`                           | string                        |                                                                        |
+| `BOOLEAN`                                                                  | boolean                       |                                                                        |
+| `NUMBER`, `DECIMAL`, `NUMERIC`                                             | number                        | Precision is preserved.                                                |
+| `INT`, `INTEGER`, `BIGINT`, `SMALLINT`, `TINYINT`, `BYTEINT`               | integer                       |                                                                        |
+| `FLOAT`, `FLOAT4`, `FLOAT8`, `DOUBLE`, `DOUBLE PRECISION`, `REAL`          | number                        |                                                                        |
+| `DATE`                                                                     | date                          |                                                                        |
+| `TIME`                                                                     | time without time zone        |                                                                        |
+| `TIMESTAMP_NTZ`, `TIMESTAMP`, `DATETIME`                                   | timestamp without time zone   | Rounded up to microsecond precision.                                   |
+| `TIMESTAMP_LTZ`, `TIMESTAMP_TZ`                                            | timestamp with time zone      | Expressed in UTC. Rounded up to microsecond precision.                 |
+| `BINARY`, `VARBINARY`                                                      | binary                        | Emitted as a Base64-encoded string.                                    |
+| `VARIANT`, `OBJECT`, `ARRAY`, `GEOGRAPHY`, `GEOMETRY`, `VECTOR`, `FILE`    | string                        | Semi-structured and geospatial values are emitted as strings.          |
 
 ## Getting started
 
@@ -124,7 +139,7 @@ You'll need the following information to configure the Snowflake source:
 2. **Role**
 3. **Warehouse**
 4. **Database**
-5. **Schema**
+5. **Schema** (Optional)
 6. **Username** (not required for programmatic access token authentication)
 7. **Private key or programmatic access token** (password authentication is deprecated but still supported)
 8. **JDBC URL Params** (Optional)
@@ -141,36 +156,50 @@ Additional information about Snowflake connection parameters can be found in the
 
 This step is optional but highly recommended for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
-To create a dedicated database user, first generate a key pair as described in [Key pair authentication](#key-pair-authentication), then run the following commands against your database. Replace `<public_key_value>` with the contents of your `rsa_key.pub` file, excluding the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines.
+To create a dedicated database user, first generate a key pair as described in [Key pair authentication](#key-pair-authentication), then run the following commands in Snowflake using a role that can create users and roles and grant privileges on the source objects (for example, `ACCOUNTADMIN`, or `SECURITYADMIN` combined with the owner of the source database). Replace the variable values with your own names, and replace `<public_key_value>` with the contents of your `rsa_key.pub` file, excluding the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines.
 
 ```sql
 -- set variables (these need to be uppercase)
 SET AIRBYTE_ROLE = 'AIRBYTE_ROLE';
 SET AIRBYTE_USERNAME = 'AIRBYTE_USER';
 SET AIRBYTE_WAREHOUSE = 'AIRBYTE_WAREHOUSE';
+SET AIRBYTE_DATABASE = 'AIRBYTE_DATABASE';
 SET AIRBYTE_SCHEMA = 'AIRBYTE_DATABASE.AIRBYTE_SCHEMA';
 
 BEGIN;
 
 -- create Airbyte role
-CREATE ROLE IF NOT EXISTS $AIRBYTE_ROLE;
+CREATE ROLE IF NOT EXISTS IDENTIFIER($AIRBYTE_ROLE);
 
 -- create Airbyte service user with key pair authentication
-CREATE USER IF NOT EXISTS $AIRBYTE_USERNAME
+CREATE USER IF NOT EXISTS IDENTIFIER($AIRBYTE_USERNAME)
 TYPE = SERVICE
 DEFAULT_ROLE = $AIRBYTE_ROLE
-DEFAULT_WAREHOUSE= $AIRBYTE_WAREHOUSE;
+DEFAULT_WAREHOUSE = $AIRBYTE_WAREHOUSE;
 
 -- assign the RSA public key to the service user
 ALTER USER IDENTIFIER($AIRBYTE_USERNAME) SET RSA_PUBLIC_KEY='<public_key_value>';
 
--- grant Airbyte schema access
-GRANT OWNERSHIP ON SCHEMA $AIRBYTE_SCHEMA TO ROLE $AIRBYTE_ROLE;
+-- grant the role to the user
+GRANT ROLE IDENTIFIER($AIRBYTE_ROLE) TO USER IDENTIFIER($AIRBYTE_USERNAME);
+
+-- allow the role to run queries on the warehouse
+GRANT USAGE ON WAREHOUSE IDENTIFIER($AIRBYTE_WAREHOUSE) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+
+-- grant read-only access to the source database and schema
+GRANT USAGE ON DATABASE IDENTIFIER($AIRBYTE_DATABASE) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+GRANT USAGE ON SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+GRANT SELECT ON ALL TABLES IN SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+GRANT SELECT ON ALL VIEWS IN SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+
+-- also cover tables and views created later
+GRANT SELECT ON FUTURE TABLES IN SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
+GRANT SELECT ON FUTURE VIEWS IN SCHEMA IDENTIFIER($AIRBYTE_SCHEMA) TO ROLE IDENTIFIER($AIRBYTE_ROLE);
 
 COMMIT;
 ```
 
-You can limit this grant to specific schemas instead of the whole database. Note that to replicate data from multiple Snowflake databases, you can re-run the command above to grant access to all the relevant schemas, but you'll need to set up multiple sources connecting to the same database on multiple schemas.
+Repeat the schema grants for every schema you want to replicate. A single source connects to one database; to replicate data from multiple Snowflake databases, set up one source per database. If you leave the **Schema** field empty when configuring the source, the connector discovers tables from every schema in the database that the role can access.
 
 Your database user should now be ready for use with Airbyte.
 
@@ -189,12 +218,21 @@ The following fields are common to all authentication methods:
 | Field                                                                                                 | Description                                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [Host](https://docs.snowflake.com/en/user-guide/admin-account-identifier.html)                        | The host domain of the snowflake instance (must include the account, region, cloud environment, and end with snowflakecomputing.com). Example: `accountname.us-east-2.aws.snowflakecomputing.com` |
-| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                           |
-| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
-| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
+| [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles)          | The role you created for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE`                                                                                                                     |
+| [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse Airbyte uses to run its queries. Example: `AIRBYTE_WAREHOUSE`                                                                                                                       |
+| [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database that contains the tables you want to replicate. Example: `AIRBYTE_DATABASE`                                                                                                          |
 | [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The schema whose tables this replication is targeting. If no schema is specified, all tables with permission will be presented regardless of their schema.                                        |
-| Username                                                                                              | The username you created to allow Airbyte to access the database. Example: `AIRBYTE_USER`. Not required for programmatic access token authentication.                                     |
+| Username                                                                                              | The username you created to allow Airbyte to access the database. Example: `AIRBYTE_USER`. Not required for programmatic access token authentication.                                             |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
+
+The following optional fields control how the connector reads data:
+
+| Field                                    | Description                                                                                                                                                                                                                                                             |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Update Method                            | How incremental syncs detect changes. The only option is **Scan Changes with User Defined Cursor**, which uses the cursor column you choose when configuring the connection. See [Incremental Sync](#incremental-sync).                                                 |
+| Checkpoint Target Time Interval          | How often, in seconds, the connector tries to checkpoint its progress during a sync. Default: `300`.                                                                                                                                                                    |
+| Concurrency                              | The maximum number of queries the connector runs against Snowflake at the same time. Default: `1`.                                                                                                                                                                      |
+| Check Table and Column Access Privileges | When enabled (the default), the connector queries each table and view individually during schema discovery and drops any tables, views, or columns the role can't read. In databases with many tables, this can make discovery slow. Disable it if discovery times out. |
 
 #### Key pair authentication
 
@@ -261,19 +299,19 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.0.0   | 2026-09-03 | [85331](https://github.com/airbytehq/airbyte/pull/85331) | Deprecate username/password authentication; key pair authentication or a programmatic access token is now recommended. Username/password will be removed in a future release. |
 | 1.1.2   | 2026-08-21 | [84927](https://github.com/airbytehq/airbyte/pull/84927) | Bump Bulk CDK extract version from 1.0.1 to 1.1.10                                                                                        |
-| 1.1.1   | 2026-07-21 | [82705](https://github.com/airbytehq/airbyte/pull/82705) | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down                |
+| 1.1.1   | 2026-08-12 | [82705](https://github.com/airbytehq/airbyte/pull/82705) | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down                |
 | 1.1.0   | 2026-05-28 | [78481](https://github.com/airbytehq/airbyte/pull/78481) | Support Snowflake Programmatic Access Token authentication.                                                                               |
-| 1.0.11  | 2026-05-05 | [77787](https://github.com/airbytehq/airbyte/pull/77787) | Make the hidden additional properties fields in spec optional. No functional change.                                                      |
-| 1.0.10  | 2026-03-13 | [74834](https://github.com/airbytehq/airbyte/pull/74834) | Truncate timestamp precision to 6 digits (microseconds) to prevent precision errors in destinations                                       |
-| 1.0.9   | 2025-09-16 | [74081](https://github.com/airbytehq/airbyte/pull/74081) | Security update                                                                                                                           |
+| 1.0.11  | 2026-05-06 | [77787](https://github.com/airbytehq/airbyte/pull/77787) | Make the hidden additional properties fields in spec optional. No functional change.                                                      |
+| 1.0.10  | 2026-03-18 | [74834](https://github.com/airbytehq/airbyte/pull/74834) | Truncate timestamp precision to 6 digits (microseconds) to prevent precision errors in destinations                                       |
+| 1.0.9   | 2026-03-02 | [74081](https://github.com/airbytehq/airbyte/pull/74081) | Security update                                                                                                                           |
 | 1.0.8   | 2025-09-16 | [66311](https://github.com/airbytehq/airbyte/pull/66311) | Change CDK version to 0.1.31                                                                                                              |
-| 1.0.7   | 2025-09-16 | [66200](https://github.com/airbytehq/airbyte/pull/66200) | Fix sampling bug for DefaultJdbcCursorIncrementalPartition                                                                                |
+| 1.0.7   | 2025-09-15 | [66200](https://github.com/airbytehq/airbyte/pull/66200) | Fix sampling bug for DefaultJdbcCursorIncrementalPartition                                                                                |
 | 1.0.6   | 2025-09-12 | [66226](https://github.com/airbytehq/airbyte/pull/66226) | Fix schema filtering functionality in versions 1.0.0+ - resolves "discovered zero tables" error and enables proper schema-level filtering |
 | 1.0.5   | 2025-07-28 | [63780](https://github.com/airbytehq/airbyte/pull/63780) | Fix ts data type for snowflake                                                                                                            |
 | 1.0.3   | 2025-07-22 | [63713](https://github.com/airbytehq/airbyte/pull/63713) | Revert base image from 2.0.3 to 2.0.2 to fix SSL certificate errors                                                                       |
-| 1.0.2   | 2025-07-14 | [62939](https://github.com/airbytehq/airbyte/pull/62939) | Update base image to 2.0.3                                                                                                                |
+| 1.0.2   | 2025-07-15 | [62939](https://github.com/airbytehq/airbyte/pull/62939) | Update base image to 2.0.3                                                                                                                |
 | 1.0.1   | 2025-07-11 | [62929](https://github.com/airbytehq/airbyte/pull/62929) | Update test dependencies                                                                                                                  |
-| 1.0.0   | 2025-06-24 | [61535](https://github.com/airbytehq/airbyte/pull/61535) | Replace community support connector with Airbyte certified connector                                                                      |
+| 1.0.0   | 2025-07-09 | [61535](https://github.com/airbytehq/airbyte/pull/61535) | Replace community support connector with Airbyte certified connector                                                                      |
 | 0.3.6   | 2025-01-10 | [51504](https://github.com/airbytehq/airbyte/pull/51504) | Use a non root base image                                                                                                                 |
 | 0.3.5   | 2024-12-18 | [49911](https://github.com/airbytehq/airbyte/pull/49911) | Use a base image: airbyte/java-connector-base:1.0.0                                                                                       |
 | 0.3.4   | 2024-10-31 | [48073](https://github.com/airbytehq/airbyte/pull/48073) | Upgrade jdbc driver                                                                                                                       |
