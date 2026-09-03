@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="NotesAnyCondition"></a>
@@ -124,10 +124,24 @@ Classes
     `updated_at: Any`
     :   The last update time of the note in ISO 8601 format.
 
+<a id="NotesArrayContainsCondition"></a>
+
+`NotesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.granola.types.NotesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="NotesContainsCondition"></a>
 
 `NotesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -392,7 +406,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition`
     :   The type of the None singleton.
 
 <a id="NotesOrCondition"></a>
@@ -414,7 +428,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="NotesSearchFilter"></a>
@@ -475,7 +489,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.granola.types.NotesEqCondition | airbyte_agent_sdk.connectors.granola.types.NotesNeqCondition | airbyte_agent_sdk.connectors.granola.types.NotesGtCondition | airbyte_agent_sdk.connectors.granola.types.NotesGteCondition | airbyte_agent_sdk.connectors.granola.types.NotesLtCondition | airbyte_agent_sdk.connectors.granola.types.NotesLteCondition | airbyte_agent_sdk.connectors.granola.types.NotesInCondition | airbyte_agent_sdk.connectors.granola.types.NotesStartswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesEndswithCondition | airbyte_agent_sdk.connectors.granola.types.NotesFuzzyCondition | airbyte_agent_sdk.connectors.granola.types.NotesKeywordCondition | airbyte_agent_sdk.connectors.granola.types.NotesContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesArrayContainsCondition | airbyte_agent_sdk.connectors.granola.types.NotesNotCondition | airbyte_agent_sdk.connectors.granola.types.NotesAndCondition | airbyte_agent_sdk.connectors.granola.types.NotesOrCondition | airbyte_agent_sdk.connectors.granola.types.NotesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.granola.types.NotesSortFilter]`

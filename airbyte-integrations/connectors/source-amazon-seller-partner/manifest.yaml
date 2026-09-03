@@ -3338,6 +3338,13 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_VENDOR_TRAFFIC_REPORT
+            # Anchor the report window to the slice's calendar day. A sibling request_body_json replaces
+            # the shared requester's one wholesale rather than merging into it, so without an explicit
+            # window the createReport call carries no date range at all: Amazon falls back to its own
+            # default period while the record is still labelled with the slice's date. See the
+            # "Report Streams Must Declare Their Own dataStartTime/dataEndTime" section in AGENTS.md.
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
         download_decoder:
           type: CustomDecoder
@@ -3348,8 +3355,9 @@ definitions:
       transformations:
         - type: AddFields
           fields:
+            # Day-align the cursor value too, so destination dedup compares stable per-day values.
             - path: ["endDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3382,6 +3390,9 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT
+            # Day-aligned report window (see GET_VENDOR_TRAFFIC_REPORT above).
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
         download_decoder:
           type: CustomDecoder
@@ -3393,7 +3404,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["endDate"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -3426,6 +3437,9 @@ definitions:
           $ref: "#/definitions/basic_async_retriever/creation_requester"
           request_body_json:
             reportType: GET_VENDOR_REAL_TIME_INVENTORY_REPORT
+            # Day-aligned report window (see GET_VENDOR_TRAFFIC_REPORT above).
+            dataStartTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T00:00:00Z"
+            dataEndTime: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
             marketplaceIds: '{{ [config["marketplace_id"]] }}'
         download_decoder:
           type: CustomDecoder
@@ -3437,7 +3451,7 @@ definitions:
         - type: AddFields
           fields:
             - path: ["endTime"]
-              value: "{{ stream_slice.cursor_slice.end_time }}"
+              value: "{{ stream_slice.cursor_slice.start_time.split('T')[0] }}T23:59:59Z"
       schema_loader:
         type: InlineSchemaLoader
         schema:

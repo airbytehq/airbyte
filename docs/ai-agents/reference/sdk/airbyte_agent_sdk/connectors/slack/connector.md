@@ -131,6 +131,7 @@ Classes
         - type_: Message type.
         - subtype: Message subtype.
         - ts: Message timestamp (unique identifier).
+        - float_ts: Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
         - user: User ID who sent the message.
         - text: Message text content.
         - thread_ts: Thread parent timestamp.
@@ -145,11 +146,13 @@ Classes
         - blocks: Block kit blocks.
         - bot_id: Bot ID if message was sent by a bot.
         - bot_profile: Bot profile information.
+        - username: Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead.
         - team: Team ID.
+        - channel_id: Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API.
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -267,7 +270,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -790,6 +793,7 @@ Classes
         - type_: Message type.
         - subtype: Message subtype.
         - ts: Message timestamp (unique identifier).
+        - float_ts: Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API.
         - user: User ID who sent the message.
         - text: Message text content.
         - thread_ts: Thread parent timestamp.
@@ -803,10 +807,11 @@ Classes
         - blocks: Block kit blocks.
         - bot_id: Bot ID if message was sent by a bot.
         - team: Team ID.
+        - channel_id: Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API.
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -877,7 +882,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
