@@ -67,9 +67,10 @@ it extracts protocol-level STATE messages and is not engine-specific.
   `--binlog-row-image=FULL`, `--gtid-mode=ON`, and
   `--enforce-gtid-consistency=ON`. Do not add per-table CDC enable steps or
   engine-specific backend startup to this skill.
-- The CDC fixture creates a dedicated `cdc_test` database and is safe to
-  re-apply. The replay case skips fixtures in its second phase so the inserted
-  row and saved binlog state remain intact.
+- `00-init-cdc.sql` drops and recreates the dedicated `cdc_test` database on
+  every application. Re-applying it wipes existing rows and any accumulated
+  binlog-relative table state, which is why `cases/incremental-replay.sh`
+  passes `--skip-fixtures` on its second phase.
 - CDC catalogs include the bulk-CDK fields (`is_file_based`,
   `generation_id`, `minimum_generation_id`, `sync_id`,
   `destination_object_name`, and `include_files`) and use
