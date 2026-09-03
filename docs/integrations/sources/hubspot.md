@@ -199,7 +199,7 @@ Association stream records include:
 - `category`: The association category, such as `HUBSPOT_DEFINED` or `USER_DEFINED`.
 - `label`: The association label. This is `null` for unlabeled associations.
 
-Association streams sync in Full Refresh mode. Each sync re-reads the associations for the selected objects; the association stream itself does not track an incremental cursor.
+Association streams sync in Full Refresh mode: the stream itself tracks no incremental cursor. Because their parent object stream syncs incrementally, in practice each sync only re-reads associations for parent records modified since the last sync.
 
 If you authenticate with a Private App, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` and `crm.objects.companies.read` scopes.
 
@@ -458,7 +458,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                      |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.8.3 | 2026-08-25 | [85019](https://github.com/airbytehq/airbyte/pull/85019) | Fix custom object association streams with a `contacts` `from_object` to use the `lastmodifieddate` parent cursor (matching standard association streams); document association streams as Full Refresh. |
+| 6.8.3 | 2026-09-03 | [85019](https://github.com/airbytehq/airbyte/pull/85019) | Fix custom object association streams with a `contacts` `from_object` to use the `lastmodifieddate` parent cursor (matching standard association streams); document association streams as Full Refresh. |
 | 6.8.2 | 2026-08-20 | [84917](https://github.com/airbytehq/airbyte/pull/84917) | Update CDK to 7.28.0 to fix a startup crash (`ValueError: No format in [...] matching True`) when a full-refresh association stream with an `incremental_dependency` parent is deselected. |
 | 6.8.1 | 2026-08-14 | [84411](https://github.com/airbytehq/airbyte/pull/84411) | Fix the `Number of concurrent threads` setting being ignored: read the `num_worker` config key emitted by the spec instead of `num_workers` |
 | 6.8.0 | 2026-06-24 | [80806](https://github.com/airbytehq/airbyte/pull/80806) | Restore 12 Web Analytics streams removed during the v5.8.0 manifest-only migration. Uses HubSpot's latest 2026-03 Events API endpoint with explicit `eventType` fanout. Streams require the `business-intelligence` scope (Marketing Hub Enterprise) plus each parent stream's read scope. Gated behind `enable_experimental_streams` with fresh state from `start_date`. |
