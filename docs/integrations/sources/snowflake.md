@@ -14,7 +14,7 @@ If you are currently using username and password authentication, see the [Snowfl
 
 The Snowflake source allows you to sync data from Snowflake. It supports both Full Refresh and Incremental syncs. You can choose whether this connector will copy only new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This connector connects to Snowflake with the [Snowflake JDBC driver](https://github.com/snowflakedb/snowflake-jdbc) (version 4.0.2), as described in the Snowflake [JDBC documentation](https://docs.snowflake.com/en/user-guide/jdbc.html). It discovers both tables and views in the configured database.
+This connector connects to Snowflake with the [Snowflake JDBC driver](https://github.com/snowflakedb/snowflake-jdbc) (version 4.0.2), as described in the Snowflake [JDBC documentation](https://docs.snowflake.com/en/user-guide/jdbc.html). It discovers both tables and views in the configured database, skipping the `INFORMATION_SCHEMA`, `SNOWFLAKE_SAMPLE_DATA`, and `UTIL_DB` schemas.
 
 #### Resulting schema
 
@@ -34,7 +34,7 @@ The Snowflake source connector supports incremental sync, which allows you to re
 
 ### How Incremental Sync Works
 
-At the start of each sync, the connector queries the current maximum value of the cursor column (`SELECT MAX(cursor_field)`) and uses it as the upper bound for that sync. It then reads rows where the cursor value is greater than the last checkpointed value and less than or equal to that upper bound, ordered by the cursor column. When the sync finishes, the upper bound becomes the starting point for the next sync.
+At the start of each sync, the connector queries the current maximum value of the cursor column (`SELECT MAX(cursor_field)`) and uses it as the upper bound for that sync. It then reads rows where the cursor value is greater than or equal to the last checkpointed value and less than or equal to that upper bound, ordered by the cursor column. When the sync finishes, the upper bound becomes the starting point for the next sync. Because the lower bound is inclusive, rows whose cursor value equals the previous sync's upper bound are read again on the next sync; this makes sure that rows added with that same cursor value after the previous sync aren't missed.
 
 The first sync of a stream reads the whole table. If the table has a primary key, the connector checkpoints its progress by primary key during this initial read so that an interrupted sync can resume where it left off.
 
@@ -107,7 +107,7 @@ The Airbyte UI will automatically validate that your chosen cursor field is comp
 
 **Cursor field validation errors**: If you receive an error about an invalid cursor field, ensure the field exists in your table and is one of the supported data types listed above.
 
-**Duplicate cursor values**: When multiple records have the same cursor value, the connector processes all records with that value. Rows that receive a cursor value equal to the previous sync's upper bound after that sync has finished are not picked up by the next sync.
+**Duplicate cursor values**: When multiple records have the same cursor value, the connector processes all records with that value. Records whose cursor value equals the last checkpointed value are re-synced on the next run, so expect some duplicate records in an Incremental | Append destination.
 
 **NULL cursor values**: Records with NULL cursor field values are excluded from incremental sync. Ensure your cursor field has a NOT NULL constraint or default value.
 
