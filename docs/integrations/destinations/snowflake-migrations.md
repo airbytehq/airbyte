@@ -2,11 +2,11 @@
 
 ## Upgrading to 5.0.0
 
-This version removes username and password authentication. **Key pair authentication** is now the only supported method for connecting to Snowflake. This aligns with [Snowflake's own recommendation](https://docs.snowflake.com/en/user-guide/key-pair-auth) to use key pair authentication for programmatic access.
+This version deprecates username and password authentication. Username and password authentication will be removed in a future release. **Key pair authentication** is now the only recommended method for connecting to Snowflake. This aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout), which is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**.
 
 ### Who is affected
 
-If your Airbyte connection to Snowflake uses **username and password** credentials, you must migrate to key pair authentication before Oct 2026. Connections that already use key pair authentication are not affected.
+If your Airbyte connection to Snowflake uses **username and password** credentials, you must migrate to key pair authentication before Snowflake enforces strong authentication on your account (rolling between August and October 2026). Connections that already use key pair authentication are not affected. No clear or refresh is required; existing destination data and sync state are unaffected.
 
 ### Migration steps
 
@@ -37,7 +37,7 @@ If your Airbyte connection to Snowflake uses **username and password** credentia
 3. **Update the connection in Airbyte.** Edit the Snowflake destination settings in the Airbyte UI:
    - Change the authentication method to **Key Pair Authentication**.
    - Paste the contents of your `rsa_key.p8` private key file.
-   - If you used an encrypted key, enter the passphrase in the **Private Key Password** field.
+   - If you used an encrypted key, enter the passphrase in the **Passphrase** field.
    - Save and test the connection.
 
 4. **(Optional) Remove the password from the Snowflake user** once you've confirmed the key pair connection works:

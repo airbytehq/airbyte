@@ -8,12 +8,12 @@ connector using the Airbyte UI.
 
 This page describes the step-by-step process of setting up the Snowflake destination connector.
 
-:::danger Username & Password Authentication Deprecated
-Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** is now the recommended and default method for connecting to Snowflake.
+:::danger Username and Password Authentication Deprecated
+Starting with version **5.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** is now the only recommended method for connecting to Snowflake.
 
-This change aligns with [Snowflake's own deprecation of single-factor password authentication](https://docs.snowflake.com/en/user-guide/admin-security-fed-auth-overview), which will block password-only logins beginning **October 2026**.
+This change aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Snowflake is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**; once enforced on your account, password-only logins from Airbyte will fail.
 
-If you are currently using username/password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
+If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
 :::
 
 ## Prerequisites
@@ -39,8 +39,8 @@ You can use the following script in a new
 [Snowflake worksheet](https://docs.snowflake.com/en/user-guide/ui-worksheet.html) to create the
 entities:
 
-1.  [Log into your Snowflake account](https://www.snowflake.com/login/).
-2.  Edit the following script to change the names of the resources if you so desire, and replace
+1. [Log into your Snowflake account](https://www.snowflake.com/login/).
+2. Edit the following script to change the names of the resources if you so desire, and replace
     `<public_key_value>` with the RSA public key you generated in Step 1.
 
     **Note:** Make sure you follow the
@@ -132,15 +132,15 @@ If you're using Airbyte Cloud, add Airbyte's
 To determine whether a network policy is set on your account or for a specific user, execute the
 _SHOW PARAMETERS_ command.
 
-**Account**
+##### Account
 
-```
+```sql
 SHOW PARAMETERS LIKE 'network_policy' IN ACCOUNT;
 ```
 
-**User**
+##### User
 
-```
+```sql
 SHOW PARAMETERS LIKE 'network_policy' IN USER <username>;
 ```
 
@@ -169,7 +169,7 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 | [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
 | Username | The service user you created in Step 2 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
 | Private Key | The private key from the key pair you generated in Step 1. Paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. |
-| Private Key Password (Optional) | The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
+| Passphrase (Optional) | The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
 | CDC deletion mode | Whether to execute CDC deletions as hard deletes or soft deletes. Hard deletes propagate source deletions to the destination. Soft deletes leave a tombstone record in the destination. Defaults to hard deletes. |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
@@ -338,7 +338,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0           | TBD        | [TBD](https://github.com/airbytehq/airbyte/pull/TBD)      | Remove username/password authentication; key pair authentication is now the only supported auth method.                                                                                 |
+| 5.0.0           | 2026-09-02 | [85314](https://github.com/airbytehq/airbyte/pull/85314)   | Deprecate username/password authentication; key pair authentication is now the only recommended auth method. Username/password will be removed in a future release.                      |
 | 4.1.2           | 2026-08-24 | [84979](https://github.com/airbytehq/airbyte/pull/84979)   | Upgrade CDK to 1.0.25 (prevents truncate-refresh retries from replacing a populated table with an empty one)                                                                            |
 | 4.1.1           | 2026-08-18 | [76313](https://github.com/airbytehq/airbyte/pull/76313)   | Handle ANSI reserved keywords as column names by prefixing with underscore                                                                                                             |
 | 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |

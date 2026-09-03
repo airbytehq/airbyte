@@ -198,7 +198,7 @@ class KeyPairAuthSpecification(
 
 @JsonSchemaTitle("Username and Password (Deprecated)")
 @JsonSchemaDescription(
-    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake will block password-only logins beginning October 2026. Migrate to Key Pair Authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
+    "Deprecated: Username and password authentication is deprecated as of version 5.0.0 and will be removed in a future release. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. Switch to key pair authentication instead. See the <a href=\"https://docs.airbyte.com/integrations/destinations/snowflake-migrations\">migration guide</a> for details."
 )
 class UsernamePasswordAuthSpecification(
     @get:JsonSchemaTitle("Password")
