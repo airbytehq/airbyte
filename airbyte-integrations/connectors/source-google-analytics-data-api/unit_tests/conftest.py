@@ -7,6 +7,10 @@ from pathlib import Path
 
 import pytest
 
+from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.state_builder import StateBuilder
+
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
 
@@ -22,3 +26,12 @@ _SOURCE_FOLDER_PATH = _get_manifest_path()
 _YAML_FILE_PATH = _SOURCE_FOLDER_PATH / "manifest.yaml"
 
 sys.path.append(str(_SOURCE_FOLDER_PATH))  # to allow loading custom components
+
+
+def get_source(config, state=None) -> YamlDeclarativeSource:
+    return YamlDeclarativeSource(
+        path_to_yaml=str(_YAML_FILE_PATH),
+        catalog=CatalogBuilder().build(),
+        config=config,
+        state=state or StateBuilder().build(),
+    )

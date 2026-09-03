@@ -33,6 +33,7 @@ import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_W
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.CONFIG_WITH_AUTH_STAGING_IGNORE_CASING
 import io.airbyte.integrations.destination.snowflake.SnowflakeTestUtils.getConfigPath
+import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeSpecification
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
@@ -45,6 +46,13 @@ internal val CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING)
 internal val CONFIG_IGNORE_CASING_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_IGNORE_CASING)
 internal val RAW_CONFIG_PATH = getConfigPath(CONFIG_WITH_AUTH_STAGING_AND_RAW_OVERRIDE)
 
+// Add number_data_type toggle to the config path.
+internal val NUMBER_38_9_CONFIG: String by lazy {
+    (Jsons.readTree(Files.readString(CONFIG_PATH)) as ObjectNode)
+        .apply { put("number_data_type", "NUMBER(38,9)") }
+        .serializeToString()
+}
+
 class SnowflakeInsertAcceptanceTest :
     SnowflakeAcceptanceTest(
         configPath = CONFIG_PATH,
@@ -52,7 +60,7 @@ class SnowflakeInsertAcceptanceTest :
             SnowflakeDataDumper { spec ->
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
-        recordMapper = SnowflakeExpectedRecordMapper,
+        recordMapper = SnowflakeExpectedRecordMapper(),
         nameMapper = SnowflakeNameMapper(),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
@@ -144,7 +152,7 @@ class SnowflakeInsertIgnoreCasingAcceptanceTest :
             SnowflakeDataDumper { spec ->
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
-        recordMapper = SnowflakeExpectedRecordMapper,
+        recordMapper = SnowflakeExpectedRecordMapper(),
         nameMapper = SnowflakeNameMapper(),
         unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
     ) {
@@ -161,7 +169,7 @@ class SnowflakeInsertProtoAcceptanceTest :
             SnowflakeDataDumper { spec ->
                 SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
             },
-        recordMapper = SnowflakeExpectedRecordMapper,
+        recordMapper = SnowflakeExpectedRecordMapper(),
         nameMapper = SnowflakeNameMapper(),
         dataChannelFormat = DataChannelFormat.PROTOBUF,
         dataChannelMedium = DataChannelMedium.SOCKET,
@@ -171,6 +179,32 @@ class SnowflakeInsertProtoAcceptanceTest :
     @Test
     override fun testBasicWrite() {
         super.testBasicWrite()
+    }
+}
+
+class SnowflakeNumberWithScaleInsertAcceptanceTest :
+    SnowflakeAcceptanceTest(
+        configPath = CONFIG_PATH,
+        configContents = NUMBER_38_9_CONFIG,
+        dataDumper =
+            SnowflakeDataDumper { spec ->
+                SnowflakeConfigurationFactory().make(spec as SnowflakeSpecification)
+            },
+        recordMapper = SnowflakeExpectedRecordMapper(NumberDataType.NUMBER_38_9),
+        nameMapper = SnowflakeNameMapper(),
+        unknownTypesBehavior = UnknownTypesBehavior.PASS_THROUGH,
+        allTypesBehavior =
+            StronglyTyped(
+                integerCanBeLarge = true,
+                // NUMBER(38,9) holds at most 29 digits left of the decimal point.
+                numberCanBeLarge = false,
+                nestedFloatLosesPrecision = false,
+                numberIsFixedPointPrecision38Scale9 = true,
+            ),
+    ) {
+    @Test
+    override fun testNumericTypes() {
+        super.testNumericTypes()
     }
 }
 
@@ -227,6 +261,7 @@ class SnowflakeRawInsertProtoAcceptanceTest :
 
 abstract class SnowflakeAcceptanceTest(
     configPath: Path,
+    configContents: String = Files.readString(configPath),
     dataChannelMedium: DataChannelMedium = DataChannelMedium.STDIO,
     dataChannelFormat: DataChannelFormat = DataChannelFormat.JSONL,
     dataDumper: DestinationDataDumper,
@@ -238,9 +273,15 @@ abstract class SnowflakeAcceptanceTest(
     nullEqualsUnset: Boolean = true,
     coercesLegacyUnions: Boolean = false,
     unknownTypesBehavior: UnknownTypesBehavior,
+    allTypesBehavior: StronglyTyped =
+        StronglyTyped(
+            integerCanBeLarge = true,
+            numberCanBeLarge = true,
+            nestedFloatLosesPrecision = false,
+        ),
 ) :
     BasicFunctionalityIntegrationTest(
-        configContents = Files.readString(configPath),
+        configContents = configContents,
         configSpecClass = SnowflakeSpecification::class.java,
         dataDumper = dataDumper,
         destinationCleaner = SnowflakeDataCleaner,
@@ -257,12 +298,7 @@ abstract class SnowflakeAcceptanceTest(
         commitDataIncrementallyOnAppend = false,
         commitDataIncrementallyToEmptyDestinationOnAppend = true,
         commitDataIncrementallyToEmptyDestinationOnDedupe = false,
-        allTypesBehavior =
-            StronglyTyped(
-                integerCanBeLarge = true,
-                numberCanBeLarge = true,
-                nestedFloatLosesPrecision = false,
-            ),
+        allTypesBehavior = allTypesBehavior,
         unknownTypesBehavior = unknownTypesBehavior,
         nullEqualsUnset = nullEqualsUnset,
         dedupChangeUsesDefault = false,

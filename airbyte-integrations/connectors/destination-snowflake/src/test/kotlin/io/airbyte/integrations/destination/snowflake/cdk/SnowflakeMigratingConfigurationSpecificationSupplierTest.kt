@@ -7,9 +7,12 @@ package io.airbyte.integrations.destination.snowflake.cdk
 import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.integrations.destination.snowflake.spec.CredentialsSpecification
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthSpecification
+import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfigurationFactory
 import io.airbyte.integrations.destination.snowflake.spec.UsernamePasswordAuthSpecification
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -197,6 +200,39 @@ internal class SnowflakeMigratingConfigurationSpecificationSupplierTest {
                 spec.credentials?.auth_type
             )
         }
+    }
+
+    @Test
+    fun testNumberDataTypeDefaultsToFloatWhenAbsentFromConfig() {
+        // Missing `number_data_type` parses as null and defaults to FLOAT.
+        val json =
+            unprettyPrintJson(
+                this.javaClass.getResource("/config_with_credentials_auth_type.json")!!.readText()
+            )
+
+        val supplier =
+            SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
+        val spec = supplier.get()
+        assertNull(spec.numberDataTypeConversion)
+
+        val config = SnowflakeConfigurationFactory().makeWithoutExceptionHandling(spec)
+        assertEquals(NumberDataType.FLOAT, config.numberDataTypeConversion)
+    }
+
+    @Test
+    fun testNumberDataTypeParsedFromConfig() {
+        val json =
+            unprettyPrintJson(
+                this.javaClass.getResource("/config_with_number_data_type.json")!!.readText()
+            )
+
+        val supplier =
+            SnowflakeMigratingConfigurationSpecificationSupplier(jsonPropertyValue = json)
+        val spec = supplier.get()
+        assertEquals(NumberDataType.NUMBER_38_9, spec.numberDataTypeConversion)
+
+        val config = SnowflakeConfigurationFactory().makeWithoutExceptionHandling(spec)
+        assertEquals(NumberDataType.NUMBER_38_9, config.numberDataTypeConversion)
     }
 
     @Test

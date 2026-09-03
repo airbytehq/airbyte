@@ -6,12 +6,12 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["applied_at"],
+        "default_cursor_field": ["updated_at"],
         "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "full_refresh",
       "primary_key": [["id"]],
-      "cursor_field": ["applied_at"],
+      "cursor_field": ["updated_at"],
       "destination_sync_mode": "overwrite"
     },
     {
@@ -198,20 +198,6 @@
     },
     {
       "stream": {
-        "name": "applications_demographics_answers",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
         "name": "demographics_question_sets_questions",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
@@ -237,20 +223,6 @@
     {
       "stream": {
         "name": "interviews",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "applications_interviews",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
@@ -301,20 +273,6 @@
     {
       "stream": {
         "name": "job_stages",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updated_at"],
-        "source_defined_primary_key": [["id"]]
-      },
-      "sync_mode": "full_refresh",
-      "primary_key": [["id"]],
-      "cursor_field": ["updated_at"],
-      "destination_sync_mode": "overwrite"
-    },
-    {
-      "stream": {
-        "name": "jobs_stages",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
