@@ -451,6 +451,10 @@ module.exports = {
                     },
                   ],
                 },
+                {
+                  type: "doc",
+                  id: "access-management/audit-logs",
+                },
               ],
             },
           ],
