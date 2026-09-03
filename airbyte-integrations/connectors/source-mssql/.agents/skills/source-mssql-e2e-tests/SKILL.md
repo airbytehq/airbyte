@@ -5,7 +5,11 @@ description: Stand up a local SQL Server 2022 backend, apply SQL fixtures, and s
 
 # source-mssql-e2e-tests
 
-Local end-to-end test harness for `source-mssql`. Stands up a SQL Server
+Local end-to-end test harness for `source-mssql`. The engine-independent
+orchestration lives in
+[`airbyte-integrations/db-harness-lib/`](../../../../db-harness-lib/);
+this skill keeps the MSSQL backend lifecycle scripts, fixtures, and config
+templates. It stands up a SQL Server
 2022 container named `source-mssql-db-backend`, lets you apply arbitrary
 SQL fixtures, and runs Airbyte protocol commands against any
 `airbyte/source-mssql:<tag>` image via
@@ -40,14 +44,9 @@ source-mssql-e2e-tests/
 ├── SKILL.md
 ├── scripts/
 │   ├── start-backend.sh        # docker run mcr…/mssql/server:2022-latest as source-mssql-db-backend
-│   ├── stop-backend.sh         # docker rm -f source-mssql-db-backend
 │   ├── apply-sql.sh            # docker cp + docker exec sqlcmd -i
-│   ├── render-config.sh        # jq the backend bridge IP into a config template
-│   ├── make-catalog.sh         # configured catalog derived from a discover run's CATALOG message
 │   ├── reset-databases.sh      # docker exec sqlcmd → drop every non-system database (used by run.sh --reset=fixture)
-│   ├── extract-state.py        # pull STATE messages out of a read step's stdout.txt (for multi-phase drivers)
-│   ├── run-protocol-cmd.sh     # thin wrapper around `airbyte-ops … regression-test`
-│   └── run.sh                  # one-shot: backend → fixtures → config → spec/check/discover → catalog → read → teardown
+│   └── run.sh                  # engine shim to db-harness-lib orchestration
 └── fixtures/
     ├── configs/
     │   └── base.template.json  # non-CDC config; host=mssql-db-backend placeholder
@@ -56,14 +55,20 @@ source-mssql-e2e-tests/
         └── 00-init-base.sql    # CREATE DATABASE TestDb + dbo.sample table
 ```
 
+The engine shim and backend lifecycle scripts remain in this skill's
+`scripts/` directory; the shared orchestration, default teardown, and
+protocol helpers live in
+[`airbyte-integrations/db-harness-lib/`](../../../../../db-harness-lib/).
 The skill expects all script paths relative to the skill root.
 
 ## Conventions
 
 - Container name: `source-mssql-db-backend`. Hard-coded in
-  `scripts/start-backend.sh`, `stop-backend.sh`, `apply-sql.sh`, and
-  `render-config.sh`. Override via `BACKEND_NAME=…` only for parallel
-  test isolation; don't use customer connection names.
+  `scripts/start-backend.sh` and `apply-sql.sh`. The shared
+  `db-harness-lib/scripts/stop-backend.sh` removes this container by
+  `BACKEND_NAME`; the engine shim supplies the default. Override via
+  `BACKEND_NAME=…` only for parallel test isolation; don't use customer
+  connection names.
 - Working directory for rendered configs and run output:
   `${REPRO_OUT:-/tmp/source-mssql-repro}`. A `run.sh` invocation writes
   everything under `$REPRO_OUT/<step-name>/`: the rendered `config.json`,
@@ -75,7 +80,8 @@ The skill expects all script paths relative to the skill root.
   it per command.
 - Both containers (the SQL Server backend and the connector launched by
   `airbyte-ops`) share Docker's default `bridge` network. The connector
-  resolves the backend by its bridge IP, which `render-config.sh`
+  resolves the backend by its bridge IP, which the shared
+  [`render-config.sh`](../../../../../db-harness-lib/scripts/render-config.sh)
   substitutes into the working config at runtime. Tracked upstream in
   [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765);
   once `--network` is supported the bridge-IP dance can collapse.
@@ -121,7 +127,12 @@ CI the table is also appended to `$GITHUB_STEP_SUMMARY`. A run limited to
 one command instead exits with the connector's own exit code, so a repro
 can still assert on it.
 
-Build the target image first when using `--test-version=dev`, or pass
+Prefer a published tag over `--test-version=dev`: for code on a pushed PR
+branch, publish a pre-release and pass its `<version>-preview.<sha>` tag,
+which skips the Gradle build and gives reviewers a tag they can re-run
+against — see
+[Getting a target image](../../../AGENTS.md#getting-a-target-image). When
+you do use `--test-version=dev`, build the target image first, or pass
 `--build` to have `run.sh` run `:dockerBuildx` for you. Other options:
 `--command=spec|check|discover|read` (default `all`), `--skip-read`,
 `--skip-fixtures` (run against whatever state the backend already has;
@@ -142,14 +153,14 @@ Instead of driver scripts hand-rolling `grep -q '<substring>' || exit 1`
 against each command's artifacts, `run.sh` accepts a small set of
 expectation flags that it enforces itself before returning:
 
-| Flag | Effect |
-|---|---|
-| `--expect-test=pass\|fail` | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed. |
-| `--expect-control=pass\|fail` | Same for the control sweep (comparison-mode runs only; requires `--control-version`). |
-| `--min-records=N` | Target read's `stdout.txt` must contain ≥N `RECORD` messages. |
-| `--min-states=N` | Target read's `stdout.txt` must contain ≥N `STATE` messages. |
+| Flag                                               | Effect                                                                                                                                                                                                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--expect-test=pass\|fail`                         | Overall target verdict. `pass` = every executed command's status was `pass`; `fail` = one or more failed.                                                                                                                          |
+| `--expect-control=pass\|fail`                      | Same for the control sweep (comparison-mode runs only; requires `--control-version`).                                                                                                                                              |
+| `--min-records=N`                                  | Target read's `stdout.txt` must contain ≥N `RECORD` messages.                                                                                                                                                                      |
+| `--min-states=N`                                   | Target read's `stdout.txt` must contain ≥N `STATE` messages.                                                                                                                                                                       |
 | `--expect-match=[<command>:]<channel>:<regex>[:N]` | Target's `<command>` step's `<channel>` (`stdout` \| `stderr` \| `any`) must match `<regex>` at least N times (default 1). `<command>` (`spec` \| `check` \| `discover` \| `read`) is optional and defaults to `read`. Repeatable. |
-| `--forbid-match=[<command>:]<channel>:<regex>` | Same shape but must match zero times. Repeatable. |
+| `--forbid-match=[<command>:]<channel>:<regex>`     | Same shape but must match zero times. Repeatable.                                                                                                                                                                                  |
 
 All match assertions run against the **target-side** artifacts of the
 named command (or `read` if no `<command>` prefix). Under
@@ -177,8 +188,7 @@ Any expectation failure exits non-zero regardless of the command-level
 verdicts and appends an `**Expectation failures:**` section to the
 summary. Migrating an existing driver script's `grep -q '<X>' || exit 1`
 block is straightforward — drop the block and add
-`--expect-match=stderr:X` to the `run.sh` (or `run-protocol-cmd.sh`)
-invocation.
+`--expect-match=stderr:X` to the shared `run.sh` invocation.
 
 ### Multi-phase drivers
 
@@ -186,15 +196,18 @@ invocation.
 (read → mutate → read-with-state) by calling `run.sh` more than once
 with `--step-name` for each invocation and `--state=` to feed the
 second read the state extracted from the first. `extract-state.py`
-lives in this skill because it walks Airbyte STATE messages, which is
-a protocol-level operation and not CDC-specific.
+lives in
+[`airbyte-integrations/db-harness-lib/scripts/extract-state.py`](../../../../../db-harness-lib/scripts/extract-state.py)
+because it walks Airbyte STATE messages, which is a protocol-level
+operation and not CDC-specific.
 
-The CDC skill's [`repro-11451.sh`](../source-mssql-e2e-cdc-tests/scripts/repro-11451.sh)
-is a worked example: it invokes `run-protocol-cmd.sh` around an
-intermediate `apply-sql.sh` mutation and `extract-state.py` step, and
-asserts inline on the connector's stderr. New multi-phase drivers can
-follow the same shape but call `run.sh --state=PATH` directly instead
-of smuggling `--state-path` through trailing args.
+The CDC skill's [`cases/11451.sh`](../source-mssql-e2e-cdc-tests/cases/11451.sh)
+is a worked example: it invokes the engine shim's `run.sh` around an
+intermediate `apply-sql.sh` mutation and the shared
+`db-harness-lib/scripts/extract-state.py` step, and asserts on the
+connector's stderr. New multi-phase drivers can follow the same shape
+but call `run.sh --state=PATH` directly instead of smuggling
+`--state-path` through trailing args.
 
 ### Comparison modes with `--control-version`
 
@@ -280,6 +293,7 @@ nothing behind unless you passed `--keep-backend`. After a
 
 ```bash
 SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mssql-e2e-tests
-"$SKILL/scripts/stop-backend.sh"   # idempotent; docker rm -f no-ops when absent
+LIB=airbyte-integrations/db-harness-lib
+BACKEND_NAME=source-mssql-db-backend "$LIB/scripts/stop-backend.sh"   # idempotent; docker rm -f no-ops when absent
 rm -rf "${REPRO_OUT:-/tmp/source-mssql-repro}"
 ```

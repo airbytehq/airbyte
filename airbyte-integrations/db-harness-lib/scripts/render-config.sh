@@ -10,10 +10,11 @@
 # Docker assigned to the backend container at runtime.
 #
 # Env:
-#   BACKEND_NAME            container name (default: source-mssql-db-backend)
+#   BACKEND_NAME            container name
 set -euo pipefail
 
-BACKEND_NAME="${BACKEND_NAME:-source-mssql-db-backend}"
+BACKEND_NAME="${BACKEND_NAME:?engine shim must export BACKEND_NAME}"
+CONFIG_HOST_JQ="${CONFIG_HOST_JQ:-.host = \$h}"
 
 if [[ $# -lt 2 ]]; then
   echo "usage: $(basename "$0") <template.json> <output.json>" >&2
@@ -35,5 +36,5 @@ if [[ -z "$BACKEND_IP" ]]; then
 fi
 
 mkdir -p "$(dirname "$OUTPUT")"
-jq --arg h "$BACKEND_IP" '.host = $h' "$TEMPLATE" > "$OUTPUT"
+jq --arg h "$BACKEND_IP" "$CONFIG_HOST_JQ" "$TEMPLATE" > "$OUTPUT"
 echo "[render-config] $TEMPLATE → $OUTPUT (host=$BACKEND_IP)" >&2
