@@ -167,6 +167,6 @@ class ReportsStateMigration(StateMigration):
         cursor_value["date"] = str(cursor_value["date"])
         parent_state = stream_state.setdefault("parent_state", {})
         report_state = parent_state.setdefault("report", {})
-        report_state.setdefault("state", cursor_value)
+        report_state.setdefault("state", dict(cursor_value))
         report_state["lookback_window"] = 0
         return stream_state
