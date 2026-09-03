@@ -102,10 +102,22 @@ Be sure to copy all contents in the Account Key JSON file including the brackets
     marks as deleted. **Hard delete**, the default, removes the matching row from the final table.
     **Soft delete** keeps the row, including its `_ab_cdc_deleted_at` value, so you retain a
     tombstone record. This setting only affects streams that have an `_ab_cdc_deleted_at` column.
-11. For **Legacy raw tables**, leave the option disabled unless you depend on the raw table format
+11. For **Job Execution Project ID (Optional)**, leave the field empty to run BigQuery jobs in the
+    project you entered as **Project ID**. To run them in a different project, for example to keep
+    ingestion from competing with analytics workloads for the same project quotas, enter that
+    project's ID.
+
+:::note
+Query, load, and copy jobs then run against the job project's quotas, while data still lands in
+datasets under **Project ID**. The service account needs the
+[`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
+role on the job project, in addition to its existing roles on the dataset project.
+:::
+
+12. For **Legacy raw tables**, leave the option disabled unless you depend on the raw table format
     that this connector wrote before version 3.0.0. See
     [Legacy raw tables schema](#legacy-raw-tables-schema).
-12. For **Airbyte Internal Table Dataset Name**, optionally set the dataset that holds Airbyte's
+13. For **Airbyte Internal Table Dataset Name**, optionally set the dataset that holds Airbyte's
     internal tables, including raw tables in legacy mode. The default is `airbyte_internal`.
 
 ### Service account key
@@ -121,18 +133,6 @@ into **Service Account Key JSON**.
 If you use GCS staging, grant the same service account the
 [`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles)
 on the staging bucket and create the HMAC key for that service account.
-
-12. For **Job Execution Project ID (Optional)**, leave the field empty to run BigQuery jobs in the
-    project you entered as **Project ID**. To run them in a different project — for example to keep
-    ingestion from competing with analytics workloads for the same project quotas — enter that
-    project's ID.
-
-:::note
-Query, load, and copy jobs then run against the job project's quotas, while data still lands in
-datasets under **Project ID**. The service account needs the
-[`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
-role on the job project, in addition to its existing roles on the dataset project.
-:::
 
 ## Supported sync modes
 
@@ -295,7 +295,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.0 | 2026-08-25 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
+| 3.1.0 | 2026-09-03 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
 | 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
 | 3.0.23 | 2026-07-15 | [82102](https://github.com/airbytehq/airbyte/pull/82102) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
