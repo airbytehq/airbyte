@@ -46,9 +46,9 @@ You can use a column of any of the following Snowflake data types as a cursor fi
 
 - `DATE`
 - `TIME`
-- `TIMESTAMP_NTZ` (also `TIMESTAMP` and `DATETIME`)
-- `TIMESTAMP_LTZ`
-- `TIMESTAMP_TZ`
+- `TIMESTAMP_NTZ` (also `TIMESTAMPNTZ`, `TIMESTAMP`, and `DATETIME`)
+- `TIMESTAMP_LTZ` (also `TIMESTAMPLTZ`)
+- `TIMESTAMP_TZ` (also `TIMESTAMPTZ`)
 
 **Numeric Types:**
 
@@ -124,8 +124,8 @@ The Airbyte UI will automatically validate that your chosen cursor field is comp
 | `FLOAT`, `FLOAT4`, `FLOAT8`, `DOUBLE`, `DOUBLE PRECISION`, `REAL`          | number                        |                                                                        |
 | `DATE`                                                                     | date                          |                                                                        |
 | `TIME`                                                                     | time without time zone        |                                                                        |
-| `TIMESTAMP_NTZ`, `TIMESTAMP`, `DATETIME`                                   | timestamp without time zone   | Rounded up to microsecond precision.                                   |
-| `TIMESTAMP_LTZ`, `TIMESTAMP_TZ`                                            | timestamp with time zone      | Expressed in UTC. Rounded up to microsecond precision.                 |
+| `TIMESTAMP_NTZ`, `TIMESTAMPNTZ`, `TIMESTAMP`, `DATETIME`                   | timestamp without time zone   | Rounded up to microsecond precision.                                   |
+| `TIMESTAMP_LTZ`, `TIMESTAMPLTZ`, `TIMESTAMP_TZ`, `TIMESTAMPTZ`             | timestamp with time zone      | Expressed in UTC. Rounded up to microsecond precision.                 |
 | `BINARY`, `VARBINARY`                                                      | binary                        | Emitted as a Base64-encoded string.                                    |
 | `VARIANT`, `OBJECT`, `ARRAY`, `GEOGRAPHY`, `GEOMETRY`, `VECTOR`, `FILE`    | string                        | Semi-structured and geospatial values are emitted as strings.          |
 
@@ -159,7 +159,7 @@ This step is optional but highly recommended for better permission control and a
 To create a dedicated database user, first generate a key pair as described in [Key pair authentication](#key-pair-authentication), then run the following commands in Snowflake using a role that can create users and roles and grant privileges on the source objects (for example, `ACCOUNTADMIN`, or `SECURITYADMIN` combined with the owner of the source database). Replace the variable values with your own names, and replace `<public_key_value>` with the contents of your `rsa_key.pub` file, excluding the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines.
 
 ```sql
--- set variables (these need to be uppercase)
+-- set variables (use the names as Snowflake stores them, which is uppercase unless you created the objects with quoted identifiers)
 SET AIRBYTE_ROLE = 'AIRBYTE_ROLE';
 SET AIRBYTE_USERNAME = 'AIRBYTE_USER';
 SET AIRBYTE_WAREHOUSE = 'AIRBYTE_WAREHOUSE';
