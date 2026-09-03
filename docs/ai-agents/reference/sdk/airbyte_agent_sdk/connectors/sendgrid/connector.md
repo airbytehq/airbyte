@@ -33,7 +33,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -80,7 +80,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -130,7 +130,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -192,7 +192,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -242,7 +242,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -288,7 +288,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -335,7 +335,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -397,7 +397,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -742,7 +742,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -792,7 +792,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -868,7 +868,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -916,7 +916,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -969,7 +969,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor

@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventsAnyCondition"></a>
@@ -175,10 +175,24 @@ Classes
     `user: Any`
     :   User associated with the event.
 
+<a id="EventsArrayContainsCondition"></a>
+
+`EventsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.sentry.types.EventsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EventsContainsCondition"></a>
 
 `EventsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -497,7 +511,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition`
     :   The type of the None singleton.
 
 <a id="EventsOrCondition"></a>
@@ -519,7 +533,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EventsSearchFilter"></a>
@@ -631,7 +645,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sentry.types.EventsEqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsGteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLtCondition | airbyte_agent_sdk.connectors.sentry.types.EventsLteCondition | airbyte_agent_sdk.connectors.sentry.types.EventsInCondition | airbyte_agent_sdk.connectors.sentry.types.EventsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.EventsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.EventsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.EventsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.EventsNotCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAndCondition | airbyte_agent_sdk.connectors.sentry.types.EventsOrCondition | airbyte_agent_sdk.connectors.sentry.types.EventsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sentry.types.EventsSortFilter]`
@@ -866,7 +880,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesAnyCondition"></a>
@@ -995,10 +1009,24 @@ Classes
     `user_count: Any`
     :   Number of users affected.
 
+<a id="IssuesArrayContainsCondition"></a>
+
+`IssuesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.sentry.types.IssuesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IssuesContainsCondition"></a>
 
 `IssuesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1323,7 +1351,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssuesOrCondition"></a>
@@ -1345,7 +1373,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesSearchFilter"></a>
@@ -1463,7 +1491,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sentry.types.IssuesEqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesGteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLtCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesLteCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesInCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesNotCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAndCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesOrCondition | airbyte_agent_sdk.connectors.sentry.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sentry.types.IssuesSortFilter]`
@@ -1727,7 +1755,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsAnyCondition"></a>
@@ -1841,10 +1869,24 @@ Classes
     `status: Any`
     :   Project status.
 
+<a id="ProjectsArrayContainsCondition"></a>
+
+`ProjectsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectsContainsCondition"></a>
 
 `ProjectsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2145,7 +2187,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectsOrCondition"></a>
@@ -2167,7 +2209,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchFilter"></a>
@@ -2270,7 +2312,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sentry.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsInCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.sentry.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sentry.types.ProjectsSortFilter]`
@@ -2487,7 +2529,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReleasesAnyCondition"></a>
@@ -2589,10 +2631,24 @@ Classes
     `version_info: Any`
     :   Parsed version information.
 
+<a id="ReleasesArrayContainsCondition"></a>
+
+`ReleasesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ReleasesContainsCondition"></a>
 
 `ReleasesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2884,7 +2940,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ReleasesOrCondition"></a>
@@ -2906,7 +2962,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReleasesSearchFilter"></a>
@@ -2997,7 +3053,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.sentry.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesInCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.sentry.types.ReleasesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.sentry.types.ReleasesSortFilter]`
