@@ -2,6 +2,14 @@ import KeypairExample from '@site/static/_snowflake_keypair_generation.md';
 
 # Snowflake
 
+:::danger Username and Password Authentication Deprecated
+Starting with version **2.0.0**, username and password authentication is **deprecated** and will be removed in a future release. **Key pair authentication** or a **programmatic access token** is now the recommended method for connecting to Snowflake.
+
+This change aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Snowflake is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**; once enforced on your account, password-only logins from Airbyte will fail.
+
+If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
+:::
+
 ## Overview
 
 The Snowflake source allows you to sync data from Snowflake. It supports both Full Refresh and Incremental syncs. You can choose whether this connector will copy only new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
@@ -118,10 +126,10 @@ You'll need the following information to configure the Snowflake source:
 4. **Database**
 5. **Schema**
 6. **Username**
-7. **Password, private key, or programmatic access token**
+7. **Private key or programmatic access token** (username and password authentication is deprecated)
 8. **JDBC URL Params** (Optional)
 
-Additionally, create a dedicated read-only Airbyte user and role with access to all schemas needed for replication.
+Additionally, create a dedicated read-only Airbyte service user and role with access to all schemas needed for replication.
 
 ### Setup guide
 
@@ -133,26 +141,26 @@ Additional information about Snowflake connection parameters can be found in the
 
 This step is optional but highly recommended for better permission control and auditing. Alternatively, you can use Airbyte with an existing user in your database.
 
-To create a dedicated database user, run the following commands against your database:
+To create a dedicated database user, first generate a key pair as described in [Key pair authentication](#key-pair-authentication), then run the following commands against your database. Replace `<public_key_value>` with the contents of your `rsa_key.pub` file, excluding the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines.
 
 ```sql
 -- set variables (these need to be uppercase)
 SET AIRBYTE_ROLE = 'AIRBYTE_ROLE';
 SET AIRBYTE_USERNAME = 'AIRBYTE_USER';
 
--- set user password
-SET AIRBYTE_PASSWORD = '-password-';
-
 BEGIN;
 
 -- create Airbyte role
 CREATE ROLE IF NOT EXISTS $AIRBYTE_ROLE;
 
--- create Airbyte user
+-- create Airbyte service user with key pair authentication
 CREATE USER IF NOT EXISTS $AIRBYTE_USERNAME
-PASSWORD = $AIRBYTE_PASSWORD
+TYPE = SERVICE
 DEFAULT_ROLE = $AIRBYTE_ROLE
 DEFAULT_WAREHOUSE= $AIRBYTE_WAREHOUSE;
+
+-- assign the RSA public key to the service user
+ALTER USER IDENTIFIER($AIRBYTE_USERNAME) SET RSA_PUBLIC_KEY='<public_key_value>';
 
 -- grant Airbyte schema access
 GRANT OWNERSHIP ON SCHEMA $AIRBYTE_SCHEMA TO ROLE $AIRBYTE_ROLE;
@@ -168,11 +176,13 @@ Your database user should now be ready for use with Airbyte.
 
 Source Snowflake supports the following authentication methods:
 
-- Username and password
-- Key pair authentication
+- Key pair authentication (recommended)
 - Programmatic access token
+- Username and password (deprecated, see the [migration guide](./snowflake-migrations.md))
 
-#### Username and password
+#### Connection fields
+
+The following fields are common to all authentication methods:
 
 | Field                                                                                                 | Description                                                                                                                                                                                       |
 | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -181,13 +191,14 @@ Source Snowflake supports the following authentication methods:
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE`                                                                                                   |
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)   | The database you created for Airbyte to sync data into. Example: `AIRBYTE_DATABASE`                                                                                                     |
 | [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl)     | The schema whose tables this replication is targeting. If no schema is specified, all tables with permission will be presented regardless of their schema.                                        |
-| Username                                                                                              | The username you created to allow Airbyte to access the database. Example: `AIRBYTE_USER`                                                                                               |
-| Password                                                                                              | The password associated with the username.                                                                                                                                                        |
+| Username                                                                                              | The username you created to allow Airbyte to access the database. Example: `AIRBYTE_USER`. Not required for programmatic access token authentication.                                     |
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional)           | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3`   |
 
 #### Key pair authentication
 
  <KeypairExample/>
+
+In the Airbyte UI, select **Key Pair Authentication** as the authorization method, enter the username, paste the full contents of your `rsa_key.p8` private key file (including the `-----BEGIN ... PRIVATE KEY-----` header and footer), and, if the key is encrypted, enter the passphrase.
 
 #### Programmatic access token authentication
 
@@ -208,6 +219,10 @@ For service users, Snowflake requires `ROLE_RESTRICTION` by default. Snowflake a
 :::note Network policy required for Programmatic Access Token authentication
 When using Programmatic Access Token authentication, the Snowflake user's network policy must allow connections from Airbyte's IP addresses. Add the [Airbyte Cloud IP addresses](/platform/operating-airbyte/ip-allowlist) to the network policy attached to the PAT user, or to the account-level network policy.
 :::
+
+#### Username and password (deprecated)
+
+Username and password authentication is deprecated as of version 2.0.0 and will be removed in a future release. Existing sources that use it continue to work until Snowflake enforces strong authentication on your account. Follow the [migration guide](./snowflake-migrations.md) to switch to key pair authentication or a programmatic access token.
 
 ### Network policies
 
@@ -242,6 +257,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                   |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.0.0   | 2026-09-03 | [85340](https://github.com/airbytehq/airbyte/pull/85340) | Deprecate username/password authentication; key pair authentication or a programmatic access token is now recommended. Username/password will be removed in a future release. |
 | 1.1.2   | 2026-08-21 | [84927](https://github.com/airbytehq/airbyte/pull/84927) | Bump Bulk CDK extract version from 1.0.1 to 1.1.10                                                                                        |
 | 1.1.1   | 2026-07-21 | [82705](https://github.com/airbytehq/airbyte/pull/82705) | Fix incremental sync silently dropping rows at the cursor's upper bound by rounding timestamp precision up instead of down                |
 | 1.1.0   | 2026-05-28 | [78481](https://github.com/airbytehq/airbyte/pull/78481) | Support Snowflake Programmatic Access Token authentication.                                                                               |
