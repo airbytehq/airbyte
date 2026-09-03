@@ -9,7 +9,7 @@ description = "Unit tests for source-kapa"
 authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.15"
+python = ">=3.10,<3.14"
 airbyte-cdk = "7.21.1"
 pyyaml = "^6.0"
 requests-mock = "^1.12.1"
