@@ -27,6 +27,8 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SKILL="$(cd "$HERE/.." && pwd)"
 GENERIC="$(cd "$SKILL/../source-mssql-e2e-tests" && pwd)"
+REPO_ROOT="$(git -C "$HERE" rev-parse --show-toplevel)"
+LIB="$REPO_ROOT/airbyte-integrations/db-harness-lib"
 
 REPRO_OUT="${REPRO_OUT:-/tmp/source-mssql-repro}"
 BASELINE_VERSION="${BASELINE_VERSION:-4.4.2}"
@@ -50,7 +52,7 @@ BASELINE_STATE="$REPRO_OUT/$STEP_NAME/state.json"
 
 # Phase 2: pull STATE from baseline, advance min_lsn past the saved LSN.
 mkdir -p "$(dirname "$BASELINE_STATE")"
-"$GENERIC/scripts/extract-state.py" \
+"$LIB/scripts/extract-state.py" \
   "$REPRO_OUT/$STEP_NAME/baseline/read/stdout.txt" \
   > "$BASELINE_STATE"
 "$GENERIC/scripts/apply-sql.sh" \

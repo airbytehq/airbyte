@@ -40,6 +40,7 @@ import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy
 import io.airbyte.integrations.destination.bigquery.write.typing_deduping.legacy_raw_tables.BigqueryTypingDedupingDatabaseInitialStatusGatherer
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Factory
+import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Named
 import jakarta.inject.Singleton
@@ -95,6 +96,7 @@ class BigqueryBeansFactory {
     @Singleton
     fun getWriter(
         bigquery: BigQuery,
+        @Named("jobProjectBigquery") jobProjectBigquery: BigQuery,
         config: BigqueryConfiguration,
         names: TableCatalog,
         // micronaut will only instantiate a single instance of StreamStateStore,
@@ -103,7 +105,13 @@ class BigqueryBeansFactory {
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
     ): DestinationWriter {
-        val destinationHandler = BigQueryDatabaseHandler(bigquery, config.datasetLocation.region)
+        val destinationHandler =
+            BigQueryDatabaseHandler(
+                bigquery,
+                jobProjectBigquery,
+                config.datasetLocation.region,
+                config.jobProjectId,
+            )
         if (config.legacyRawTablesOnly) {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
@@ -131,6 +139,8 @@ class BigqueryBeansFactory {
                         destinationHandler,
                     ),
                     bigquery,
+                    config.jobProjectId,
+                    config.datasetLocation.region,
                 )
             // force smart cast
             @Suppress("UNCHECKED_CAST")
@@ -163,6 +173,7 @@ class BigqueryBeansFactory {
     }
 
     @Singleton
+    @Primary
     fun getBigqueryClient(config: BigqueryConfiguration): BigQuery {
         // Follows this order of resolution:
         // https://cloud.google.com/java/docs/reference/google-auth-library/latest/com.google.auth.oauth2.GoogleCredentials#com_google_auth_oauth2_GoogleCredentials_getApplicationDefault
@@ -202,4 +213,16 @@ class BigqueryBeansFactory {
             .build()
             .service
     }
+
+    @Singleton
+    @Named("jobProjectBigquery")
+    fun getJobProjectBigqueryClient(
+        config: BigqueryConfiguration,
+        bigquery: BigQuery,
+    ): BigQuery =
+        if (config.jobProjectId == config.projectId) {
+            bigquery
+        } else {
+            bigquery.options.toBuilder().setProjectId(config.jobProjectId).build().service
+        }
 }
