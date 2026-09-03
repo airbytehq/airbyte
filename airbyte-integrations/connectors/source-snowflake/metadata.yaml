@@ -45,7 +45,7 @@ data:
       2.0.0:
         message: "Username and password authentication is deprecated and will be removed in a future release. Key pair authentication or a programmatic access token is now the recommended method. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. If you are already using key pair or programmatic access token authentication, no action is needed. Otherwise, see the migration guide for steps to migrate your connection."
         upgradeDeadline: "2026-11-01"
-        deadlineAction: "disable"
+        deadlineAction: "auto_upgrade"
     rolloutConfiguration:
       enableProgressiveRollout: true
       defaultRolloutMode: autopilot
