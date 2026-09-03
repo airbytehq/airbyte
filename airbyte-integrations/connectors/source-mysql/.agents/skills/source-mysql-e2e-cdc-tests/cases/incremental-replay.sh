@@ -42,5 +42,5 @@ mkdir -p "$(dirname "$BASELINE_STATE")"
   --state="$BASELINE_STATE" \
   --keep-backend \
   --expect-test=pass \
-  --expect-match=stdout:dave@example.com \
-  --forbid-match=stdout:alice@example.com
+  --expect-match='stdout:dave@example\.com' \
+  --forbid-match='stdout:alice@example\.com'
