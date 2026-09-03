@@ -4,7 +4,7 @@
 
 Web app
 
-- New account signups are closed. The sign-up page now tells you signups are closed and directs you to log in, and the sign-in pages no longer offer a sign-up option. If you already have an account, or you were invited to an organization, log in as usual.
+- New account sign-ups are closed. The sign-up page now tells you sign-ups are closed and directs you to log in, and the sign-in pages no longer offer a sign-up option. If you already have an account, or you were invited to an organization, log in as usual.
 - Opening an invitation link while signed out now takes you back to that invitation after you log in, instead of losing your place or failing to accept the invitation.
 
 ## September 2, 2026
