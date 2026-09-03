@@ -34,9 +34,11 @@ If your Airbyte connection to Snowflake uses **username and password** credentia
    ALTER USER <user_name> SET rsa_public_key='<public_key_value>';
    ```
 
+   This command requires the `ACCOUNTADMIN` role, or a custom role with the `MODIFY PROGRAMMATIC AUTHENTICATION METHODS` privilege on that specific user. For more information, see [ALTER USER ... MODIFY PROGRAMMATIC AUTHENTICATION METHODS](https://docs.snowflake.com/en/sql-reference/sql/alter-user-modify-programmatic-access-token) in the Snowflake docs.
+
 3. **Update the connection in Airbyte.** Edit the Snowflake destination settings in the Airbyte UI:
    - Change the authentication method to **Key Pair Authentication**.
-   - Paste the contents of your `rsa_key.p8` private key file.
+   - Paste the contents of your `rsa_key.p8` private key file, without removing the header or footer lines.
    - If you used an encrypted key, enter the passphrase in the **Passphrase** field.
    - Save and test the connection.
 
@@ -51,6 +53,8 @@ If your Airbyte connection to Snowflake uses **username and password** credentia
    ```sql
    ALTER USER <user_name> SET TYPE = SERVICE;
    ```
+
+If you're having trouble migrating to key pair authentication before Snowflake enforces strong authentication on your account, you can request an extension of the enforcement date from Snowflake. In Snowsight, go to **Trust Center** > **Strong Authentication** (`https://app.snowflake.com/<org_id>/<account>/#/trust-center/overview/strong-authentication`, replacing `<org_id>` and `<account>` with your Snowflake organization and account identifiers).
 
 For more details on key pair authentication troubleshooting, see [Snowflake's troubleshooting docs](https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting).
 
