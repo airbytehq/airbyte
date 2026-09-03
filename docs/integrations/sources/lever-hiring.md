@@ -15,7 +15,7 @@ This page guides you through setting up the Lever Hiring source connector. The c
 1. In the Airbyte UI, select **Sources** and then **New source**.
 2. Search for and select **Lever Hiring**.
 3. Enter a **Source name**.
-4. For **Start Date**, enter a UTC timestamp in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2021-03-01T00:00:00Z`. The connector uses this value as the lower bound of the `updatedAt` filter when it lists opportunities. Opportunities last updated before this date, and their related applications, interviews, notes, offers, and referrals, aren't replicated. It has no effect on the `users` stream.
+4. For **Start Date**, enter a UTC timestamp in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2021-03-01T00:00:00Z`. The connector passes this value as the `updated_at_start` request parameter when it lists opportunities. Opportunities last updated before this date, and their related applications, interviews, notes, offers, and referrals, aren't replicated. It has no effect on the `users` stream.
 5. For **Environment**, select **Production** or **Sandbox**. The default is **Sandbox**, so change it to **Production** if you connect to a regular Lever account.
 6. For **Authentication Mechanism**, choose one of the following:
    - **Authenticate via Lever (Api Key)**: Enter your Lever API key.
@@ -44,7 +44,7 @@ The connector verifies your credentials by requesting the `users` endpoint.
 | [Offers](https://hire.lever.co/developer/documentation#list-all-offers) | `GET /opportunities/{id}/offers` | Full Refresh | Fetched per opportunity. |
 | [Referrals](https://hire.lever.co/developer/documentation#list-all-referrals) | `GET /opportunities/{id}/referrals` | Full Refresh | Fetched per opportunity. |
 
-The applications, interviews, notes, offers, and referrals streams first list opportunities updated since your **Start Date**, then request the child records for each opportunity. Records belonging to opportunities outside that window aren't synced. Because each opportunity requires one request per child stream, syncing these streams for a large Lever account can take a long time.
+The applications, interviews, notes, offers, and referrals streams first list opportunities using the same `updated_at_start`/`updated_at_end` windows as the opportunities stream, starting from your **Start Date**, then request the child records for each opportunity. Records belonging to opportunities outside that window aren't synced. Because each opportunity requires one request per child stream, syncing these streams for a large Lever account can take a long time.
 
 Lever's [`updated_at_start` filter](https://hire.lever.co/developer/documentation#list-all-opportunities) matches any change to an opportunity, while the `updatedAt` field the connector uses as its cursor only reflects changes to a specific set of opportunity fields. Keep this in mind if incremental syncs return opportunities you didn't expect, or miss changes you did.
 
