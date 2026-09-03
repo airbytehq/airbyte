@@ -44,9 +44,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - reports
-            record_filter:
-              type: RecordFilter
-              condition: "{{ record['startTime'] >= stream_interval['start_time'] }}"
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['startTime'] >= stream_interval['start_time'] }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
