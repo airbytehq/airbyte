@@ -44,9 +44,9 @@ definitions:
             type: DpathExtractor
             field_path:
               - reports
-            record_filter:
-              type: RecordFilter
-              condition: "{{ record['startTime'] >= stream_interval['start_time'] }}"
+          record_filter:
+            type: RecordFilter
+            condition: "{{ timestamp(record['startTime']) > timestamp(stream_interval['start_time']) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -60,11 +60,18 @@ definitions:
         cursor_field: date
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
           - "%Y%m%d"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         global_substream_cursor: true
         start_datetime:
           datetime: "{{ '1990-01-01T00:00:00.000000Z' if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - date
+              value: "{{ record['startTime'] }}"
 
     report_types:
       type: DeclarativeStream
@@ -76,8 +83,8 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: reportTypes
-          # Handled by ContentOwnerRequester, not the CDK's request options provider.
-          # Static values only -- these are not interpolated. See components.py.
+          # Handled by ContentOwnerRequester: extra_request_parameters are static values only,
+          # while request_parameters are interpolated. See components.py.
           extra_request_parameters:
             includeSystemManaged: "true"
         record_selector:
