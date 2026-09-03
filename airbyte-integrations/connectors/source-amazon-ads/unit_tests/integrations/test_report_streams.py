@@ -590,6 +590,23 @@ def test_daily_stream_schema_has_date_in_properties(stream_name: str) -> None:
     )
 
 
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        "sponsored_products_productads_report_stream",
+        "sponsored_products_productads_report_stream_daily",
+    ],
+)
+def test_productads_stream_declares_advertised_sku(stream_name: str) -> None:
+    """Verify product ads report streams request and declare `advertisedSku`."""
+    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    stream = next(stream for stream in manifest["definitions"]["streams"].values() if stream.get("name") == stream_name)
+    columns = stream["retriever"]["creation_requester"]["request_body_json"]["configuration"]["columns"]
+    assert "advertisedSku" in columns
+    assert "advertisedSku" in manifest["schemas"][stream_name]["properties"]
+    assert manifest["schemas"][stream_name]["properties"]["advertisedSku"]["type"] == ["null", "string"]
+
+
 # Bump deliberately when adding or removing a report stream. A silent drop here would empty the
 # guard tests below, and pytest reports an empty parameter set as SKIPPED rather than FAILED.
 _EXPECTED_REPORT_STREAM_COUNT = 32
