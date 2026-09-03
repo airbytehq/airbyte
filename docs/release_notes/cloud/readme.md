@@ -2,6 +2,12 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 3, 2026
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, the Compare to previous period view of the data worker usage chart in your organization's Usage settings now uses the same peak usage measure as the standard view. Previously, the comparison bars showed a different total, so the two periods didn't line up with the rest of the chart.
+
 ## September 1, 2026
 
 Connections
