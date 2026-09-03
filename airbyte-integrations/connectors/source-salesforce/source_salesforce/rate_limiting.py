@@ -63,7 +63,7 @@ logger = logging.getLogger("airbyte")
 
 # `nextRecordsUrl` is under /query/ even for `queryAll` requests, see
 # https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/dome_queryall.htm
-_QUERY_LOCATOR_PATH_PATTERN = re.compile(r"/services/data/v\d{2}\.\d/query/[^/]+$")
+_QUERY_LOCATOR_PATH_PATTERN = re.compile(r"/services/data/v\d+\.\d+/query/[^/]+$")
 
 
 class BulkNotSupportedException(Exception):
