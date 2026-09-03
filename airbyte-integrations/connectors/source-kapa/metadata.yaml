@@ -1,0 +1,41 @@
+metadataSpecVersion: "1.0"
+
+data:
+  allowedHosts:
+    hosts:
+      - "api.kapa.ai"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-kapa
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.21.1@sha256:0e55d8593249f5b9d84272cd5786884bffa46eeac691162de1217807930c5e70
+  connectorSubtype: api
+  connectorType: source
+  definitionId: 3d73ff7d-c759-4ea4-8b64-786a4197ddf9
+  dockerImageTag: 0.1.0
+  canonicalImageTag: 0.1.0
+  dockerRepository: airbyte/source-kapa
+  githubIssueLabel: source-kapa
+  icon: icon.png
+  license: ELv2
+  name: Kapa
+  releaseDate: 2026-09-03
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/kapa
+  tags:
+    - language:manifest-only
+    - cdk:low-code
+  ab_internal:
+    ql: 100
+    sl: 100
+  externalDocumentationUrls:
+    - title: Kapa API documentation
+      url: https://docs.kapa.ai/api/reference/query-v-1-projects-threads-list
+      type: api_reference

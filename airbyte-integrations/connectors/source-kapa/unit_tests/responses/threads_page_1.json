@@ -1,0 +1,24 @@
+{
+  "results": [
+    {
+      "id": "6ea2745a-b70d-42f3-b13c-a4227803a4d7",
+      "created_at": "2024-01-02T10:00:00Z",
+      "last_activity_at": "2024-01-02T10:05:00Z",
+      "integration_id": "44084d82-ab03-4949-b06a-b2f008931da0",
+      "question_answers": [
+        {
+          "question": "How do I configure the connector?",
+          "answer": "Use an API key and project ID."
+        }
+      ],
+      "has_more_question_answers": false,
+      "feedback": null,
+      "status_tag": null,
+      "custom_tags": [],
+      "interaction_tags": [],
+      "end_user": null,
+      "integration": null
+    }
+  ],
+  "next_cursor": "next-page"
+}

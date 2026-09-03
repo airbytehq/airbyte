@@ -1,0 +1,16 @@
+Table "threads" {
+    "id" string [pk, not null]
+    "created_at" string [not null]
+    "last_activity_at" string
+    "integration_id" string
+    "question_answers" object [not null]
+    "has_more_question_answers" boolean
+    "feedback" object
+    "status_tag" object
+    "custom_tags" object
+    "interaction_tags" object
+    "end_user" object
+    "integration" object
+
+    Note: "Kapa project threads. Nested question-answer, tag, user, feedback, and integration values are retained as JSON objects or arrays."
+}

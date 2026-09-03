@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "id": "47edf32e-b71c-4748-ab0b-958414daca2d",
+      "created_at": "2024-01-03T11:00:00.000000+00:00",
+      "last_activity_at": "2024-01-03T11:10:00.000000+00:00",
+      "integration_id": null,
+      "question_answers": [],
+      "has_more_question_answers": false,
+      "feedback": null,
+      "status_tag": null,
+      "custom_tags": [],
+      "interaction_tags": [],
+      "end_user": null,
+      "integration": null
+    }
+  ],
+  "next_cursor": null
+}

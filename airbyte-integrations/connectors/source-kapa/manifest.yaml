@@ -1,0 +1,227 @@
+version: 6.13.0
+
+type: DeclarativeSource
+
+check:
+  type: CheckStream
+  stream_names:
+    - threads
+
+definitions:
+  authenticator:
+    type: ApiKeyAuthenticator
+    api_token: "{{ config['api_key'] }}"
+    inject_into:
+      type: RequestOption
+      field_name: X-API-KEY
+      inject_into: header
+
+  requester:
+    type: HttpRequester
+    url_base: https://api.kapa.ai
+    http_method: GET
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    error_handler:
+      type: DefaultErrorHandler
+      max_retries: 20
+      response_filters:
+        - type: HttpResponseFilter
+          action: IGNORE
+          http_codes:
+            - 404
+            - 409
+        - type: HttpResponseFilter
+          action: RETRY
+          predicate: "{{ 'rate limit' in (response.get('message', '') | lower) }}"
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 429
+        - type: HttpResponseFilter
+          action: RETRY
+          http_codes:
+            - 502
+            - 503
+            - 504
+      backoff_strategies:
+        - type: WaitTimeFromHeader
+          header: retry-after
+          min_wait: 1
+        - type: ConstantBackoffStrategy
+          backoff_time_in_seconds: 60
+    request_headers:
+      Accept: application/json
+
+  threads:
+    type: DeclarativeStream
+    name: threads
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        path: "/query/v1/projects/{{ config['project_id'] }}/threads/"
+        request_parameters:
+          include: feedback,status_tag,custom_tags,interaction_tags,end_user,integration
+          sort: asc
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: page_size
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: cursor
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response.next_cursor }}"
+          stop_condition: "{{ response.next_cursor is none }}"
+          page_size: 500
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: last_activity_at
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%S.%f%z"
+        - "%Y-%m-%dT%H:%M:%S%z"
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+      start_time_option:
+        type: RequestOption
+        field_name: updated_since
+        inject_into: request_parameter
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/schemas/threads"
+
+streams:
+  - $ref: "#/definitions/threads"
+
+spec:
+  type: Spec
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - api_key
+      - project_id
+      - start_date
+    properties:
+      api_key:
+        type: string
+        title: API Key
+        description: Kapa API key sent in the X-API-KEY header.
+        airbyte_secret: true
+        order: 0
+      project_id:
+        type: string
+        title: Project ID
+        description: UUID of the Kapa project whose threads should be synced.
+        pattern: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$"
+        order: 1
+      start_date:
+        type: string
+        title: Start Date
+        description: Earliest thread activity timestamp to sync, in ISO 8601 format with whole-second precision.
+        format: date-time
+        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(Z|[+-][0-9]{2}:[0-9]{2})$"
+        examples:
+          - "2024-01-01T00:00:00Z"
+        order: 2
+
+schemas:
+  threads:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    additionalProperties: true
+    required:
+      - id
+      - created_at
+      - question_answers
+    properties:
+      id:
+        type: string
+        format: uuid
+      created_at:
+        type: string
+        format: date-time
+      last_activity_at:
+        type:
+          - "null"
+          - string
+        format: date-time
+      integration_id:
+        type:
+          - "null"
+          - string
+        format: uuid
+      question_answers:
+        type: array
+        items:
+          type: object
+          additionalProperties: true
+      has_more_question_answers:
+        type: boolean
+      feedback:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      status_tag:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      custom_tags:
+        type: array
+        items:
+          type: object
+          additionalProperties: true
+      interaction_tags:
+        type: array
+        items:
+          type: object
+          additionalProperties: true
+      end_user:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      integration:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+        properties:
+          id:
+            type: string
+            format: uuid
+          project:
+            type: string
+            format: uuid
+          name:
+            type: string
+          description:
+            type: string
+          integration_type:
+            type: string
+          updated_at:
+            type: string
+            format: date-time
+          created_at:
+            type: string
+            format: date-time
