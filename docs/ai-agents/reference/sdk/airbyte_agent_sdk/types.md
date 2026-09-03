@@ -381,6 +381,9 @@ Classes
     `body_fields: list[str]`
     :   The type of the None singleton.
 
+    `body_is_array: bool`
+    :   The type of the None singleton.
+
     `content_type: airbyte_agent_sdk.types.ContentType`
     :   The type of the None singleton.
 
@@ -460,6 +463,9 @@ Classes
     :   The type of the None singleton.
 
     `untested: bool`
+    :   The type of the None singleton.
+
+    `untested_reason: str | None`
     :   The type of the None singleton.
 
     `upload_file_param: str | None`

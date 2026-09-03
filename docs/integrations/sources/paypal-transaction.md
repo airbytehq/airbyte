@@ -268,6 +268,14 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.46 | 2026-08-26 | [79676](https://github.com/airbytehq/airbyte/pull/79676) | Fix `transaction_id` primary key emitted as null for IDs resembling scientific notation |
+| 2.6.45 | 2026-08-18 | [84690](https://github.com/airbytehq/airbyte/pull/84690) | Update dependencies |
+| 2.6.44 | 2026-08-11 | [84075](https://github.com/airbytehq/airbyte/pull/84075) | Update dependencies |
+| 2.6.43 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.6.42 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.6.40 — 2.6.41 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.6.41 | 2026-07-28 | [83052](https://github.com/airbytehq/airbyte/pull/83052) | Update dependencies |
+| 2.6.40 | 2026-07-21 | [82533](https://github.com/airbytehq/airbyte/pull/82533) | Update dependencies |
+| 2.6.39 | 2026-07-14 | [81962](https://github.com/airbytehq/airbyte/pull/81962) | Update dependencies |
 | 2.6.38 | 2026-06-30 | [81175](https://github.com/airbytehq/airbyte/pull/81175) | Update dependencies |
 | 2.6.37 | 2026-06-23 | [80610](https://github.com/airbytehq/airbyte/pull/80610) | Update dependencies |
 | 2.6.36 | 2026-06-16 | [79986](https://github.com/airbytehq/airbyte/pull/79986) | Update dependencies |

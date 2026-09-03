@@ -65,8 +65,6 @@ Airbyte's data replication platform is available as a self-managed, hybrid, or f
 
 <Grid columns="2">
 
-<CardWithIcon title="Self-Managed Enterprise" description="Highly available, secure data movement for your entire organization. Keep your data sovereign and on your premises with self-managed data planes" ctaText="Enterprise setup" ctaLink="/platform/enterprise-setup" icon="fa-lock" />
-
 <CardWithIcon title="Core" description="Our free and open-source version of Airbyte. Deploy locally or in your own infrastructure. Get started immediately and keep your data on your premises." ctaText="Quickstart" ctaLink="using-airbyte/getting-started/oss-quickstart" icon="fa-download" />
 
 </Grid>

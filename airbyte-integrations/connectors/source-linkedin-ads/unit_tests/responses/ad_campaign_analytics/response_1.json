@@ -8,7 +8,7 @@
     {
       "clicks": 100,
       "impressions": 19090,
-      "pivotValues": ["urn:li:sponsoredCampaign:123"],
+      "pivotValues": ["urn:li:sponsoredCampaign:1111"],
       "costInUsd": "209.449",
       "dateRange": {
         "start": {
@@ -26,7 +26,7 @@
     {
       "clicks": 408,
       "impressions": 20210,
-      "pivotValues": ["urn:li:sponsoredCampaign:123"],
+      "pivotValues": ["urn:li:sponsoredCampaign:1111"],
       "costInUsd": "509.980",
       "dateRange": {
         "start": {

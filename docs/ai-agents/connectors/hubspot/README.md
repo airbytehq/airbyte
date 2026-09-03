@@ -21,6 +21,11 @@ The Hubspot connector is optimized to handle prompts like these.
 - Create a new company called 'Acme Corp' with domain acme.com
 - Create a support ticket with subject 'Login issue' and priority HIGH
 - Update the contact email for a specific contact
+- Associate contact 123 with deal 456
+- Link a contact to a company in HubSpot
+- Set contact 123 as the Primary contact for company 456
+- List all associations for contact 123 to companies
+- Remove an association between a contact and a deal
 - Add a note to contact 12345 saying 'Discussed pricing options'
 - List recent notes in my CRM
 - Get the details of a specific note
@@ -57,14 +62,15 @@ This connector supports the following entities and actions. For more details, se
 | Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [API Search](./REFERENCE.md#contacts-api_search), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
 | Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [API Search](./REFERENCE.md#companies-api_search), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
 | Deals | [List](./REFERENCE.md#deals-list), [Create](./REFERENCE.md#deals-create), [Get](./REFERENCE.md#deals-get), [Update](./REFERENCE.md#deals-update), [API Search](./REFERENCE.md#deals-api_search), [Context Store Search](./REFERENCE.md#deals-context-store-search) |
-| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [API Search](./REFERENCE.md#tickets-api_search), [Context Store Search](./REFERENCE.md#tickets-context-store-search) |
-| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [Context Store Search](./REFERENCE.md#notes-context-store-search) |
-| Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Update](./REFERENCE.md#calls-update), [Delete](./REFERENCE.md#calls-delete), [Context Store Search](./REFERENCE.md#calls-context-store-search) |
-| Emails | [List](./REFERENCE.md#emails-list), [Create](./REFERENCE.md#emails-create), [Get](./REFERENCE.md#emails-get), [Update](./REFERENCE.md#emails-update), [Delete](./REFERENCE.md#emails-delete), [Context Store Search](./REFERENCE.md#emails-context-store-search) |
-| Meetings | [List](./REFERENCE.md#meetings-list), [Create](./REFERENCE.md#meetings-create), [Get](./REFERENCE.md#meetings-get), [Update](./REFERENCE.md#meetings-update), [Delete](./REFERENCE.md#meetings-delete), [Context Store Search](./REFERENCE.md#meetings-context-store-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Create](./REFERENCE.md#tickets-create), [Get](./REFERENCE.md#tickets-get), [Update](./REFERENCE.md#tickets-update), [API Search](./REFERENCE.md#tickets-api_search), [Context Store Search](./REFERENCE.md#tickets-context-store-search), [Semantic Search](./REFERENCE.md#tickets-semantic-search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Create](./REFERENCE.md#notes-create), [Get](./REFERENCE.md#notes-get), [Update](./REFERENCE.md#notes-update), [Delete](./REFERENCE.md#notes-delete), [Context Store Search](./REFERENCE.md#notes-context-store-search), [Semantic Search](./REFERENCE.md#notes-semantic-search) |
+| Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Update](./REFERENCE.md#calls-update), [Delete](./REFERENCE.md#calls-delete), [Context Store Search](./REFERENCE.md#calls-context-store-search), [Semantic Search](./REFERENCE.md#calls-semantic-search) |
+| Emails | [List](./REFERENCE.md#emails-list), [Create](./REFERENCE.md#emails-create), [Get](./REFERENCE.md#emails-get), [Update](./REFERENCE.md#emails-update), [Delete](./REFERENCE.md#emails-delete), [Context Store Search](./REFERENCE.md#emails-context-store-search), [Semantic Search](./REFERENCE.md#emails-semantic-search) |
+| Meetings | [List](./REFERENCE.md#meetings-list), [Create](./REFERENCE.md#meetings-create), [Get](./REFERENCE.md#meetings-get), [Update](./REFERENCE.md#meetings-update), [Delete](./REFERENCE.md#meetings-delete), [Context Store Search](./REFERENCE.md#meetings-context-store-search), [Semantic Search](./REFERENCE.md#meetings-semantic-search) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Semantic Search](./REFERENCE.md#tasks-semantic-search) |
 | Schemas | [List](./REFERENCE.md#schemas-list), [Get](./REFERENCE.md#schemas-get) |
 | Objects | [List](./REFERENCE.md#objects-list), [Get](./REFERENCE.md#objects-get) |
+| Associations | [List](./REFERENCE.md#associations-list), [Create](./REFERENCE.md#associations-create), [Delete](./REFERENCE.md#associations-delete) |
 
 
 ## Hubspot API docs
@@ -591,4 +597,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.1.19
+**Connector version:** 0.1.20

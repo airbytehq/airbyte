@@ -388,7 +388,7 @@ nav a.navbar__link--active {
   }
 }
 
-/* Hide Ask AI button until Osano consent is granted */
+/* Hide Ask AI button until DataGrail consent is granted */
 .kapa-ai-hidden {
   display: none !important;
 }

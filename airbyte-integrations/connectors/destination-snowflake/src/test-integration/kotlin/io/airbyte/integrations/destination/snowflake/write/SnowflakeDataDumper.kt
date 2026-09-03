@@ -154,7 +154,10 @@ class SnowflakeDataDumper(
 
     private fun convertValue(value: Any?): Any? =
         when (value) {
-            is BigDecimal -> value.toBigInteger()
+            // Integer columns (NUMBER(38,0)) come back from JDBC as scale-0 BigDecimals and must
+            // become integers. Decimal-mode number columns (NUMBER(38,9)) come back with scale 9
+            // and must stay decimals.
+            is BigDecimal -> if (value.scale() <= 0) value.toBigInteger() else value
             is Date -> value.toLocalDate()
             is SnowflakeTimestampWithTimezone -> value.toZonedDateTime()
             is Time -> value.toLocalTime()
