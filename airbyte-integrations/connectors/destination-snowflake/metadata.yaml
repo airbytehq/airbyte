@@ -48,7 +48,7 @@ data:
       5.0.0:
         message: "Username and password authentication is deprecated and will be removed in a future release. Key pair authentication is now the only recommended method. Snowflake is enforcing strong authentication on a rolling per-account basis between August and October 2026. If you are already using key pair authentication, no action is needed. Otherwise, see the migration guide for steps to generate a key pair and update your connection."
         upgradeDeadline: "2026-11-01"
-        deadlineAction: "disable"
+        deadlineAction: "auto_upgrade"
       4.0.0:
         message: "The connector now requires ALTER TABLE permissions, so you must grant this permission to the Snowflake user. Otherwise, if you never interact with the raw tables, you can upgrade without taking any action. If you _do_ use the raw tables, make sure to read the migration guide for more details."
         upgradeDeadline: "2026-01-06"
