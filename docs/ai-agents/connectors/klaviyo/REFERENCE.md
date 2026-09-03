@@ -14,7 +14,7 @@ The Klaviyo connector supports the following entities and actions.
 | Events | [List](#events-list), [Context Store Search](#events-context-store-search) |
 | Metrics | [List](#metrics-list), [Get](#metrics-get), [Context Store Search](#metrics-context-store-search) |
 | Flows | [List](#flows-list), [Get](#flows-get), [Context Store Search](#flows-context-store-search) |
-| Email Templates | [List](#email-templates-list), [Get](#email-templates-get), [Context Store Search](#email-templates-context-store-search) |
+| Email Templates | [List](#email-templates-list), [Get](#email-templates-get), [Context Store Search](#email-templates-context-store-search), [Semantic Search](#email-templates-semantic-search) |
 
 ## Profiles
 
@@ -1478,6 +1478,92 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].links` | `object` |  |
 | `data[].type` | `string` |  |
 | `data[].updated` | `string` |  |
+
+</details>
+
+### Email Templates Semantic Search
+
+Search email templates records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "klaviyo",
+  "entity": "email_templates",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "attributes", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `email_templates.context_store_search` helper only accepts `query`.
+
+```python
+await klaviyo.execute(
+    "email_templates",
+    "context_store_search",
+    {"semantic": {"field": "attributes", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "email_templates",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "attributes", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `attributes` | 2048 |  |
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.id` | `string` | Source record field |
+| `data[].entity.updated` | `string` | Source record field |
+| `data[].entity.name` | `string` | Source record field |
+| `data[].entity.editor_type` | `string` | Source record field |
+| `data[].entity.created` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

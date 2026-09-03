@@ -1,5 +1,12 @@
 # Airbyte Agents release notes
 
+## September 2, 2026
+
+Web app
+
+- Chat now searches across all of your indexed data by default, so your agent can pull in relevant records from every connector in your workspace without you turning on a setting first. Workspace-wide searches also no longer time out in workspaces with several connectors.
+- Everyone in your organization can now view the API client ID and secret on the Profile page. Previously only administrators could see them, and other members saw an empty page.
+
 ## September 1, 2026
 
 Web app

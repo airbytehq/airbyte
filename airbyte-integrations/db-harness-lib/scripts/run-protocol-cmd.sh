@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run an Airbyte protocol command against airbyte/source-mssql:<version>
+# Run an Airbyte protocol command against an Airbyte connector image.
 # via `airbyte-ops cloud connector regression-test`.
 #
 # Usage:  run-protocol-cmd.sh <command> <step-name> <version> [extra-args…]
@@ -13,7 +13,7 @@
 #   Single-version (default): runs <version> alone with --skip-compare=True
 #     and returns the connector's own exit code (derived from report.md).
 #   Comparison (prove-fix): set CONTROL_VERSION=<tag> to compare <version>
-#     (--test-image) against airbyte/source-mssql:$CONTROL_VERSION
+#     (--test-image) against airbyte/$CONNECTOR:$CONTROL_VERSION
 #     (--control-image). --skip-compare is dropped so airbyte-ops runs both
 #     images and diffs their protocol output with the same comparators
 #     Path A uses (record counts, primary keys, per-record, schema).
@@ -26,7 +26,7 @@
 #   $REPRO_OUT/<step-name>/…  (stdout.txt, stderr.txt, report.md, diff)
 #
 # Env:
-#   REPRO_OUT        parent output directory (default: /tmp/source-mssql-repro)
+#   REPRO_OUT        parent output directory (default: /tmp/$CONNECTOR-repro)
 #   CONTROL_VERSION  when set, enables comparison mode against this tag
 #   AIRBYTE_OPS      command to invoke airbyte-ops. Default picks the binary
 #                    on $PATH (`airbyte-ops`) if `uv tool install
@@ -34,8 +34,8 @@
 #                    `uvx airbyte-internal-ops`.
 set -euo pipefail
 
-REPRO_OUT="${REPRO_OUT:-/tmp/source-mssql-repro}"
-CONNECTOR_IMAGE="airbyte/source-mssql"
+CONNECTOR_IMAGE="airbyte/${CONNECTOR:?engine shim must export CONNECTOR}"
+REPRO_OUT="${REPRO_OUT:-/tmp/${CONNECTOR}-repro}"
 if [[ -z "${AIRBYTE_OPS:-}" ]]; then
   if command -v airbyte-ops >/dev/null 2>&1; then
     AIRBYTE_OPS="airbyte-ops"
