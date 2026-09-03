@@ -12256,7 +12256,7 @@ schemas:
       royaltyQualifiedBorrows:
         type:
           - "null"
-          - integer
+          - number
       kindleEditionNormalizedPagesRead14d:
         type:
           - "null"
