@@ -158,3 +158,7 @@ If you no longer need a domain for SSO purposes, delete its verification.
 4. Click **Test your connection** to verify the updated credentials work correctly.
 
 5. Click **Activate SSO**. -->
+
+## Optional: Add SCIM provisioning
+
+SCIM is an optional add-on to SSO for organizations that want Okta to provision users and groups in Airbyte. SSO works without SCIM. If you want to use SCIM, see [Set up SCIM using Okta](../scim-providers/okta).

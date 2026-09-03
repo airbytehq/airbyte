@@ -1,0 +1,7 @@
+{
+  "client_id": "invalid-client-id",
+  "client_secret": "invalid-client-secret",
+  "refresh_token": "invalid-refresh-token",
+  "user_agent": "Airbyte test",
+  "ad_account_id": "a2_invalid"
+}

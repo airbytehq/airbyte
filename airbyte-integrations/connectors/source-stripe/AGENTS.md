@@ -10,6 +10,8 @@ Stripe's Events API only retains events for 30 days. If the connector's state fa
 
 **Why this matters:** What looks like a simple entity read is actually two completely different data paths depending on whether state exists and how old it is. Adding a new entity stream requires defining both the direct-read retriever AND the events-based retriever with the correct event type filter strings. If the event type strings are wrong, incremental syncs will silently miss updates.
 
+Creation events use a cursor one second earlier than their event timestamp so update events win same-second ties and the newer payload is retained.
+
 ## 2. Silent 403/400/404 Error Ignoring
 
 The base error handler is configured to IGNORE (not fail) responses with HTTP status 403 (permission denied), 400 (bad request), and 404 (not found). When the Stripe API returns any of these errors for a specific resource or subresource, the connector silently skips that record and continues syncing.
