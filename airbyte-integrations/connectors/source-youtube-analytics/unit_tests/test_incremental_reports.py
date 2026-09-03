@@ -53,6 +53,12 @@ def _read_channel_basic(config, state=None):
     return source, catalog
 
 
+def _field(value, name):
+    if isinstance(value, dict):
+        return value.get(name)
+    return getattr(value, name, None)
+
+
 def test_incremental_state_sends_start_time_and_skips_old_reports(config):
     state = (
         StateBuilder()
@@ -83,6 +89,16 @@ def test_incremental_state_sends_start_time_and_skips_old_reports(config):
     assert _DOWNLOAD_OLD not in [request.url for request in mocker.request_history]
     assert len(output.records) == 1
     assert output.records[0].record.data["date"] == 20260301
+    most_recent_state = output.most_recent_state
+    assert most_recent_state is not None
+    report_state = _field(_field(most_recent_state.stream_state, "parent_state"), "report")
+    cursor_dates = []
+    state_cursor = _field(report_state, "state")
+    if state_cursor is not None:
+        cursor_dates.append(_field(state_cursor, "date"))
+    for partition_state in _field(report_state, "states") or []:
+        cursor_dates.append(_field(_field(partition_state, "cursor"), "date"))
+    assert "2026-03-01T07:00:00.000000Z" in cursor_dates
 
 
 def test_initial_sync_requests_all_reports(config):
