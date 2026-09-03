@@ -19,8 +19,9 @@ For more details, see Monday.com's [authentication documentation](https://develo
 2. Search for and select **Monday**.
 3. Enter a name for the connector.
 4. Choose your authentication method and enter the required credentials.
-5. Optionally, enter one or more **Board IDs** to limit syncing to specific boards. If left empty, the connector syncs data from all boards in your account.
-6. Click **Set up source**.
+5. Optionally, enter one or more IDs in **Boards to sync** to limit the Boards, Items, and Activity logs streams to specific boards. If left empty, the connector syncs records from all boards in your account.
+6. Optionally, set **Number of concurrent threads** to control how many requests the connector makes in parallel. The default is 4 and the allowed range is 2 to 50, but the connector caps effective concurrency at 40, Monday.com's concurrency limit for the lowest plan tier. Increase this value only if your [Monday.com plan's rate limits](https://developer.monday.com/api-reference/docs/rate-limits) allow it; higher values can cause rate limit errors on lower tiers.
+7. Click **Set up source**.
 
 ### Connect using OAuth 2.0
 
@@ -73,11 +74,13 @@ The following streams are available:
 
 - Incremental sync for the Items and Boards streams relies on the Activity logs stream. Board and item IDs are extracted from activity log events and used to selectively sync only the changed records. If the time between syncs exceeds the activity log retention period for your [Monday.com plan](https://monday.com/pricing), some changes may not be captured during incremental syncs.
 
+- The Items stream uses [cursor-based pagination](https://developer.monday.com/api-reference/reference/items-page#cursor-based-pagination-using-next_items_page), and Monday.com pagination cursors expire after 60 minutes. If reading a board takes longer than that (for example, due to rate limiting or very large boards), the API returns a `CursorExpiredError` and the connector restarts pagination for that stream from the beginning. Syncs of very large boards can take longer than expected as a result.
+
 If there are additional endpoints you'd like Airbyte to support, [create an issue](https://github.com/airbytehq/airbyte/issues/new/choose).
 
 ## Performance considerations
 
-The Monday connector should not run into Monday API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+Monday.com enforces [rate limits](https://developer.monday.com/api-reference/docs/rate-limits) based on your plan, including per-minute query limits and a query complexity budget. The connector automatically retries complexity budget errors and HTTP rate limit responses with backoff, honoring the `retry-after` header when present. If you see rate limit errors, reduce the **Number of concurrent threads** setting. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
 ## IP allow list
 
@@ -90,6 +93,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.19 | 2026-08-18 | [84675](https://github.com/airbytehq/airbyte/pull/84675) | Update dependencies |
+| 2.5.18 | 2026-08-11 | [84004](https://github.com/airbytehq/airbyte/pull/84004) | Update dependencies |
+| 2.5.17 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 2.5.16 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 2.5.14 — 2.5.15 is built on SDM 7.23.7, which breaks bundled custom components |
+| 2.5.15 | 2026-07-28 | [83007](https://github.com/airbytehq/airbyte/pull/83007) | Update dependencies |
+| 2.5.14 | 2026-07-21 | [82493](https://github.com/airbytehq/airbyte/pull/82493) | Update dependencies |
+| 2.5.13 | 2026-07-14 | [81908](https://github.com/airbytehq/airbyte/pull/81908) | Update dependencies |
+| 2.5.12 | 2026-06-30 | [81167](https://github.com/airbytehq/airbyte/pull/81167) | Update dependencies |
+| 2.5.11 | 2026-06-23 | [80562](https://github.com/airbytehq/airbyte/pull/80562) | Update dependencies |
 | 2.5.10 | 2026-06-16 | [78817](https://github.com/airbytehq/airbyte/pull/78817) | Update dependencies |
 | 2.5.9 | 2026-06-09 | [79605](https://github.com/airbytehq/airbyte/pull/79605) | Clean up cancelled RC; revert source to previous stable |
 | 2.5.9-rc.2 | 2026-05-28 | [78489](https://github.com/airbytehq/airbyte/pull/78489) | Reduce default concurrency to 4 and enable tier-aware HTTPAPIBudget rate limiting |

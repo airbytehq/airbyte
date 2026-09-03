@@ -40,7 +40,6 @@ from source_github.streams import (
     PullRequests,
     PullRequestStats,
     Releases,
-    Repositories,
     RepositoryStats,
     Reviews,
     Stargazers,
@@ -91,8 +90,8 @@ def test_internal_server_error_retry(time_mock, requests_mock):
         (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
         (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804454"}, 60.0),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804724"}, 300.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804454"}, 60.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}, 300.0),
     ],
 )
 @patch("time.time", return_value=1655804424.0)
@@ -103,6 +102,61 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.get_backoff_strategy().backoff_time(response_mock) == expected_backoff_time
+
+
+def test_non_rate_limited_404_does_not_wait_for_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.NOT_FOUND
+    response_mock.headers = {"X-RateLimit-Reset": "1655808024"}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_retry_after_takes_precedence_over_reset():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {
+        "Retry-After": "120",
+        "X-RateLimit-Remaining": "0",
+        "X-RateLimit-Reset": "1655808024",
+    }
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 120.0
+
+
+def test_rate_limit_wait_is_bounded():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.FORBIDDEN
+    response_mock.headers = {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": "1655804724"}
+    args = {
+        "authenticator": None,
+        "repositories": ["test_repo"],
+        "start_date": "start_date",
+        "page_size_for_large_streams": 30,
+        "max_wait_time_seconds": 120,
+    }
+    stream = PullRequestCommentReactions(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) is None
+
+
+def test_graphql_rate_limit_wait_applies():
+    response_mock = MagicMock(spec=requests.Response)
+    response_mock.status_code = HTTPStatus.OK
+    response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
+    response_mock.json.return_value = {"errors": [{"type": "RATE_LIMITED"}]}
+    args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
+    stream = ProjectsV2(**args)
+
+    with patch("time.time", return_value=1655804424.0):
+        assert stream.get_backoff_strategy().backoff_time(response_mock) == 300.0
 
 
 @pytest.mark.parametrize(
@@ -517,6 +571,29 @@ def test_stream_organizations_read(requests_mock):
     assert records == [{"id": 1}, {"id": 2}]
 
 
+@patch("time.sleep")
+def test_stream_401_logs_pat_renewal_hint(time_mock, caplog, requests_mock):
+    """Replaces the deleted test_stream_repositories_401: GithubStreamABC.read_records still logs
+    the PAT-renewal hint on 401 and re-raises, for every stream still on the Python path."""
+    stream = Users(organizations=["org1"], access_token_type=constants.PERSONAL_ACCESS_TOKEN_TITLE)
+
+    requests_mock.get(
+        "https://api.github.com/orgs/org1/members",
+        status_code=requests.codes.UNAUTHORIZED,
+        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        list(read_full_refresh(stream))
+
+    # 1 initial attempt + GithubStreamABC.max_retries (5), matching GITHUB_DEFAULT_ERROR_MAPPING[401] = RETRY.
+    assert requests_mock.call_count == 6
+    assert any(
+        "GitHub authentication failed (HTTP 401) for stream" in message and "Personal Access Token may need to be renewed" in message
+        for message in caplog.messages
+    )
+
+
 def test_stream_teams_read(requests_mock):
     organization_args = {"organizations": ["org1", "org2"]}
     stream = Teams(**organization_args)
@@ -540,72 +617,6 @@ def test_stream_users_read(requests_mock):
     assert requests_mock.call_count == 2
     assert [r.url for r in requests_mock._adapter.request_history][0] == "https://api.github.com/orgs/org1/members?per_page=100"
     assert [r.url for r in requests_mock._adapter.request_history][1] == "https://api.github.com/orgs/org2/members?per_page=100"
-
-
-@patch("time.sleep")
-def test_stream_repositories_404(time_mock, requests_mock):
-    organization_args = {"organizations": ["org_name"]}
-    stream = Repositories(**organization_args)
-
-    requests_mock.get(
-        "https://api.github.com/orgs/org_name/repos",
-        status_code=requests.codes.NOT_FOUND,
-        json={"message": "Not Found", "documentation_url": "https://docs.github.com/rest/reference/repos#list-organization-repositories"},
-    )
-
-    assert list(read_full_refresh(stream)) == []
-    assert requests_mock.call_count == 6
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-
-
-@patch("time.sleep")
-def test_stream_repositories_401(time_mock, caplog, requests_mock):
-    organization_args = {"organizations": ["org_name"], "access_token_type": constants.PERSONAL_ACCESS_TOKEN_TITLE}
-    stream = Repositories(**organization_args)
-
-    requests_mock.get(
-        "https://api.github.com/orgs/org_name/repos",
-        status_code=requests.codes.UNAUTHORIZED,
-        json={"message": "Bad credentials", "documentation_url": "https://docs.github.com/rest"},
-    )
-
-    with pytest.raises(AirbyteTracedException):
-        assert list(read_full_refresh(stream)) == []
-
-    assert requests_mock.call_count == 6
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org_name/repos?per_page=100&sort=updated&direction=desc"
-    assert any(
-        "GitHub authentication failed (HTTP 401) for stream" in msg and "Personal Access Token may need to be renewed" in msg
-        for msg in caplog.messages
-    )
-
-
-@responses.activate
-def test_stream_repositories_read(requests_mock):
-    organization_args = {"organizations": ["org1", "org2"]}
-    stream = Repositories(**organization_args)
-    updated_at = "2020-01-01T00:00:00Z"
-    requests_mock.get(
-        "https://api.github.com/orgs/org1/repos", json=[{"id": 1, "updated_at": updated_at}, {"id": 2, "updated_at": updated_at}]
-    )
-    requests_mock.get("https://api.github.com/orgs/org2/repos", json=[{"id": 3, "updated_at": updated_at}])
-    records = list(read_full_refresh(stream))
-    assert records == [
-        {"id": 1, "organization": "org1", "updated_at": updated_at},
-        {"id": 2, "organization": "org1", "updated_at": updated_at},
-        {"id": 3, "organization": "org2", "updated_at": updated_at},
-    ]
-    assert requests_mock.call_count == 2
-    assert [r.url for r in requests_mock._adapter.request_history][
-        0
-    ] == "https://api.github.com/orgs/org1/repos?per_page=100&sort=updated&direction=desc"
-    assert [r.url for r in requests_mock._adapter.request_history][
-        1
-    ] == "https://api.github.com/orgs/org2/repos?per_page=100&sort=updated&direction=desc"
 
 
 def test_stream_projects_disabled(requests_mock):
@@ -1956,17 +1967,12 @@ def test_stream_contributor_activity_parse_empty_author(caplog, requests_mock):
 
 def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_response, requests_mock):
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte",
         json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
         status_code=200,
     )
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches",
         json={},
         status_code=200,
     )
@@ -1976,9 +1982,9 @@ def test_stream_contributor_activity_accepted_response(caplog, rate_limit_mock_r
         status_code=202,
     )
 
-    source = SourceGithub()
-    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
     config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    source = SourceGithub(config=config, catalog=catalog)
     logger_mock = MagicMock()
 
     with patch("time.sleep", return_value=0):
@@ -2113,17 +2119,12 @@ def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit
     `else: raise e` was paired with the outer `if` instead of the inner `if`, causing
     non-ACCEPTED errors to be silently swallowed."""
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
-        json={"full_name": "airbytehq/test_airbyte"},
-        status_code=200,
-    )
-    requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte",
         json={"full_name": "airbytehq/test_airbyte", "default_branch": "default_branch"},
         status_code=200,
     )
     requests_mock.get(
-        "https://api.github.com/repos/airbytehq/test_airbyte/branches?per_page=100",
+        "https://api.github.com/repos/airbytehq/test_airbyte/branches",
         json={},
         status_code=200,
     )
@@ -2133,9 +2134,9 @@ def test_contributor_activity_reraises_non_accepted_status(time_mock, rate_limit
         status_code=401,
     )
 
-    source = SourceGithub()
-    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
     config = {"access_token": "test_token", "repository": "airbytehq/test_airbyte"}
+    catalog = CatalogBuilder().with_stream(name="contributor_activity", sync_mode=SyncMode.full_refresh).build()
+    source = SourceGithub(config=config, catalog=catalog)
 
     # The 401 error should be re-raised, not silently swallowed
     with pytest.raises(AirbyteTracedException):

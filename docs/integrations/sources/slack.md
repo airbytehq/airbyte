@@ -202,6 +202,17 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.2.21 | 2026-08-27 | [83796](https://github.com/airbytehq/airbyte/pull/83796) | Fix sync failure when the optional `channel_filter` config field is not set |
+| 3.2.20 | 2026-08-18 | [84839](https://github.com/airbytehq/airbyte/pull/84839) | Accept fractional epoch cursor values for the `threads` stream |
+| 3.2.19 | 2026-08-18 | [84762](https://github.com/airbytehq/airbyte/pull/84762) | Update dependencies |
+| 3.2.18 | 2026-08-11 | [84106](https://github.com/airbytehq/airbyte/pull/84106) | Update dependencies |
+| 3.2.17 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 3.2.16 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 3.2.14 — 3.2.15 is built on SDM 7.23.7, which breaks bundled custom components |
+| 3.2.15 | 2026-07-28 | [83082](https://github.com/airbytehq/airbyte/pull/83082) | Update dependencies |
+| 3.2.14 | 2026-07-21 | [82582](https://github.com/airbytehq/airbyte/pull/82582) | Update dependencies |
+| 3.2.13 | 2026-07-14 | [82022](https://github.com/airbytehq/airbyte/pull/82022) | Update dependencies |
+| 3.2.12 | 2026-06-30 | [81255](https://github.com/airbytehq/airbyte/pull/81255) | Update dependencies |
+| 3.2.11 | 2026-06-23 | [80627](https://github.com/airbytehq/airbyte/pull/80627) | Update dependencies |
 | 3.2.10 | 2026-06-16 | [80042](https://github.com/airbytehq/airbyte/pull/80042) | Update dependencies |
 | 3.2.9 | 2026-06-09 | [79480](https://github.com/airbytehq/airbyte/pull/79480) | Update dependencies |
 | 3.2.8 | 2026-06-02 | [78986](https://github.com/airbytehq/airbyte/pull/78986) | Update dependencies |

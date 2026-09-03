@@ -4,11 +4,12 @@
 
 import csv
 import io
+import json
 import logging
 import re
 from datetime import datetime, timedelta
 from typing import List
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import freezegun
 import pytest
@@ -16,7 +17,7 @@ import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import API_VERSION, Salesforce
+from source_salesforce.api import _LOGIN_DEDUP_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -131,6 +132,96 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     with pytest.raises(AirbyteTracedException) as err:
         source.check_connection(logger, stream_config)
     assert err.value.message == expected_error_msg
+
+
+def _register_login(requests_mock, **extra):
+    response = {"access_token": "fake_access_token", "instance_url": "https://fake.salesforce.com"}
+    response.update(extra)
+    requests_mock.register_uri("POST", "https://login.salesforce.com/services/oauth2/token", json=response)
+
+
+def _persisted_refresh_tokens(capsys):
+    """Return the refresh_token from every CONNECTOR_CONFIG control message the connector printed to
+    stdout. Persistence happens via direct stdout emission (see SourceSalesforce._persist_rotated_refresh_token),
+    which is what the platform reads, so that is what we assert against rather than the message repository."""
+    tokens = []
+    for line in capsys.readouterr().out.splitlines():
+        try:
+            message = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        control = message.get("control") or {}
+        if message.get("type") == "CONTROL" and control.get("type") == "CONNECTOR_CONFIG":
+            tokens.append(control["connectorConfig"]["config"]["refresh_token"])
+    return tokens
+
+
+def test_rotated_refresh_token_is_persisted(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="new_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "new_refresh_token"
+    assert _persisted_refresh_tokens(capsys) == ["new_refresh_token"]
+
+
+def test_no_refresh_token_in_response_does_not_emit_control_message(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock)
+
+    source._get_sf_object(config)
+
+    assert config["refresh_token"] == "old_refresh_token"
+    assert _persisted_refresh_tokens(capsys) == []
+
+
+def test_unchanged_refresh_token_does_not_emit_control_message(requests_mock, capsys):
+    config = ConfigBuilder().refresh_token("same_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    _register_login(requests_mock, refresh_token="same_refresh_token")
+
+    source._get_sf_object(config)
+
+    assert _persisted_refresh_tokens(capsys) == []
+
+
+def test_mid_sync_rotation_is_persisted(requests_mock, capsys):
+    """A second login() (the proactive/forced refresh the connector runs during a sync) rotates the
+    single-use token again, so that rotation must be persisted too. Persisting only the first login
+    would leave the stored config holding a token Salesforce already invalidated."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+
+    _register_login(requests_mock, refresh_token="rotated_once")
+    sf = source._get_sf_object(config)
+
+    _register_login(requests_mock, refresh_token="rotated_twice")
+    # Mid-sync refreshes fire well after the post-login dedup window (they are triggered by
+    # staleness or a 401 on an old token), so move past it.
+    with patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _LOGIN_DEDUP_SECONDS + 1):
+        sf.login()
+
+    assert config["refresh_token"] == "rotated_twice"
+    assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
+
+
+def test_token_provider_force_refresh_persists_rotation(requests_mock, capsys):
+    """SalesforceTokenProvider.force_refresh (triggered on INVALID_SESSION_ID) must also persist the rotation."""
+    config = ConfigBuilder().refresh_token("old_refresh_token").build()
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+
+    _register_login(requests_mock, refresh_token="rotated_once")
+    sf = source._get_sf_object(config)
+
+    _register_login(requests_mock, refresh_token="rotated_twice")
+    with patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _LOGIN_DEDUP_SECONDS + 1):
+        SalesforceTokenProvider(sf).force_refresh()
+
+    assert config["refresh_token"] == "rotated_twice"
+    assert _persisted_refresh_tokens(capsys) == ["rotated_once", "rotated_twice"]
 
 
 def test_stream_unsupported_by_bulk(stream_config, stream_api):
@@ -584,9 +675,11 @@ def test_bulk_stream_request_params_states(stream_config_date_format, stream_api
     stream_config_date_format.update({"start_date": "2023-01-01"})
     state = StateBuilder().with_stream_state("Account", {"LastModifiedDate": "2023-01-01T10:20:10.000Z"}).build()
 
-    source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.full_refresh).build(), _ANY_CONFIG, _ANY_STATE)
+    source = SourceSalesforce(CatalogBuilder().with_stream("Account", SyncMode.incremental).build(), _ANY_CONFIG, state)
     source.streams = Mock()
-    source.streams.return_value = [generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False)]
+    source.streams.return_value = [
+        generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=False, source=source)
+    ]
 
     # using legacy state to configure HTTP requests
     stream: BulkIncrementalSalesforceStream = generate_stream("Account", stream_config_date_format, stream_api, state=state, legacy=True)
@@ -675,3 +768,83 @@ def test_request_params_substream(stream_config_date_format, stream_api):
     params = stream.request_params(stream_state={}, stream_slice={"parents": [{"Id": 1}, {"Id": 2}]})
 
     assert params == {"q": "SELECT LastModifiedDate, Id FROM ContentDocumentLink WHERE ContentDocumentId IN ('1','2')"}
+
+
+def test_source_uses_ordered_concurrent_message_repository():
+    """State checkpoints must be emitted in-order with records to avoid advancing the cursor past
+    records not yet durably committed on an ungraceful termination. This requires the ordered
+    ConcurrentMessageRepository (sharing the concurrent source's queue) rather than the default
+    InMemoryMessageRepository."""
+    from airbyte_cdk.sources.message.concurrent_repository import ConcurrentMessageRepository
+
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    assert isinstance(source.message_repository, ConcurrentMessageRepository)
+    # The ordering guarantee only holds if the repository writes to the same queue the concurrent
+    # source drains on the main thread. Assert they are the very same object, not just the right type.
+    assert source.message_repository._queue is source._concurrent_source._queue
+
+
+def _a_state_message():
+    from airbyte_cdk.models import (
+        AirbyteMessage,
+        AirbyteStateMessage,
+        AirbyteStateType,
+        AirbyteStreamState,
+        StreamDescriptor,
+    )
+
+    return AirbyteMessage(
+        type=Type.STATE,
+        state=AirbyteStateMessage(
+            type=AirbyteStateType.STREAM,
+            stream=AirbyteStreamState(stream_descriptor=StreamDescriptor(name="Account"), stream_state=AirbyteStateBlob()),
+        ),
+    )
+
+
+def test_state_checkpoint_is_delivered_after_records_it_follows():
+    """Behavioral regression for oncall #13081.
+
+    The concurrent source drains a single FIFO queue on the main thread. PartitionReader enqueues a
+    partition's records first and only then calls close_partition, which emits the state checkpoint
+    through the message repository. Because the connector routes state through that same queue, the
+    checkpoint is dequeued AFTER the records it follows - so an ungraceful termination can never
+    persist a cursor that has advanced past records still waiting to be delivered.
+    """
+    source = SourceSalesforce(_ANY_CATALOG, _ANY_CONFIG, _ANY_STATE)
+    queue = source._concurrent_source._queue
+
+    # Records are placed on the shared queue before the checkpoint is emitted (as PartitionReader does).
+    record_a, record_b = object(), object()
+    queue.put(record_a)
+    queue.put(record_b)
+
+    state_message = _a_state_message()
+    source.message_repository.emit_message(state_message)
+
+    drained = []
+    while not queue.empty():
+        drained.append(queue.get_nowait())
+
+    # FIFO: the checkpoint is delivered strictly after the records that preceded it.
+    assert drained == [record_a, record_b, state_message]
+
+
+def test_plain_in_memory_repository_does_not_order_state_with_records():
+    """Control for the fix: the pre-fix InMemoryMessageRepository keeps state on its own channel,
+    NOT the record queue, so it provides no ordering guarantee relative to queued records. This is
+    the behavior that allowed a checkpoint to be flushed ahead of pending records."""
+    from queue import Queue
+
+    from airbyte_cdk.models import Level
+    from airbyte_cdk.sources.message import InMemoryMessageRepository
+
+    record_queue = Queue()
+    record_queue.put(object())
+
+    plain_repo = InMemoryMessageRepository(Level.INFO)
+    plain_repo.emit_message(_a_state_message())
+
+    # The state never landed on the record queue; it lives on a separate channel.
+    assert record_queue.qsize() == 1
+    assert [m.type for m in plain_repo.consume_queue()] == [Type.STATE]

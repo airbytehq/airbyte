@@ -82,7 +82,7 @@ class ShopifyWrongShopNameError(AirbyteTracedException):
 
     def __init__(self, url, **kwargs) -> None:
         self.message = f"The `Shopify Store` name is invalid or missing for `input configuration`, make sure it's valid. Details: {url}"
-        super().__init__(internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
+        super().__init__(message=self.message, internal_message=self.message, failure_type=FailureType.config_error, **kwargs)
 
 
 class UnrecognisedApiType(Exception):
