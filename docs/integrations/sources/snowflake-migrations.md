@@ -26,7 +26,7 @@ If your Airbyte Snowflake source uses **username and password** credentials, you
    openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -v2 aes-256-cbc -out rsa_key.p8
    ```
 
-   For a complete guide on key pair setup including key storage and verification, see [Key pair authentication](./snowflake#key-pair-authentication) in the setup guide.
+   For a complete guide on key pair setup including key storage and verification, see [Key pair authentication](./snowflake.md#key-pair-authentication) in the setup guide.
 
 2. **Assign the public key to your Snowflake user.** Run this SQL in Snowflake. Replace `<user_name>` with the Snowflake username configured in your Airbyte source (you can find this on the source configuration page in the Airbyte UI) and `<public_key_value>` with the contents of your `rsa_key.pub` file, **excluding** the `-----BEGIN PUBLIC KEY-----` and `-----END PUBLIC KEY-----` header/footer lines:
 
@@ -52,7 +52,7 @@ If your Airbyte Snowflake source uses **username and password** credentials, you
    ALTER USER <user_name> SET TYPE = SERVICE;
    ```
 
-If you prefer a programmatic access token instead of a key pair, follow [Programmatic access token authentication](./snowflake#programmatic-access-token-authentication) in the setup guide and select **Programmatic Access Token** as the authorization method.
+If you prefer a programmatic access token instead of a key pair, follow [Programmatic access token authentication](./snowflake.md#programmatic-access-token-authentication) in the setup guide and select **Programmatic Access Token** as the authorization method.
 
 For more details on key pair authentication troubleshooting, see [Snowflake's troubleshooting docs](https://docs.snowflake.com/en/user-guide/key-pair-auth-troubleshooting).
 

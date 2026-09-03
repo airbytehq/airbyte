@@ -7,7 +7,7 @@ Starting with version **2.0.0**, username and password authentication is **depre
 
 This change aligns with [Snowflake's deprecation of single-factor password sign-ins](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Snowflake is enforcing strong authentication for all users on a rolling per-account basis between **August and October 2026**; once enforced on your account, password-only logins from Airbyte will fail.
 
-If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication.
+If you are currently using username and password authentication, see the [Snowflake Migration Guide](./snowflake-migrations.md) for instructions on migrating to key pair authentication or a programmatic access token.
 :::
 
 ## Overview
@@ -125,8 +125,8 @@ You'll need the following information to configure the Snowflake source:
 3. **Warehouse**
 4. **Database**
 5. **Schema**
-6. **Username**
-7. **Private key or programmatic access token** (username and password authentication is deprecated)
+6. **Username** (not required for programmatic access token authentication)
+7. **Private key or programmatic access token** (password authentication is deprecated but still supported)
 8. **JDBC URL Params** (Optional)
 
 Additionally, create a dedicated read-only Airbyte service user and role with access to all schemas needed for replication.
@@ -147,6 +147,8 @@ To create a dedicated database user, first generate a key pair as described in [
 -- set variables (these need to be uppercase)
 SET AIRBYTE_ROLE = 'AIRBYTE_ROLE';
 SET AIRBYTE_USERNAME = 'AIRBYTE_USER';
+SET AIRBYTE_WAREHOUSE = 'AIRBYTE_WAREHOUSE';
+SET AIRBYTE_SCHEMA = 'AIRBYTE_DATABASE.AIRBYTE_SCHEMA';
 
 BEGIN;
 
