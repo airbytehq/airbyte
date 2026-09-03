@@ -1,3 +1,5 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from __future__ import annotations
 
 import logging
@@ -212,4 +214,3 @@ class UscreenHttpRequester(HttpRequester):
             )
 
         return response
-
