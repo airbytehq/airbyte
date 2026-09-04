@@ -58,6 +58,10 @@ If you are using the `start_date` and `end_date` parameter with the `credit_ledg
 Please reach out to the Orb team at [team@withorb.com](mailto:team@withorb.com) to request
 an Orb Account and API Key.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

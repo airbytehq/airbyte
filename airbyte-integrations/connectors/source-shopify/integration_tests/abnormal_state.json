@@ -234,6 +234,17 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
+        "updated_at": "2027-07-11T13:07:45-07:00"
+      },
+      "stream_descriptor": {
+        "name": "discount_codes_sync"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
         "products": {
           "updated_at": "2027-07-11T13:07:45-07:00",
           "deleted": {

@@ -47,6 +47,10 @@ The Workable source connector supports the following [sync modes](https://docs.a
 - [Stages](https://workable.readme.io/reference/stages)
 - [Recruiters](https://workable.readme.io/reference/recruiters)
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -54,6 +58,7 @@ The Workable source connector supports the following [sync modes](https://docs.a
 
 | Version | Date       | Pull Request                                             | Subject              |
 | :------ | :--------- | :------------------------------------------------------- | :------------------- |
+| 0.2.17 | 2026-06-02 | [79074](https://github.com/airbytehq/airbyte/pull/79074) | Update dependencies |
 | 0.2.16 | 2025-05-24 | [60781](https://github.com/airbytehq/airbyte/pull/60781) | Update dependencies |
 | 0.2.15 | 2025-05-10 | [59931](https://github.com/airbytehq/airbyte/pull/59931) | Update dependencies |
 | 0.2.14 | 2025-05-04 | [58918](https://github.com/airbytehq/airbyte/pull/58918) | Update dependencies |

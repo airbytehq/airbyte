@@ -19,3 +19,7 @@ Reach out to your service representative or system admin to find the parameters 
 ### Output schema
 
 To understand your Oracle Siebel CRM database schema, see the [Organization Setup Overview docs](https://docs.oracle.com/cd/E88140_01/books/DevDep/basic-organization-setup-overview.html#basic-organization-setup-overview) documentation. Otherwise, the schema will be loaded according to the rules of the underlying database's connector.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.

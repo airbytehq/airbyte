@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ActivityLogsAnyCondition"></a>
@@ -92,10 +92,24 @@ Classes
     `user_id: Any`
     :   ID of the user who performed the action
 
+<a id="ActivityLogsArrayContainsCondition"></a>
+
+`ActivityLogsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ActivityLogsContainsCondition"></a>
 
 `ActivityLogsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -104,6 +118,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ActivityLogsEndswithCondition"></a>
+
+`ActivityLogsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.ActivityLogsStringFilter`
     :   The type of the None singleton.
 
 <a id="ActivityLogsEqCondition"></a>
@@ -236,20 +264,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.monday.types.ActivityLogsStringFilter`
     :   The type of the None singleton.
 
-<a id="ActivityLogsLikeCondition"></a>
-
-`ActivityLogsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.ActivityLogsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ActivityLogsListParams"></a>
 
 `ActivityLogsListParams(*args, **kwargs)`
@@ -325,7 +339,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ActivityLogsOrCondition"></a>
@@ -347,7 +361,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ActivityLogsSearchFilter"></a>
@@ -399,7 +413,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.ActivityLogsEqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsGteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLtCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsLteCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsInCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsNotCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAndCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsOrCondition | airbyte_agent_sdk.connectors.monday.types.ActivityLogsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.ActivityLogsSortFilter]`
@@ -443,10 +457,24 @@ Classes
     `user_id: Literal['asc', 'desc']`
     :   ID of the user who performed the action
 
+<a id="ActivityLogsStartswithCondition"></a>
+
+`ActivityLogsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.ActivityLogsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ActivityLogsStringFilter"></a>
 
 `ActivityLogsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -523,7 +551,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLikeCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardsAnyCondition"></a>
@@ -572,7 +600,7 @@ Classes
     :   Board creator
 
     `description: Any`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: Any`
     :   Board groups
@@ -619,10 +647,24 @@ Classes
     `workspace: Any`
     :   Workspace the board belongs to
 
+<a id="BoardsArrayContainsCondition"></a>
+
+`BoardsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.BoardsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BoardsContainsCondition"></a>
 
 `BoardsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -631,6 +673,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.BoardsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="BoardsEndswithCondition"></a>
+
+`BoardsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.BoardsStringFilter`
     :   The type of the None singleton.
 
 <a id="BoardsEqCondition"></a>
@@ -749,7 +805,7 @@ Classes
     :   Board creator
 
     `description: list[str]`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: list[list[typing.Any]]`
     :   Board groups
@@ -808,20 +864,6 @@ Classes
     ### Class variables
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.BoardsStringFilter`
-    :   The type of the None singleton.
-
-<a id="BoardsLikeCondition"></a>
-
-`BoardsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.BoardsStringFilter`
     :   The type of the None singleton.
 
 <a id="BoardsListParams"></a>
@@ -894,7 +936,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLikeCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition`
     :   The type of the None singleton.
 
 <a id="BoardsOrCondition"></a>
@@ -916,7 +958,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLikeCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BoardsSearchFilter"></a>
@@ -943,7 +985,7 @@ Classes
     :   Board creator
 
     `description: str | None`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: list[typing.Any] | None`
     :   Board groups
@@ -1001,7 +1043,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLikeCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.BoardsEqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNeqCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsGteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLtCondition | airbyte_agent_sdk.connectors.monday.types.BoardsLteCondition | airbyte_agent_sdk.connectors.monday.types.BoardsInCondition | airbyte_agent_sdk.connectors.monday.types.BoardsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.BoardsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.BoardsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.BoardsContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.BoardsNotCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAndCondition | airbyte_agent_sdk.connectors.monday.types.BoardsOrCondition | airbyte_agent_sdk.connectors.monday.types.BoardsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.BoardsSortFilter]`
@@ -1031,7 +1073,7 @@ Classes
     :   Board creator
 
     `description: Literal['asc', 'desc']`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: Literal['asc', 'desc']`
     :   Board groups
@@ -1078,10 +1120,24 @@ Classes
     `workspace: Literal['asc', 'desc']`
     :   Workspace the board belongs to
 
+<a id="BoardsStartswithCondition"></a>
+
+`BoardsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.BoardsStringFilter`
+    :   The type of the None singleton.
+
 <a id="BoardsStringFilter"></a>
 
 `BoardsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1102,7 +1158,7 @@ Classes
     :   Board creator
 
     `description: str`
-    :   Board description
+    :   Board description -- the charter a team writes to say what the board is for. Semantically searchable. Empty on boards created programmatically.
 
     `groups: str`
     :   Board groups
@@ -1168,7 +1224,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ItemsAnyCondition"></a>
@@ -1226,7 +1282,7 @@ Classes
     :   Unique item identifier
 
     `name: Any`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: Any`
     :   Parent item (for subitems)
@@ -1246,10 +1302,24 @@ Classes
     `updates: Any`
     :   Item updates
 
+<a id="ItemsArrayContainsCondition"></a>
+
+`ItemsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.ItemsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ItemsContainsCondition"></a>
 
 `ItemsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1258,6 +1328,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.ItemsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ItemsEndswithCondition"></a>
+
+`ItemsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.ItemsStringFilter`
     :   The type of the None singleton.
 
 <a id="ItemsEqCondition"></a>
@@ -1385,7 +1469,7 @@ Classes
     :   Unique item identifier
 
     `name: list[str]`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: list[dict[str, typing.Any]]`
     :   Parent item (for subitems)
@@ -1417,20 +1501,6 @@ Classes
     ### Class variables
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.ItemsStringFilter`
-    :   The type of the None singleton.
-
-<a id="ItemsLikeCondition"></a>
-
-`ItemsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.ItemsStringFilter`
     :   The type of the None singleton.
 
 <a id="ItemsListParams"></a>
@@ -1508,7 +1578,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ItemsOrCondition"></a>
@@ -1530,7 +1600,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ItemsSearchFilter"></a>
@@ -1566,7 +1636,7 @@ Classes
     :   Unique item identifier
 
     `name: str | None`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: dict[str, typing.Any] | None`
     :   Parent item (for subitems)
@@ -1597,7 +1667,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLikeCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.ItemsEqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNeqCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsGteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLtCondition | airbyte_agent_sdk.connectors.monday.types.ItemsLteCondition | airbyte_agent_sdk.connectors.monday.types.ItemsInCondition | airbyte_agent_sdk.connectors.monday.types.ItemsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.ItemsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.ItemsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.ItemsContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.ItemsNotCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAndCondition | airbyte_agent_sdk.connectors.monday.types.ItemsOrCondition | airbyte_agent_sdk.connectors.monday.types.ItemsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.ItemsSortFilter]`
@@ -1636,7 +1706,7 @@ Classes
     :   Unique item identifier
 
     `name: Literal['asc', 'desc']`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: Literal['asc', 'desc']`
     :   Parent item (for subitems)
@@ -1656,10 +1726,24 @@ Classes
     `updates: Literal['asc', 'desc']`
     :   Item updates
 
+<a id="ItemsStartswithCondition"></a>
+
+`ItemsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.ItemsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ItemsStringFilter"></a>
 
 `ItemsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1689,7 +1773,7 @@ Classes
     :   Unique item identifier
 
     `name: str`
-    :   Item name
+    :   Item name -- the task/row title, and the only always-populated human-readable text on an item. Semantically searchable, prefixed with its board name.
 
     `parent_item: str`
     :   Parent item (for subitems)
@@ -1728,7 +1812,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsAnyCondition"></a>
@@ -1773,10 +1857,24 @@ Classes
     `name: Any`
     :   Tag name
 
+<a id="TagsArrayContainsCondition"></a>
+
+`TagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1785,6 +1883,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TagsEndswithCondition"></a>
+
+`TagsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.TagsStringFilter`
     :   The type of the None singleton.
 
 <a id="TagsEqCondition"></a>
@@ -1899,20 +2011,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.monday.types.TagsStringFilter`
     :   The type of the None singleton.
 
-<a id="TagsLikeCondition"></a>
-
-`TagsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.TagsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TagsListParams"></a>
 
 `TagsListParams(*args, **kwargs)`
@@ -1983,7 +2081,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TagsOrCondition"></a>
@@ -2005,7 +2103,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsSearchFilter"></a>
@@ -2039,7 +2137,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.TagsEqCondition | airbyte_agent_sdk.connectors.monday.types.TagsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TagsGtCondition | airbyte_agent_sdk.connectors.monday.types.TagsGteCondition | airbyte_agent_sdk.connectors.monday.types.TagsLtCondition | airbyte_agent_sdk.connectors.monday.types.TagsLteCondition | airbyte_agent_sdk.connectors.monday.types.TagsInCondition | airbyte_agent_sdk.connectors.monday.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TagsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TagsNotCondition | airbyte_agent_sdk.connectors.monday.types.TagsAndCondition | airbyte_agent_sdk.connectors.monday.types.TagsOrCondition | airbyte_agent_sdk.connectors.monday.types.TagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.TagsSortFilter]`
@@ -2065,10 +2163,24 @@ Classes
     `name: Literal['asc', 'desc']`
     :   Tag name
 
+<a id="TagsStartswithCondition"></a>
+
+`TagsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.TagsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TagsStringFilter"></a>
 
 `TagsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2104,7 +2216,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsAnyCondition"></a>
@@ -2152,10 +2264,24 @@ Classes
     `users: Any`
     :   Team members
 
+<a id="TeamsArrayContainsCondition"></a>
+
+`TeamsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsContainsCondition"></a>
 
 `TeamsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2164,6 +2290,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.TeamsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="TeamsEndswithCondition"></a>
+
+`TeamsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.TeamsStringFilter`
     :   The type of the None singleton.
 
 <a id="TeamsEqCondition"></a>
@@ -2295,20 +2435,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.monday.types.TeamsStringFilter`
     :   The type of the None singleton.
 
-<a id="TeamsLikeCondition"></a>
-
-`TeamsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.TeamsStringFilter`
-    :   The type of the None singleton.
-
 <a id="TeamsListParams"></a>
 
 `TeamsListParams(*args, **kwargs)`
@@ -2379,7 +2505,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TeamsOrCondition"></a>
@@ -2401,7 +2527,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TeamsSearchFilter"></a>
@@ -2438,7 +2564,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLikeCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.TeamsEqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNeqCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsGteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLtCondition | airbyte_agent_sdk.connectors.monday.types.TeamsLteCondition | airbyte_agent_sdk.connectors.monday.types.TeamsInCondition | airbyte_agent_sdk.connectors.monday.types.TeamsStartswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsEndswithCondition | airbyte_agent_sdk.connectors.monday.types.TeamsFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.TeamsKeywordCondition | airbyte_agent_sdk.connectors.monday.types.TeamsContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.TeamsNotCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAndCondition | airbyte_agent_sdk.connectors.monday.types.TeamsOrCondition | airbyte_agent_sdk.connectors.monday.types.TeamsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.TeamsSortFilter]`
@@ -2467,10 +2593,24 @@ Classes
     `users: Literal['asc', 'desc']`
     :   Team members
 
+<a id="TeamsStartswithCondition"></a>
+
+`TeamsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.TeamsStringFilter`
+    :   The type of the None singleton.
+
 <a id="TeamsStringFilter"></a>
 
 `TeamsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2509,7 +2649,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLikeCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UpdatesAnyCondition"></a>
@@ -2549,7 +2689,7 @@ Classes
     :   Files attached to this update
 
     `body: Any`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: Any`
     :   When the update was created
@@ -2564,18 +2704,32 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: Any`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: Any`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: Any`
     :   When the update was last modified
 
+<a id="UpdatesArrayContainsCondition"></a>
+
+`UpdatesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.UpdatesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UpdatesContainsCondition"></a>
 
 `UpdatesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2584,6 +2738,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.UpdatesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UpdatesEndswithCondition"></a>
+
+`UpdatesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.UpdatesStringFilter`
     :   The type of the None singleton.
 
 <a id="UpdatesEqCondition"></a>
@@ -2693,7 +2861,7 @@ Classes
     :   Files attached to this update
 
     `body: list[str]`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: list[str]`
     :   When the update was created
@@ -2708,10 +2876,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: list[list[typing.Any]]`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: list[str]`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: list[str]`
     :   When the update was last modified
@@ -2728,20 +2896,6 @@ Classes
     ### Class variables
 
     `keyword: airbyte_agent_sdk.connectors.monday.types.UpdatesStringFilter`
-    :   The type of the None singleton.
-
-<a id="UpdatesLikeCondition"></a>
-
-`UpdatesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.UpdatesStringFilter`
     :   The type of the None singleton.
 
 <a id="UpdatesListParams"></a>
@@ -2822,7 +2976,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLikeCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="UpdatesOrCondition"></a>
@@ -2844,7 +2998,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLikeCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UpdatesSearchFilter"></a>
@@ -2862,7 +3016,7 @@ Classes
     :   Files attached to this update
 
     `body: str | None`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: str | None`
     :   When the update was created
@@ -2877,10 +3031,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: list[typing.Any] | None`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: str | None`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: str | None`
     :   When the update was last modified
@@ -2896,7 +3050,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLikeCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.UpdatesEqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNeqCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesGteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLtCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesLteCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesInCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesNotCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAndCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesOrCondition | airbyte_agent_sdk.connectors.monday.types.UpdatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.UpdatesSortFilter]`
@@ -2917,7 +3071,7 @@ Classes
     :   Files attached to this update
 
     `body: Literal['asc', 'desc']`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: Literal['asc', 'desc']`
     :   When the update was created
@@ -2932,18 +3086,32 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: Literal['asc', 'desc']`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: Literal['asc', 'desc']`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: Literal['asc', 'desc']`
     :   When the update was last modified
 
+<a id="UpdatesStartswithCondition"></a>
+
+`UpdatesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.UpdatesStringFilter`
+    :   The type of the None singleton.
+
 <a id="UpdatesStringFilter"></a>
 
 `UpdatesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2955,7 +3123,7 @@ Classes
     :   Files attached to this update
 
     `body: str`
-    :   Update body (HTML)
+    :   Update body as HTML. Not semantically indexed -- the embedding engine has no HTML decoder. Use text_body for search; this field is for rendering only.
 
     `created_at: str`
     :   When the update was created
@@ -2970,10 +3138,10 @@ Classes
     :   ID of the item this update belongs to
 
     `replies: str`
-    :   Replies to this update
+    :   Replies to this update -- the threaded discussion beneath it, where the substance of a Monday conversation usually lives. Each reply's plain text is semantically indexed as its own unit; the parent update's text is appended as context.
 
     `text_body: str`
-    :   Update body (plain text)
+    :   Update body as plain text -- the human comment posted on a Monday item. Semantically searchable. Empty for image-only updates, which therefore produce no embedding.
 
     `updated_at: str`
     :   When the update was last modified
@@ -2997,7 +3165,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersLikeCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -3045,29 +3213,8 @@ Classes
     `email: Any`
     :   User's email address
 
-    `enabled: Any`
-    :   Whether the user account is enabled
-
     `id: Any`
     :   Unique user identifier
-
-    `is_admin: Any`
-    :   Whether the user is an admin
-
-    `is_guest: Any`
-    :   Whether the user is a guest
-
-    `is_pending: Any`
-    :   Whether the user is pending
-
-    `is_verified: Any`
-    :   Whether the user is verified
-
-    `is_view_only: Any`
-    :   Whether the user is view-only
-
-    `join_date: Any`
-    :   When the user joined
 
     `location: Any`
     :   User's location
@@ -3081,21 +3228,6 @@ Classes
     `phone: Any`
     :   User's phone number
 
-    `photo_original: Any`
-    :   URL to original size photo
-
-    `photo_small: Any`
-    :   URL to small photo
-
-    `photo_thumb: Any`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: Any`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: Any`
-    :   URL to tiny photo
-
     `time_zone_identifier: Any`
     :   User's timezone identifier
 
@@ -3106,12 +3238,26 @@ Classes
     :   User's Monday.com profile URL
 
     `utc_hours_diff: Any`
-    :   UTC hours difference for the user's timezone
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
+
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
 
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3120,6 +3266,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="UsersEndswithCondition"></a>
+
+`UsersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.UsersStringFilter`
     :   The type of the None singleton.
 
 <a id="UsersEqCondition"></a>
@@ -3237,29 +3397,8 @@ Classes
     `email: list[str]`
     :   User's email address
 
-    `enabled: list[bool]`
-    :   Whether the user account is enabled
-
     `id: list[str]`
     :   Unique user identifier
-
-    `is_admin: list[bool]`
-    :   Whether the user is an admin
-
-    `is_guest: list[bool]`
-    :   Whether the user is a guest
-
-    `is_pending: list[bool]`
-    :   Whether the user is pending
-
-    `is_verified: list[bool]`
-    :   Whether the user is verified
-
-    `is_view_only: list[bool]`
-    :   Whether the user is view-only
-
-    `join_date: list[str]`
-    :   When the user joined
 
     `location: list[str]`
     :   User's location
@@ -3273,21 +3412,6 @@ Classes
     `phone: list[str]`
     :   User's phone number
 
-    `photo_original: list[str]`
-    :   URL to original size photo
-
-    `photo_small: list[str]`
-    :   URL to small photo
-
-    `photo_thumb: list[str]`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: list[str]`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: list[str]`
-    :   URL to tiny photo
-
     `time_zone_identifier: list[str]`
     :   User's timezone identifier
 
@@ -3297,8 +3421,8 @@ Classes
     `url: list[str]`
     :   User's Monday.com profile URL
 
-    `utc_hours_diff: list[int]`
-    :   UTC hours difference for the user's timezone
+    `utc_hours_diff: list[float]`
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="UsersKeywordCondition"></a>
 
@@ -3314,20 +3438,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.monday.types.UsersStringFilter`
     :   The type of the None singleton.
 
-<a id="UsersLikeCondition"></a>
-
-`UsersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.UsersStringFilter`
-    :   The type of the None singleton.
-
 <a id="UsersListParams"></a>
 
 `UsersListParams(*args, **kwargs)`
@@ -3336,6 +3446,14 @@ Classes
     ### Ancestors (in MRO)
 
     * builtins.dict
+
+    ### Class variables
+
+    `limit: int`
+    :   The type of the None singleton.
+
+    `page: int`
+    :   The type of the None singleton.
 
 <a id="UsersLtCondition"></a>
 
@@ -3398,7 +3516,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersLikeCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -3420,7 +3538,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersLikeCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -3446,29 +3564,8 @@ Classes
     `email: str | None`
     :   User's email address
 
-    `enabled: bool | None`
-    :   Whether the user account is enabled
-
     `id: str | None`
     :   Unique user identifier
-
-    `is_admin: bool | None`
-    :   Whether the user is an admin
-
-    `is_guest: bool | None`
-    :   Whether the user is a guest
-
-    `is_pending: bool | None`
-    :   Whether the user is pending
-
-    `is_verified: bool | None`
-    :   Whether the user is verified
-
-    `is_view_only: bool | None`
-    :   Whether the user is view-only
-
-    `join_date: str | None`
-    :   When the user joined
 
     `location: str | None`
     :   User's location
@@ -3482,21 +3579,6 @@ Classes
     `phone: str | None`
     :   User's phone number
 
-    `photo_original: str | None`
-    :   URL to original size photo
-
-    `photo_small: str | None`
-    :   URL to small photo
-
-    `photo_thumb: str | None`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: str | None`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: str | None`
-    :   URL to tiny photo
-
     `time_zone_identifier: str | None`
     :   User's timezone identifier
 
@@ -3506,8 +3588,8 @@ Classes
     `url: str | None`
     :   User's Monday.com profile URL
 
-    `utc_hours_diff: int | None`
-    :   UTC hours difference for the user's timezone
+    `utc_hours_diff: float | None`
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="UsersSearchQuery"></a>
 
@@ -3520,7 +3602,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersLikeCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.UsersEqCondition | airbyte_agent_sdk.connectors.monday.types.UsersNeqCondition | airbyte_agent_sdk.connectors.monday.types.UsersGtCondition | airbyte_agent_sdk.connectors.monday.types.UsersGteCondition | airbyte_agent_sdk.connectors.monday.types.UsersLtCondition | airbyte_agent_sdk.connectors.monday.types.UsersLteCondition | airbyte_agent_sdk.connectors.monday.types.UsersInCondition | airbyte_agent_sdk.connectors.monday.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.monday.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.monday.types.UsersContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.UsersNotCondition | airbyte_agent_sdk.connectors.monday.types.UsersAndCondition | airbyte_agent_sdk.connectors.monday.types.UsersOrCondition | airbyte_agent_sdk.connectors.monday.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.UsersSortFilter]`
@@ -3549,29 +3631,8 @@ Classes
     `email: Literal['asc', 'desc']`
     :   User's email address
 
-    `enabled: Literal['asc', 'desc']`
-    :   Whether the user account is enabled
-
     `id: Literal['asc', 'desc']`
     :   Unique user identifier
-
-    `is_admin: Literal['asc', 'desc']`
-    :   Whether the user is an admin
-
-    `is_guest: Literal['asc', 'desc']`
-    :   Whether the user is a guest
-
-    `is_pending: Literal['asc', 'desc']`
-    :   Whether the user is pending
-
-    `is_verified: Literal['asc', 'desc']`
-    :   Whether the user is verified
-
-    `is_view_only: Literal['asc', 'desc']`
-    :   Whether the user is view-only
-
-    `join_date: Literal['asc', 'desc']`
-    :   When the user joined
 
     `location: Literal['asc', 'desc']`
     :   User's location
@@ -3585,21 +3646,6 @@ Classes
     `phone: Literal['asc', 'desc']`
     :   User's phone number
 
-    `photo_original: Literal['asc', 'desc']`
-    :   URL to original size photo
-
-    `photo_small: Literal['asc', 'desc']`
-    :   URL to small photo
-
-    `photo_thumb: Literal['asc', 'desc']`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: Literal['asc', 'desc']`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: Literal['asc', 'desc']`
-    :   URL to tiny photo
-
     `time_zone_identifier: Literal['asc', 'desc']`
     :   User's timezone identifier
 
@@ -3610,12 +3656,26 @@ Classes
     :   User's Monday.com profile URL
 
     `utc_hours_diff: Literal['asc', 'desc']`
-    :   UTC hours difference for the user's timezone
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
+
+<a id="UsersStartswithCondition"></a>
+
+`UsersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.UsersStringFilter`
+    :   The type of the None singleton.
 
 <a id="UsersStringFilter"></a>
 
 `UsersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -3635,29 +3695,8 @@ Classes
     `email: str`
     :   User's email address
 
-    `enabled: str`
-    :   Whether the user account is enabled
-
     `id: str`
     :   Unique user identifier
-
-    `is_admin: str`
-    :   Whether the user is an admin
-
-    `is_guest: str`
-    :   Whether the user is a guest
-
-    `is_pending: str`
-    :   Whether the user is pending
-
-    `is_verified: str`
-    :   Whether the user is verified
-
-    `is_view_only: str`
-    :   Whether the user is view-only
-
-    `join_date: str`
-    :   When the user joined
 
     `location: str`
     :   User's location
@@ -3671,21 +3710,6 @@ Classes
     `phone: str`
     :   User's phone number
 
-    `photo_original: str`
-    :   URL to original size photo
-
-    `photo_small: str`
-    :   URL to small photo
-
-    `photo_thumb: str`
-    :   URL to thumbnail photo
-
-    `photo_thumb_small: str`
-    :   URL to small thumbnail photo
-
-    `photo_tiny: str`
-    :   URL to tiny photo
-
     `time_zone_identifier: str`
     :   User's timezone identifier
 
@@ -3696,7 +3720,7 @@ Classes
     :   User's Monday.com profile URL
 
     `utc_hours_diff: str`
-    :   UTC hours difference for the user's timezone
+    :   UTC hours difference for the user's timezone (Float under API 2026-07)
 
 <a id="WorkspacesAndCondition"></a>
 
@@ -3717,7 +3741,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WorkspacesAnyCondition"></a>
@@ -3789,10 +3813,24 @@ Classes
     `users_subscribers: Any`
     :   User subscribers
 
+<a id="WorkspacesArrayContainsCondition"></a>
+
+`WorkspacesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="WorkspacesContainsCondition"></a>
 
 `WorkspacesContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3801,6 +3839,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="WorkspacesEndswithCondition"></a>
+
+`WorkspacesEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.monday.types.WorkspacesStringFilter`
     :   The type of the None singleton.
 
 <a id="WorkspacesEqCondition"></a>
@@ -3956,20 +4008,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.monday.types.WorkspacesStringFilter`
     :   The type of the None singleton.
 
-<a id="WorkspacesLikeCondition"></a>
-
-`WorkspacesLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.monday.types.WorkspacesStringFilter`
-    :   The type of the None singleton.
-
 <a id="WorkspacesListParams"></a>
 
 `WorkspacesListParams(*args, **kwargs)`
@@ -4040,7 +4078,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
 <a id="WorkspacesOrCondition"></a>
@@ -4062,7 +4100,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="WorkspacesSearchFilter"></a>
@@ -4123,7 +4161,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLikeCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.monday.types.WorkspacesEqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNeqCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesGteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLtCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesLteCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesInCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesStartswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesEndswithCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesFuzzyCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesKeywordCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesArrayContainsCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesNotCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAndCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesOrCondition | airbyte_agent_sdk.connectors.monday.types.WorkspacesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.monday.types.WorkspacesSortFilter]`
@@ -4176,10 +4214,24 @@ Classes
     `users_subscribers: Literal['asc', 'desc']`
     :   User subscribers
 
+<a id="WorkspacesStartswithCondition"></a>
+
+`WorkspacesStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.monday.types.WorkspacesStringFilter`
+    :   The type of the None singleton.
+
 <a id="WorkspacesStringFilter"></a>
 
 `WorkspacesStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

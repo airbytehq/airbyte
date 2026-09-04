@@ -572,7 +572,6 @@ class PostgresDirectLoadSqlGenerator(
     fun matchSchemas(
         tableName: TableName,
         columnsToAdd: Map<String, ColumnType>,
-        columnsToRemove: Map<String, ColumnType>,
         columnsToModify: Map<String, ColumnTypeChange>,
         recreatePrimaryKeyIndex: Boolean,
         primaryKeyColumnNames: List<String>,
@@ -588,11 +587,6 @@ class PostgresDirectLoadSqlGenerator(
             // default value for preexisting records.
             clauses.add(
                 "ALTER TABLE $fullyQualifiedTableName ADD COLUMN ${quoteIdentifier(name)} ${columnType.type};"
-            )
-        }
-        columnsToRemove.forEach { (name, _) ->
-            clauses.add(
-                "ALTER TABLE $fullyQualifiedTableName DROP COLUMN ${quoteIdentifier(name)}$dropTableSuffix;"
             )
         }
 

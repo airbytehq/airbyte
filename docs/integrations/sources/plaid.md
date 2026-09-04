@@ -66,6 +66,10 @@ This guide will walk through how to create the credentials you need to run this 
 
 - We should now have everything we need to configure this source in the UI.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

@@ -12,6 +12,7 @@ from airbyte_cdk.test.state_builder import StateBuilder
 from .conftest import Obj, find_stream, get_source, read_full_refresh
 
 
+@freeze_time("2025-01-01")
 def test_query_shopping_performance_view_stream(customers, config, requests_mock):
     """
     Test that shopping_performance_view stream correctly processes and transforms data.
@@ -22,7 +23,8 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     - GAQL query generation with date filtering
     - Record transformation (PascalCase -> snake_case, flattening)
     """
-    config["end_date"] = "2021-01-10"
+    config["start_date"] = "2023-05-15"
+    config["end_date"] = "2023-05-16"
     config["conversion_window_days"] = 3
     config["credentials"]["access_token"] = "access_token"
     stream = find_stream("shopping_performance_view", config)
@@ -75,15 +77,15 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
     # Register mocks
     requests_mock.register_uri("POST", "https://www.googleapis.com/oauth2/v3/token", access_token_response)
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v23/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v23/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
+        "https://googleads.googleapis.com/v23/customers/123/googleAds:searchStream",
         shopping_performance_view_response,
     )
 
@@ -114,10 +116,11 @@ def test_query_shopping_performance_view_stream(customers, config, requests_mock
 
     # Verify the GAQL query
     request_json = json.loads(request_history.last_request.text)
-    expected_query = "SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, segments.product_aggregator_id, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, campaign.name, campaign.status, segments.product_category_level1, segments.product_category_level2, segments.product_category_level3, segments.product_category_level4, segments.product_category_level5, segments.product_channel, segments.product_channel_exclusivity, segments.click_type, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, segments.product_custom_attribute2, segments.product_custom_attribute3, segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, segments.month, segments.product_item_id, segments.product_condition, segments.product_title, segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, segments.product_type_l4, segments.product_type_l5, segments.quarter, segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, segments.week, segments.year FROM shopping_performance_view WHERE segments.date BETWEEN '2021-01-01' AND '2021-01-10' ORDER BY segments.date ASC"
+    expected_query = "SELECT customer.descriptive_name, ad_group.id, ad_group.name, ad_group.status, segments.ad_network_type, segments.product_aggregator_id, metrics.all_conversions_from_interactions_rate, metrics.all_conversions_value, metrics.all_conversions, metrics.average_cpc, segments.product_brand, campaign.id, campaign.name, campaign.status, segments.product_category_level1, segments.product_category_level2, segments.product_category_level3, segments.product_category_level4, segments.product_category_level5, segments.product_channel, segments.product_channel_exclusivity, segments.click_type, metrics.clicks, metrics.conversions_from_interactions_rate, metrics.conversions_value, metrics.conversions, metrics.cost_micros, metrics.cost_per_all_conversions, metrics.cost_per_conversion, segments.product_country, metrics.cross_device_conversions, metrics.ctr, segments.product_custom_attribute0, segments.product_custom_attribute1, segments.product_custom_attribute2, segments.product_custom_attribute3, segments.product_custom_attribute4, segments.date, segments.day_of_week, segments.device, customer.id, metrics.impressions, segments.product_language, segments.product_merchant_id, segments.month, segments.product_item_id, segments.product_condition, segments.product_title, segments.product_type_l1, segments.product_type_l2, segments.product_type_l3, segments.product_type_l4, segments.product_type_l5, segments.quarter, segments.product_store_id, metrics.value_per_all_conversions, metrics.value_per_conversion, segments.week, segments.year FROM shopping_performance_view WHERE segments.date BETWEEN '2023-05-15' AND '2023-05-16' ORDER BY segments.date ASC"
     assert request_json["query"] == expected_query
 
 
+@freeze_time("2025-01-01")
 def test_custom_query_stream(customers, config_for_custom_query_tests, requests_mock, mocker):
     """
     Test that custom query streams correctly generate schemas and execute queries.
@@ -129,7 +132,8 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     - Incremental queries are properly transformed with date range filters
     - Record transformation matches expectations
     """
-    config_for_custom_query_tests["end_date"] = "2021-01-10"
+    config_for_custom_query_tests["start_date"] = "2023-05-15"
+    config_for_custom_query_tests["end_date"] = "2023-05-16"
     config_for_custom_query_tests["conversion_window_days"] = 1
     config_for_custom_query_tests["credentials"]["access_token"] = "access_token"
     streams = get_source(config=config_for_custom_query_tests).streams(config=config_for_custom_query_tests)
@@ -222,15 +226,15 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
     }
 
     requests_mock.register_uri(
-        "GET", "https://googleads.googleapis.com/v20/customers:listAccessibleCustomers", accessible_customers_response
+        "GET", "https://googleads.googleapis.com/v23/customers:listAccessibleCustomers", accessible_customers_response
     )
     requests_mock.register_uri(
-        "POST", "https://googleads.googleapis.com/v20/customers/1234567890/googleAds:searchStream", customers_response
+        "POST", "https://googleads.googleapis.com/v23/customers/1234567890/googleAds:searchStream", customers_response
     )
 
     request_history = requests_mock.register_uri(
         "POST",
-        "https://googleads.googleapis.com/v20/customers/123/googleAds:searchStream",
+        "https://googleads.googleapis.com/v23/customers/123/googleAds:searchStream",
         custom_query_response,
     )
 
@@ -252,7 +256,7 @@ def test_custom_query_stream(customers, config_for_custom_query_tests, requests_
 
     # Verify the GAQL query
     request_json = json.loads(request_history.last_request.text)
-    expected_query = "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2021-01-01' AND '2021-01-10' ORDER BY segments.date ASC"
+    expected_query = "SELECT campaign_budget.name, campaign.name, metrics.interaction_event_types, segments.date FROM campaign_budget WHERE segments.date BETWEEN '2023-05-15' AND '2023-05-16' ORDER BY segments.date ASC"
     assert request_json["query"] == expected_query
 
 
@@ -428,12 +432,16 @@ def test_custom_query_partition_router_for_metrics(query, has_metrics, config_fo
         # State within retention - use state date
         # Both use state date since it's within the allowed range
         ("2024-12-01", "2024-12-01", "2024-12-01"),
-        # State before retention - click_view enforces retention, regular uses state
+        # State before click_view retention but inside regular 37-month retention
         # click_view: Ignores old state, uses 2024-10-03 (90-day limit)
         # regular: Uses state date 2024-01-01
         ("2024-01-01", "2024-10-03", "2024-01-01"),
+        # State before the configured start date
+        # click_view: Ignores old state, uses 2024-10-03 (90-day limit)
+        # regular: Uses config.start_date because it is later than 37-month retention
+        ("2021-01-01", "2024-10-03", "2023-06-01"),
     ],
-    ids=["no_state", "state_within_retention", "state_before_retention"],
+    ids=["no_state", "state_within_retention", "state_before_click_view_retention", "state_before_regular_retention"],
 )
 @freeze_time("2025-01-01")
 def test_custom_query_click_view_retention_and_step(
@@ -444,14 +452,10 @@ def test_custom_query_click_view_retention_and_step(
 
     This test freezes time to 2025-01-01 and verifies:
     - click_view queries: P1D step (1 day) - verifies step override in manifest (lines 1033-1053)
-    - click_view queries: 90-day retention via start_datetime override in manifest (lines 1054-1079)
-    - regular queries: P14D step (14 days) - default for incremental queries
-    - regular queries: use config.start_date for retention
+    - click_view queries: P1D step and 90-day retention via start_datetime override
+    - regular queries: P14D step and the later of config.start_date, state, and 37-month retention
 
-    Tests three state scenarios:
-    1. No state - uses retention dates
-    2. State within retention - uses state date
-    3. State before retention - click_view enforces retention, regular uses state
+    Tests state scenarios with no state, state inside retention, and state before configured start dates.
     """
     config = config_for_custom_query_tests.copy()
     config["start_date"] = "2023-06-01"
@@ -498,5 +502,83 @@ def test_custom_query_click_view_retention_and_step(
         f"State: {state_date}\n"
         f"Expected start date: {expected_start_date}\n"
         f"Actual start date: {actual_start_date}\n"
-        f"Click view should enforce 90-day retention (2024-10-03), regular queries use config.start_date or state."
+        f"Click view should enforce 90-day retention (2024-10-03), regular queries should not start before config.start_date or the 37-month retention window."
     )
+
+
+@freeze_time("2025-01-01")
+def test_builtin_incremental_report_stream_enforces_37_month_retention(config):
+    config["start_date"] = "2021-01-01"
+    stream = find_stream("campaign", config)
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+
+    assert stream.cursor_field == "segments.date"
+    assert cursor.state["segments.date"] == "2021-12-18"
+
+
+@freeze_time("2026-05-29")
+def test_builtin_incremental_report_stream_clamps_end_date_to_retention_window(config):
+    config["start_date"] = "2022-06-01"
+    config["end_date"] = "2022-06-05"
+    stream = find_stream("customer", config)
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+    slices = list(cursor.stream_slices())
+
+    assert cursor.state["segments.date"] == "2023-05-15"
+    assert slices == [{"start_time": "2023-05-15", "end_time": "2023-05-16"}]
+
+
+@pytest.mark.parametrize(
+    "query, expected_start_date, expected_slices",
+    [
+        pytest.param(
+            "SELECT campaign.name, segments.date FROM campaign ORDER BY segments.date",
+            "2023-05-15",
+            [{"start_time": "2023-05-15", "end_time": "2023-05-16"}],
+            id="regular_custom_query",
+        ),
+        pytest.param(
+            "SELECT click_view.gclid, segments.date FROM click_view ORDER BY segments.date",
+            "2026-02-28",
+            [],
+            id="click_view_custom_query",
+        ),
+    ],
+)
+@freeze_time("2026-05-29")
+def test_custom_query_stream_clamps_end_date_to_retention_window(
+    query, expected_start_date, expected_slices, config_for_custom_query_tests
+):
+    config = config_for_custom_query_tests.copy()
+    config["start_date"] = "2022-06-01"
+    config["end_date"] = "2022-06-05"
+    stream_name = "test_query"
+    config["custom_queries_array"] = [
+        {
+            "query": query,
+            "table_name": stream_name,
+        }
+    ]
+
+    streams = get_source(config=config).streams(config=config)
+    stream = next(filter(lambda s: s.name == stream_name, streams))
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+    slices = list(cursor.stream_slices())
+
+    assert cursor.state["segments.date"] == expected_start_date
+    assert slices == expected_slices
+
+
+@freeze_time("2025-01-01")
+def test_click_view_stream_keeps_90_day_retention_when_adding_37_month_min_datetime(config):
+    config["start_date"] = "2021-01-01"
+    stream = find_stream("click_view", config)
+
+    cursor = stream.cursor._create_cursor(stream.cursor._global_cursor)
+
+    assert stream.cursor_field == "segments.date"
+    assert cursor.state["segments.date"] == "2024-10-03"
+    assert cursor._slice_range.days == 1

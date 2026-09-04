@@ -9,11 +9,15 @@ import com.clickhouse.client.api.data_formats.ClickHouseBinaryFormatReader
 import com.clickhouse.data.ClickHouseFormat
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.StringValue
+import io.airbyte.cdk.load.data.TimestampWithTimezoneValue
+import io.airbyte.cdk.load.data.TimestampWithoutTimezoneValue
 import io.airbyte.cdk.load.schema.model.TableName
 import io.airbyte.cdk.load.util.serializeToString
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.micronaut.context.annotation.Requires
 import jakarta.inject.Singleton
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.future.await
@@ -34,11 +38,33 @@ class ClickhouseTestTableOperationsClient(
         client.execute("DROP DATABASE IF EXISTS `$namespace`").await()
     }
 
+    companion object {
+        // ClickHouse requires full yyyy-MM-dd HH:mm:ss.SSS format for DateTime64(3).
+        // Java's OffsetDateTime/LocalDateTime.toString() may omit seconds or millis.
+        private val CLICKHOUSE_DATETIME_FORMAT =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+    }
+
     override suspend fun insertRecords(table: TableName, records: List<Map<String, AirbyteValue>>) {
+        // Format timestamps as yyyy-MM-dd HH:mm:ss.SSS for DateTime64(3) columns;
+        // Java's OffsetDateTime/LocalDateTime.toString() may omit seconds or millis,
+        // which ClickHouse cannot parse.
+        val fixed =
+            records.map { record ->
+                record.mapValues { (_, value) ->
+                    when (value) {
+                        is TimestampWithTimezoneValue ->
+                            StringValue(value.value.format(CLICKHOUSE_DATETIME_FORMAT))
+                        is TimestampWithoutTimezoneValue ->
+                            StringValue(value.value.format(CLICKHOUSE_DATETIME_FORMAT))
+                        else -> value
+                    }
+                }
+            }
         client
             .insert(
                 "`${table.namespace}`.`${table.name}`",
-                records.serializeToString().byteInputStream(),
+                fixed.serializeToString().byteInputStream(),
                 ClickHouseFormat.JSONEachRow,
             )
             .await()

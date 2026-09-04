@@ -41,7 +41,8 @@ Okta is the complete identity solution for all your apps and people that’s uni
 7. Choose the method of authentication
 8. If you select Token authentication - fill the field **Personal Api Token**
 9. If you select OAuth2.0 authorization - fill the fields **Client ID**, **Client Secret**, **Refresh Token**
-10. Click `Set up source`.
+10. If you select OAuth2.0 with private key authorization, create an Okta API Service app. Register the public JWK that corresponds to your PEM private key and grant the app every scope the connector will request. Fill in **Client ID** with the service app's client ID, **Key ID** with the registered JWK's `kid`, **Private Key** with the corresponding PEM private key, and **Scope** with the granted scopes separated by spaces.
+11. Click `Set up source`.
 
 ### For Airbyte Open Source:
 
@@ -79,6 +80,10 @@ The Okta source connector supports the following [sync modes](https://docs.airby
 
 The connector is restricted by normal Okta [requests limitation](https://developer.okta.com/docs/reference/rate-limits/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -86,6 +91,8 @@ The connector is restricted by normal Okta [requests limitation](https://develop
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.23 | 2026-08-27 | [85169](https://github.com/airbytehq/airbyte/pull/85169) | Remove legacy main.py from poetry package includes to fix Docker image build |
+| 0.3.22 | 2026-08-26 | [85086](https://github.com/airbytehq/airbyte/pull/85086) | Support multiline input for private key |
 | 0.3.21 | 2025-02-24 | [54167](https://github.com/airbytehq/airbyte/pull/54167) | Remove stream_state interpolation |
 | 0.3.20 | 2025-02-01 | [52728](https://github.com/airbytehq/airbyte/pull/52728) | Update dependencies |
 | 0.3.19 | 2025-01-25 | [52469](https://github.com/airbytehq/airbyte/pull/52469) | Update dependencies |

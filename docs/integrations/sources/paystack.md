@@ -61,6 +61,10 @@ The [Paystack API](https://paystack.com/docs/api) is compatible with the [JSONSc
 
 The Paystack connector should not run into Paystack API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>
@@ -68,6 +72,7 @@ The Paystack connector should not run into Paystack API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                        |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------- |
+| 1.1.31 | 2026-06-02 | [78886](https://github.com/airbytehq/airbyte/pull/78886) | Update dependencies |
 | 1.1.30 | 2026-04-28 | [77379](https://github.com/airbytehq/airbyte/pull/77379) | Update dependencies |
 | 1.1.29 | 2026-04-21 | [76699](https://github.com/airbytehq/airbyte/pull/76699) | Update dependencies |
 | 1.1.28 | 2026-03-31 | [75842](https://github.com/airbytehq/airbyte/pull/75842) | Update dependencies |

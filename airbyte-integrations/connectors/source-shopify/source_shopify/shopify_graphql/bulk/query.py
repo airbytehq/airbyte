@@ -62,6 +62,7 @@ class ShopifyBulkTemplates:
                     query: """
                     $query
                     """
+                    groupObjects: true
                 ) {
                     bulkOperation {
                         id

@@ -8,16 +8,15 @@ Module airbyte_agent_sdk.connectors
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.airtable
 * airbyte_agent_sdk.connectors.amazon_ads
 * airbyte_agent_sdk.connectors.amazon_seller_partner
 * airbyte_agent_sdk.connectors.amplitude
 * airbyte_agent_sdk.connectors.asana
-* airbyte_agent_sdk.connectors.ashby
 * airbyte_agent_sdk.connectors.chargebee
 * airbyte_agent_sdk.connectors.clickup_api
 * airbyte_agent_sdk.connectors.confluence
 * airbyte_agent_sdk.connectors.customer_io
+* airbyte_agent_sdk.connectors.exa
 * airbyte_agent_sdk.connectors.facebook_marketing
 * airbyte_agent_sdk.connectors.freshdesk
 * airbyte_agent_sdk.connectors.github
@@ -42,7 +41,6 @@ Sub-modules
 * airbyte_agent_sdk.connectors.monday
 * airbyte_agent_sdk.connectors.notion
 * airbyte_agent_sdk.connectors.orb
-* airbyte_agent_sdk.connectors.paypal_transaction
 * airbyte_agent_sdk.connectors.pinterest
 * airbyte_agent_sdk.connectors.pylon
 * airbyte_agent_sdk.connectors.salesforce
@@ -59,4 +57,3 @@ Sub-modules
 * airbyte_agent_sdk.connectors.zendesk_chat
 * airbyte_agent_sdk.connectors.zendesk_support
 * airbyte_agent_sdk.connectors.zendesk_talk
-* airbyte_agent_sdk.connectors.zoho_crm
