@@ -209,3 +209,30 @@ def test_only_payload_confirmed_organizations_are_sliced(stream_name, path, inje
 
     source = SourceGithub(config=dict(config))
     assert source._resolve_repositories_and_organizations(config)[0] == ["airbytehq"]
+
+
+def test_teams_listing_is_read_once_for_both_teams_and_team_members(rate_limit_mock_response, requests_mock):
+    """`orgs/{org}/teams` must serve the declarative `teams` stream and the Python `Teams` parent
+    read from one request.
+
+    `Teams` survives Step 4 only as `TeamMembers`' parent, on the argument that it costs no extra
+    quota. That holds because both sides cache under the same `teams.sqlite` name — drop
+    `use_cache` from either `organization_scoped_requester` or the class and the listing is
+    fetched once per organization per selected stream instead.
+    """
+    config = _config("airbytehq/airbyte")
+    _mock_repository_resolution(requests_mock, *config["repositories"])
+    listing = requests_mock.get(
+        "https://api.github.com/orgs/airbytehq/teams",
+        json=[{"id": 3, "slug": "core"}],
+    )
+    requests_mock.get("https://api.github.com/orgs/airbytehq/teams/core/members", json=[{"id": 9, "login": "octo"}])
+
+    catalog = _catalog("teams", "team_members")
+    source = SourceGithub(config=dict(config), catalog=catalog, state=[])
+    records = [
+        message.record for message in source.read(logging.getLogger("airbyte"), dict(config), catalog, []) if message.type == Type.RECORD
+    ]
+
+    assert {record.stream for record in records} == {"teams", "team_members"}
+    assert listing.call_count == 1

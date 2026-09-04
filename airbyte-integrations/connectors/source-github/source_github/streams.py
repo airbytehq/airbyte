@@ -500,8 +500,10 @@ class Teams(GithubStreamABC):
     `TeamMemberships`; both stay Python until Step 7 migrates the parent-child group.
     The catalog's `teams` stream comes from `manifest.yaml` — this class is not returned by
     `SourceGithub.streams()` and must stay in step with the manifest definition until it can be
-    deleted. `use_cache` means the parent read and the declarative stream share one HTTP cache
-    entry, so keeping it costs no extra quota.
+    deleted. `use_cache` here and `use_cache: true` on `organization_scoped_requester` make both
+    sides name their cache `teams.sqlite`, so the parent read and the declarative stream share one
+    entry and keeping this class costs no extra quota. Drop either one and `orgs/{org}/teams` is
+    fetched twice per organization.
 
     Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
     `schemas/teams.json`; `get_json_schema` is overridden below so the class stays usable (the
