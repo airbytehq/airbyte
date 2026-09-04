@@ -1,5 +1,11 @@
 {
-  "todo-stream-name": {
-    "todo-field-name": "todo-abnormal-value"
+  "tables": {
+    "updated_at": "2099-12-31T23:59:59Z"
+  },
+  "collections": {
+    "updated_at": "2099-12-31T23:59:59Z"
+  },
+  "terms": {
+    "updated_at": "2099-12-31T23:59:59Z"
   }
 }
