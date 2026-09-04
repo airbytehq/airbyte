@@ -6181,6 +6181,11 @@ schemas:
             type:
               - "null"
               - string
+          isAbVariation:
+            description: Whether this email is the variation of an A/B test.
+            type:
+              - "null"
+              - boolean
       updatedById:
         type:
           - "null"
@@ -6772,6 +6777,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   owners_archived:
     $schema: http://json-schema.org/schema#
@@ -6852,6 +6862,11 @@ schemas:
               type:
                 - "null"
                 - string
+            primary:
+              description: Whether this team is the owner's primary team.
+              type:
+                - "null"
+                - boolean
 
   users:
     $schema: http://json-schema.org/schema#
