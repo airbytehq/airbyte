@@ -19,6 +19,15 @@ data:
     - title: API versions
       url: https://learn.microsoft.com/en-us/rest/api/storageservices/previous-azure-storage-service-versions
       type: api_reference
+    - title: Versioning for Azure Storage
+      url: https://learn.microsoft.com/en-us/rest/api/storageservices/versioning-for-the-azure-storage-services
+      type: api_release_history
+    - title: GPv1 storage account retirement FAQ
+      url: https://learn.microsoft.com/en-us/azure/storage/common/general-purpose-version-1-account-migration-frequently-asked-questions
+      type: api_deprecations
+    - title: Microsoft identity platform breaking changes
+      url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
+      type: authentication_guide
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
   license: ELv2
