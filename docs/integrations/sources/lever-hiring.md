@@ -1,45 +1,64 @@
 # Lever Hiring
 
-## Sync overview
+This page guides you through setting up the Lever Hiring source connector. The connector reads recruiting data from the [Lever API](https://hire.lever.co/developer/documentation).
 
-The Lever Hiring source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
+## Prerequisites
 
-This source can sync data for the [Lever Hiring API](https://hire.lever.co/developer/documentation#introduction).
+- A Lever account
+- One of the following credentials:
+  - **API key** (recommended for most users): Create one in Lever under **Settings** > **Integrations and API** > **API Credentials**. Lever notes that API keys are intended for internal workflows and carry broad privileges, so store the key securely.
+  - **OAuth client ID, client secret, and refresh token**: Lever offers OAuth only to registered partner applications through its [partner program](https://hire.lever.co/developer/documentation#oauth). If you use Airbyte Cloud, you can authenticate through the Airbyte-managed OAuth flow without creating your own app.
+- Whether your Lever account is a **Production** or **Sandbox** environment. The connector calls `api.lever.co` for production and `api.sandbox.lever.co` for sandbox.
 
-### Output schema
+## Setup guide
 
-This Source is capable of syncing the following core Streams:
+1. In the Airbyte UI, select **Sources** and then **New source**.
+2. Search for and select **Lever Hiring**.
+3. Enter a **Source name**.
+4. For **Start Date**, enter a UTC timestamp in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2021-03-01T00:00:00Z`. The connector passes this value as the `updated_at_start` request parameter when it lists opportunities. Opportunities last updated before this date, and their related applications, interviews, notes, offers, and referrals, aren't replicated. It has no effect on the `users` stream.
+5. For **Environment**, select **Production** or **Sandbox**. The default is **Sandbox**, so change it to **Production** if you connect to a regular Lever account.
+6. For **Authentication Mechanism**, choose one of the following:
+   - **Authenticate via Lever (Api Key)**: Enter your Lever API key.
+   - **Authenticate via Lever (OAuth)**: On Airbyte Cloud, use the OAuth button to sign in to Lever and grant access. On self-managed Airbyte, enter the **Client ID**, **Client Secret**, and **Refresh Token** for your registered Lever OAuth app. The refresh token must have been issued with the `offline_access` scope.
+7. Select **Set up source**.
 
-- [Applications](https://hire.lever.co/developer/documentation#list-all-applications)
-- [Interviews](https://hire.lever.co/developer/documentation#list-all-interviews)
-- [Notes](https://hire.lever.co/developer/documentation#list-all-notes)
-- [Offers](https://hire.lever.co/developer/documentation#list-all-offers)
-- [Opportunities](https://hire.lever.co/developer/documentation#list-all-opportunities)
-- [Referrals](https://hire.lever.co/developer/documentation#list-all-referrals)
-- [Users](https://hire.lever.co/developer/documentation#list-all-users)
+The connector verifies your credentials by requesting the `users` endpoint.
 
-### Features
+## Supported sync modes
 
-| Feature                   | Supported?\(Yes/No\) | Notes |
-| :------------------------ | :------------------- | :---- |
-| Full Refresh Sync         | Yes                  |       |
-| Incremental - Append Sync | Yes                  |       |
-| SSL connection            | Yes                  |       |
-| Namespaces                | No                   |       |
+| Feature                   | Supported? |
+| :------------------------ | :--------- |
+| Full Refresh Sync         | Yes        |
+| Incremental - Append Sync | Yes (`opportunities` only) |
+| Namespaces                | No         |
 
-### Performance considerations
+## Supported streams
 
-The Lever Hiring connector should not run into Lever Hiring API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+| Stream | Lever endpoint | Sync modes | Notes |
+| :----- | :------------- | :--------- | :---- |
+| [Opportunities](https://hire.lever.co/developer/documentation#list-all-opportunities) | `GET /opportunities` | Full Refresh, Incremental | Incremental syncs use the `updatedAt` field as the cursor and request 30-day windows with `updated_at_start` and `updated_at_end`. |
+| [Users](https://hire.lever.co/developer/documentation#list-all-users) | `GET /users` | Full Refresh | Includes deactivated users (`includeDeactivated=true`). Not filtered by **Start Date**. |
+| [Applications](https://hire.lever.co/developer/documentation#list-all-applications) | `GET /opportunities/{id}/applications` | Full Refresh | Fetched per opportunity. |
+| [Interviews](https://hire.lever.co/developer/documentation#list-all-interviews) | `GET /opportunities/{id}/interviews` | Full Refresh | Fetched per opportunity. |
+| [Notes](https://hire.lever.co/developer/documentation#list-all-notes) | `GET /opportunities/{id}/notes` | Full Refresh | Fetched per opportunity. |
+| [Offers](https://hire.lever.co/developer/documentation#list-all-offers) | `GET /opportunities/{id}/offers` | Full Refresh | Fetched per opportunity. |
+| [Referrals](https://hire.lever.co/developer/documentation#list-all-referrals) | `GET /opportunities/{id}/referrals` | Full Refresh | Fetched per opportunity. |
 
-## Getting started
+The applications, interviews, notes, offers, and referrals streams first list opportunities using the same `updated_at_start`/`updated_at_end` windows as the opportunities stream, starting from your **Start Date**, then request the child records for each opportunity. Records belonging to opportunities outside that window aren't synced. Because each opportunity requires one request per child stream, syncing these streams for a large Lever account can take a long time.
 
-### Requirements
+Lever's [`updated_at_start` filter](https://hire.lever.co/developer/documentation#list-all-opportunities) matches any change to an opportunity, while the `updatedAt` field the connector uses as its cursor only reflects changes to a specific set of opportunity fields. Keep this in mind if incremental syncs return opportunities you didn't expect, or miss changes you did.
 
-- Lever Hiring Client Id
-- Lever Hiring Client Secret
-- Lever Hiring Refresh Token
+## Limitations and troubleshooting
 
-## IP allow list
+### Rate limits
+
+Lever rate limits requests per API key using a token bucket: a steady state of 10 requests per second, with bursts up to 20 requests per second. There are no endpoint-specific limits. The connector retries requests that Lever rejects with `429 Too Many Requests`. See [Lever rate limits](https://hire.lever.co/developer/documentation#rate-limiting).
+
+### Incremental syncs stuck on the same records
+
+Versions before 0.4.42 used a cursor granularity that didn't match the millisecond timestamps Lever returns, which could cause incremental syncs of the `opportunities` stream to repeatedly re-request the same window. Upgrade to 0.4.42 or later to resolve this.
+
+### IP allow list
 
 If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
 
@@ -50,6 +69,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                           |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------|
+| 0.4.42 | 2026-09-03 | [80293](https://github.com/airbytehq/airbyte/pull/80293) | Fix incremental cursor stuck by aligning cursor_granularity with millisecond datetime_format |
+| 0.4.41 | 2026-08-18 | [84669](https://github.com/airbytehq/airbyte/pull/84669) | Update dependencies |
+| 0.4.40 | 2026-08-11 | [84028](https://github.com/airbytehq/airbyte/pull/84028) | Update dependencies |
+| 0.4.39 | 2026-08-04 | [83535](https://github.com/airbytehq/airbyte/pull/83535) | Update dependencies |
 | 0.4.38 | 2026-07-28 | [83011](https://github.com/airbytehq/airbyte/pull/83011) | Update dependencies |
 | 0.4.37 | 2026-07-21 | [82510](https://github.com/airbytehq/airbyte/pull/82510) | Update dependencies |
 | 0.4.36 | 2026-07-14 | [81920](https://github.com/airbytehq/airbyte/pull/81920) | Update dependencies |

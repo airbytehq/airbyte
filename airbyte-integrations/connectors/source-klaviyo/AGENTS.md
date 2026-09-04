@@ -45,6 +45,10 @@ The only streams that allow for slicing (and hence may perform more concurrent H
 
 **Why this matters:** Streams sharing the same endpoint share the same rate limit budget. Running `profiles` and `global_exclusions` simultaneously means both compete for the same M-tier limit. The `events` and `events_detailed` streams are the most impactful — both share the XL-tier endpoint AND support datetime slicing, so the total concurrent requests equals the sum of both streams' active slices.
 
+### Retry-After wait cap
+
+The manifest caps every `Retry-After` wait at 600 seconds. Daily-quota 429 responses can return multi-hour wait values that outlive the platform heartbeat, so the connector fails fast with a rate-limit error instead of sleeping until the next daily reset.
+
 ## Incremental Stream Considerations
 
 The Klaviyo API supports cursor-based pagination and `filter` parameters with `greater-than` on `datetime` and `updated` fields for high-volume endpoints (profiles, events, campaigns, flows, lists, segments, etc.), which the connector already uses for 13 incremental streams. The single remaining FR parent stream (`metrics_for_reporting`) is a config-style lookup that lists available metric definitions without date-based filtering.
@@ -62,8 +66,8 @@ The Klaviyo API supports cursor-based pagination and `filter` parameters with `g
 | metrics | medium | top-level parent | updated | updated | incremental |  |
 | metrics_for_reporting | small | top-level parent | none | none | deferred_no_api_support | Lists metric definitions; config-style lookup, no date filter |
 | profiles | medium | top-level parent | updated | updated | incremental |  |
-| campaign_values_reports | medium | child | date | date | incremental |  |
-| flow_series_reports | medium | child | date | date | incremental |  |
+| campaign_values_reports | medium | child | date | date | incremental | Aggregate over the whole request window, keyed by the midnight that closes it; windows end on the last complete day; no `interval` support, so no lookback window is offered |
+| flow_series_reports | medium | child | date | date | incremental | Custom `FlowSeriesPerDayExtractor` splits the shared `date_times` array into one record per calendar day with scalar statistics |
 | lists_detailed | medium | child | updated | updated | incremental |  |
 
 ### Future incremental stream candidates

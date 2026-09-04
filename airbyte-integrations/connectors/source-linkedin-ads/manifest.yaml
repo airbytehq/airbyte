@@ -34,7 +34,7 @@ definitions:
             q: search
           request_headers:
             Linkedin-Version: "202601"
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -84,7 +84,7 @@ definitions:
             accounts: "urn:li:sponsoredAccount:{{ stream_slice.get('account_id') }}"
           request_headers:
             Linkedin-Version: "202601"
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -150,7 +150,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -222,7 +222,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -290,7 +290,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-RestLi-Method: FINDER
-          error_handlers:
+          error_handler:
             type: CompositeErrorHandler
             error_handlers:
               - type: DefaultErrorHandler
@@ -306,10 +306,10 @@ definitions:
                       - 500
                       - 503
               - type: CustomErrorHandler
-            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
-            backoff_strategies:
-              - type: ExponentialBackoffStrategy
-                factor: 5
+                class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                    factor: 5
         record_selector:
           type: RecordSelector
           extractor:
@@ -373,7 +373,7 @@ definitions:
           request_headers:
             Linkedin-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -436,7 +436,7 @@ definitions:
           request_headers:
             LinkedIn-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -488,7 +488,7 @@ definitions:
           request_headers:
             LinkedIn-Version: "202601"
             X-Restli-Protocol-Version: 2.0.0
-          error_handlers:
+          error_handler:
             type: CustomErrorHandler
             class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
             backoff_strategies:
@@ -1390,8 +1390,8 @@ definitions:
             fields: "#/definitions/analytics_query_properties"
           request_headers:
             $ref: "#/definitions/custom_report_request_headers"
-          error_handlers:
-            $ref: "#/definitions/custom_report_error_handlers"
+          error_handler:
+            $ref: "#/definitions/custom_report_error_handler"
         record_selector:
           $ref: "#/definitions/custom_report_record_selector"
         paginator:
@@ -1442,8 +1442,8 @@ definitions:
             fields: "#/definitions/analytics_query_properties"
           request_headers:
             $ref: "#/definitions/custom_report_request_headers"
-          error_handlers:
-            $ref: "#/definitions/custom_report_error_handlers"
+          error_handler:
+            $ref: "#/definitions/custom_report_error_handler"
         record_selector:
           $ref: "#/definitions/custom_report_record_selector"
         paginator:
@@ -1470,7 +1470,7 @@ definitions:
   custom_report_request_headers:
     Linkedin-Version: "202601"
     X-Restli-Protocol-Version: 2.0.0
-  custom_report_error_handlers:
+  custom_report_error_handler:
     type: CustomErrorHandler
     class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
     max_retries: 5
@@ -1710,7 +1710,7 @@ dynamic_streams:
           value: "(value:{{components_values['time_granularity']}})"
         - type: ComponentMappingDefinition
           field_path:
-            ["retriever","record_selector","**","transformations","1","fields","0","value"]
+            ["transformations","1","fields","0","value"]
           value: "{{components_values['pivot_by']}}"
   - type: DynamicDeclarativeStream
     stream_template:
