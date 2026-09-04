@@ -6,7 +6,7 @@ Airbyte Cloud is updated continuously. You always have the latest features and f
 
 Platform
 
-- On Cloud Pro and Enterprise Flex plans, the Audit logs page in Organization settings now shows a loading indicator while it fetches results after you change a filter or move to another page. Previously, the earlier results stayed on screen with no sign that a new request was in progress.
+- On Cloud Pro and Enterprise Flex plans, the Audit Logs page in Organization settings now shows a loading indicator while it fetches results after you change a filter or move to another page. Previously, the earlier results stayed on screen with no sign that a new request was in progress.
 
 ## September 1, 2026
 
