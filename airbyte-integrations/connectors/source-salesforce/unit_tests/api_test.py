@@ -7,17 +7,19 @@ import io
 import json
 import logging
 import re
+import urllib.parse
 from datetime import datetime, timedelta
 from typing import List
 from unittest.mock import Mock, patch
 
 import freezegun
+import jwt
 import pytest
 import requests_mock
 from config_builder import ConfigBuilder
 from conftest import generate_stream
 from salesforce_job_response_builder import JobInfoResponseBuilder
-from source_salesforce.api import _LOGIN_DEDUP_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
+from source_salesforce.api import _LOGIN_DEDUP_SECONDS, _TOKEN_REFRESH_INTERVAL_SECONDS, API_VERSION, Salesforce, SalesforceTokenProvider
 from source_salesforce.source import SourceSalesforce
 from source_salesforce.streams import (
     CSV_FIELD_SIZE_LIMIT,
@@ -36,6 +38,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalogSerializer,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
     Type,
 )
@@ -132,6 +135,260 @@ def test_login_authentication_error_handler(stream_config, requests_mock, login_
     with pytest.raises(AirbyteTracedException) as err:
         source.check_connection(logger, stream_config)
     assert err.value.message == expected_error_msg
+
+
+def _generate_rsa_private_key_pem(pem_format="PKCS8"):
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import rsa
+
+    key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+    pem = key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=getattr(serialization.PrivateFormat, pem_format),
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    return pem.decode(), key.public_key()
+
+
+def _jwt_salesforce(**overrides):
+    config = {
+        "auth_type": "JWT",
+        "client_id": "consumer_key",
+        "username": "user@example.com",
+        "private_key": _generate_rsa_private_key_pem()[0],
+        "is_sandbox": False,
+    }
+    config.update(overrides)
+    return Salesforce(**config)
+
+
+@pytest.mark.parametrize(
+    # Users paste whichever PEM their tooling produced: PKCS#8 is "BEGIN PRIVATE KEY",
+    # PKCS#1/TraditionalOpenSSL is "BEGIN RSA PRIVATE KEY".
+    "pem_format",
+    ["PKCS8", "TraditionalOpenSSL"],
+    ids=["pkcs8_pem", "pkcs1_pem"],
+)
+@pytest.mark.parametrize(
+    "is_sandbox, host",
+    [(False, "login.salesforce.com"), (True, "test.salesforce.com")],
+    ids=["production", "sandbox"],
+)
+def test_jwt_login_builds_signed_assertion(requests_mock, is_sandbox, host, pem_format):
+    private_key_pem, public_key = _generate_rsa_private_key_pem(pem_format)
+    sf = Salesforce(
+        auth_type="JWT",
+        client_id="consumer_key",
+        username="user@example.com",
+        private_key=private_key_pem,
+        is_sandbox=is_sandbox,
+    )
+    requests_mock.register_uri(
+        "POST",
+        f"https://{host}/services/oauth2/token",
+        json={"access_token": "the_token", "instance_url": "https://instance_url"},
+    )
+
+    sf.login()
+
+    assert sf.access_token == "the_token"
+    assert sf.instance_url == "https://instance_url"
+
+    body = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))
+    assert body["grant_type"] == "urn:ietf:params:oauth:grant-type:jwt-bearer"
+    assert "assertion" in body
+    assert "refresh_token" not in body
+
+    decoded = jwt.decode(body["assertion"], public_key, algorithms=["RS256"], audience=f"https://{host}")
+    assert decoded["iss"] == "consumer_key"
+    assert decoded["sub"] == "user@example.com"
+    assert decoded["aud"] == f"https://{host}"
+    assert "exp" in decoded
+
+
+def test_refresh_token_login_is_unchanged(requests_mock):
+    sf = Salesforce(
+        client_id="client_id",
+        client_secret="client_secret",
+        refresh_token="refresh_token",
+        is_sandbox=False,
+    )
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "the_token", "instance_url": "https://instance_url"},
+    )
+
+    # A config saved before the JWT option existed has no auth_type, so the default has to be Client.
+    assert sf.auth_type == "Client"
+
+    sf.login()
+
+    body = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))
+    assert body["grant_type"] == "refresh_token"
+    assert body["client_id"] == "client_id"
+    assert body["client_secret"] == "client_secret"
+    assert body["refresh_token"] == "refresh_token"
+    assert "assertion" not in body
+
+
+@pytest.mark.parametrize(
+    "client_id, username, include_private_key, expected_field",
+    [
+        (None, "user@example.com", True, "client_id"),
+        ("consumer_key", None, True, "username"),
+        ("consumer_key", "user@example.com", False, "private_key"),
+    ],
+    ids=["missing_client_id", "missing_username", "missing_private_key"],
+)
+def test_jwt_login_requires_required_fields(client_id, username, include_private_key, expected_field):
+    private_key_pem = _generate_rsa_private_key_pem()[0] if include_private_key else None
+    sf = Salesforce(
+        auth_type="JWT",
+        client_id=client_id,
+        username=username,
+        private_key=private_key_pem,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "JWT authentication requires" in err.value.message
+    assert expected_field in err.value.message
+
+
+def test_jwt_login_rejects_malformed_private_key():
+    malformed_pem = "not-a-valid-pem-key"
+    sf = Salesforce(
+        auth_type="JWT",
+        client_id="consumer_key",
+        username="user@example.com",
+        private_key=malformed_pem,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "Invalid private key" in err.value.message
+
+
+@pytest.mark.parametrize(
+    "client_id, client_secret, refresh_token, expected_field",
+    [
+        (None, "client_secret", "refresh_token", "client_id"),
+        ("client_id", None, "refresh_token", "client_secret"),
+        ("client_id", "client_secret", None, "refresh_token"),
+    ],
+    ids=["missing_client_id", "missing_client_secret", "missing_refresh_token"],
+)
+def test_client_login_requires_required_fields(client_id, client_secret, refresh_token, expected_field):
+    sf = Salesforce(
+        auth_type="Client",
+        client_id=client_id,
+        client_secret=client_secret,
+        refresh_token=refresh_token,
+        is_sandbox=False,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert "Client authentication requires" in err.value.message
+    assert expected_field in err.value.message
+
+
+def test_jwt_relogin_signs_a_fresh_assertion(requests_mock):
+    """The JWT Bearer flow issues no refresh token, so re-signing the assertion IS the refresh
+    mechanism. Every proactive refresh must therefore mint a new assertion (a cached one would expire
+    within 3 minutes of the first login) and adopt the access token it returns."""
+    private_key_pem, public_key = _generate_rsa_private_key_pem()
+    sf = _jwt_salesforce(private_key=private_key_pem)
+
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "token_1", "instance_url": "https://instance_url"},
+    )
+    with patch("source_salesforce.api.time.time", return_value=1_000_000):
+        sf.login()
+    first_assertion = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))["assertion"]
+
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"access_token": "token_2", "instance_url": "https://instance_url"},
+    )
+    with (
+        patch("source_salesforce.api.time.time", return_value=1_004_000),
+        patch("source_salesforce.api.time.monotonic", return_value=sf._last_login_time + _TOKEN_REFRESH_INTERVAL_SECONDS + 1),
+    ):
+        sf.refresh_access_token_if_stale()
+    second_assertion = dict(urllib.parse.parse_qsl(requests_mock.last_request.text))["assertion"]
+
+    assert sf.access_token == "token_2"
+    assert second_assertion != first_assertion
+
+    decode = lambda assertion: jwt.decode(  # noqa: E731
+        assertion, public_key, algorithms=["RS256"], audience="https://login.salesforce.com", options={"verify_exp": False}
+    )
+    assert decode(first_assertion)["exp"] == 1_000_000 + 180
+    assert decode(second_assertion)["exp"] == 1_004_000 + 180
+
+
+@pytest.mark.parametrize(
+    "error_description, expected_message_fragment",
+    [
+        pytest.param("invalid assertion", "matches the certificate uploaded", id="bad_signature_or_expired_assertion"),
+        pytest.param("Invalid assertion", "matches the certificate uploaded", id="capitalized_by_salesforce"),
+        pytest.param("invalid audience", "Set the Sandbox option", id="wrong_audience"),
+        pytest.param("invalid user", "does not recognize the configured Username", id="unknown_username"),
+        pytest.param("user hasn't approved this consumer", "not authorized for the connected app", id="user_not_pre_authorized"),
+    ],
+)
+def test_jwt_login_rejection_reports_actionable_message(requests_mock, error_description, expected_message_fragment):
+    """Salesforce rejects a JWT grant with a terse invalid_grant description that names no remedy;
+    unmapped descriptions surface as the raw response body, which is not actionable."""
+    sf = _jwt_salesforce()
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"error": "invalid_grant", "error_description": error_description},
+        status_code=400,
+    )
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert err.value.failure_type == FailureType.config_error
+    assert expected_message_fragment in err.value.message
+    assert requests_mock.call_count == 1, "a rejected grant must not be retried"
+
+
+def test_jwt_permanent_failure_message_is_not_refresh_token_wording(requests_mock):
+    """Once the grant is rejected the failure latches and later logins raise the permanent-failure
+    message. Telling a JWT user to re-authenticate is a dead end: this flow has no refresh token and
+    no consent screen, so the connected app or the JWT inputs are what must change."""
+    sf = _jwt_salesforce()
+    requests_mock.register_uri(
+        "POST",
+        "https://login.salesforce.com/services/oauth2/token",
+        json={"error": "invalid_grant", "error_description": "invalid user"},
+        status_code=400,
+    )
+
+    with pytest.raises(AirbyteTracedException):
+        sf.login()
+    assert sf.login_permanently_failed is True
+
+    with pytest.raises(AirbyteTracedException) as err:
+        sf.login()
+
+    assert err.value.failure_type == FailureType.config_error
+    assert "Re-authenticate" not in err.value.message
+    assert "JWT Bearer" in err.value.message
+    assert requests_mock.call_count == 1, "the rejected grant must not be redeemed again"
 
 
 def _register_login(requests_mock, **extra):
