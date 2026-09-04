@@ -2,6 +2,7 @@
 
 
 import struct
+from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import paramiko
@@ -10,6 +11,13 @@ from paramiko.ssh_exception import SSHException
 from source_sftp_bulk.client import SFTPClient, _parse_private_key
 
 from airbyte_cdk import AirbyteTracedException
+
+
+FIXTURES = Path(__file__).parent / "fixtures"
+
+
+def read_fixture(name: str) -> str:
+    return (FIXTURES / name).read_text()
 
 
 def test_client_exception():
@@ -94,9 +102,10 @@ def test_client_with_private_key_calls_parse():
             host="localhost",
             username="username",
             private_key="fake-key",
+            passphrase="test-passphrase",
             port=123,
         )
-        mock_parse.assert_called_once_with("fake-key")
+        mock_parse.assert_called_once_with("fake-key", "test-passphrase")
         assert client.key is mock_key
 
 
@@ -139,3 +148,54 @@ def test_parse_private_key_all_struct_errors_raises_config_error():
         with pytest.raises(AirbyteTracedException) as exc_info:
             _parse_private_key("invalid-key-content")
         assert "Private key format is not recognized" in exc_info.value.message
+
+
+def test_parse_private_key_loads_encrypted_key_with_correct_passphrase():
+    key = _parse_private_key(read_fixture("encrypted_ed25519"), "test-passphrase")
+
+    assert isinstance(key, paramiko.Ed25519Key)
+
+
+def test_parse_private_key_encrypted_key_without_passphrase_has_actionable_error():
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _parse_private_key(read_fixture("encrypted_ed25519"))
+
+    assert "encrypted" in exc_info.value.message
+    assert "passphrase" in exc_info.value.message
+    assert "format is not recognized" not in exc_info.value.message
+    assert exc_info.value.failure_type.value == "config_error"
+
+
+def test_parse_private_key_encrypted_key_with_one_non_password_error_has_actionable_error():
+    with (
+        patch.object(paramiko.RSAKey, "from_private_key", side_effect=paramiko.SSHException("wrong type")),
+        pytest.raises(AirbyteTracedException) as exc_info,
+    ):
+        _parse_private_key(read_fixture("encrypted_ed25519"))
+
+    assert "encrypted" in exc_info.value.message
+    assert "passphrase" in exc_info.value.message
+    assert "format is not recognized" not in exc_info.value.message
+
+
+def test_parse_private_key_encrypted_key_with_empty_passphrase_requires_passphrase():
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _parse_private_key(read_fixture("encrypted_ed25519"), "")
+
+    assert "encrypted" in exc_info.value.message
+    assert "passphrase" in exc_info.value.message
+    assert "could not be decrypted" not in exc_info.value.message
+
+
+def test_parse_private_key_encrypted_key_with_wrong_passphrase_has_actionable_error():
+    with pytest.raises(AirbyteTracedException) as exc_info:
+        _parse_private_key(read_fixture("encrypted_ed25519"), "wrong-passphrase")
+
+    assert "passphrase" in exc_info.value.message
+    assert exc_info.value.failure_type.value == "config_error"
+
+
+def test_parse_private_key_loads_unencrypted_key_without_passphrase():
+    key = _parse_private_key(read_fixture("unencrypted_ed25519"))
+
+    assert isinstance(key, paramiko.Ed25519Key)

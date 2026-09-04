@@ -25,6 +25,13 @@ class PrivateKeyCredentials(BaseModel):
 
     auth_type: Literal["private_key"] = Field("private_key", const=True)
     private_key: str = Field(title="Private key", description="The Private key", multiline=True, order=4, airbyte_secret=True)
+    passphrase: Optional[str] = Field(
+        title="Private key passphrase",
+        description="The passphrase for an encrypted (passphrase-protected) private key",
+        order=5,
+        airbyte_secret=True,
+        default=None,
+    )
 
 
 class SourceSFTPBulkSpec(AbstractFileBasedSpec):

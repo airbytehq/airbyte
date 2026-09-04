@@ -115,7 +115,10 @@ class SourceSFTPBulkStreamReader(AbstractFileBasedStreamReader):
             authentication = (
                 {"password": self.config.credentials.password}
                 if self.config.credentials.auth_type == "password"
-                else {"private_key": self.config.credentials.private_key}
+                else {
+                    "private_key": self.config.credentials.private_key,
+                    "passphrase": self.config.credentials.passphrase,
+                }
             )
             self._sftp_client = SFTPClient(
                 host=self.config.host,
