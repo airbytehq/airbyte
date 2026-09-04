@@ -466,6 +466,24 @@ definitions:
     type: DeclarativeStream
     retriever:
       $ref: "#/definitions/basic_async_retriever"
+      # The router list is composed by CartesianProductStreamSlicer. Its "parent state
+      # handling is not supported" warning is benign here: ad_accounts_stream is
+      # full-refresh, so there is no parent state to propagate.
+      partition_router:
+        - type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: "id"
+              stream: "#/definitions/ad_accounts_stream"
+              partition_field: "id"
+        # Status filters and level are set per report by the ComponentMappingDefinitions
+        # below, addressed as partition_router index "1" - keep this router second.
+        - type: CustomPartitionRouter
+          class_name: source_declarative_manifest.components.StatusChunkPartitionRouter
+          campaign_statuses: []
+          ad_group_statuses: []
+          ad_statuses: []
+          level: null
       creation_requester:
         $ref: "#/definitions/basic_async_retriever/creation_requester"
         request_body:
@@ -482,6 +500,12 @@ definitions:
             conversion_report_time: "{{ components_values['conversion_report_time'] }}"
             attribution_types: "{{ components_values['attribution_types'] }}"
             columns: "{{ components_values['columns'] }}"
+            # Status filters are injected from stream_partition by StatusChunkPartitionRouter;
+            # for unconfigured fields .get() returns None and InterpolatedNestedMapping drops
+            # None values, so the keys are omitted from the request body entirely.
+            campaign_statuses: "{{ stream_partition.get('campaign_statuses_chunk') }}"
+            ad_group_statuses: "{{ stream_partition.get('ad_group_statuses_chunk') }}"
+            ad_statuses: "{{ stream_partition.get('ad_statuses_chunk') }}"
     schema_loader:
       type: InlineSchemaLoader
       schema: "#/definitions/custom_reports_schema"
@@ -493,6 +517,12 @@ definitions:
       start_datetime: "template_value"
       cursor_granularity: "P1D"
       step: "template_value"
+    state_migrations:
+      - type: CustomStateMigration
+        class_name: source_declarative_manifest.components.CustomReportStatusChunkStateMigration
+        campaign_statuses: []
+        ad_group_statuses: []
+        ad_statuses: []
 
   custom_reports_dynamic_stream:
     type: DynamicDeclarativeStream
@@ -579,37 +609,44 @@ definitions:
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
-            [
-              retriever,
-              creation_requester,
-              request_body,
-              value,
-              campaign_statuses,
-            ]
+            [retriever, partition_router, "1", campaign_statuses]
           value: "{{ components_values['campaign_statuses'] }}"
           condition: "{{ components_values.get('campaign_statuses') is not none }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
-            [
-              retriever,
-              creation_requester,
-              request_body,
-              value,
-              ad_group_statuses,
-            ]
+            [retriever, partition_router, "1", ad_group_statuses]
           value: "{{ components_values['ad_group_statuses'] }}"
           condition: "{{ components_values.get('ad_group_statuses') is not none }}"
           create_or_update: true
         - type: ComponentMappingDefinition
           field_path:
-            [
-              retriever,
-              creation_requester,
-              request_body,
-              value,
-              ad_statuses,
-            ]
+            [retriever, partition_router, "1", ad_statuses]
+          value: "{{ components_values['ad_statuses'] }}"
+          condition: "{{ components_values.get('ad_statuses') is not none }}"
+          create_or_update: true
+        # level gates which status filters may be chunked (>6 values) - see
+        # CHUNKABLE_LEVELS_PER_STATUS_FIELD in components.py.
+        - type: ComponentMappingDefinition
+          field_path:
+            [retriever, partition_router, "1", level]
+          value: "{{ components_values['level'] }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [state_migrations, "0", campaign_statuses]
+          value: "{{ components_values['campaign_statuses'] }}"
+          condition: "{{ components_values.get('campaign_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [state_migrations, "0", ad_group_statuses]
+          value: "{{ components_values['ad_group_statuses'] }}"
+          condition: "{{ components_values.get('ad_group_statuses') is not none }}"
+          create_or_update: true
+        - type: ComponentMappingDefinition
+          field_path:
+            [state_migrations, "0", ad_statuses]
           value: "{{ components_values['ad_statuses'] }}"
           condition: "{{ components_values.get('ad_statuses') is not none }}"
           create_or_update: true
@@ -5010,8 +5047,8 @@ spec:
                 enum: ["INDIVIDUAL", "HOUSEHOLD"]
               order: 8
             campaign_statuses:
-              title: "Campaign statuses (max 6 values)"
-              description: "Select at most 6 campaign status values for filtering custom report rows."
+              title: "Campaign statuses"
+              description: "Filter custom report rows by campaign status. Selections exceeding Pinterest's per-request limit of 6 are automatically split into multiple API calls; this requires a report level at or below CAMPAIGN."
               type: [array, "null"]
               items:
                 type: string
@@ -5025,11 +5062,10 @@ spec:
                   - "DRAFT"
                   - "DELETED_DRAFT"
               uniqueItems: true
-              maxItems: 6
               order: 9
             ad_group_statuses:
-              title: "Ad group statuses (max 6 values)"
-              description: "Select at most 6 ad group status values for filtering custom report rows."
+              title: "Ad group statuses"
+              description: "Filter custom report rows by ad group status. Selections exceeding Pinterest's per-request limit of 6 are automatically split into multiple API calls; this requires a report level at or below AD_GROUP."
               type: [array, "null"]
               items:
                 type: string
@@ -5043,11 +5079,10 @@ spec:
                   - "DRAFT"
                   - "DELETED_DRAFT"
               uniqueItems: true
-              maxItems: 6
               order: 10
             ad_statuses:
-              title: "Ad statuses (max 6 values)"
-              description: "Select at most 6 ad status values for filtering custom report rows."
+              title: "Ad statuses"
+              description: "Filter custom report rows by ad status. Selections exceeding Pinterest's per-request limit of 6 are automatically split into multiple API calls; this requires a PIN_PROMOTION report level."
               type: [array, "null"]
               items:
                 type: string
@@ -5061,7 +5096,6 @@ spec:
                   - "DRAFT"
                   - "DELETED_DRAFT"
               uniqueItems: true
-              maxItems: 6
               order: 11
             start_date:
               type: string

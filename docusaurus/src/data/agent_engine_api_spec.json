@@ -4503,7 +4503,23 @@
             "title": "Status"
           },
           "result": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
             "title": "Result"
+          },
+          "bundle": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ExecuteBundle"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "connector_metadata": {
             "title": "Connector Metadata"
@@ -4523,12 +4539,7 @@
           }
         },
         "type": "object",
-        "required": [
-          "status",
-          "result",
-          "connector_metadata",
-          "execution_metadata"
-        ],
+        "required": ["status", "execution_metadata"],
         "title": "ConnectorExecuteResponse",
         "description": "Standardized response envelope for connector execution."
       },
@@ -5961,6 +5972,93 @@
         "type": "object",
         "title": "ExampleQuestionsByType"
       },
+      "ExecuteBundle": {
+        "properties": {
+          "connector_definition_id": {
+            "type": "string",
+            "title": "Connector Definition Id"
+          },
+          "definition_yaml": {
+            "type": "string",
+            "title": "Definition Yaml"
+          },
+          "entity": {
+            "type": "string",
+            "title": "Entity"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "params": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Params"
+          },
+          "select_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Select Fields"
+          },
+          "exclude_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclude Fields"
+          },
+          "skip_truncation": {
+            "type": "boolean",
+            "title": "Skip Truncation",
+            "default": true
+          },
+          "replication_auth_key_mapping": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Replication Auth Key Mapping"
+          },
+          "config_values": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Config Values"
+          },
+          "source_config": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Source Config"
+          }
+        },
+        "type": "object",
+        "required": [
+          "connector_definition_id",
+          "definition_yaml",
+          "entity",
+          "action",
+          "params",
+          "replication_auth_key_mapping",
+          "source_config"
+        ],
+        "title": "ExecuteBundle",
+        "description": "Unhydrated executable bundle returned by execute prepare.\n\nThis is the recipe the customer's own SDK ``LocalExecutor`` needs to rebuild and\nrun the HTTP request in their data plane, plus the UNHYDRATED secret coordinates.\nNo secret is resolved server-side. Sonar cannot build the concrete request\n(URL/headers/body) -- the SDK does -- so the bundle carries only the recipe +\ncoordinates, never a built request."
+      },
       "ExecutionMetadata": {
         "properties": {
           "connector_instance_id": {
@@ -6764,6 +6862,18 @@
             "type": "string",
             "title": "Version",
             "description": "Version/fingerprint for the docs source."
+          },
+          "content_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Revision",
+            "description": "Fingerprint of the full docs content, prose included. Changes whenever the docs content changes."
           },
           "freshness": {
             "$ref": "#/components/schemas/SkillFreshness",

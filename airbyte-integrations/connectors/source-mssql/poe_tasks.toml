@@ -1,3 +1,10 @@
 include = [
     "${POE_GIT_DIR}/poe-tasks/gradle-connector-tasks.toml",
 ]
+
+[tasks.e2e-local]
+help = "Run the local e2e harness end-to-end (backend, fixtures, spec/check/discover/read sweep, teardown). Arguments are forwarded to run.sh; pass --control-version=<tag> for a prove-fix target-vs-control comparison, --command=<cmd> to run a single command, and --help for the full list. See .agents/skills/source-mssql-e2e-tests/SKILL.md."
+# No `args` block: poe forwards the trailing CLI arguments verbatim. Declaring
+# them as a positional `multiple` arg instead makes poe's own parser claim the
+# leading --flags and reject the invocation.
+cmd = "${POE_PWD}/.agents/skills/source-mssql-e2e-tests/scripts/run.sh"

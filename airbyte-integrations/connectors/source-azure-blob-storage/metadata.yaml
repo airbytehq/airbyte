@@ -12,7 +12,7 @@ data:
   connectorSubtype: file
   connectorType: source
   definitionId: fdaaba68-4875-4ed9-8fcd-4ae1e0a25093
-  dockerImageTag: 0.8.30
+  dockerImageTag: 0.8.32
   dockerRepository: airbyte/source-azure-blob-storage
   documentationUrl: https://docs.airbyte.com/integrations/sources/azure-blob-storage
   externalDocumentationUrls:
@@ -31,6 +31,9 @@ data:
     - title: Legacy Blob Storage account retirement
       url: https://learn.microsoft.com/en-us/azure/storage/common/legacy-blob-storage-account-migration-overview
       type: api_deprecations
+    - title: Azure Storage authorization overview
+      url: https://learn.microsoft.com/en-us/azure/storage/common/storage-auth
+      type: authentication_guide
     - title: Microsoft identity platform breaking changes
       url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
       type: authentication_guide
