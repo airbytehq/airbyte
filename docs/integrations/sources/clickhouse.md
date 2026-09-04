@@ -84,6 +84,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                   |
 |:--------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
+| 0.4.0   | 2026-07-10 | [81633](https://github.com/airbytehq/airbyte/pull/81633)   | **Breaking**: Declare temporal column typing as breaking. Connections with schema evolution errors must follow the [migration guide](/integrations/sources/clickhouse-migrations)    |
+| 0.3.1   | 2026-06-29 | [72484](https://github.com/airbytehq/airbyte/pull/72484)   | Add JSON Schema format hints for temporal types (DateTime, Date) and fix documentation URL                |
 | 0.3.0   | 2026-01-27 | [75298](https://github.com/airbytehq/airbyte/pull/75298)   | Fold source-clickhouse-strict-encrypt into source-clickhouse                                              |
 | 0.2.6   | 2025-11-03 | [66714](https://github.com/airbytehq/airbyte/pull/66714)   | Revert JDBC driver upgrade                                                                                |
 | 0.2.5   | 2025-09-25 | [66482](https://github.com/airbytehq/airbyte/pull/66482)   | Upgrade ClickHouse JDBC driver from 0.3.2-patch10 to 0.9.0                                                |

@@ -17,8 +17,8 @@ import org.testcontainers.containers.MySQLContainer
 
 class MySqlSourceMetadataQuerierTableFilterTest {
     companion object {
-        val dbContainer: MySQLContainer<*> = MySqlContainerFactory.shared(imageName = "mysql:9.2.0")
-
+        val dbContainer: MySQLContainer<*> =
+            MySqlContainerFactory.exclusive(imageName = "mysql:9.2.0")
         // In MySQL, database == schema. We test within 'test' database
         val databaseName = "test"
         val tableNames = listOf("orders", "customers", "products", "invoices")

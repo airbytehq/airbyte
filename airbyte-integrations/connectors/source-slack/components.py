@@ -54,10 +54,6 @@ class JoinChannelsStream(HttpStream):
     http_method = "POST"
     primary_key = "id"
 
-    def __init__(self, channel_filter: List[str] = None, **kwargs):
-        self.channel_filter = channel_filter or []
-        super().__init__(**kwargs)
-
     def path(self, **kwargs) -> str:
         return "conversations.join"
 
@@ -118,7 +114,7 @@ class ChannelsRetriever(SimpleRetriever):
         """
         if record.get("is_archived"):
             return False  # Slack API rejects conversations.join for archived channels
-        return config["join_channels"] and not record.get("is_member")
+        return config.get("join_channels", False) and not record.get("is_member")
 
     def make_join_channel_slice(self, channel: Mapping[str, Any]) -> Mapping[str, Any]:
         channel_id: str = channel.get("id")
@@ -129,8 +125,7 @@ class ChannelsRetriever(SimpleRetriever):
     def join_channels_stream(self, config) -> JoinChannelsStream:
         token = config["credentials"].get("api_token") or config["credentials"].get("access_token")
         authenticator = TokenAuthenticator(token)
-        channel_filter = config["channel_filter"]
-        return JoinChannelsStream(authenticator=authenticator, channel_filter=channel_filter)
+        return JoinChannelsStream(authenticator=authenticator)
 
     def join_channel(self, config: Mapping[str, Any], record: Mapping[str, Any]):
         list(
