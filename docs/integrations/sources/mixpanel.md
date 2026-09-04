@@ -33,7 +33,10 @@ The connector also supports [Project Secret](https://developer.mixpanel.com/refe
 14. For **Page Size**, enter the number of records to fetch per request for the Engage stream. The default is 1000.
 15. For **Export Lookback Window**, enter the number of seconds to look back from the last synced timestamp during incremental syncs of the Export stream. This helps avoid missed data due to delays in event recording. The default is 0 seconds.
 16. For **Number of concurrent threads**, enter the number of worker threads for the sync. The default is 3. Higher values may improve performance but are constrained by your Mixpanel plan's [rate limits](https://developer.mixpanel.com/reference/rate-limits).
-17. Click **Set up source**.
+17. (Optional) For **Streams to Discover**, select the specific streams you want to discover and sync. If left empty, all streams are available. Use this to speed up schema discovery when your account has access to many endpoints and discovery is timing out. Available streams: `cohorts`, `engage`, `annotations`, `cohort_members`, `funnels`, `export`, and the opt-in `export_raw`.
+18. (Optional) For **Export Events**, enter the exact, case-sensitive event names to replicate from the Export stream. If left empty, all events are replicated. This setting also scopes dynamic Export schema discovery to the selected events, but it does **not** skip discovery — the connector still calls Mixpanel's property-discovery request (`events/properties/top`) once per selected event, so discovery can still be slow or time out. To skip discovery entirely, set **Export Properties**.
+19. (Optional) For **Export Properties**, enter the exact event property names to include in the Export schema. When provided, the connector builds the Export schema directly from this list and completely skips Mixpanel's dynamic property-discovery request (`events/properties/top`) — use this setting if Export schema discovery is timing out. This setting doesn't remove other properties from exported records or reduce the raw response size.
+20. Click **Set up source**.
 
 ## Supported sync modes
 
@@ -53,6 +56,7 @@ Incremental syncs may return duplicate records for the state date because the Mi
 | Stream | Sync mode | Primary key |
 | --- | --- | --- |
 | [Export](https://developer.mixpanel.com/reference/raw-event-export) | Incremental | User-defined (see below) |
+| Export Raw | Incremental | User-defined (see below) |
 | [Engage](https://developer.mixpanel.com/reference/engage-query) | Incremental | `distinct_id` |
 | [Funnels](https://developer.mixpanel.com/reference/funnels-query) | Incremental | `funnel_id`, `date` |
 | [Annotations](https://developer.mixpanel.com/reference/list-all-annotations-for-project) | Full Refresh | `id` |
@@ -61,7 +65,13 @@ Incremental syncs may return duplicate records for the state date because the Mi
 
 ### Primary key for the Export stream
 
-The Export stream has no default primary key. Mixpanel recommends using `insert_id`, `time`, `event`, and `distinct_id` together as the primary key. Some rows may lack an `insert_id`, so verify that your chosen key combination uniquely identifies your data.
+The Export streams have no default primary key. Mixpanel recommends using `insert_id`, `time`, `event`, and `distinct_id` together as the primary key. Some rows may lack an `insert_id`, so verify that your chosen key combination uniquely identifies your data. In `export_raw`, `insert_id` and `distinct_id` remain nested under `properties`.
+
+### Raw Export stream
+
+The opt-in `export_raw` stream preserves Mixpanel's complete typed `properties` object, including `$`-prefixed keys, arrays, nested objects, booleans, and nulls. It also emits `event` and a top-level ISO 8601 `time` field for incremental cursor tracking. This separate stream leaves the existing flattened `export` stream unchanged and skips dynamic property discovery.
+
+To enable it through programmatic configuration, set the hidden `enable_export_raw` property to `true`. To sync only nested records, also set `streams` to `["export_raw"]`.
 
 ## Performance considerations
 
@@ -70,7 +80,7 @@ Mixpanel enforces separate rate limits for different API endpoints:
 - **Query API** (Cohorts, Engage, Funnels, Annotations, Cohort Members): 5 concurrent queries, 60 queries per hour.
 - **Raw Data Export API** (Export): 100 concurrent queries, 60 queries per hour, 3 queries per second.
 
-Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits.
+Syncing large date windows may take longer due to these rate limits. You can adjust the **Date slicing window** and **Number of concurrent threads** settings to tune performance within your plan's limits. Use **Export Events** to reduce the number of events returned by Mixpanel during syncs. Note that **Export Events** alone does not fix a schema-discovery timeout — the connector still queries `events/properties/top` for each selected event. If Export schema discovery times out, use **Export Properties** to define the required schema fields directly; this is the only setting that skips the discovery request entirely.
 
 ## Limitations
 
@@ -87,6 +97,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 4.1.0 | 2026-07-16 | [82227](https://github.com/airbytehq/airbyte/pull/82227) | Add optional stream and Export filters plus an opt-in raw Export stream with typed nested properties |
 | 4.0.1 | 2026-07-02 | [81392](https://github.com/airbytehq/airbyte/pull/81392) | Bump h11 0.14.0 to 0.16.0 to resolve GHSA-vqfr-h8mv-ghfj |
 | 4.0.0 | 2026-05-22 | [78271](https://github.com/airbytehq/airbyte/pull/78271) | Removed the Revenue stream because Mixpanel no longer provides a documented or working revenue Query API endpoint. |
 | 3.6.3 | 2026-04-13 | [76276](https://github.com/airbytehq/airbyte/pull/76276) | Rename "concurrent workers" to "concurrent threads" in connector spec |
