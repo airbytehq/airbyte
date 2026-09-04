@@ -1,6 +1,0 @@
-# The driver is not checked into the source code due to legal reasons.
-# You can download the driver here:
-# https://databricks.com/spark/jdbc-drivers-download
-# By downloading this driver, you agree to the terms & conditions:
-# https://databricks.com/jdbc-odbc-driver-license
-lib/*

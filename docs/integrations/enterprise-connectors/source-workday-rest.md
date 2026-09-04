@@ -4,6 +4,16 @@ enterprise-connector: true
 ---
 # Source Workday REST
 
+<HideInUI>
+
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
+</HideInUI>
+
 Airbyte's [Workday](https://workday.com) enterprise source connector currently offers the following features:
 
 - Incremental as well as Full Refresh [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes). Note that incremental syncs are only supported for specific streams.

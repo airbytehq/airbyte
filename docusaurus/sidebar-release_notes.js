@@ -17,6 +17,7 @@ export default {
             id: "self-managed/readme",
           },
           items: [
+            "self-managed/v-2.2",
             "self-managed/v-2.1",
             "self-managed/v-2.0",
             "self-managed/v-1.8",
@@ -67,6 +68,15 @@ export default {
               ],
             },
           ],
+        },
+        {
+          type: "category",
+          label: "Cloud",
+          link: {
+            type: "doc",
+            id: "cloud/readme",
+          },
+          items: [],
         },
         {
           type: "category",

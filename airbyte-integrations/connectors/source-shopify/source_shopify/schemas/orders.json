@@ -466,7 +466,8 @@
     },
     "processed_at": {
       "description": "The date and time when the order was processed",
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "po_number": {
       "description": "The purchase order number",
@@ -2181,7 +2182,8 @@
                 },
                 "created_at": {
                   "description": "Timestamp for when the transaction was created",
-                  "type": ["null", "string"]
+                  "type": ["null", "string"],
+                  "format": "date-time"
                 },
                 "currency": {
                   "description": "Currency of the transaction",
@@ -2221,7 +2223,8 @@
                 },
                 "processed_at": {
                   "description": "Timestamp for when the transaction was processed",
-                  "type": ["null", "string"]
+                  "type": ["null", "string"],
+                  "format": "date-time"
                 },
                 "receipt": {
                   "description": "Receipt information for the transaction",

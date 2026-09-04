@@ -39,12 +39,15 @@ If these issues show up on Airbyte Cloud,
 
 ### Source
 
-#### Heartbeating logic
+#### Heartbeat logic
 
-The platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats.
-The Airbyte platform has a process which monitors when the last beat was send and if it reaches a threshold,
-the synchronization attempt will be failed. It fails with a cause being the source an message saying
-`The source is unresponsive`. Internal the error has a heartbeat timeout type, which is not display in the UI.
+The exact heartbeat logic depends on whether a connection is running in [legacy mode or socket mode](jobs.md#replication-architecture-modes).
+
+- In legacy mode, the platform considers both `RECORD` and `STATE` messages emitted by the source as source heartbeats. These messages flow through the container orchestrator, which monitors when the last beat was sent.
+
+- In socket mode, records flow directly from source to destination via Unix domain sockets and don't pass through the platform. In this mode, the platform monitors activity through control messages visible to the Bookkeeper, such as state updates and statistics.
+
+Heartbeat protection remains active regardless of which mode it uses. If the platform detects that the source hasn't sent any activity within the configured threshold, the synchronization attempt fails with the message `The source is unresponsive`.
 
 #### Configuration
 
@@ -57,7 +60,7 @@ The heartbeat can be configured using the file flags.yaml through 2 entries:
 
 ### Destination
 
-#### Heartbeating logic
+#### Heartbeat logic
 
 Adding a heartbeat to the destination similar to the one at the source is not straightforward since there isn't a constant stream of messages from the destination to the platform. Instead, we have implemented something that is more akin to a timeout. The platform monitors whether there has been a call to the destination that has taken more than a specified amount of time. If such a delay occurs, the platform considers the destination to have timed out.
 
@@ -67,3 +70,7 @@ The timeout can be configured using the file `flags.yaml` through 2 entries:
 
 - `destination-timeout-max-seconds`: If the platform detects a call to the destination exceeding the duration specified in this entry, it will consider the destination to have timed out. The default timeout value is 24 hours.
 - `destination-timeout.failSync`: If enabled (true by default), a detected destination timeout will cause the platform to fail the sync. If not, the platform will log a message and allow the sync to continue. When the platform fails a sync due to a destination timeout, the UI will display the message: `The destination is unresponsive`.
+
+## Not a Heartbeat: Workload Monitor
+
+The heartbeat mechanisms described on this page monitor connector-level responsiveness within a running sync. Airbyte also has a separate platform-level monitor that checks whether the workload pod itself is alive and progressing. For details, see [Workload Monitor](./jobs.md#workload-monitor).
