@@ -1,0 +1,519 @@
+version: "6.44.0"
+type: DeclarativeSource
+
+definitions:
+  # Session Token Authenticator: POST /authentication with Login+Password
+  # Returns token used in TTD-Auth header for all subsequent requests
+  authenticator:
+    type: SessionTokenAuthenticator
+    login_requester:
+      type: HttpRequester
+      url_base: "{{ 'https://ext-api.sb.thetradedesk.com/v3' if config.get('environment', 'production') == 'sandbox' else 'https://api.thetradedesk.com/v3' }}"
+      path: /authentication
+      http_method: POST
+      authenticator:
+        type: NoAuth
+      request_headers: {}
+      request_body_json:
+        Login: "{{ config['login'] }}"
+        Password: "{{ config['password'] }}"
+    session_token_path:
+      - Token
+    expiration_duration: PT20M
+    request_authentication:
+      type: ApiKey
+      inject_into:
+        type: RequestOption
+        inject_into: header
+        field_name: TTD-Auth
+
+  # Base requester shared across all streams
+  base_requester:
+    type: HttpRequester
+    url_base: "{{ 'https://ext-api.sb.thetradedesk.com/v3' if config.get('environment', 'production') == 'sandbox' else 'https://api.thetradedesk.com/v3' }}"
+    http_method: POST
+    authenticator:
+      $ref: "#/definitions/authenticator"
+    request_headers:
+      Content-Type: application/json
+
+  # Offset-based paginator using PageStartIndex/PageSize in request body
+  offset_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: PageSize
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_name: PageStartIndex
+    pagination_strategy:
+      type: OffsetIncrement
+      page_size: 100
+      inject_on_first_request: true
+
+  # ==================== STREAMS ====================
+
+  advertisers_stream:
+    type: DeclarativeStream
+    name: advertisers
+    primary_key:
+      - AdvertiserId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /advertiser/query/partner
+        request_body_json:
+          PartnerId: "{{ config['partner_id'] }}"
+          PageStartIndex: "{{ next_page_token.get('next_page_token', 0) if next_page_token else 0 }}"
+          PageSize: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Result
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          AdvertiserId:
+            type: string
+          AdvertiserName:
+            type:
+              - string
+              - "null"
+          PartnerId:
+            type:
+              - string
+              - "null"
+          Description:
+            type:
+              - string
+              - "null"
+          CurrencyCode:
+            type:
+              - string
+              - "null"
+          IndustryCategoryId:
+            type:
+              - integer
+              - "null"
+          DomainAddress:
+            type:
+              - string
+              - "null"
+          CreatedAtUtc:
+            type:
+              - string
+              - "null"
+          UpdatedAtUtc:
+            type:
+              - string
+              - "null"
+
+  campaigns_stream:
+    type: DeclarativeStream
+    name: campaigns
+    primary_key:
+      - CampaignId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /campaign/query/advertiser
+        request_body_json:
+          AdvertiserId: "{{ stream_slice.advertiser_id }}"
+          PageStartIndex: "{{ next_page_token.get('next_page_token', 0) if next_page_token else 0 }}"
+          PageSize: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Result
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/advertisers_stream"
+            parent_key: AdvertiserId
+            partition_field: advertiser_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _partition_advertiser_id
+            value: "{{ stream_slice.advertiser_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          CampaignId:
+            type: string
+          CampaignName:
+            type:
+              - string
+              - "null"
+          AdvertiserId:
+            type:
+              - string
+              - "null"
+          Description:
+            type:
+              - string
+              - "null"
+          Budget:
+            type:
+              - object
+              - "null"
+          StartDate:
+            type:
+              - string
+              - "null"
+          EndDate:
+            type:
+              - string
+              - "null"
+          CampaignConversionReportingColumns:
+            type:
+              - array
+              - "null"
+          FrequencyConfig:
+            type:
+              - object
+              - "null"
+          PacingMode:
+            type:
+              - string
+              - "null"
+          CreatedAtUtc:
+            type:
+              - string
+              - "null"
+          UpdatedAtUtc:
+            type:
+              - string
+              - "null"
+          _partition_advertiser_id:
+            type:
+              - string
+              - "null"
+
+  ad_groups_stream:
+    type: DeclarativeStream
+    name: ad_groups
+    primary_key:
+      - AdGroupId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /adgroup/query/advertiser
+        request_body_json:
+          AdvertiserId: "{{ stream_slice.advertiser_id }}"
+          PageStartIndex: "{{ next_page_token.get('next_page_token', 0) if next_page_token else 0 }}"
+          PageSize: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Result
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/advertisers_stream"
+            parent_key: AdvertiserId
+            partition_field: advertiser_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _partition_advertiser_id
+            value: "{{ stream_slice.advertiser_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          AdGroupId:
+            type: string
+          AdGroupName:
+            type:
+              - string
+              - "null"
+          CampaignId:
+            type:
+              - string
+              - "null"
+          AdvertiserId:
+            type:
+              - string
+              - "null"
+          Description:
+            type:
+              - string
+              - "null"
+          IsEnabled:
+            type:
+              - boolean
+              - "null"
+          IndustryCategoryId:
+            type:
+              - integer
+              - "null"
+          RTBAttributes:
+            type:
+              - object
+              - "null"
+          CreatedAtUtc:
+            type:
+              - string
+              - "null"
+          UpdatedAtUtc:
+            type:
+              - string
+              - "null"
+          _partition_advertiser_id:
+            type:
+              - string
+              - "null"
+
+  creatives_stream:
+    type: DeclarativeStream
+    name: creatives
+    primary_key:
+      - CreativeId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /creative/query/advertiser
+        request_body_json:
+          AdvertiserId: "{{ stream_slice.advertiser_id }}"
+          PageStartIndex: "{{ next_page_token.get('next_page_token', 0) if next_page_token else 0 }}"
+          PageSize: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Result
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/advertisers_stream"
+            parent_key: AdvertiserId
+            partition_field: advertiser_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _partition_advertiser_id
+            value: "{{ stream_slice.advertiser_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          CreativeId:
+            type: string
+          CreativeName:
+            type:
+              - string
+              - "null"
+          AdvertiserId:
+            type:
+              - string
+              - "null"
+          Description:
+            type:
+              - string
+              - "null"
+          AdFormat:
+            type:
+              - string
+              - "null"
+          IsEnabled:
+            type:
+              - boolean
+              - "null"
+          Availability:
+            type:
+              - string
+              - "null"
+          CreatedAtUtc:
+            type:
+              - string
+              - "null"
+          UpdatedAtUtc:
+            type:
+              - string
+              - "null"
+          _partition_advertiser_id:
+            type:
+              - string
+              - "null"
+
+  campaign_flights_stream:
+    type: DeclarativeStream
+    name: campaign_flights
+    primary_key:
+      - CampaignFlightId
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/base_requester"
+        path: /campaignflight/query/campaign
+        request_body_json:
+          CampaignId: "{{ stream_slice.campaign_id }}"
+          PageStartIndex: "{{ next_page_token.get('next_page_token', 0) if next_page_token else 0 }}"
+          PageSize: 100
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - Result
+      paginator:
+        $ref: "#/definitions/offset_paginator"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/campaigns_stream"
+            parent_key: CampaignId
+            partition_field: campaign_id
+    transformations:
+      - type: AddFields
+        fields:
+          - path:
+              - _partition_campaign_id
+            value: "{{ stream_slice.campaign_id }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        additionalProperties: true
+        properties:
+          CampaignFlightId:
+            type: string
+          CampaignId:
+            type:
+              - string
+              - "null"
+          StartDateInclusiveUtc:
+            type:
+              - string
+              - "null"
+          EndDateExclusiveUtc:
+            type:
+              - string
+              - "null"
+          BudgetInImpressions:
+            type:
+              - number
+              - "null"
+          DailyTargetInImpressions:
+            type:
+              - number
+              - "null"
+          BudgetInAdvertiserCurrency:
+            type:
+              - number
+              - "null"
+          DailyTargetInAdvertiserCurrency:
+            type:
+              - number
+              - "null"
+          CreatedAtUtc:
+            type:
+              - string
+              - "null"
+          UpdatedAtUtc:
+            type:
+              - string
+              - "null"
+          _partition_campaign_id:
+            type:
+              - string
+              - "null"
+
+streams:
+  - $ref: "#/definitions/advertisers_stream"
+  - $ref: "#/definitions/campaigns_stream"
+  - $ref: "#/definitions/ad_groups_stream"
+  - $ref: "#/definitions/creatives_stream"
+  - $ref: "#/definitions/campaign_flights_stream"
+
+check:
+  type: CheckStream
+  stream_names:
+    - advertisers
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/the-trade-desk
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: The Trade Desk Source Spec
+    type: object
+    additionalProperties: true
+    required:
+      - partner_id
+      - login
+      - password
+    properties:
+      partner_id:
+        type: string
+        title: Partner ID
+        description: Your Trade Desk Partner ID. This is used to query advertisers belonging to your partner account.
+        order: 0
+      login:
+        type: string
+        title: Login Email
+        description: The email address used to authenticate with The Trade Desk API.
+        order: 1
+      password:
+        type: string
+        title: Password
+        description: The password used to authenticate with The Trade Desk API.
+        airbyte_secret: true
+        order: 2
+      environment:
+        type: string
+        title: Environment
+        description: The API environment to use. Use 'sandbox' for testing with the Partner Sandbox (ext-api.sb.thetradedesk.com) or 'production' for live data (api.thetradedesk.com).
+        enum:
+          - production
+          - sandbox
+        default: production
+        order: 3
