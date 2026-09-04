@@ -25,7 +25,10 @@ else
     -e POSTGRES_PASSWORD="$BACKEND_PASSWORD" \
     -e POSTGRES_DB="$BACKEND_DB" \
     -p "$BACKEND_PORT:5432" \
-    "$BACKEND_IMAGE" >/dev/null
+    "$BACKEND_IMAGE" \
+    -c wal_level=logical \
+    -c max_replication_slots=10 \
+    -c max_wal_senders=10 >/dev/null
 fi
 
 echo "[start-backend] waiting for $BACKEND_NAME to accept connections…" >&2
