@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BranchesAnyCondition"></a>
@@ -121,10 +121,24 @@ Classes
     `web_url: Any`
     :   Web URL of the branch
 
+<a id="BranchesArrayContainsCondition"></a>
+
+`BranchesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="BranchesContainsCondition"></a>
 
 `BranchesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -386,7 +400,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition`
     :   The type of the None singleton.
 
 <a id="BranchesOrCondition"></a>
@@ -408,7 +422,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="BranchesSearchFilter"></a>
@@ -466,7 +480,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.BranchesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesInCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.BranchesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.BranchesSortFilter]`
@@ -593,7 +607,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommitsAnyCondition"></a>
@@ -677,10 +691,24 @@ Classes
     `web_url: Any`
     :   Web URL of the commit
 
+<a id="CommitsArrayContainsCondition"></a>
+
+`CommitsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CommitsContainsCondition"></a>
 
 `CommitsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -969,7 +997,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CommitsOrCondition"></a>
@@ -991,7 +1019,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CommitsSearchFilter"></a>
@@ -1064,7 +1092,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.CommitsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsInCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.CommitsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.CommitsSortFilter]`
@@ -1221,7 +1249,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupMembersAnyCondition"></a>
@@ -1296,10 +1324,24 @@ Classes
     `web_url: Any`
     :   Web URL of the member profile
 
+<a id="GroupMembersArrayContainsCondition"></a>
+
+`GroupMembersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="GroupMembersContainsCondition"></a>
 
 `GroupMembersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1567,7 +1609,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition`
     :   The type of the None singleton.
 
 <a id="GroupMembersOrCondition"></a>
@@ -1589,7 +1631,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupMembersSearchFilter"></a>
@@ -1653,7 +1695,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMembersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMembersSortFilter]`
@@ -1792,7 +1834,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupMilestonesAnyCondition"></a>
@@ -1864,10 +1906,24 @@ Classes
     `web_url: Any`
     :   Web URL of the milestone
 
+<a id="GroupMilestonesArrayContainsCondition"></a>
+
+`GroupMilestonesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="GroupMilestonesContainsCondition"></a>
 
 `GroupMilestonesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2135,7 +2191,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition`
     :   The type of the None singleton.
 
 <a id="GroupMilestonesOrCondition"></a>
@@ -2157,7 +2213,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupMilestonesSearchFilter"></a>
@@ -2218,7 +2274,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.GroupMilestonesSortFilter]`
@@ -2351,7 +2407,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsAnyCondition"></a>
@@ -2462,10 +2518,24 @@ Classes
     `web_url: Any`
     :   Web URL of the group
 
+<a id="GroupsArrayContainsCondition"></a>
+
+`GroupsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="GroupsContainsCondition"></a>
 
 `GroupsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2772,7 +2842,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="GroupsOrCondition"></a>
@@ -2794,7 +2864,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="GroupsSearchFilter"></a>
@@ -2894,7 +2964,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.GroupsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsInCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.GroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.GroupsSortFilter]`
@@ -3105,7 +3175,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesAnyCondition"></a>
@@ -3252,10 +3322,24 @@ Classes
     `weight: Any`
     :   Weight of the issue
 
+<a id="IssuesArrayContainsCondition"></a>
+
+`IssuesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="IssuesContainsCondition"></a>
 
 `IssuesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3616,7 +3700,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
 <a id="IssuesOrCondition"></a>
@@ -3638,7 +3722,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="IssuesSearchFilter"></a>
@@ -3774,7 +3858,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.IssuesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesInCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.IssuesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.IssuesSortFilter]`
@@ -4057,7 +4141,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MergeRequestsAnyCondition"></a>
@@ -4243,10 +4327,24 @@ Classes
     `work_in_progress: Any`
     :   Whether the merge request is a work in progress
 
+<a id="MergeRequestsArrayContainsCondition"></a>
+
+`MergeRequestsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="MergeRequestsContainsCondition"></a>
 
 `MergeRequestsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4646,7 +4744,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition`
     :   The type of the None singleton.
 
 <a id="MergeRequestsOrCondition"></a>
@@ -4668,7 +4766,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="MergeRequestsSearchFilter"></a>
@@ -4843,7 +4941,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsInCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.MergeRequestsSortFilter]`
@@ -5204,7 +5302,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PipelinesAnyCondition"></a>
@@ -5273,10 +5371,24 @@ Classes
     `web_url: Any`
     :   Web URL of the pipeline
 
+<a id="PipelinesArrayContainsCondition"></a>
+
+`PipelinesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="PipelinesContainsCondition"></a>
 
 `PipelinesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5547,7 +5659,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition`
     :   The type of the None singleton.
 
 <a id="PipelinesOrCondition"></a>
@@ -5569,7 +5681,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="PipelinesSearchFilter"></a>
@@ -5627,7 +5739,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.PipelinesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesInCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.PipelinesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.PipelinesSortFilter]`
@@ -5754,7 +5866,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectMembersAnyCondition"></a>
@@ -5829,10 +5941,24 @@ Classes
     `web_url: Any`
     :   Web URL of the member profile
 
+<a id="ProjectMembersArrayContainsCondition"></a>
+
+`ProjectMembersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectMembersContainsCondition"></a>
 
 `ProjectMembersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6100,7 +6226,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectMembersOrCondition"></a>
@@ -6122,7 +6248,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectMembersSearchFilter"></a>
@@ -6186,7 +6312,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMembersSortFilter]`
@@ -6325,7 +6451,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectMilestonesAnyCondition"></a>
@@ -6397,10 +6523,24 @@ Classes
     `web_url: Any`
     :   Web URL of the milestone
 
+<a id="ProjectMilestonesArrayContainsCondition"></a>
+
+`ProjectMilestonesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectMilestonesContainsCondition"></a>
 
 `ProjectMilestonesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6668,7 +6808,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectMilestonesOrCondition"></a>
@@ -6690,7 +6830,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectMilestonesSearchFilter"></a>
@@ -6751,7 +6891,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectMilestonesSortFilter]`
@@ -6884,7 +7024,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsAnyCondition"></a>
@@ -7157,10 +7297,24 @@ Classes
     `wiki_enabled: Any`
     :   Whether wiki is enabled
 
+<a id="ProjectsArrayContainsCondition"></a>
+
+`ProjectsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectsContainsCondition"></a>
 
 `ProjectsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7635,7 +7789,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectsOrCondition"></a>
@@ -7657,7 +7811,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchFilter"></a>
@@ -7919,7 +8073,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsInCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ProjectsSortFilter]`
@@ -8454,7 +8608,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReleasesAnyCondition"></a>
@@ -8541,10 +8695,24 @@ Classes
     `upcoming_release: Any`
     :   Whether this is an upcoming release
 
+<a id="ReleasesArrayContainsCondition"></a>
+
+`ReleasesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ReleasesContainsCondition"></a>
 
 `ReleasesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8827,7 +8995,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ReleasesOrCondition"></a>
@@ -8849,7 +9017,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ReleasesSearchFilter"></a>
@@ -8925,7 +9093,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.ReleasesEqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesGteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLtCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesLteCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesInCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesNotCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAndCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesOrCondition | airbyte_agent_sdk.connectors.gitlab.types.ReleasesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.ReleasesSortFilter]`
@@ -9088,7 +9256,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsAnyCondition"></a>
@@ -9148,10 +9316,24 @@ Classes
     `target: Any`
     :   SHA the tag points to
 
+<a id="TagsArrayContainsCondition"></a>
+
+`TagsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.TagsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TagsContainsCondition"></a>
 
 `TagsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -9410,7 +9592,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TagsOrCondition"></a>
@@ -9432,7 +9614,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TagsSearchFilter"></a>
@@ -9481,7 +9663,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.TagsEqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsGteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLtCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsLteCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsInCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsNotCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAndCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsOrCondition | airbyte_agent_sdk.connectors.gitlab.types.TagsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.TagsSortFilter]`
@@ -9590,7 +9772,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -9647,10 +9829,24 @@ Classes
     `web_url: Any`
     :   Web URL of the user profile
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.gitlab.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -9897,7 +10093,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -9919,7 +10115,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -9965,7 +10161,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.gitlab.types.UsersEqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNeqCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersGteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLtCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersLteCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersInCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersNotCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAndCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersOrCondition | airbyte_agent_sdk.connectors.gitlab.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.gitlab.types.UsersSortFilter]`
