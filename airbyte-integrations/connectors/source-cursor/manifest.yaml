@@ -1,0 +1,542 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: >-
+  Sync Cursor Teams usage, per-seat spend, and per-event cost data from the
+  Cursor Admin API into your warehouse. Captures Cursor's rolling usage and
+  spend window into permanent storage, so history accrues from the day you
+  install.
+
+check:
+  type: CheckStream
+  stream_names:
+    - members
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: BasicHttpAuthenticator
+        username: "{{ config['api_key'] }}"
+      error_handler:
+        type: DefaultErrorHandler
+        max_retries: 5
+        response_filters:
+          - type: HttpResponseFilter
+            action: RETRY
+            http_codes:
+              - 429
+              - 500
+              - 502
+              - 503
+              - 504
+        backoff_strategies:
+          - type: ExponentialBackoffStrategy
+            factor: 5
+      request_body:
+        type: RequestBodyJsonObject
+        value:
+          endDate: "{{ stream_interval.end_time | int }}"
+          startDate: "{{ stream_interval.start_time | int }}"
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: pageSize
+          inject_into: body_json
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: body_json
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+          inject_on_first_request: true
+
+streams:
+  - type: DeclarativeStream
+    name: members
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        http_method: GET
+        url: https://api.cursor.com/teams/members
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - teamMembers
+    primary_key:
+      - email
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type: string
+          userId:
+            type:
+              - string
+              - "null"
+          isRemoved:
+            type:
+              - boolean
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: daily_usage
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        http_method: POST
+        url: https://api.cursor.com/teams/daily-usage-data
+        request_body:
+          $ref: "#/definitions/linked/HttpRequester/request_body"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+    primary_key:
+      - date
+      - email
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          day:
+            type:
+              - string
+              - "null"
+          date:
+            type: integer
+          email:
+            type: string
+          userId:
+            type:
+              - string
+              - "null"
+          isActive:
+            type:
+              - boolean
+              - "null"
+          apiKeyReqs:
+            type:
+              - integer
+              - "null"
+          cmdkUsages:
+            type:
+              - integer
+              - "null"
+          bugbotUsages:
+            type:
+              - integer
+              - "null"
+          chatRequests:
+            type:
+              - integer
+              - "null"
+          totalAccepts:
+            type:
+              - integer
+              - "null"
+          totalApplies:
+            type:
+              - integer
+              - "null"
+          totalRejects:
+            type:
+              - integer
+              - "null"
+          agentRequests:
+            type:
+              - integer
+              - "null"
+          clientVersion:
+            type:
+              - string
+              - "null"
+          mostUsedModel:
+            type:
+              - string
+              - "null"
+          totalTabsShown:
+            type:
+              - integer
+              - "null"
+          usageBasedReqs:
+            type:
+              - integer
+              - "null"
+          totalLinesAdded:
+            type:
+              - integer
+              - "null"
+          composerRequests:
+            type:
+              - integer
+              - "null"
+          totalLinesDeleted:
+            type:
+              - integer
+              - "null"
+          totalTabsAccepted:
+            type:
+              - integer
+              - "null"
+          acceptedLinesAdded:
+            type:
+              - integer
+              - "null"
+          acceptedLinesDeleted:
+            type:
+              - integer
+              - "null"
+          tabMostUsedExtension:
+            type:
+              - string
+              - "null"
+          applyMostUsedExtension:
+            type:
+              - string
+              - "null"
+          subscriptionIncludedReqs:
+            type:
+              - integer
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P30D
+      cursor_field: date
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%ms"
+      lookback_window: P2D
+      cursor_granularity: PT0.001S
+      cursor_datetime_formats:
+        - "%ms"
+  - type: DeclarativeStream
+    name: spend
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        http_method: POST
+        url: https://api.cursor.com/teams/spend
+        request_body:
+          type: RequestBodyJsonObject
+          value: {}
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - teamMemberSpend
+    primary_key:
+      - email
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          name:
+            type:
+              - string
+              - "null"
+          role:
+            type:
+              - string
+              - "null"
+          email:
+            type: string
+          userId:
+            type:
+              - string
+              - "null"
+          removedAt:
+            type:
+              - string
+              - "null"
+          spendCents:
+            type:
+              - number
+              - "null"
+          billingTier:
+            type:
+              - string
+              - "null"
+          apiPercentUsed:
+            type:
+              - number
+              - "null"
+          autoPercentUsed:
+            type:
+              - number
+              - "null"
+          totalPercentUsed:
+            type:
+              - number
+              - "null"
+          profilePictureUrl:
+            type:
+              - string
+              - "null"
+          includedSpendCents:
+            type:
+              - number
+              - "null"
+          fastPremiumRequests:
+            type:
+              - integer
+              - "null"
+          monthlyLimitDollars:
+            type:
+              - integer
+              - "null"
+          usagePromoExpiresAt:
+            type:
+              - string
+              - "null"
+          hardLimitOverrideDollars:
+            type:
+              - integer
+              - "null"
+          effectivePerUserLimitDollars:
+            type:
+              - integer
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: usage_events
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
+        http_method: POST
+        url: https://api.cursor.com/teams/filtered-usage-events
+        request_body:
+          $ref: "#/definitions/linked/HttpRequester/request_body"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - usageEvents
+    primary_key:
+      - timestamp
+      - userEmail
+      - model
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          kind:
+            type:
+              - string
+              - "null"
+          model:
+            type:
+              - string
+              - "null"
+          maxMode:
+            type:
+              - boolean
+              - "null"
+          timestamp:
+            type: string
+          userEmail:
+            type: string
+          isHeadless:
+            type:
+              - boolean
+              - "null"
+          tokenUsage:
+            type:
+              - object
+              - "null"
+            properties:
+              totalCents:
+                type:
+                  - number
+                  - "null"
+              inputTokens:
+                type:
+                  - integer
+                  - "null"
+              outputTokens:
+                type:
+                  - integer
+                  - "null"
+              cacheReadTokens:
+                type:
+                  - integer
+                  - "null"
+              cacheWriteTokens:
+                type:
+                  - integer
+                  - "null"
+              discountPercentOff:
+                type:
+                  - number
+                  - "null"
+            additionalProperties: true
+          automationId:
+            type:
+              - string
+              - "null"
+          chargedCents:
+            type:
+              - number
+              - "null"
+          cloudAgentId:
+            type:
+              - string
+              - "null"
+          isChargeable:
+            type:
+              - boolean
+              - "null"
+          requestsCosts:
+            type:
+              - number
+              - "null"
+          conversationId:
+            type:
+              - string
+              - "null"
+          cursorTokenFee:
+            type:
+              - number
+              - "null"
+          isTokenBasedCall:
+            type:
+              - boolean
+              - "null"
+          serviceAccountId:
+            type:
+              - string
+              - "null"
+          serviceAccountName:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+    incremental_sync:
+      type: DatetimeBasedCursor
+      step: P30D
+      cursor_field: timestamp
+      end_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config['start_date'] }}"
+        datetime_format: "%Y-%m-%d"
+      datetime_format: "%ms"
+      lookback_window: P1D
+      cursor_granularity: PT0.001S
+      cursor_datetime_formats:
+        - "%ms"
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    title: Cursor Teams Source Spec
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        description: >-
+          Cursor Admin API key (starts with crsr_). Create one in the Cursor
+          dashboard under Settings > Admin > API Keys.
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: >-
+          UTC date to start syncing daily_usage and usage_events from, in
+          YYYY-MM-DD format. Cursor only retains a rolling window of usage data,
+          so dates older than that window return nothing. History accrues
+          forward from the day you install this connector.
+        order: 1
+        title: Start Date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - "2026-01-01"
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    members:
+      streamHash: 103bc32716b8cc339636911cbc5019a98f0b8077
+    daily_usage:
+      streamHash: 47ac3a4175ee6d86eeb9931d41b838991d5b5bb3
+    spend:
+      streamHash: 6ae1689b245de55881d21588e5bc2d1e7342db72
+    usage_events:
+      streamHash: a2a429227fa021c5b408d9f46f19aae51b5eea18
+  autoImportSchema: {}
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
