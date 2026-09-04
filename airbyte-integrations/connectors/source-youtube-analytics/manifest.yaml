@@ -36,8 +36,6 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: jobs/{{ stream_partition['id'] }}/reports
-          request_parameters:
-            startTimeAtOrAfter: "{{ stream_interval['start_time'] if '1990-01-01T00:00:00.000000Z' != stream_interval['start_time'] else '' }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -66,6 +64,10 @@ definitions:
         global_substream_cursor: true
         start_datetime:
           datetime: "{{ '1990-01-01T00:00:00.000000Z' if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
+        start_time_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: startTimeAtOrAfter
       transformations:
         - type: AddFields
           fields:
@@ -83,8 +85,7 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: reportTypes
-          # Handled by ContentOwnerRequester: extra_request_parameters are static values only,
-          # while request_parameters are interpolated. See components.py.
+          # Handled by ContentOwnerRequester (static values only). See components.py.
           extra_request_parameters:
             includeSystemManaged: "true"
         record_selector:

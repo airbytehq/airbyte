@@ -11,9 +11,6 @@ import requests
 from airbyte_cdk import AirbyteTracedException, Decoder, FailureType
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
-    InterpolatedRequestOptionsProvider,
-)
 from airbyte_cdk.sources.types import StreamSlice, StreamState
 
 
@@ -32,23 +29,23 @@ class CustomDecoder(Decoder):
 @dataclass
 class ContentOwnerRequester(HttpRequester):
     """
-    Add content-owner parameters and support request parameters from the manifest.
+    Custom requester that conditionally adds the onBehalfOfContentOwner parameter
+    only when content_owner_id is provided in the config.
 
-    The factory only forwards manifest keys matching this class's type hints, so
-    ``request_parameters`` must be declared here and is wrapped in an
-    ``InterpolatedRequestOptionsProvider`` so templates interpolate. Static
-    ``extra_request_parameters`` are merged uninterpolated.
+    Also supports static `extra_request_parameters` declared in the manifest. `HttpRequester`
+    has no such field, and the model factory only forwards manifest keys that match a
+    component's type hints, so the field is declared here to be accepted and merged.
+
+    Deliberately NOT named `request_parameters`: that key is already used by the `report`
+    stream with a Jinja template value, and it is handled by the CDK's
+    `InterpolatedRequestOptionsProvider` rather than by this class. Declaring a field of
+    that name here makes the factory forward `report`'s template to this class, which
+    merges values verbatim, sending the raw `{{ ... }}` text to the API as a query value.
+    Values assigned to `extra_request_parameters` are NOT interpolated -- use static
+    strings only.
     """
 
-    request_parameters: Optional[Mapping[str, str]] = None
     extra_request_parameters: Optional[Mapping[str, Any]] = None
-
-    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        if self.request_options_provider is None and self.request_parameters:
-            self.request_options_provider = InterpolatedRequestOptionsProvider(
-                config=self.config, request_parameters=self.request_parameters, parameters=parameters
-            )
-        super().__post_init__(parameters)
 
     def get_request_params(
         self,

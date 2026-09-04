@@ -131,7 +131,7 @@ def test_initial_sync_requests_all_reports(config):
         output = read(source, config, catalog)
 
     query = parse_qs(urlparse(_reports_request(mocker).url).query, keep_blank_values=True)
-    assert not query.get("startTimeAtOrAfter")
+    assert query == {"startTimeAtOrAfter": ["1990-01-01T00:00:00.000000Z"]}
     requested_urls = _downloaded_urls(mocker)
     assert _DOWNLOAD_OLD in requested_urls
     assert _DOWNLOAD_SAME in requested_urls
