@@ -58,4 +58,10 @@ data:
     - title: Gong rate limits
       url: https://us-66463.app.gong.io/settings/api/documentation#rate-limits
       type: rate_limits
+    - title: Gong technical release notes
+      url: https://help.gong.io/docs/release-notes
+      type: api_release_history
+    - title: "Public API change: Deprecating Call Action Items in the extensive endpoint"
+      url: https://help.gong.io/docs/public-api-change-deprecating-call-action-items-in-the-extensive-endpoint
+      type: api_deprecations
 metadataSpecVersion: "1.0"
