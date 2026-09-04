@@ -7113,9 +7113,7 @@ streams:
             - 'null'
             - string
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         im_group_ids:
           type:
           - 'null'
@@ -7176,6 +7174,8 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - "id"
   type: DeclarativeStream
   name: "users"
   primary_key: "id"
@@ -7336,9 +7336,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -7399,6 +7397,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -7432,9 +7432,7 @@ streams:
           - 'null'
           - string
         id:
-          type:
-          - 'null'
-          - number
+          type: number
         uuid:
           type:
           - 'null'
@@ -8029,6 +8027,8 @@ streams:
           type:
           - 'null'
           - number
+      required:
+      - "id"
   type: DeclarativeStream
   name: "meetings"
   primary_key: "id"
@@ -8212,9 +8212,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -8275,6 +8273,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -8307,9 +8307,7 @@ streams:
           - 'null'
           - number
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         address:
           type:
           - 'null'
@@ -8403,6 +8401,8 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - "id"
   type: DeclarativeStream
   name: "meeting_registrants"
   primary_key: "id"
@@ -8574,9 +8574,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -8637,6 +8635,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -8665,9 +8665,7 @@ streams:
       type: object
       properties:
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         meeting_id:
           type:
           - 'null'
@@ -8778,6 +8776,8 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - "id"
   type: DeclarativeStream
   name: "meeting_polls"
   primary_key: "id"
@@ -8950,9 +8950,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -9013,6 +9011,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -9258,9 +9258,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -9321,6 +9319,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -9578,9 +9578,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -9641,6 +9639,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -9670,9 +9670,7 @@ streams:
           - 'null'
           - string
         id:
-          type:
-          - 'null'
-          - number
+          type: number
         uuid:
           type:
           - 'null'
@@ -10051,6 +10049,8 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - "id"
   type: DeclarativeStream
   name: "webinars"
   primary_key: "id"
@@ -10233,9 +10233,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -10296,6 +10294,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -10557,9 +10557,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -10620,6 +10618,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -10942,9 +10942,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -11005,6 +11003,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -11037,9 +11037,7 @@ streams:
           - 'null'
           - string
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         address:
           type:
           - 'null'
@@ -11133,6 +11131,8 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - "id"
   type: DeclarativeStream
   name: "webinar_absentees"
   primary_key: "id"
@@ -11315,9 +11315,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -11378,6 +11376,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -11699,9 +11699,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -11762,6 +11760,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -12005,9 +12005,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -12068,6 +12066,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -12325,9 +12325,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -12388,6 +12386,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -12420,9 +12420,7 @@ streams:
           - 'null'
           - string
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         registration_count:
           type:
           - 'null'
@@ -12439,6 +12437,8 @@ streams:
           type:
           - 'null'
           - number
+      required:
+      - "id"
   type: DeclarativeStream
   name: "webinar_tracking_sources"
   primary_key: "id"
@@ -12621,9 +12621,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -12684,6 +12682,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -12910,9 +12910,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -12973,6 +12971,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -13031,9 +13031,7 @@ streams:
           - 'null'
           - string
         id:
-          type:
-          - 'null'
-          - number
+          type: number
         participants_count:
           type:
           - 'null'
@@ -13083,6 +13081,8 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - "id"
   type: DeclarativeStream
   name: "report_meetings"
   primary_key: "id"
@@ -13268,9 +13268,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -13331,6 +13329,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -13379,9 +13379,7 @@ streams:
           - 'null'
           - boolean
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         join_time:
           type:
           - 'null'
@@ -13422,6 +13420,8 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - "id"
   type: DeclarativeStream
   name: "report_meeting_participants"
   primary_key: "id"
@@ -13602,9 +13602,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -13665,6 +13663,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -13971,9 +13971,7 @@ streams:
                             - 'null'
                             - string
                         id:
-                          type:
-                          - 'null'
-                          - string
+                          type: string
                         im_group_ids:
                           type:
                           - 'null'
@@ -14034,6 +14032,8 @@ streams:
                           type:
                           - 'null'
                           - string
+                      required:
+                      - "id"
                   type: DeclarativeStream
                   name: "users"
                   primary_key: "id"
@@ -14135,19 +14135,22 @@ streams:
         stop_condition: "{{ response.next_page_token == '' }}"
         page_size: 100
       page_size_option:
-        field_name: "page_size"
+        field_name: page_size
         inject_into: "request_parameter"
         type: RequestOption
       page_token_option:
         type: RequestOption
-        field_name: "next_page_token"
+        field_name: next_page_token
         inject_into: "request_parameter"
     record_selector:
       extractor:
         type: DpathExtractor
         field_path:
-        - "users"
+        - users
       type: RecordSelector
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record.get('id') not in [None, ''] }}"
     type: SimpleRetriever
   schema_loader:
     type: InlineSchemaLoader
@@ -14157,9 +14160,7 @@ streams:
       additionalProperties: true
       properties:
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         phone_user_id:
           type:
           - 'null'
@@ -14258,9 +14259,11 @@ streams:
                 type:
                 - 'null'
                 - string
+      required:
+      - id
   type: DeclarativeStream
   name: "phone_users"
-  primary_key: "id"
+  primary_key: id
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -14286,33 +14289,36 @@ streams:
         stop_condition: "{{ response.next_page_token == '' }}"
         page_size: 300
       page_size_option:
-        field_name: "page_size"
+        field_name: page_size
         inject_into: "request_parameter"
         type: RequestOption
       page_token_option:
         type: RequestOption
-        field_name: "next_page_token"
+        field_name: next_page_token
         inject_into: "request_parameter"
     record_selector:
       extractor:
         type: DpathExtractor
         field_path:
-        - "call_history"
+        - call_history
       type: RecordSelector
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record.get('call_history_uuid') not in [None, ''] }}"
     partition_router:
       type: ListPartitionRouter
-      cursor_field: "recording_status"
+      cursor_field: recording_status
       values:
       - "recorded"
       - "non_recorded"
       request_option:
         type: RequestOption
-        field_name: "recording_status"
+        field_name: recording_status
         inject_into: "request_parameter"
     type: SimpleRetriever
   incremental_sync:
     type: DatetimeBasedCursor
-    cursor_field: "start_time"
+    cursor_field: start_time
     datetime_format: "%Y-%m-%d"
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%SZ"
@@ -14321,15 +14327,15 @@ streams:
     start_datetime: "{{ [config.get('phone_start_date', day_delta(-30, format='%Y-%m-%d')), (now_utc() - duration('P6M') + duration('P1D')).strftime('%Y-%m-%d')] | max }}"
     end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
     cursor_granularity: "P1D"
-    step: "P30D"
+    step: "P1D"
     lookback_window: "P1D"
     start_time_option:
       type: RequestOption
-      field_name: "from"
+      field_name: from
       inject_into: "request_parameter"
     end_time_option:
       type: RequestOption
-      field_name: "to"
+      field_name: to
       inject_into: "request_parameter"
   schema_loader:
     type: InlineSchemaLoader
@@ -14339,9 +14345,7 @@ streams:
       additionalProperties: true
       properties:
         call_history_uuid:
-          type:
-          - 'null'
-          - string
+          type: string
         call_id:
           type:
           - 'null'
@@ -14442,9 +14446,11 @@ streams:
           type:
           - 'null'
           - string
+      required:
+      - call_history_uuid
   type: DeclarativeStream
   name: "phone_call_history"
-  primary_key: "call_history_uuid"
+  primary_key: call_history_uuid
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -14458,8 +14464,10 @@ streams:
         grant_type: "account_credentials"
         type: CustomAuthenticator
       type: CustomRequester
-      class_name: source_declarative_manifest.components.ZoomPhoneLoggingRequester
+      class_name: source_declarative_manifest.components.ZoomPhoneCachedRequester
       rate_limit_category: MEDIUM
+      requester_role: selected_stream
+      use_cache: true
       path: "/phone/recordings"
     paginator:
       type: DefaultPaginator
@@ -14469,23 +14477,26 @@ streams:
         stop_condition: "{{ response.next_page_token == '' }}"
         page_size: 300
       page_size_option:
-        field_name: "page_size"
+        field_name: page_size
         inject_into: "request_parameter"
         type: RequestOption
       page_token_option:
         type: RequestOption
-        field_name: "next_page_token"
+        field_name: next_page_token
         inject_into: "request_parameter"
     record_selector:
       extractor:
         type: DpathExtractor
         field_path:
-        - "recordings"
+        - recordings
       type: RecordSelector
+      record_filter:
+        type: RecordFilter
+        condition: "{{ record.get('id') not in [None, ''] }}"
     type: SimpleRetriever
   incremental_sync:
     type: DatetimeBasedCursor
-    cursor_field: "date_time"
+    cursor_field: date_time
     datetime_format: "%Y-%m-%d"
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%SZ"
@@ -14494,15 +14505,15 @@ streams:
     start_datetime: "{{ config.get('phone_start_date', day_delta(-30, format='%Y-%m-%d')) }}"
     end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
     cursor_granularity: "P1D"
-    step: "P30D"
+    step: "P1D"
     lookback_window: "P7D"
     start_time_option:
       type: RequestOption
-      field_name: "from"
+      field_name: from
       inject_into: "request_parameter"
     end_time_option:
       type: RequestOption
-      field_name: "to"
+      field_name: to
       inject_into: "request_parameter"
   schema_loader:
     type: InlineSchemaLoader
@@ -14512,9 +14523,7 @@ streams:
       additionalProperties: true
       properties:
         id:
-          type:
-          - 'null'
-          - string
+          type: string
         call_id:
           type:
           - 'null'
@@ -14611,9 +14620,11 @@ streams:
           type:
           - 'null'
           - object
+      required:
+      - id
   type: DeclarativeStream
   name: "phone_recordings"
-  primary_key: "id"
+  primary_key: id
 - retriever:
     requester:
       url_base: "https://api.zoom.us/v2"
@@ -14639,12 +14650,15 @@ streams:
       type: CustomRequester
       class_name: source_declarative_manifest.components.ZoomPhoneLoggingRequester
       rate_limit_category: LIGHT
-      use_cache: true
+      requester_role: transcript
     record_selector:
       extractor:
         type: DpathExtractor
         field_path: []
       type: RecordSelector
+      record_filter:
+        type: RecordFilter
+        condition: "{{ (record.get('recording_id') not in [None, '']) or (record.get('meeting_id') not in [None, '']) }}"
     partition_router:
       type: SubstreamPartitionRouter
       parent_stream_configs:
@@ -14662,8 +14676,10 @@ streams:
                 grant_type: "account_credentials"
                 type: CustomAuthenticator
               type: CustomRequester
-              class_name: source_declarative_manifest.components.ZoomPhoneLoggingRequester
+              class_name: source_declarative_manifest.components.ZoomPhoneCachedRequester
               rate_limit_category: MEDIUM
+              requester_role: transcript_parent
+              use_cache: true
               path: "/phone/recordings"
             paginator:
               type: DefaultPaginator
@@ -14673,26 +14689,26 @@ streams:
                 stop_condition: "{{ response.next_page_token == '' }}"
                 page_size: 300
               page_size_option:
-                field_name: "page_size"
+                field_name: page_size
                 inject_into: "request_parameter"
                 type: RequestOption
               page_token_option:
                 type: RequestOption
-                field_name: "next_page_token"
+                field_name: next_page_token
                 inject_into: "request_parameter"
             record_selector:
               extractor:
                 type: DpathExtractor
                 field_path:
-                - "recordings"
+                - recordings
               record_filter:
                 type: RecordFilter
-                condition: "{{ record.get('transcript_download_url') != None and record.get('transcript_download_url') != '' }}"
+                condition: "{{ (record.get('transcript_download_url') != None and record.get('transcript_download_url') != '') and (record.get('id') not in [None, '']) }}"
               type: RecordSelector
             type: SimpleRetriever
           incremental_sync:
             type: DatetimeBasedCursor
-            cursor_field: "date_time"
+            cursor_field: date_time
             datetime_format: "%Y-%m-%d"
             cursor_datetime_formats:
             - "%Y-%m-%dT%H:%M:%SZ"
@@ -14701,15 +14717,15 @@ streams:
             start_datetime: "{{ config.get('phone_start_date', day_delta(-30, format='%Y-%m-%d')) }}"
             end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
             cursor_granularity: "P1D"
-            step: "P30D"
+            step: "P1D"
             lookback_window: "P7D"
             start_time_option:
               type: RequestOption
-              field_name: "from"
+              field_name: from
               inject_into: "request_parameter"
             end_time_option:
               type: RequestOption
-              field_name: "to"
+              field_name: to
               inject_into: "request_parameter"
           schema_loader:
             type: InlineSchemaLoader
@@ -14719,9 +14735,7 @@ streams:
               additionalProperties: true
               properties:
                 id:
-                  type:
-                  - 'null'
-                  - string
+                  type: string
                 call_id:
                   type:
                   - 'null'
@@ -14738,21 +14752,23 @@ streams:
                   type:
                   - 'null'
                   - string
+              required:
+              - id
           type: DeclarativeStream
           name: "phone_recordings"
-          primary_key: "id"
-        parent_key: "id"
-        partition_field: "parent_id"
+          primary_key: id
+        parent_key: id
+        partition_field: parent_id
         incremental_dependency: true
         extra_fields:
-        - - "call_id"
-        - - "call_log_id"
-        - - "date_time"
+        - - call_id
+        - - call_log_id
+        - - date_time
         type: ParentStreamConfig
     type: SimpleRetriever
   incremental_sync:
     type: DatetimeBasedCursor
-    cursor_field: "recording_date_time"
+    cursor_field: recording_date_time
     datetime_format: "%Y-%m-%d"
     cursor_datetime_formats:
     - "%Y-%m-%dT%H:%M:%SZ"
@@ -14765,19 +14781,19 @@ streams:
   - type: AddFields
     fields:
     - path:
-      - "recording_id"
-      value: "{{ stream_partition.parent_id }}"
+      - recording_id
+      value: "{{ record.get('recording_id') or record.get('meeting_id') or stream_partition.parent_id }}"
       type: AddedFieldDefinition
     - path:
-      - "call_id"
+      - call_id
       value: "{{ stream_slice.extra_fields['call_id'] }}"
       type: AddedFieldDefinition
     - path:
-      - "call_log_id"
+      - call_log_id
       value: "{{ stream_slice.extra_fields['call_log_id'] }}"
       type: AddedFieldDefinition
     - path:
-      - "recording_date_time"
+      - recording_date_time
       value: "{{ stream_slice.extra_fields['date_time'] }}"
       type: AddedFieldDefinition
   schema_loader:
@@ -14788,9 +14804,7 @@ streams:
       additionalProperties: true
       properties:
         recording_id:
-          type:
-          - 'null'
-          - string
+          type: string
         call_id:
           type:
           - 'null'
@@ -14808,9 +14822,7 @@ streams:
           - 'null'
           - string
         ver:
-          type:
-          - 'null'
-          - string
+          type: integer
         meeting_id:
           type:
           - 'null'
@@ -14879,389 +14891,12 @@ streams:
               channelMark:
                 type:
                 - 'null'
-                - integer
+                - string
+      required:
+      - recording_id
   type: DeclarativeStream
   name: "phone_recording_transcripts"
-  primary_key: "recording_id"
-- retriever:
-    type: CustomRetriever
-    class_name: source_declarative_manifest.components.TimelineRetriever
-    partition_router:
-      type: SubstreamPartitionRouter
-      parent_stream_configs:
-      - stream:
-          retriever:
-            requester:
-              url_base: "https://api.zoom.us/v2"
-              http_method: "GET"
-              authenticator:
-                class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                client_id: "{{ config['client_id'] }}"
-                account_id: "{{ config['account_id'] }}"
-                client_secret: "{{ config['client_secret'] }}"
-                authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                grant_type: "account_credentials"
-                type: CustomAuthenticator
-              path: "/phone/recording_transcript/download/{{ stream_partition.parent_id }}"
-              error_handler:
-                type: CompositeErrorHandler
-                error_handlers:
-                - type: DefaultErrorHandler
-                  response_filters:
-                  - predicate: "{{ response.get('code') in [404, 12000, 12001, 12002, 12003] }}"
-                    action: IGNORE
-                    type: HttpResponseFilter
-                - type: DefaultErrorHandler
-              type: CustomRequester
-              class_name: source_declarative_manifest.components.ZoomPhoneLoggingRequester
-              rate_limit_category: LIGHT
-              use_cache: true
-            record_selector:
-              extractor:
-                type: DpathExtractor
-                field_path: []
-              type: RecordSelector
-            partition_router:
-              type: SubstreamPartitionRouter
-              parent_stream_configs:
-              - stream:
-                  retriever:
-                    requester:
-                      url_base: "https://api.zoom.us/v2"
-                      http_method: "GET"
-                      authenticator:
-                        class_name: source_declarative_manifest.components.ServerToServerOauthAuthenticator
-                        client_id: "{{ config['client_id'] }}"
-                        account_id: "{{ config['account_id'] }}"
-                        client_secret: "{{ config['client_secret'] }}"
-                        authorization_endpoint: "{{ config['authorization_endpoint'] }}"
-                        grant_type: "account_credentials"
-                        type: CustomAuthenticator
-                      type: CustomRequester
-                      class_name: source_declarative_manifest.components.ZoomPhoneLoggingRequester
-                      rate_limit_category: MEDIUM
-                      path: "/phone/recordings"
-                    paginator:
-                      type: DefaultPaginator
-                      pagination_strategy:
-                        type: "CursorPagination"
-                        cursor_value: "{{ response.next_page_token }}"
-                        stop_condition: "{{ response.next_page_token == '' }}"
-                        page_size: 300
-                      page_size_option:
-                        field_name: "page_size"
-                        inject_into: "request_parameter"
-                        type: RequestOption
-                      page_token_option:
-                        type: RequestOption
-                        field_name: "next_page_token"
-                        inject_into: "request_parameter"
-                    record_selector:
-                      extractor:
-                        type: DpathExtractor
-                        field_path:
-                        - "recordings"
-                      record_filter:
-                        type: RecordFilter
-                        condition: "{{ record.get('transcript_download_url') != None and record.get('transcript_download_url') != '' }}"
-                      type: RecordSelector
-                    type: SimpleRetriever
-                  incremental_sync:
-                    type: DatetimeBasedCursor
-                    cursor_field: "date_time"
-                    datetime_format: "%Y-%m-%d"
-                    cursor_datetime_formats:
-                    - "%Y-%m-%dT%H:%M:%SZ"
-                    - "%Y-%m-%dT%H:%M:%S.%fZ"
-                    - "%Y-%m-%d"
-                    start_datetime: "{{ config.get('phone_start_date', day_delta(-30, format='%Y-%m-%d')) }}"
-                    end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-                    cursor_granularity: "P1D"
-                    step: "P30D"
-                    lookback_window: "P7D"
-                    start_time_option:
-                      type: RequestOption
-                      field_name: "from"
-                      inject_into: "request_parameter"
-                    end_time_option:
-                      type: RequestOption
-                      field_name: "to"
-                      inject_into: "request_parameter"
-                  schema_loader:
-                    type: InlineSchemaLoader
-                    schema:
-                      $schema: http://json-schema.org/draft-07/schema#
-                      type: object
-                      additionalProperties: true
-                      properties:
-                        id:
-                          type:
-                          - 'null'
-                          - string
-                        call_id:
-                          type:
-                          - 'null'
-                          - string
-                        call_log_id:
-                          type:
-                          - 'null'
-                          - string
-                        date_time:
-                          type:
-                          - 'null'
-                          - string
-                        transcript_download_url:
-                          type:
-                          - 'null'
-                          - string
-                  type: DeclarativeStream
-                  name: "phone_recordings"
-                  primary_key: "id"
-                parent_key: "id"
-                partition_field: "parent_id"
-                incremental_dependency: true
-                extra_fields:
-                - - "call_id"
-                - - "call_log_id"
-                - - "date_time"
-                type: ParentStreamConfig
-            type: SimpleRetriever
-          incremental_sync:
-            type: DatetimeBasedCursor
-            cursor_field: "recording_date_time"
-            datetime_format: "%Y-%m-%d"
-            cursor_datetime_formats:
-            - "%Y-%m-%dT%H:%M:%SZ"
-            - "%Y-%m-%dT%H:%M:%S.%fZ"
-            - "%Y-%m-%d"
-            start_datetime: "{{ config.get('phone_start_date', day_delta(-30, format='%Y-%m-%d')) }}"
-            end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-            lookback_window: "P7D"
-          transformations:
-          - type: AddFields
-            fields:
-            - path:
-              - "recording_id"
-              value: "{{ stream_partition.parent_id }}"
-              type: AddedFieldDefinition
-            - path:
-              - "call_id"
-              value: "{{ stream_slice.extra_fields['call_id'] }}"
-              type: AddedFieldDefinition
-            - path:
-              - "call_log_id"
-              value: "{{ stream_slice.extra_fields['call_log_id'] }}"
-              type: AddedFieldDefinition
-            - path:
-              - "recording_date_time"
-              value: "{{ stream_slice.extra_fields['date_time'] }}"
-              type: AddedFieldDefinition
-          schema_loader:
-            type: InlineSchemaLoader
-            schema:
-              $schema: http://json-schema.org/draft-07/schema#
-              type: object
-              additionalProperties: true
-              properties:
-                recording_id:
-                  type:
-                  - 'null'
-                  - string
-                call_id:
-                  type:
-                  - 'null'
-                  - string
-                call_log_id:
-                  type:
-                  - 'null'
-                  - string
-                recording_date_time:
-                  type:
-                  - 'null'
-                  - string
-                type:
-                  type:
-                  - 'null'
-                  - string
-                ver:
-                  type:
-                  - 'null'
-                  - string
-                meeting_id:
-                  type:
-                  - 'null'
-                  - string
-                account_id:
-                  type:
-                  - 'null'
-                  - string
-                host_id:
-                  type:
-                  - 'null'
-                  - string
-                recording_start:
-                  type:
-                  - 'null'
-                  - string
-                recording_end:
-                  type:
-                  - 'null'
-                  - string
-                timeline:
-                  type:
-                  - 'null'
-                  - array
-                  items:
-                    type: object
-                    additionalProperties: true
-                    properties:
-                      text:
-                        type:
-                        - 'null'
-                        - string
-                      raw_text:
-                        type:
-                        - 'null'
-                        - string
-                      ts:
-                        type:
-                        - 'null'
-                        - string
-                        - number
-                      end_ts:
-                        type:
-                        - 'null'
-                        - string
-                        - number
-                      userId:
-                        type:
-                        - 'null'
-                        - string
-                      users:
-                        type:
-                        - 'null'
-                        - array
-                        items:
-                          type: object
-                          additionalProperties: true
-                      userIds:
-                        type:
-                        - 'null'
-                        - array
-                        items:
-                          type:
-                          - 'null'
-                          - string
-                      channelMark:
-                        type:
-                        - 'null'
-                        - integer
-          type: DeclarativeStream
-          name: "phone_recording_transcripts"
-          primary_key: "recording_id"
-        parent_key: recording_id
-        partition_field: parent_id
-        incremental_dependency: true
-        extra_fields:
-        - - timeline
-        - - call_id
-        - - call_log_id
-        - - recording_date_time
-        type: ParentStreamConfig
-  incremental_sync:
-    type: DatetimeBasedCursor
-    cursor_field: "recording_date_time"
-    datetime_format: "%Y-%m-%d"
-    cursor_datetime_formats:
-    - "%Y-%m-%dT%H:%M:%SZ"
-    - "%Y-%m-%dT%H:%M:%S.%fZ"
-    - "%Y-%m-%d"
-    start_datetime: "{{ config.get('phone_start_date', day_delta(-30, format='%Y-%m-%d')) }}"
-    end_datetime: "{{ now_utc().strftime('%Y-%m-%d') }}"
-    lookback_window: "P7D"
-  schema_loader:
-    type: InlineSchemaLoader
-    schema:
-      $schema: http://json-schema.org/draft-07/schema#
-      type: object
-      additionalProperties: true
-      properties:
-        timeline_id:
-          type:
-          - 'null'
-          - string
-        recording_id:
-          type:
-          - 'null'
-          - string
-        call_id:
-          type:
-          - 'null'
-          - string
-        call_log_id:
-          type:
-          - 'null'
-          - string
-        recording_date_time:
-          type:
-          - 'null'
-          - string
-        text:
-          type:
-          - 'null'
-          - string
-        raw_text:
-          type:
-          - 'null'
-          - string
-        ts:
-          type:
-          - 'null'
-          - string
-          - number
-        end_ts:
-          type:
-          - 'null'
-          - string
-          - number
-        language:
-          type:
-          - 'null'
-          - string
-        userId:
-          type:
-          - 'null'
-          - string
-        userIds:
-          type:
-          - 'null'
-          - array
-          items:
-            type:
-            - 'null'
-            - string
-        channelMark:
-          type:
-          - 'null'
-          - string
-          - integer
-        users:
-          type:
-          - 'null'
-          - array
-          items:
-            type: object
-            additionalProperties: true
-        word_items:
-          type:
-          - 'null'
-          - array
-          items:
-            type: object
-            additionalProperties: true
-  type: DeclarativeStream
-  name: "phone_recording_transcript_timeline"
-  primary_key: "timeline_id"
+  primary_key: recording_id
 api_budget:
   type: HTTPAPIBudget
   policies:

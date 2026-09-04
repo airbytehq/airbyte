@@ -3,14 +3,16 @@
 #
 
 import base64
+import os
 import re
 import time
 from calendar import monthrange
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from http import HTTPStatus
-from threading import Lock
-from typing import Any, Callable, ClassVar, Iterable, Mapping, Optional, Union
+from importlib.metadata import PackageNotFoundError, version as package_version
+from threading import Lock, Thread
+from typing import Any, Callable, ClassVar, Mapping, Optional, Union
 from urllib.parse import urlsplit
 
 import requests
@@ -19,8 +21,7 @@ from requests import HTTPError
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
-from airbyte_cdk.sources.declarative.retrievers import Retriever
-from airbyte_cdk.sources.declarative.types import Config, StreamSlice
+from airbyte_cdk.sources.declarative.types import Config
 
 
 # https://developers.zoom.us/docs/internal-apps/s2s-oauth/#successful-response
@@ -105,11 +106,90 @@ class ZoomPhoneLoggingRequester(HttpRequester):
 
     rate_limit_category: str = "UNKNOWN"
     history_limit_months: Optional[int] = None
-    _summary_every: ClassVar[int] = 100
+    requester_role: str = "default"
+    _summary_every: ClassVar[int] = 500
+    _periodic_summary_interval_seconds: ClassVar[int] = 300
+    _periodic_summary_idle_grace_intervals: ClassVar[int] = 12
+    _runtime_version_logged: ClassVar[bool] = False
+    _runtime_version_lock: ClassVar[Lock] = Lock()
+    _rate_limit_configs_logged: ClassVar[set[tuple[str, str]]] = set()
+    _rate_limit_config_lock: ClassVar[Lock] = Lock()
+    _default_cache_directory: ClassVar[str] = "/source/.request-cache"
     _request_count: int = field(default=0, init=False, repr=False)
     _cache_hit_count: int = field(default=0, init=False, repr=False)
     _total_duration_ms: int = field(default=0, init=False, repr=False)
     _history_limit_checked: bool = field(default=False, init=False, repr=False)
+    _periodic_logger_started: bool = field(default=False, init=False, repr=False)
+    _periodic_logger_lock: Lock = field(default_factory=Lock, init=False, repr=False)
+    _metrics_lock: Lock = field(default_factory=Lock, init=False, repr=False)
+    _active_http_request_count: int = field(default=0, init=False, repr=False)
+    _last_activity_monotonic: float = field(default_factory=time.monotonic, init=False, repr=False)
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # Airbyte uses REQUEST_CACHE_PATH when constructing its CachedSession.
+        # Keep the Zoom Phone cache on the pod's disk-backed /source EmptyDir so
+        # large recording responses do not consume the container's memory limit.
+        cache_path = None
+        if self.use_cache:
+            cache_path = os.environ.get("REQUEST_CACHE_PATH") or self._default_cache_directory
+            os.makedirs(cache_path, exist_ok=True)
+            os.environ.setdefault("REQUEST_CACHE_PATH", cache_path)
+
+        super().__post_init__(parameters)
+
+        if not ZoomPhoneLoggingRequester._runtime_version_logged:
+            with ZoomPhoneLoggingRequester._runtime_version_lock:
+                if not ZoomPhoneLoggingRequester._runtime_version_logged:
+                    try:
+                        cdk_version = package_version("airbyte-cdk")
+                    except PackageNotFoundError:
+                        cdk_version = "unknown"
+                    configured_workers = self.config.get("num_workers", 20)
+                    light_rps = self.config.get("phone_light_requests_per_second", 20)
+                    medium_rps = self.config.get("phone_medium_requests_per_second", 10)
+                    heavy_rps = self.config.get("phone_heavy_requests_per_second", 5)
+                    heavy_per_day = self.config.get("phone_heavy_requests_per_day", 15000)
+                    self.logger.info(
+                        f"Runtime cdk={cdk_version} workers={configured_workers}"
+                    )
+                    self.logger.info(
+                        "API budget "
+                        f"light={light_rps}/s "
+                        f"medium={medium_rps}/s "
+                        f"heavy={heavy_rps}/s "
+                        f"heavy_day={heavy_per_day}/day"
+                    )
+                    ZoomPhoneLoggingRequester._runtime_version_logged = True
+
+        rate_config_key = (self.name, self.rate_limit_category)
+        with ZoomPhoneLoggingRequester._rate_limit_config_lock:
+            if rate_config_key not in ZoomPhoneLoggingRequester._rate_limit_configs_logged:
+                self.logger.info(
+                    f"RateLimit [{self.name}] category={self.rate_limit_category}"
+                )
+                ZoomPhoneLoggingRequester._rate_limit_configs_logged.add(rate_config_key)
+
+        session = self._http_client._session
+        session_name = type(session).__name__
+        cache_match_headers = "n/a"
+        if self.use_cache and hasattr(session, "settings"):
+            # The CDK constructs CachedLimiterSession with match_headers=True.
+            # For Zoom Phone parent-page reuse, authentication headers must not
+            # make an otherwise identical GET request a different cache key.
+            session.settings.match_headers = False
+            cache_match_headers = str(session.settings.match_headers).lower()
+
+        cache_file = (
+            os.path.join(cache_path, f"{self.name}.sqlite") if cache_path else "none"
+        )
+        if self.use_cache:
+            self.logger.info(
+                f"Cache [{self.name}] "
+                f"role={self.requester_role} "
+                f"session={session_name} "
+                f"file={cache_file} "
+                f"match_headers={cache_match_headers}"
+            )
 
     @staticmethod
     def _raw_value(value: Any) -> str:
@@ -161,32 +241,88 @@ class ZoomPhoneLoggingRequester(HttpRequester):
         earliest_start = self._months_ago(self.history_limit_months) + timedelta(days=1)
         if requested_start < earliest_start:
             self.logger.warning(
-                "Zoom API notice "
-                f"stream={self.name} "
+                f"Notice [{self.name}] "
                 f"requested_phone_start_date={requested_start.isoformat()} "
                 f"exceeds_zoom_history_window={self.history_limit_months}m "
                 f"effective_start_date={earliest_start.isoformat()}"
             )
 
-    def _log_summary(self) -> None:
-        average_duration_ms = round(self._total_duration_ms / self._request_count)
+    def _log_summary(self, periodic: bool = False) -> None:
+        with self._metrics_lock:
+            request_count = self._request_count
+            cache_hit_count = self._cache_hit_count
+            total_duration_ms = self._total_duration_ms
+            active_http_requests = self._active_http_request_count
+            last_activity_monotonic = self._last_activity_monotonic
+
+        average_duration_ms = (
+            round(total_duration_ms / request_count) if request_count else 0
+        )
+
         fields = [
-            "Zoom API summary",
-            f"stream={self.name}",
-            f"requests={self._request_count}",
-            f"avg_duration_ms={average_duration_ms}",
+            f"[{self.name}]",
+            *(["(heartbeat)"] if periodic else []),
+            f"role={self.requester_role}",
+            f"requests={request_count}",
+            f"active={active_http_requests}",
+            f"avg_ms={average_duration_ms}",
         ]
 
+        if periodic:
+            seconds_since_activity = max(
+                0, round(time.monotonic() - last_activity_monotonic)
+            )
+            fields.append(f"idle_s={seconds_since_activity}")
+
         if self.use_cache:
-            cache_hit_rate = (self._cache_hit_count / self._request_count) * 100
+            cache_hit_rate = (
+                (cache_hit_count / request_count) * 100 if request_count else 0.0
+            )
             fields.extend(
                 [
-                    f"cache_hits={self._cache_hit_count}",
-                    f"cache_hit_rate={cache_hit_rate:.1f}%",
+                    f"cache_hits={cache_hit_count}",
+                    f"cache={cache_hit_rate:.1f}%",
                 ]
             )
 
         self.logger.info(" ".join(fields))
+
+    def _periodic_summary_loop(self) -> None:
+        while True:
+            time.sleep(self._periodic_summary_interval_seconds)
+
+            with self._metrics_lock:
+                request_count = self._request_count
+                active_http_requests = self._active_http_request_count
+                last_activity_monotonic = self._last_activity_monotonic
+
+            if request_count == 0 and active_http_requests == 0:
+                continue
+
+            seconds_since_activity = time.monotonic() - last_activity_monotonic
+            idle_grace_seconds = (
+                self._periodic_summary_interval_seconds
+                * self._periodic_summary_idle_grace_intervals
+            )
+            if active_http_requests == 0 and seconds_since_activity > idle_grace_seconds:
+                continue
+
+            self._log_summary(periodic=True)
+
+    def _ensure_periodic_logger_started(self) -> None:
+        if self._periodic_logger_started:
+            return
+
+        with self._periodic_logger_lock:
+            if self._periodic_logger_started:
+                return
+
+            Thread(
+                target=self._periodic_summary_loop,
+                name=f"zoom-periodic-summary-{self.name}",
+                daemon=True,
+            ).start()
+            self._periodic_logger_started = True
 
     def send_request(
         self,
@@ -201,6 +337,11 @@ class ZoomPhoneLoggingRequester(HttpRequester):
         log_formatter: Optional[Callable[[requests.Response], Any]] = None,
     ) -> Optional[requests.Response]:
         self._check_history_limit()
+        self._ensure_periodic_logger_started()
+        with self._metrics_lock:
+            self._active_http_request_count += 1
+            self._last_activity_monotonic = time.monotonic()
+
         url = self._get_url(
             path=path,
             stream_state=stream_state,
@@ -231,8 +372,7 @@ class ZoomPhoneLoggingRequester(HttpRequester):
         except Exception as exc:
             duration_ms = round((time.monotonic() - started) * 1000)
             self.logger.warning(
-                "Zoom API failed "
-                f"stream={self.name} "
+                f"Failed [{self.name}] "
                 f"method={self.get_method().value} "
                 f"endpoint={endpoint} "
                 f"category={self.rate_limit_category} "
@@ -240,13 +380,18 @@ class ZoomPhoneLoggingRequester(HttpRequester):
                 f"error={type(exc).__name__}"
             )
             raise
+        finally:
+            with self._metrics_lock:
+                self._active_http_request_count = max(
+                    0, self._active_http_request_count - 1
+                )
+                self._last_activity_monotonic = time.monotonic()
 
         duration_ms = round((time.monotonic() - started) * 1000)
 
         if response is None:
             self.logger.warning(
-                "Zoom API response "
-                f"stream={self.name} "
+                f"Response [{self.name}] "
                 f"method={self.get_method().value} "
                 f"endpoint={endpoint} "
                 f"category={self.rate_limit_category} "
@@ -257,14 +402,15 @@ class ZoomPhoneLoggingRequester(HttpRequester):
 
         headers = response.headers
         from_cache = bool(getattr(response, "from_cache", False))
-        self._request_count += 1
-        self._total_duration_ms += duration_ms
-        if from_cache:
-            self._cache_hit_count += 1
+        with self._metrics_lock:
+            self._request_count += 1
+            self._total_duration_ms += duration_ms
+            if from_cache:
+                self._cache_hit_count += 1
+            request_count = self._request_count
 
         fields = [
-            "Zoom API",
-            f"stream={self.name}",
+            f"[{self.name}]",
             f"method={self.get_method().value}",
             f"endpoint={endpoint}",
             f"category={self.rate_limit_category}",
@@ -304,53 +450,34 @@ class ZoomPhoneLoggingRequester(HttpRequester):
         else:
             self.logger.debug(message)
 
-        if self._request_count % self._summary_every == 0:
+        if request_count % self._summary_every == 0:
             self._log_summary()
 
         return response
 
 
 @dataclass
-class TimelineRetriever(Retriever):
+class ZoomPhoneCachedRequester(ZoomPhoneLoggingRequester):
     """
-    Expands the transcript parent's ``timeline`` array into child records.
+    Zoom Phone requester that always enables Airbyte's request cache.
 
-    This retriever performs no HTTP requests. The transcript response is read by
-    the parent ``phone_recording_transcripts`` stream and passed through the
-    substream slice as an extra field.
+    This class exists because CustomRequester manifests can instantiate the base
+    requester with use_cache=False even when the YAML contains use_cache: true.
+    For /phone/recordings we need caching to be guaranteed before HttpRequester
+    constructs HttpClient, otherwise the transcript parent performs another full
+    Zoom API traversal.
     """
 
-    config: Config
+    use_cache: bool = True
 
-    def read_records(
-        self,
-        records_schema: Mapping[str, Any],
-        stream_slice: Optional[StreamSlice] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        if stream_slice is None:
-            return
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # Force caching before HttpRequester.__post_init__ creates HttpClient.
+        self.use_cache = True
+        super().__post_init__(parameters)
 
-        extra_fields = stream_slice.extra_fields or {}
-        timeline = extra_fields.get("timeline")
-        if not isinstance(timeline, list):
-            return
-
-        recording_id = str(stream_slice.partition.get("parent_id", ""))
-        call_id = extra_fields.get("call_id")
-        call_log_id = extra_fields.get("call_log_id")
-        recording_date_time = extra_fields.get("recording_date_time")
-
-        for item in timeline:
-            if not isinstance(item, Mapping):
-                continue
-
-            record = dict(item)
-            record["timeline_id"] = (
-                f"{recording_id}-{record.get('ts', '')}-{record.get('end_ts', '')}-"
-                f"{record.get('userId', '')}"
+        session_name = type(self._http_client._session).__name__
+        if session_name != "CachedLimiterSession":
+            raise RuntimeError(
+                "Cache initialization failed: expected "
+                f"CachedLimiterSession for stream={self.name}, got {session_name}"
             )
-            record["recording_id"] = recording_id
-            record["call_id"] = call_id
-            record["call_log_id"] = call_log_id
-            record["recording_date_time"] = recording_date_time
-            yield record
