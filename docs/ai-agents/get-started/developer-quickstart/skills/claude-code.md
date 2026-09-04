@@ -14,10 +14,10 @@ The airbyte-agent-sdk repository ships four skills under `.claude/skills/`:
 
 | Skill | What it teaches Claude Code |
 | ----- | --------------------------- |
-| `bootstrapping-agent` | Wiring a single Airbyte connector into a PydanticAI or Claude SDK agent, including `AirbyteAuthConfig`, connector initialization, and the `tool_utils` decorator pattern. |
+| `bootstrapping-agent` | Wiring a single Airbyte connector into a PydanticAI or Claude SDK agent, including `AirbyteAuthConfig`, connector initialization, and `build_connector_tools`. |
 | `building-multi-connector-agent` | Scaffolding a complete agent with multiple Airbyte connectors, composing tools, and writing the run loop. |
 | `discovering-connectors` | Enumerating the available Airbyte connectors and exploring a connector's entities, actions, and schemas at runtime. |
-| `airbyte-sdk-reference` | Reference material for the public SDK API, including `configure()`, `connect()`, `Workspace`, `tool_utils`, `list_entities()`, and `entity_schema()`, plus PydanticAI and Claude SDK code patterns. |
+| `airbyte-sdk-reference` | Reference material for the public SDK API, including `configure()`, `connect()`, `Workspace`, `build_connector_tools`, `agent_tool`, `list_entities()`, and `entity_schema()`, plus PydanticAI and Claude SDK code patterns. |
 
 Each skill is a `SKILL.md` file with YAML front matter that Claude Code uses to decide when to load it. You don't need to paste these into context yourself. Claude Code pulls them in automatically when a prompt matches the skill's description.
 
