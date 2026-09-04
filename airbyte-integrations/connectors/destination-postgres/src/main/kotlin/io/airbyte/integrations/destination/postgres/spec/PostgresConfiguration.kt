@@ -25,6 +25,7 @@ data class PostgresConfiguration(
     val internalTableSchema: String?,
     val dropCascade: Boolean?,
     val unconstrainedNumber: Boolean?,
+    val unloggedTables: Boolean,
     val tunnelMethod: SshTunnelMethodConfiguration?,
 ) : DestinationConfiguration()
 
@@ -63,6 +64,7 @@ class PostgresConfigurationFactory :
                 },
             dropCascade = spec.dropCascade ?: false,
             unconstrainedNumber = spec.unconstrainedNumber ?: false,
+            unloggedTables = spec.unloggedTables ?: false,
             tunnelMethod = spec.getTunnelMethodValue()
         )
     }

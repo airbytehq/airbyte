@@ -239,6 +239,13 @@
         "group" : "connection",
         "order" : 13
       },
+      "unlogged_tables" : {
+        "type" : "boolean",
+        "description" : "Create the tables Airbyte writes (final tables and the temporary tables used for full refresh and staging) as UNLOGGED. Unlogged tables are not written to the write-ahead log (WAL), so loads are faster and do not generate WAL that logical replication slots on the same database must retain. WARNING: unlogged tables are not crash-safe (they are truncated after a crash), are not replicated to physical standbys, and cannot be queried on read replicas. On Amazon Aurora, also set rds.logically_replicate_unlogged_tables=0 to exclude them from logical replication.",
+        "title" : "Create tables as UNLOGGED",
+        "group" : "connection",
+        "order" : 15
+      },
       "tunnel_method" : {
         "oneOf" : [ {
           "title" : "No Tunnel",

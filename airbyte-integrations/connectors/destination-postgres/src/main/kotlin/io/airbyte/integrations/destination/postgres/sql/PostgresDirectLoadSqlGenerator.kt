@@ -32,6 +32,8 @@ class PostgresDirectLoadSqlGenerator(
 
     private val dropTableSuffix: String =
         if (postgresConfiguration.dropCascade == true) " CASCADE" else ""
+    private val unloggedKeyword: String =
+        if (postgresConfiguration.unloggedTables) "UNLOGGED " else ""
 
     companion object {
         private const val DEDUPED_TABLE_ALIAS = "deduped_source"
@@ -78,7 +80,7 @@ class PostgresDirectLoadSqlGenerator(
             """
             BEGIN TRANSACTION;
             $dropTableIfExistsStatement
-            CREATE TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} (
+            CREATE ${unloggedKeyword}TABLE IF NOT EXISTS ${getFullyQualifiedName(tableName)} (
                 $columnDeclarations
             );
             COMMIT;

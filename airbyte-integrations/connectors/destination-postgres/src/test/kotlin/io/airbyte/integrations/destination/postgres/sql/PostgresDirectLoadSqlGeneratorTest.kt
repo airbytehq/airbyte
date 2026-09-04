@@ -20,6 +20,7 @@ import io.airbyte.integrations.destination.postgres.spec.PostgresConfiguration
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -38,6 +39,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { dropCascade } returns false
                 every { internalTableSchema } returns "airbyte_internal"
                 every { schema } returns "public"
+                every { unloggedTables } returns false
             }
         columnManager = PostgresColumnManager(postgresConfiguration)
         postgresDirectLoadSqlGenerator =
@@ -90,6 +92,46 @@ internal class PostgresDirectLoadSqlGeneratorTest {
 
         assertEqualsIgnoreWhitespace(expectedTableSql, createTableSql)
         assertEqualsIgnoreWhitespace(expectedIndexesSql, createIndexesSql)
+        assertFalse(createTableSql.contains("UNLOGGED"))
+    }
+
+    @Test
+    fun testCreateTableUnlogged() {
+        val unloggedConfig =
+            mockk<PostgresConfiguration> {
+                every { legacyRawTablesOnly } returns false
+                every { dropCascade } returns false
+                every { internalTableSchema } returns "airbyte_internal"
+                every { schema } returns "public"
+                every { unloggedTables } returns true
+            }
+        val unloggedColumnManager = PostgresColumnManager(unloggedConfig)
+        val unloggedSqlGenerator =
+            PostgresDirectLoadSqlGenerator(unloggedColumnManager, unloggedConfig)
+        val finalSchema = mapOf("targetId" to ColumnType("varchar", true))
+        val columnSchema = ColumnSchema(emptyMap(), emptyMap(), finalSchema)
+        val streamTableSchema =
+            mockk<StreamTableSchema> {
+                every { this@mockk.columnSchema } returns columnSchema
+                every { getPrimaryKey() } returns emptyList()
+                every { getCursor() } returns emptyList()
+            }
+        val stream = mockk<DestinationStream> { every { tableSchema } returns streamTableSchema }
+        val tableName = TableName(namespace = "test_schema", name = "test_table")
+
+        val (createTableSql, _) =
+            unloggedSqlGenerator.createTable(
+                stream = stream,
+                tableName = tableName,
+                replace = true
+            )
+
+        assert(createTableSql.contains("DROP TABLE IF EXISTS \"test_schema\".\"test_table\";"))
+        assert(
+            createTableSql.contains(
+                "CREATE UNLOGGED TABLE IF NOT EXISTS \"test_schema\".\"test_table\" ("
+            )
+        )
     }
 
     private fun assertEqualsIgnoreWhitespace(expected: String, actual: String) {
@@ -202,6 +244,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { dropCascade } returns false
                 every { internalTableSchema } returns "airbyte_internal"
                 every { schema } returns "public"
+                every { unloggedTables } returns false
             }
         val rawModeColumnManager = PostgresColumnManager(rawModeConfig)
         val rawModeSqlGenerator =
@@ -1072,6 +1115,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { dropCascade } returns true
                 every { internalTableSchema } returns "airbyte_internal"
                 every { schema } returns "public"
+                every { unloggedTables } returns false
             }
         val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
         val cascadeSqlGenerator =
@@ -1122,6 +1166,7 @@ internal class PostgresDirectLoadSqlGeneratorTest {
                 every { dropCascade } returns true
                 every { internalTableSchema } returns "airbyte_internal"
                 every { schema } returns "public"
+                every { unloggedTables } returns false
             }
         val cascadeColumnManager = PostgresColumnManager(cascadeConfig)
         val cascadeSqlGenerator =

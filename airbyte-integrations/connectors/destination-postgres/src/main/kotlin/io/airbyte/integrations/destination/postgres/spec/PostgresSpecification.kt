@@ -41,6 +41,7 @@ sealed class PostgresSpecification : ConfigurationSpecification() {
     abstract val legacyRawTablesOnly: Boolean?
     abstract val dropCascade: Boolean?
     abstract val unconstrainedNumber: Boolean?
+    abstract val unloggedTables: Boolean?
     abstract fun getTunnelMethodValue(): SshTunnelMethodConfiguration?
 }
 
@@ -171,6 +172,15 @@ class PostgresSpecificationOss : PostgresSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 13}""")
     @Suppress("RedundantNullableReturnType")
     override val unconstrainedNumber: Boolean? = false
+
+    @get:JsonSchemaTitle("Create tables as UNLOGGED")
+    @get:JsonPropertyDescription(
+        """Create the tables Airbyte writes (final tables and the temporary tables used for full refresh and staging) as UNLOGGED. Unlogged tables are not written to the write-ahead log (WAL), so loads are faster and do not generate WAL that logical replication slots on the same database must retain. WARNING: unlogged tables are not crash-safe (they are truncated after a crash), are not replicated to physical standbys, and cannot be queried on read replicas. On Amazon Aurora, also set rds.logically_replicate_unlogged_tables=0 to exclude them from logical replication."""
+    )
+    @get:JsonProperty("unlogged_tables")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 15}""")
+    @Suppress("RedundantNullableReturnType")
+    override val unloggedTables: Boolean? = false
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
@@ -321,6 +331,15 @@ class PostgresSpecificationCloud : PostgresSpecification() {
     @get:JsonSchemaInject(json = """{"group": "connection", "order": 13}""")
     @Suppress("RedundantNullableReturnType")
     override val unconstrainedNumber: Boolean? = false
+
+    @get:JsonSchemaTitle("Create tables as UNLOGGED")
+    @get:JsonPropertyDescription(
+        """Create the tables Airbyte writes (final tables and the temporary tables used for full refresh and staging) as UNLOGGED. Unlogged tables are not written to the write-ahead log (WAL), so loads are faster and do not generate WAL that logical replication slots on the same database must retain. WARNING: unlogged tables are not crash-safe (they are truncated after a crash), are not replicated to physical standbys, and cannot be queried on read replicas. On Amazon Aurora, also set rds.logically_replicate_unlogged_tables=0 to exclude them from logical replication."""
+    )
+    @get:JsonProperty("unlogged_tables")
+    @get:JsonSchemaInject(json = """{"group": "connection", "order": 15}""")
+    @Suppress("RedundantNullableReturnType")
+    override val unloggedTables: Boolean? = false
 
     @JsonIgnore
     @ConfigurationBuilder(configurationPrefix = "tunnel_method")
