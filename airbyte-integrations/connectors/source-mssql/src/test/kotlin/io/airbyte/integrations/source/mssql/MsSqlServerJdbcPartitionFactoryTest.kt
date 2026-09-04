@@ -468,9 +468,7 @@ class MsSqlServerJdbcPartitionFactoryTest {
             Stream(
                 id =
                     StreamIdentifier.from(
-                        StreamDescriptor()
-                            .withNamespace("dbo")
-                            .withName("cdc_full_refresh_table")
+                        StreamDescriptor().withNamespace("dbo").withName("cdc_full_refresh_table")
                     ),
                 schema = setOf(fieldId),
                 configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
