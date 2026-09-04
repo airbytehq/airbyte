@@ -13,6 +13,7 @@ import io.airbyte.cdk.load.orchestration.db.TableName
 import io.airbyte.cdk.load.orchestration.db.legacy_typing_deduping.TypingDedupingUtil
 import io.airbyte.integrations.destination.bigquery.BigQuerySQLNameTransformer
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
+import io.airbyte.integrations.destination.bigquery.stream.StreamConfigProvider
 import java.util.Locale
 import javax.inject.Singleton
 
@@ -33,11 +34,19 @@ class BigqueryRawTableNameGenerator(val config: BigqueryConfiguration) : RawTabl
 }
 
 @Singleton
-class BigqueryFinalTableNameGenerator(val config: BigqueryConfiguration) : FinalTableNameGenerator {
+class BigqueryFinalTableNameGenerator(
+    val config: BigqueryConfiguration,
+    private val streamConfigProvider: StreamConfigProvider,
+) : FinalTableNameGenerator {
     override fun getTableName(streamDescriptor: DestinationStream.Descriptor) =
         TableName(
-            nameTransformer.getNamespace(streamDescriptor.namespace ?: config.datasetId),
-            nameTransformer.convertStreamName(streamDescriptor.name),
+            nameTransformer.getNamespace(
+                streamConfigProvider.getDestinationDataset(streamDescriptor),
+            ),
+            nameTransformer.convertStreamName(
+                streamConfigProvider.getDestinationTable(streamDescriptor) +
+                    streamConfigProvider.getTableSuffix(streamDescriptor),
+            ),
         )
 }
 
