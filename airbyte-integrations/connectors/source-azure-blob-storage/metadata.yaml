@@ -31,14 +31,11 @@ data:
     - title: Legacy Blob Storage account retirement
       url: https://learn.microsoft.com/en-us/azure/storage/common/legacy-blob-storage-account-migration-overview
       type: api_deprecations
-    - title: Azure Storage authorization overview
-      url: https://learn.microsoft.com/en-us/azure/storage/common/storage-auth
-      type: authentication_guide
     - title: Microsoft identity platform breaking changes
       url: https://learn.microsoft.com/en-us/entra/identity-platform/reference-breaking-changes
-      type: authentication_guide
-    - title: Prevent Shared Key authorization
-      url: https://learn.microsoft.com/en-us/azure/storage/common/shared-key-authorization-prevent
+      type: api_deprecations
+    - title: Azure Storage authorization overview
+      url: https://learn.microsoft.com/en-us/azure/storage/common/authorize-data-access
       type: authentication_guide
   githubIssueLabel: source-azure-blob-storage
   icon: azureblobstorage.svg
