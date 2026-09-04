@@ -41,6 +41,9 @@ definitions:
         - predicate: "{{ response.get('code') == 51004 }}"
           action: RETRY
           error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
+        - predicate: "{{ response.get('code') == 51002 }}"
+          action: RETRY
+          error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
         - predicate: "{{ response.get('code') == 40002 }}"
           action: IGNORE
           error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -436,6 +439,9 @@ definitions:
       - predicate: "{{ response.get('code') == 51004 }}"
         action: RETRY
         error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
+      - predicate: "{{ response.get('code') == 51002 }}"
+        action: RETRY
+        error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
       - predicate: "{{ response.get('code') == 40002 }}"
         action: IGNORE
         error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -2235,6 +2241,9 @@ definitions:
             - predicate: "{{ response.get('code') == 51004 }}"
               action: RETRY
               error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51002 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"
@@ -2349,6 +2358,9 @@ definitions:
             - predicate: "{{ response.get('code') == 51004 }}"
               action: RETRY
               error_message: "TikTok Marketing API returned a transient server-side error (code 51004). The connector will retry automatically. {{ response.get('message', '') }}"
+            - predicate: "{{ response.get('code') == 51002 }}"
+              action: RETRY
+              error_message: "TikTok Marketing API returned a transient server-side error (code 51002). The connector will retry automatically. {{ response.get('message', '') }}"
             - predicate: "{{ response.get('code') == 40002 }}"
               action: IGNORE
               error_message: "Resource not accessible or does not exist (error 40002). {{ response.get('message', '') }}"

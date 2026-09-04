@@ -6,10 +6,22 @@ import json
 from unittest.mock import MagicMock
 
 import pytest
+import yaml
 
 from airbyte_cdk.models import ConnectorSpecification, Status
 
-from .conftest import get_source
+from .conftest import _YAML_FILE_PATH, get_source
+
+
+def _walk_response_filters(value):
+    if isinstance(value, dict):
+        if isinstance(value.get("response_filters"), list):
+            yield value["response_filters"]
+        for child in value.values():
+            yield from _walk_response_filters(child)
+    elif isinstance(value, list):
+        for child in value:
+            yield from _walk_response_filters(child)
 
 
 @pytest.mark.parametrize(
@@ -45,6 +57,22 @@ def test_source_streams(config, stream_len):
 def test_source_spec(config):
     spec = get_source(config=config, state=None).spec(logger=None)
     assert isinstance(spec, ConnectorSpecification)
+
+
+def test_51004_retry_handlers_also_retry_51002():
+    with _YAML_FILE_PATH.open() as manifest_file:
+        manifest = yaml.safe_load(manifest_file)
+
+    for response_filters in _walk_response_filters(manifest):
+        retries_51004 = any(
+            "response.get('code') == 51004" in response_filter.get("predicate", "") and response_filter.get("action") == "RETRY"
+            for response_filter in response_filters
+        )
+        if retries_51004:
+            assert any(
+                "response.get('code') == 51002" in response_filter.get("predicate", "") and response_filter.get("action") == "RETRY"
+                for response_filter in response_filters
+            )
 
 
 @pytest.fixture(name="config")
