@@ -1,0 +1,375 @@
+version: 7.0.4
+
+type: DeclarativeSource
+
+description: This connector is designed to load datas from Qobra into your data warehouse.
+
+check:
+  type: CheckStream
+  stream_names:
+    - data_structure
+
+definitions:
+  linked:
+    HttpRequester:
+      url_base: https://api.qobra.co/v2/
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config['api_key'] }}"
+        inject_into:
+          type: RequestOption
+          field_name: X-API-Key
+          inject_into: header
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: start_id
+          inject_into: request_parameter
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 2000
+          cursor_value: "{{ response['meta']['next_start_id'] }}"
+          stop_condition: "{{ not response['meta']['has_more'] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: data_structure
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url: https://api.qobra.co/v2/data-structures
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - data
+        schema_normalization: Default
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          name:
+            type:
+              - string
+              - "null"
+          links:
+            type:
+              - object
+              - "null"
+            properties:
+              fields:
+                type:
+                  - string
+                  - "null"
+              records:
+                type:
+                  - string
+                  - "null"
+          table_id:
+            type:
+              - string
+              - "null"
+          total_records:
+            type:
+              - number
+              - "null"
+        additionalProperties: true
+    transformations:
+      - type: KeysReplace
+        new: table_id
+        old: id
+
+spec:
+  type: Spec
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API key
+        airbyte_secret: true
+      start_date:
+        type: string
+        order: 1
+        title: start_date
+        format: date
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    data_structure:
+      isStale: false
+      hasRecords: true
+      streamHash: 28740ebd94dbf0f019be2b458c34668ed11c57a9
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    data_structure: true
+
+dynamic_streams:
+  - type: DynamicDeclarativeStream
+    name: template_statement_reporting
+    stream_template:
+      type: DeclarativeStream
+      name: statement_reporting_template
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: HttpRequester
+          url: https://api.qobra.co/v2/reporting/__TABLE_ID__/statements
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/linked/HttpRequester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          schema_normalization: Default
+      primary_key: standard.id
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          requester:
+            type: HttpRequester
+            url: https://api.qobra.co/v2/data-structures/__TABLE_ID__/fields
+            http_method: GET
+            authenticator:
+              $ref: "#/definitions/linked/HttpRequester/authenticator"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
+        schema_type_identifier:
+          type: SchemaTypeIdentifier
+          key_pointer:
+            - api_key
+          type_pointer:
+            - type
+          types_mapping:
+            - type: TypesMap
+              target_type: string
+              current_type: string
+            - type: TypesMap
+              target_type: number
+              current_type: number
+            - type: TypesMap
+              target_type: object
+              current_type: object
+            - type: TypesMap
+              target_type: string
+              current_type: date
+            - type: TypesMap
+              target_type: boolean
+              current_type: boolean
+            - type: TypesMap
+              target_type:
+                items: string
+                field_type: array
+              current_type: array
+          schema_pointer:
+            - fields
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: standard.date
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: last_modified_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://api.qobra.co/v2/data-structures
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/linked/HttpRequester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['type'] == 'statement_reporting' }}"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          value: statement_reporting_{{ components_values.id }}
+          field_path:
+            - name
+        - type: ComponentMappingDefinition
+          value: >-
+            https://api.qobra.co/v2/reporting/{{ components_values.id
+            }}/statements
+          field_path:
+            - retriever
+            - requester
+            - url
+        - type: ComponentMappingDefinition
+          value: >-
+            https://api.qobra.co/v2/data-structures/{{ components_values.id
+            }}/fields
+          field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - url
+  - type: DynamicDeclarativeStream
+    name: template_record_reporting
+    stream_template:
+      type: DeclarativeStream
+      name: record_reporting_template
+      retriever:
+        type: SimpleRetriever
+        paginator:
+          $ref: "#/definitions/linked/SimpleRetriever/paginator"
+        requester:
+          type: HttpRequester
+          url: https://api.qobra.co/v2/reporting/__TABLE_ID__/records
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/linked/HttpRequester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          schema_normalization: Default
+      primary_key: standard.id
+      schema_loader:
+        type: DynamicSchemaLoader
+        retriever:
+          type: SimpleRetriever
+          requester:
+            type: HttpRequester
+            url: https://api.qobra.co/v2/data-structures/__TABLE_ID__/fields
+            http_method: GET
+            authenticator:
+              $ref: "#/definitions/linked/HttpRequester/authenticator"
+          record_selector:
+            type: RecordSelector
+            extractor:
+              type: DpathExtractor
+              field_path: []
+        schema_type_identifier:
+          type: SchemaTypeIdentifier
+          key_pointer:
+            - api_key
+          type_pointer:
+            - type
+          types_mapping:
+            - type: TypesMap
+              target_type: string
+              current_type: string
+            - type: TypesMap
+              target_type: number
+              current_type: number
+            - type: TypesMap
+              target_type: object
+              current_type: object
+            - type: TypesMap
+              target_type: string
+              current_type: date
+            - type: TypesMap
+              target_type: boolean
+              current_type: boolean
+            - type: TypesMap
+              target_type:
+                items: string
+                field_type: array
+              current_type: array
+          schema_pointer:
+            - fields
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: standard.date
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ config['start_date'] }}"
+          datetime_format: "%Y-%m-%d"
+        datetime_format: "%Y-%m-%d"
+        start_time_option:
+          type: RequestOption
+          field_name: last_modified_after
+          inject_into: request_parameter
+        cursor_datetime_formats:
+          - "%Y-%m-%d"
+    components_resolver:
+      type: HttpComponentsResolver
+      retriever:
+        type: SimpleRetriever
+        requester:
+          type: HttpRequester
+          url: https://api.qobra.co/v2/data-structures
+          http_method: GET
+          authenticator:
+            $ref: "#/definitions/linked/HttpRequester/authenticator"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+          record_filter:
+            type: RecordFilter
+            condition: "{{ record['type'] == 'record_reporting' }}"
+      components_mapping:
+        - type: ComponentMappingDefinition
+          value: record_reporting_{{ components_values.id }}
+          field_path:
+            - name
+        - type: ComponentMappingDefinition
+          value: https://api.qobra.co/v2/reporting/{{ components_values.id }}/records
+          field_path:
+            - retriever
+            - requester
+            - url
+        - type: ComponentMappingDefinition
+          value: >-
+            https://api.qobra.co/v2/data-structures/{{ components_values.id
+            }}/fields
+          field_path:
+            - schema_loader
+            - retriever
+            - requester
+            - url
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 1
