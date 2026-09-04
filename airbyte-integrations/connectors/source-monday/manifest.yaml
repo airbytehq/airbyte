@@ -1,4 +1,4 @@
-version: "0.29.0"
+version: "6.51.0"
 
 type: DeclarativeSource
 
@@ -11,6 +11,30 @@ definitions:
         - "data"
         - "{{ parameters['name'] }}"
 
+  oauth_authenticator:
+    # https://developer.monday.com/apps/docs/oauth
+    type: OAuthAuthenticator
+    client_id: "{{ config['credentials']['client_id'] }}"
+    client_secret: "{{ config['credentials']['client_secret'] }}"
+    refresh_token: "{{ config['credentials']['refresh_token'] }}"
+    grant_type: refresh_token
+    token_refresh_endpoint: https://auth.monday.com/oauth_ms/oauth/token
+    refresh_token_updater:
+      refresh_token_name: refresh_token
+      access_token_config_path:
+        - credentials
+        - access_token
+      token_expiry_date_config_path:
+        - credentials
+        - token_expiry_date
+      refresh_token_config_path:
+        - credentials
+        - refresh_token
+
+  bearer_authenticator:
+    type: BearerAuthenticator
+    api_token: "{{ config['credentials']['api_token'] }}"
+
   requester:
     type: CustomRequester
     class_name: "source_declarative_manifest.components.MondayGraphqlRequester"
@@ -21,8 +45,11 @@ definitions:
         $ref: "#/schemas" # Load all schemas because variables can't exist in refs (ideally we do something like "#/schemas/{{ parameters['name'] }}")
     url_base: "https://api.monday.com/v2"
     authenticator:
-      type: BearerAuthenticator
-      api_token: "{{ config.get('credentials', {}).get('api_token') if config.get('credentials', {}).get('auth_type') == 'api_token' else config.get('credentials', {}).get('access_token') if config.get('credentials', {}).get('auth_type') == 'oauth2.0' else config.get('api_token', '') }}"
+      type: SelectiveAuthenticator
+      authenticator_selection_path: ["credentials", "auth_type"]
+      authenticators:
+        oauth2.0: "#/definitions/oauth_authenticator"
+        api_token: "#/definitions/bearer_authenticator"
     limit: "{{ parameters['items_per_page'] }}"
     nested_limit: "{{ parameters.get('nested_items_per_page', 1) }}"
     error_handler:
@@ -369,6 +396,7 @@ spec:
               - client_id
               - client_secret
               - access_token
+              - refresh_token
             properties:
               subdomain:
                 type: string
@@ -395,6 +423,16 @@ spec:
                 title: Access Token
                 description: Access Token for making authenticated requests.
                 airbyte_secret: true
+              refresh_token:
+                type: string
+                title: Refresh Token
+                description: Refresh Token used to obtain new access tokens when the current one expires.
+                airbyte_secret: true
+              token_expiry_date:
+                type: string
+                title: Token Expiry Date
+                description: The date-time when the access token expires and should be refreshed.
+                format: date-time
           - type: object
             title: API Token
             required:
@@ -436,6 +474,13 @@ spec:
           access_token:
             type: string
             path_in_connector_config: ["credentials", "access_token"]
+          refresh_token:
+            type: string
+            path_in_connector_config: ["credentials", "refresh_token"]
+          token_expiry_date:
+            type: string
+            format: date-time
+            path_in_connector_config: ["credentials", "token_expiry_date"]
       complete_oauth_server_input_specification:
         type: object
         additionalProperties: true
@@ -454,20 +499,6 @@ spec:
           client_secret:
             type: string
             path_in_connector_config: ["credentials", "client_secret"]
-      oauth_connector_input_specification:
-        scopes:
-          - scope: me:read
-          - scope: boards:read
-          - scope: workspaces:read
-          - scope: users:read
-          - scope: account:read
-          - scope: updates:read
-          - scope: assets:read
-          - scope: tags:read
-          - scope: teams:read
-        consent_url: https://auth.monday.com/oauth2/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}&subdomain={{subdomain}}
-        access_token_url: https://auth.monday.com/oauth2/token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
-        extract_output: ["access_token"]
       oauth_user_input_from_connector_config_specification:
         type: object
         additionalProperties: false
@@ -475,6 +506,27 @@ spec:
           subdomain:
             type: string
             path_in_connector_config: ["credentials", "subdomain"]
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: |
+          Remaps the legacy top-level api_token config format to the credentials format
+          OLD: {"api_token": ...}
+          NEW: {"credentials": {"api_token": ..., "auth_type": "api_token"}}
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "api_token"]
+                value: "{{ config['api_token'] }}"
+            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}) }}"
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["credentials", "auth_type"]
+                value: "api_token"
+            condition: "{{ config.get('api_token', False) and not config.get('credentials', {}) }}"
 
 check:
   stream_names:
