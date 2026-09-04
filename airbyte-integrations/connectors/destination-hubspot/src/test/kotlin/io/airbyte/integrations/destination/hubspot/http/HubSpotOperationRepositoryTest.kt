@@ -46,31 +46,31 @@ class HubSpotOperationRepositoryTest {
                 )
             }
 
-        // other standard objects
+        // other standard objects via Properties API
         every {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/COMPANY"
+                    url = "https://api.hubapi.com/crm/v3/properties/COMPANY"
                 )
             )
-        } returns (aResponse(200, anUnavailableObject().build()))
+        } returns (aResponse(200, anEmptyPropertiesApiResponse()))
         every {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/DEAL"
+                    url = "https://api.hubapi.com/crm/v3/properties/DEAL"
                 )
             )
-        } returns (aResponse(200, anUnavailableObject().build()))
+        } returns (aResponse(200, anEmptyPropertiesApiResponse()))
         every {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/PRODUCT"
+                    url = "https://api.hubapi.com/crm/v3/properties/PRODUCT"
                 )
             )
-        } returns (aResponse(200, anUnavailableObject().build()))
+        } returns (aResponse(200, anEmptyPropertiesApiResponse()))
     }
 
     @Test
@@ -79,10 +79,10 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
+                    url = "https://api.hubapi.com/crm/v3/properties/CONTACT"
                 )
             )
-        } returns aResponse(200, aResponseBodyWithEmailProperty().build())
+        } returns aResponse(200, aPropertiesApiResponseWithEmailProperty())
 
         val operations = repo.fetchAll()
 
@@ -100,13 +100,14 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
+                    url = "https://api.hubapi.com/crm/v3/properties/CONTACT"
                 )
             )
         } returns
             aResponse(
                 200,
-                aResponseBodyWithEmailProperty()
+                HubSpotPropertiesApiResponseBuilder()
+                    .withProperty(anAvailableProperty("email"))
                     .withProperty(anAvailableProperty("available"))
                     .build()
             )
@@ -123,13 +124,14 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
+                    url = "https://api.hubapi.com/crm/v3/properties/CONTACT"
                 )
             )
         } returns
             aResponse(
                 200,
-                aResponseBodyWithEmailProperty()
+                HubSpotPropertiesApiResponseBuilder()
+                    .withProperty(anAvailableProperty("email"))
                     .withProperty(aProperty("notAvailable").withCalculated(true))
                     .build()
             )
@@ -146,13 +148,14 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
+                    url = "https://api.hubapi.com/crm/v3/properties/CONTACT"
                 )
             )
         } returns
             aResponse(
                 200,
-                aResponseBodyWithEmailProperty()
+                HubSpotPropertiesApiResponseBuilder()
+                    .withProperty(anAvailableProperty("email"))
                     .withProperty(aProperty("notAvailable").withReadOnlyValue(true))
                     .build()
             )
@@ -169,13 +172,14 @@ class HubSpotOperationRepositoryTest {
             httpClient.send(
                 Request(
                     method = RequestMethod.GET,
-                    url = "https://api.hubapi.com/crm/v3/schemas/CONTACT"
+                    url = "https://api.hubapi.com/crm/v3/properties/CONTACT"
                 )
             )
         } returns
             aResponse(
                 200,
-                aResponseBodyWithEmailProperty()
+                HubSpotPropertiesApiResponseBuilder()
+                    .withProperty(anAvailableProperty("email"))
                     .withProperty(aProperty("notAvailable").withType("object_coordinates"))
                     .build()
             )
@@ -184,6 +188,45 @@ class HubSpotOperationRepositoryTest {
 
         assertEquals(1, operations.size)
         assertSchemaWithProperties(operations[0], setOf("email"))
+    }
+
+    @Test
+    internal fun `test deal with unique value property appears in catalog`() {
+        // Mock CONTACT with email property so it doesn't interfere
+        every {
+            httpClient.send(
+                Request(
+                    method = RequestMethod.GET,
+                    url = "https://api.hubapi.com/crm/v3/properties/CONTACT"
+                )
+            )
+        } returns aResponse(200, aPropertiesApiResponseWithEmailProperty())
+
+        // Mock DEAL with a custom property that has hasUniqueValue=true
+        every {
+            httpClient.send(
+                Request(
+                    method = RequestMethod.GET,
+                    url = "https://api.hubapi.com/crm/v3/properties/DEAL"
+                )
+            )
+        } returns
+            aResponse(
+                200,
+                HubSpotPropertiesApiResponseBuilder()
+                    .withProperty(anAvailableProperty("custom_deal_id").withHasUniqueValue(true))
+                    .withProperty(anAvailableProperty("dealname"))
+                    .build()
+            )
+
+        val operations = repo.fetchAll()
+
+        // Should have CONTACT + DEAL = 2 operations
+        assertEquals(2, operations.size)
+        val dealOperation = operations.find { it.objectName == "DEAL" }
+        assertIs<DestinationOperation>(dealOperation)
+        assertEquals(listOf(listOf("custom_deal_id")), dealOperation.matchingKeys)
+        assertSchemaWithProperties(dealOperation, setOf("custom_deal_id", "dealname"))
     }
 
     private fun anAvailableProperty(name: String): HubSpotPropertySchemaBuilder =
@@ -196,10 +239,11 @@ class HubSpotOperationRepositoryTest {
         assertEquals(fields, schema.properties.keys)
     }
 
-    private fun aResponseBodyWithEmailProperty(): HubSpotSchemaResponseBuilder =
-        HubSpotSchemaResponseBuilder()
-            .withName("CONTACT")
-            .withProperty(anAvailableProperty("email"))
+    private fun aPropertiesApiResponseWithEmailProperty(): InputStream =
+        HubSpotPropertiesApiResponseBuilder().withProperty(anAvailableProperty("email")).build()
+
+    private fun anEmptyPropertiesApiResponse(): InputStream =
+        HubSpotPropertiesApiResponseBuilder().build()
 
     private fun aProperty(name: String): HubSpotPropertySchemaBuilder =
         HubSpotPropertySchemaBuilder().withName(name)
@@ -214,4 +258,7 @@ class HubSpotOperationRepositoryTest {
 
     private fun anUnavailableObject(): HubSpotSchemaResponseBuilder =
         HubSpotSchemaResponseBuilder().withName("unavailable")
+
+    private fun anUnavailablePropertiesApiObject(): HubSpotPropertiesApiResponseBuilder =
+        HubSpotPropertiesApiResponseBuilder()
 }
