@@ -136,7 +136,7 @@ class AirbyteDebeziumHandler<T>(
          * exhausting the heap when individual change events are large (e.g. MongoDB documents
          * captured with pre-images, which can be hundreds of KB each).
          */
-        const val QUEUE_MAX_MEMORY_USAGE_FRACTION: Double = 0.25
+        const val QUEUE_MAX_MEMORY_USAGE_FRACTION: Double = 0.1
 
         /**
          * JVM system property that overrides the CDC event queue byte budget with an absolute
