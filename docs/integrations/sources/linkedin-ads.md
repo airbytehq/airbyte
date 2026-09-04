@@ -151,6 +151,7 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 ## Supported Streams
 
 - [Accounts](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-accounts?tabs=http&view=li-lms-2023-05#search-for-accounts)
+- [Organizations](https://learn.microsoft.com/en-us/linkedin/marketing/community-management/organizations/organization-access-control-by-role)
 - [Account Users](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-account-users?tabs=http&view=li-lms-2023-05#find-ad-account-users-by-accounts)
 - [Campaign Groups](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaign-groups?tabs=http&view=li-lms-2023-05#search-for-campaign-groups)
 - [Campaigns](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads/account-structure/create-and-manage-campaigns?tabs=http&view=li-lms-2023-05#search-for-campaigns)
@@ -169,6 +170,12 @@ The LinkedIn Ads source connector supports the following [sync modes](https://do
 - [Ad Analytics by Member Seniority](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Region](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
 - [Ad Analytics by Member Company](https://learn.microsoft.com/en-us/linkedin/marketing/integrations/ads-reporting/ads-reporting?tabs=curl&view=li-lms-2023-05#ad-analytics)
+
+:::info
+
+The `Organizations` stream returns the organization access control (ACL) records of the authenticated member - one row per organization and role, with the organization URN, the role, and its state. All role states (`APPROVED`, `REQUESTED`, `REJECTED`, `REVOKED`) are returned; filter on the `state` field if you only need approved roles. This stream requires the `r_organization_admin` (or `rw_organization_admin`) OAuth scope - without it, LinkedIn returns a 403 for this stream only.
+
+:::
 
 :::info
 
@@ -229,6 +236,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.0 | 2026-08-24 | [76087](https://github.com/airbytehq/airbyte/pull/76087) | Add `organizations` stream via the `organizationAcls` endpoint |
 | 6.0.2 | 2026-07-31 | [83268](https://github.com/airbytehq/airbyte/pull/83268) | Fix `pivot` in custom analytics report streams to contain the configured pivot category. |
 | 6.0.1 | 2026-07-31 | [83269](https://github.com/airbytehq/airbyte/pull/83269) | Fix invalid `error_handlers` manifest key so the custom error handler and exponential backoff are actually applied |
 | 6.0.0 | 2026-07-30 | [74334](https://github.com/airbytehq/airbyte/pull/74334) | Batch analytics requests for `ad_campaign_analytics`, `ad_creative_analytics`, and `ad_impression_device_analytics` in groups of up to 50, reducing sync time by approximately 98% for large accounts. Breaking change for `ad_impression_device_analytics` only: its primary key now includes `sponsoredCampaign`, preventing records from different campaigns from being collapsed in deduplication mode. Refresh the source schema after upgrading; deduplication users should refresh this stream to rebuild destination data. |
@@ -341,3 +349,4 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.0 | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285) | Initial release of Native LinkedIn Ads connector for Airbyte |
 
 </details>
+

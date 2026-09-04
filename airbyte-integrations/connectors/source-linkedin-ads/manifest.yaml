@@ -66,6 +66,60 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/accounts"
+    organizations:
+      type: DeclarativeStream
+      name: organizations
+      primary_key:
+        - organization
+        - role
+        - roleAssignee
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: organizationAcls
+          http_method: GET
+          request_parameters:
+            q: roleAssignee
+            # organizationAcls is a Rest.li finder paged with start/count (it does not
+            # support pageToken); count must match the OffsetIncrement page_size below.
+            count: "500"
+          request_headers:
+            Linkedin-Version: "202601"
+          error_handler:
+            type: CustomErrorHandler
+            class_name: source_declarative_manifest.components.LinkedInAdsErrorHandler
+            backoff_strategies:
+              - type: ExponentialBackoffStrategy
+                factor: 5
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: CustomRecordExtractor
+            class_name: source_declarative_manifest.components.LinkedInAdsRecordExtractor
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: OffsetIncrement
+            page_size: 500
+      transformations:
+        - type: AddFields
+          fields:
+            # LinkedIn docs show the organization URN as `organization` in some
+            # organizationAcls samples and `organizationTarget` in others; normalize
+            # to `organization` so the primary key is never null.
+            - path:
+                - organization
+              value: "{{ record.get('organization') or record.get('organizationTarget') }}"
+              value_type: string
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/organizations"
     account_users:
       type: DeclarativeStream
       name: account_users
@@ -1668,6 +1722,7 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/accounts"
+  - $ref: "#/definitions/streams/organizations"
   - $ref: "#/definitions/streams/account_users"
   - $ref: "#/definitions/streams/campaigns"
   - $ref: "#/definitions/streams/campaign_groups"
@@ -2020,6 +2075,7 @@ spec:
 metadata:
   autoImportSchema:
     accounts: false
+    organizations: false
     account_users: false
     campaigns: false
     campaign_groups: false
@@ -2137,6 +2193,40 @@ schemas:
           - integer
       status:
         description: The status of the account.
+        type:
+          - "null"
+          - string
+
+  organizations:
+    $schema: http://json-schema.org/draft-07/schema#
+    type:
+      - "null"
+      - object
+    title: "Organizations"
+    additionalProperties: true
+    properties:
+      organization:
+        description: The URN of the organization (e.g. urn:li:organization:12345).
+        type:
+          - "null"
+          - string
+      organizationTarget:
+        description: The URN of the organization as returned by API responses that use the organizationTarget field name instead of organization.
+        type:
+          - "null"
+          - string
+      roleAssignee:
+        description: The URN of the member assigned the role.
+        type:
+          - "null"
+          - string
+      state:
+        description: The state of the organization access (e.g. APPROVED).
+        type:
+          - "null"
+          - string
+      role:
+        description: The role of the member in the organization (e.g. ADMINISTRATOR, DIRECT_SPONSORED_CONTENT_POSTER).
         type:
           - "null"
           - string
