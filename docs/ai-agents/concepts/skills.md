@@ -5,25 +5,21 @@ sidebar_position: 3
 
 # Skills
 
-Skills are reusable instructions that tell your agents how to handle a particular kind of task. Airbyte serves them to every agent in your organization, regardless of the interface the agent uses: the web app, the MCP server, the API, the SDK, or the CLI. Airbyte provides a set of default skills, and organization administrators can add custom skills from the **Skills** page in the web app.
+Skills are Markdown instructions that tell your agents how to handle a particular kind of task. Airbyte serves them to every agent in your organization, regardless of the interface the agent uses: the web app, the MCP server, the API, the SDK, or the CLI. Airbyte provides skills for connectors and for common analytical tasks, and organization administrators can add custom skills that capture knowledge only your organization has.
 
-## What skills are
+## How skills work
 
-Each skill is a Markdown document that describes when an agent should use it and what the agent should do. For example, a skill might explain how your team defines a "stalled" sales opportunity, which CRM fields to check, and how to summarize the result. When a user asks an agent about stalled deals, the agent reads the skill and follows it instead of guessing at your conventions.
+Every skill describes when an agent should use it and what the agent should do. Before an agent answers a question, it browses the skills available to it, reads the summaries to decide which ones apply, and then reads the relevant sections of those skills. Agents read only the sections they need, so detailed guidance doesn't bloat the context window. Skills come in three layers that build on each other.
 
-Skills help you:
+| Layer | Who writes it | What it covers | Example |
+| --- | --- | --- | --- |
+| **Connector skill docs** | Airbyte generates them from each connector's entities and actions. | How to operate a specific connector: which entities exist, which actions the agent can call, and how to call them. Agents read them with `inspect_connector` and `read_skill_docs`. | The entities and actions available in your Salesforce connector. |
+| **Airbyte skills** | Airbyte | Reusable methods for common tasks that span connectors, like analyzing paid media performance or classifying support tickets. These are read-only. You can't edit them, and they don't appear in the list on the Skills page. | How to calculate return on ad spend consistently across ad platforms. |
+| **Custom skills** | Your organization | Things Airbyte can't know: how your organization defines its metrics, names its accounts, runs its processes, and wants results presented. Custom skills don't need to explain how to use a connector or a third-party API. The connector skill docs already do that. | How your sales team defines a "stalled" opportunity and which pipeline stages to exclude from forecasts. |
 
-- **Encode institutional knowledge.** Capture business definitions, naming conventions, and preferred workflows once, and every agent applies them.
-- **Get consistent results.** Agents across chats, interfaces, and teammates follow the same steps and return the same shape of answer.
-- **Stay in control of cost.** Agents read only the sections of a skill they need, so detailed guidance doesn't bloat the context window.
+The layers work together. When a user asks an agent about stalled deals, the agent reads your custom skill to learn your definition, an Airbyte skill for the forecasting method, and the connector skill docs to run the right queries against your CRM. The result follows your conventions instead of the agent's guesses, and every agent across chats, interfaces, and teammates returns the same shape of answer.
 
-Skills are different from the connector documentation an agent reads with `inspect_connector` and `read_skill_docs`. Airbyte generates that documentation from each connector's entities and actions, and you don't edit it. Skills are guidance you write about your own business, and they sit on top of connectors. To learn how agents discover connector documentation, see [Connect, Ask, Act](./connect-ask-act.md).
-
-## Airbyte skills and custom skills
-
-Airbyte provides default skills that improve agents' handling of common tasks. These skills are read-only. You can't edit them, and they don't appear in the list on the Skills page.
-
-Custom skills are skills your organization writes. You create them, publish them, revise them, and delete them from the Skills page, and Airbyte serves them to your agents alongside the default skills.
+The rest of this page covers custom skills. To learn how agents discover connector skill docs, see [Connect, Ask, Act](./connect-ask-act.md).
 
 ## Who can manage skills
 
@@ -79,21 +75,21 @@ You can't change a skill's required connectors after you publish it. If you need
 
 ## Create a skill
 
-1. On the Skills page, click **Add skill**.
-2. Fill in the [skill fields](#skill-fields).
-3. Do one of the following.
+1. In the sidebar of the web app, click **Skills**.
+2. Click **Add skill**.
+3. Fill in the [skill fields](#skill-fields).
+4. Do one of the following.
     - Click **Save as draft** to keep working on the skill later. Drafts are never used by your agents.
     - Click **Publish** to make the skill available. Enter a short note explaining what the skill does, and confirm. Airbyte creates version 1 and agents start using it immediately.
-
-If a skill has never been published, you can remove it by clicking **Discard draft**. This deletes the skill.
 
 ## Modify a skill
 
 Published versions of a skill are immutable. To change a skill, you edit a draft and publish it as a new version.
 
-1. On the Skills page, open the skill and click **Edit**. Airbyte starts a draft based on the version your agents currently run. If another administrator already has a draft open, Airbyte shows that draft instead.
-2. Make your changes. Save your work at any time with **Save as draft**. Agents continue to use the published version while draft changes exist.
-3. When you're ready, click **Publish**, enter a note describing what changed, and confirm. Airbyte creates the next version number and agents switch to it immediately.
+1. In the sidebar of the web app, click **Skills**.
+2. Open the skill and click **Edit**. A skill has at most one draft, shared by all administrators. If no draft exists, Airbyte starts one from the version your agents currently run. If a draft already exists, Airbyte opens it.
+3. Make your changes. Save your work at any time with **Save as draft**. Agents continue to use the published version while draft changes exist.
+4. When you're ready, click **Publish**, enter a note describing what changed, and confirm. Airbyte creates the next version number and agents switch to it immediately.
 
 To abandon your changes, click **Discard draft changes**. The skill returns to the version your agents run now.
 
@@ -110,9 +106,9 @@ You can save a draft that has validation problems, but you can't publish it unti
 
 ### Concurrent edits
 
-If two administrators work on the same skill at once, Airbyte protects the published version.
+Because a skill has a single shared draft, two administrators can open it at the same time. Airbyte protects the draft and the published version from being overwritten.
 
-- If someone else saves the draft while you're editing it, your save is refused. Reload the draft and reapply your edits.
+- If someone else saves the draft while you're editing it, your save is refused. Reload the draft to pick up their changes, then reapply your edits.
 - If someone else publishes or discards the draft while you're editing it, Airbyte shows you the current version.
 - If someone changes the active version after you start a draft, you can't publish that draft. Discard it, or make its starting version active again first.
 
@@ -133,23 +129,39 @@ Airbyte moves the pointer your agents follow to that version. No new version is 
 
 To read the content of an earlier version without activating it, click **View** next to it. Airbyte shows it read-only.
 
-## Disable and enable a skill
+## Disable a skill
 
 Disabling a skill stops agents from using it without deleting it or changing its versions. Use this to pause a skill while you investigate a problem.
 
-1. On the Skills page, open the skill's actions menu and click **Disable**.
-2. Confirm.
+1. In the sidebar of the web app, click **Skills**.
+2. Open the skill's actions menu and click **Disable**.
+3. Confirm.
 
-The change applies to new agent sessions. To turn the skill back on, choose **Enable** from the same menu. If you activate a different version while the skill is off, agents don't receive it until you enable the skill.
+The change applies to new agent sessions.
+
+## Enable a skill
+
+Enabling a skill you turned off lets agents use it again. Agents receive the active version of the skill; if you activated a different version while the skill was off, that version is what they get.
+
+1. In the sidebar of the web app, click **Skills**.
+2. Open the skill's actions menu and click **Enable**.
+3. Confirm.
+
+The change applies to new agent sessions.
 
 ## Delete a skill
 
 Deleting a skill removes it from every agent in your organization. You can't undo this.
 
-1. On the Skills page, open the skill's actions menu and click **Delete**.
-2. Confirm by clicking **Delete skill**.
+1. In the sidebar of the web app, click **Skills**.
+2. Open the skill's actions menu and click **Delete**.
+3. Confirm by clicking **Delete skill**.
 
-You can only delete custom skills. To stop using a skill temporarily, [disable it](#disable-and-enable-a-skill) instead.
+You can only delete custom skills. To stop using a skill temporarily, [disable it](#disable-a-skill) instead.
+
+### Delete a skill that was never published
+
+A skill that has never been published exists only as a draft. To remove it, open the skill and click **Discard draft**, then confirm. Because there's no published version to fall back to, discarding the draft deletes the skill.
 
 ## Variables
 
