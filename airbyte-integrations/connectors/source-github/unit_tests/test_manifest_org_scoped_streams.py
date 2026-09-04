@@ -174,3 +174,38 @@ def test_pagination_follows_link_header(rate_limit_mock_response, requests_mock)
 
     assert error is None
     assert [record["id"] for record in records] == [1, 2]
+
+
+@pytest.mark.parametrize(("stream_name", "path", "injects_organization"), MIGRATED_STREAMS)
+def test_only_payload_confirmed_organizations_are_sliced(stream_name, path, injects_organization, rate_limit_mock_response, requests_mock):
+    """These streams slice on `organization_resolution_partition_router`, so a wildcard owner is a
+    partition only once a response payload confirms it owns a matched repository.
+
+    Two owners the config-derived router would have handed over and the Python classes never saw:
+    `octocat`, a personal account whose `orgs/{login}/repos` 404s, and `bigorg`, a real
+    organization whose only repository fails the wildcard. `SourceGithub` filters its own
+    enumeration down to the owners of resolved repositories, so slicing on the wider list would
+    make `teams` disagree with the still-Python `team_members` inside one sync.
+    """
+    config = _config("octocat/*", "bigorg/zzz*", "airbytehq/airbyte")
+    requests_mock.get("https://api.github.com/orgs/octocat/repos", status_code=404, json={"message": "Not Found"})
+    requests_mock.get(
+        "https://api.github.com/orgs/bigorg/repos",
+        json=[{"id": 9, "full_name": "bigorg/alpha", "owner": {"login": "bigorg"}}],
+    )
+    _mock_repository_resolution(requests_mock, "airbytehq/airbyte")
+    for organization in ("octocat", "bigorg", "airbytehq"):
+        requests_mock.get(f"https://api.github.com/orgs/{organization}{path}", json=_payload(stream_name))
+
+    records, statuses, error = _read(config, stream_name)
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    assert records, "the confirmed organization must still be read"
+    requested = {request.path for request in requests_mock.request_history}
+    assert f"/orgs/airbytehq{path}" in requested
+    assert f"/orgs/octocat{path}" not in requested
+    assert f"/orgs/bigorg{path}" not in requested
+
+    source = SourceGithub(config=dict(config))
+    assert source._resolve_repositories_and_organizations(config)[0] == ["airbytehq"]

@@ -1883,8 +1883,14 @@ definitions:
         field_path: []
     paginator:
       $ref: "#/definitions/page_link_paginator"
+    # `organization_resolution_partition_router`, not `organization_partition_router`: these
+    # endpoints only exist for real organizations, so the partition list has to be the
+    # payload-confirmed one. The config-derived router hands over any wildcard owner, including a
+    # personal account, and it also yields an org whose wildcard matched no repository — the Python
+    # streams these replaced saw neither, because `SourceGithub` filters its enumeration down to
+    # the owners of resolved repositories. See that definition's comment.
     partition_router:
-      $ref: "#/definitions/organization_partition_router"
+      $ref: "#/definitions/organization_resolution_partition_router"
 
   # Replaces the legacy `Organizations.transform`, which stamped the partition's organization onto
   # every record. Applied to `teams` and `users` only: `Organizations.parse_response` yielded the

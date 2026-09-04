@@ -2448,10 +2448,14 @@ class _RequestLoopDetected(Exception):
 def test_read_records_404_closes_resumable_full_refresh_slice(time_mock, requests_mock):
     """A swallowed 404 must terminate the partition instead of being retried forever.
 
-    `Organizations` is full refresh, so it carries a `SubstreamResumableFullRefreshCursor`.
-    Before the fix the swallowed error left the partition's cursor state empty, the
-    checkpoint reader handed the same partition back on every iteration, and the sync
-    emitted no records until the platform's source heartbeat killed the attempt.
+    `Teams` is full refresh, so it carries a `SubstreamResumableFullRefreshCursor`. Before the
+    fix the swallowed error left the partition's cursor state empty, the checkpoint reader
+    handed the same partition back on every iteration, and the sync emitted no records until
+    the platform's source heartbeat killed the attempt.
+
+    This was written against `Organizations`, which Step 4 deleted; `Teams` is the org-scoped
+    Python class that survives as `TeamMembers`' parent, and it reaches the same
+    `GithubStreamABC.read_records` path.
     """
     calls = 0
 
@@ -2461,13 +2465,13 @@ def test_read_records_404_closes_resumable_full_refresh_slice(time_mock, request
         # 1 initial attempt + GithubStreamABC.max_retries (5); anything beyond that means the
         # partition was handed back for another pass.
         if calls > 6:
-            raise _RequestLoopDetected(f"organizations partition re-read after {calls} requests")
+            raise _RequestLoopDetected(f"teams partition re-read after {calls} requests")
         context.status_code = HTTPStatus.NOT_FOUND
         return {"message": "Not Found"}
 
-    requests_mock.get("https://api.github.com/orgs/octocat", json=request_callback)
+    requests_mock.get("https://api.github.com/orgs/octocat/teams", json=request_callback)
 
-    stream = Organizations(organizations=["octocat"])
+    stream = Teams(organizations=["octocat"])
     records = list(stream.read_only_records())
 
     assert records == []
