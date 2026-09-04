@@ -142,12 +142,12 @@ class CampaignsDetailedTransformation(RecordTransformation):
 
     To get this data CampaignsDetailedTransformation makes extra API requests:
     https://a.klaviyo.com/api/campaign-recipient-estimations/{campaign_id}
-    https://developers.klaviyo.com/en/v2024-10-15/reference/get_messages_for_campaign
+    https://developers.klaviyo.com/en/v2026-07-15/reference/get_messages_for_campaign
     """
 
     config: Config
 
-    api_revision = "2024-10-15"
+    api_revision = "2026-07-15"
     url_base = "https://a.klaviyo.com/api/"
     name = "campaigns_detailed"
     max_retries = 5

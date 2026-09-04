@@ -82,20 +82,20 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 
 ## Supported Streams
 
-- [Campaigns](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
-- [Campaigns Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_campaigns)
-- [Campaign Values Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
-- [Email Templates](https://developers.klaviyo.com/en/v2024-10-15/reference/get_templates)
-- [Events](https://developers.klaviyo.com/en/v2024-10-15/reference/get_events)
-- [Events Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_event)
-- [Flows](https://developers.klaviyo.com/en/v2024-10-15/reference/get_flows)
-- [Flow Series Reports](https://developers.klaviyo.com/en/v2024-10-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
-- [GlobalExclusions](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
-- [Lists](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
-- [Lists Detailed](https://developers.klaviyo.com/en/v2024-10-15/reference/get_lists)
-- [Metrics](https://developers.klaviyo.com/en/v2024-10-15/reference/get_metrics)
-- [Profiles](https://developers.klaviyo.com/en/v2024-10-15/reference/get_profiles)
-- [Segments](https://developers.klaviyo.com/en/v2024-10-15/reference/get_segments)
+- [Campaigns](https://developers.klaviyo.com/en/v2026-07-15/reference/get_campaigns)
+- [Campaigns Detailed](https://developers.klaviyo.com/en/v2026-07-15/reference/get_campaigns)
+- [Campaign Values Reports](https://developers.klaviyo.com/en/v2026-07-15/reference/query_campaign_values) - Analytics stream for campaign performance metrics
+- [Email Templates](https://developers.klaviyo.com/en/v2026-07-15/reference/get_templates)
+- [Events](https://developers.klaviyo.com/en/v2026-07-15/reference/get_events)
+- [Events Detailed](https://developers.klaviyo.com/en/v2026-07-15/reference/get_event)
+- [Flows](https://developers.klaviyo.com/en/v2026-07-15/reference/get_flows)
+- [Flow Series Reports](https://developers.klaviyo.com/en/v2026-07-15/reference/query_flow_series) - Analytics stream for automated flow performance over time
+- [GlobalExclusions](https://developers.klaviyo.com/en/v2026-07-15/reference/get_profiles)
+- [Lists](https://developers.klaviyo.com/en/v2026-07-15/reference/get_lists)
+- [Lists Detailed](https://developers.klaviyo.com/en/v2026-07-15/reference/get_lists)
+- [Metrics](https://developers.klaviyo.com/en/v2026-07-15/reference/get_metrics)
+- [Profiles](https://developers.klaviyo.com/en/v2026-07-15/reference/get_profiles)
+- [Segments](https://developers.klaviyo.com/en/v2026-07-15/reference/get_segments)
 
 ### Metrics stream
 
@@ -189,6 +189,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 4.0.0 | 2026-09-04 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Upgrade to Klaviyo API revision `2026-07-15` ahead of the `2024-10-15` retirement; replace `send_strategy.options_*` with `send_strategy.datetime`/`date`/`throttle_percentage`/`options` in `campaigns` and `campaigns_detailed`, and move campaign message `channel`/`label`/`content`/`render_options` under `definition` in `campaigns_detailed` (refresh the schema and clear both streams) |
 | 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
 | 3.0.0 | 2026-08-14 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Emit one record per calendar day with scalar statistics in `flow_series_reports`, add a reporting lookback window for that stream, and align both report streams to whole-day windows to stop boundary double-counting (refresh the schema and clear both report streams) |
 | 2.21.1 | 2026-08-11 | [83991](https://github.com/airbytehq/airbyte/pull/83991) | Update dependencies |
