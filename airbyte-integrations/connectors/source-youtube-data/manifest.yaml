@@ -283,19 +283,6 @@ spec:
         order: 0
         oneOf:
           - type: object
-            title: API Key
-            required:
-              - api_key
-            properties:
-              auth_method:
-                type: string
-                const: api_key
-              api_key:
-                type: string
-                order: 0
-                title: API Key
-                airbyte_secret: true
-          - type: object
             title: Google OAuth 2.0
             required:
               - client_id
@@ -322,6 +309,19 @@ spec:
                 type: string
                 order: 2
                 title: Refresh Token
+                airbyte_secret: true
+          - type: object
+            title: API Key
+            required:
+              - api_key
+            properties:
+              auth_method:
+                type: string
+                const: api_key
+              api_key:
+                type: string
+                order: 0
+                title: API Key
                 airbyte_secret: true
       channel_ids:
         type: array
