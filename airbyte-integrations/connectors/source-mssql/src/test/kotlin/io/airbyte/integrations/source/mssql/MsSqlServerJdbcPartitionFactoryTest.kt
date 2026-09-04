@@ -441,6 +441,60 @@ class MsSqlServerJdbcPartitionFactoryTest {
     }
 
     @Test
+    fun testCdcIncrementalWithEmptyObjectStateColdStarts() {
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(stream, Jsons.readTree("{}"))
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcCdcSnapshotPartition)
+        assertNull((jdbcPartition as MsSqlServerJdbcCdcSnapshotPartition).lowerBound)
+    }
+
+    @Test
+    fun testCdcSnapshotCompletedStateStillReturnsNull() {
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(
+                    stream,
+                    MsSqlServerCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
+                )
+            )
+        assertNull(jdbcPartition)
+    }
+
+    @Test
+    fun testCdcFullRefreshWithEmptyObjectStateColdStarts() {
+        val fullRefreshStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor()
+                            .withNamespace("dbo")
+                            .withName("cdc_full_refresh_table")
+                    ),
+                schema = setOf(fieldId),
+                configuredSyncMode = ConfiguredSyncMode.FULL_REFRESH,
+                configuredPrimaryKey = listOf(),
+                configuredCursor = null,
+            )
+
+        val jdbcPartition =
+            msSqlServerCdcJdbcPartitionFactory.create(
+                streamFeedBootstrap(fullRefreshStream, Jsons.readTree("{}"))
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcNonResumableSnapshotPartition)
+    }
+
+    @Test
+    fun testCursorBasedWithEmptyObjectStateColdStarts() {
+        val jdbcPartition =
+            msSqlServerJdbcPartitionFactory.create(
+                streamFeedBootstrap(stream, Jsons.readTree("{}"))
+            )
+        assertTrue(jdbcPartition is MsSqlServerJdbcSnapshotWithCursorPartition)
+    }
+
+    @Test
     fun testResumeFromCompletedCursorBasedReadBinary() {
         val incomingStateValue: OpaqueStateValue =
             Jsons.readTree(
