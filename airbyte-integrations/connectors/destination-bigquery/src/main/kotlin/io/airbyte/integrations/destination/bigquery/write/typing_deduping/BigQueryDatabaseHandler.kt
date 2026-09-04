@@ -28,8 +28,12 @@ import kotlinx.coroutines.launch
 private val logger = KotlinLogging.logger {}
 
 @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION", justification = "Kotlin is hard")
-class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocation: String) :
-    DatabaseHandler {
+class BigQueryDatabaseHandler(
+    private val bq: BigQuery,
+    private val jobProjectBq: BigQuery,
+    private val datasetLocation: String,
+    private val jobProjectId: String,
+) : DatabaseHandler {
     /**
      * Some statements (e.g. ALTER TABLE) have strict rate limits. Bigquery recommends retrying
      * these statements with exponential backoff, and the SDK doesn't do it automatically. So this
@@ -92,7 +96,10 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         var job =
             bq.create(
                 JobInfo.of(
-                    JobId.newBuilder().setLocation(datasetLocation).build(),
+                    JobId.newBuilder()
+                        .setProject(jobProjectId)
+                        .setLocation(datasetLocation)
+                        .build(),
                     QueryJobConfiguration.of(statement)
                 )
             )
@@ -117,7 +124,8 @@ class BigQueryDatabaseHandler(private val bq: BigQuery, private val datasetLocat
         if (statistics.numChildJobs != null) {
             // There isn't (afaict) anything resembling job.getChildJobs(), so we have to ask bq for
             // them
-            bq.listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
+            jobProjectBq
+                .listJobs(BigQuery.JobListOption.parentJobId(job.jobId.job))
                 .iterateAll()
                 .sortedBy { it.getStatistics<JobStatistics>().endTime }
                 .forEach { childJob: Job ->
