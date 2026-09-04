@@ -1,7 +1,8 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from unittest.mock import ANY
 
 import pytest
-
 from conftest import load_response
 from test_streams import THREADS_URL, read_threads
 

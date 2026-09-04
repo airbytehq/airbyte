@@ -1,12 +1,14 @@
+# Copyright (c) 2026 Airbyte, Inc., all rights reserved.
+
 from datetime import datetime
 from urllib.parse import parse_qs, urlparse
+
+from conftest import build_source, load_response
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
-
-from conftest import build_source, load_response
 
 
 THREADS_URL = "https://api.kapa.ai/query/v1/projects/d7b46c01-32a3-4f74-80d3-616a3c18fb6b/threads/"
