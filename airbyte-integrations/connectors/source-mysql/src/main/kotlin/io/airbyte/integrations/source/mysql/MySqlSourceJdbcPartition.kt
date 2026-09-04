@@ -5,10 +5,10 @@
 package io.airbyte.integrations.source.mysql
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.command.OpaqueStateValue
-import io.airbyte.cdk.discover.Field
+import io.airbyte.cdk.discover.EmittedField
 import io.airbyte.cdk.jdbc.JdbcConnectionFactory
+import io.airbyte.cdk.output.sockets.toJson
 import io.airbyte.cdk.read.And
 import io.airbyte.cdk.read.DefaultJdbcStreamState
 import io.airbyte.cdk.read.Equal
@@ -36,6 +36,7 @@ import io.airbyte.cdk.read.PartitionReader
 import io.airbyte.cdk.read.Sample
 import io.airbyte.cdk.read.SelectColumnMaxValue
 import io.airbyte.cdk.read.SelectColumns
+import io.airbyte.cdk.read.SelectQuerier
 import io.airbyte.cdk.read.SelectQuery
 import io.airbyte.cdk.read.SelectQueryGenerator
 import io.airbyte.cdk.read.SelectQuerySpec
@@ -92,7 +93,7 @@ class MySqlSourceJdbcNonResumableSnapshotPartition(
 class MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    val cursor: Field,
+    val cursor: EmittedField,
 ) :
     MySqlSourceJdbcPartition(selectQueryGenerator, streamState),
     JdbcCursorPartition<DefaultJdbcStreamState> {
@@ -115,7 +116,7 @@ class MySqlSourceJdbcNonResumableSnapshotWithCursorPartition(
 sealed class MySqlSourceJdbcResumablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    val checkpointColumns: List<Field>,
+    val checkpointColumns: List<EmittedField>,
 ) :
     MySqlSourceJdbcPartition(selectQueryGenerator, streamState),
     JdbcSplittablePartition<DefaultJdbcStreamState> {
@@ -155,10 +156,10 @@ sealed class MySqlSourceJdbcResumablePartition(
 
     val where: Where
         get() {
-            val zippedLowerBound: List<Pair<Field, JsonNode>> =
+            val zippedLowerBound: List<Pair<EmittedField, JsonNode>> =
                 lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val lowerBoundDisj: List<WhereClauseNode> =
-                zippedLowerBound.mapIndexed { idx: Int, (gtCol: Field, gtValue: JsonNode) ->
+                zippedLowerBound.mapIndexed { idx: Int, (gtCol: EmittedField, gtValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
                         if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
                             GreaterOrEqual(gtCol, gtValue)
@@ -166,15 +167,16 @@ sealed class MySqlSourceJdbcResumablePartition(
                             Greater(gtCol, gtValue)
                         }
                     And(
-                        zippedLowerBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                        zippedLowerBound.take(idx).map { (eqCol: EmittedField, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
                         } + listOf(lastLeaf),
                     )
                 }
-            val zippedUpperBound: List<Pair<Field, JsonNode>> =
+            val zippedUpperBound: List<Pair<EmittedField, JsonNode>> =
                 upperBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val upperBoundDisj: List<WhereClauseNode> =
-                zippedUpperBound.mapIndexed { idx: Int, (leqCol: Field, leqValue: JsonNode) ->
+                zippedUpperBound.mapIndexed { idx: Int, (leqCol: EmittedField, leqValue: JsonNode)
+                    ->
                     val lastLeaf: WhereClauseLeafNode =
                         if (idx < zippedUpperBound.size - 1) {
                             Lesser(leqCol, leqValue)
@@ -182,7 +184,7 @@ sealed class MySqlSourceJdbcResumablePartition(
                             LesserOrEqual(leqCol, leqValue)
                         }
                     And(
-                        zippedUpperBound.take(idx).map { (eqCol: Field, eqValue: JsonNode) ->
+                        zippedUpperBound.take(idx).map { (eqCol: EmittedField, eqValue: JsonNode) ->
                             Equal(eqCol, eqValue)
                         } + listOf(lastLeaf),
                     )
@@ -197,7 +199,7 @@ sealed class MySqlSourceJdbcResumablePartition(
 class MySqlSourceJdbcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
@@ -216,10 +218,11 @@ class MySqlSourceJdbcRfrSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -229,7 +232,7 @@ typealias MySqlSourceJdbcSplittableRfrSnapshotPartition = MySqlSourceJdbcRfrSnap
 class MySqlSourceJdbcCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
@@ -241,18 +244,18 @@ class MySqlSourceJdbcCdcRfrSnapshotPartition(
                     checkpointColumns.map { upperBound?.get(0) ?: Jsons.nullNode() },
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
-// typealias MySqlSourceJdbcSplittableCdcRfrSnapshotPartition = MySqlSourceJdbcCdcSnapshotPartition
 class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
     override val isLowerBoundIncluded: Boolean,
@@ -268,10 +271,11 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
                     )
             }
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -282,17 +286,18 @@ class MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
 class MySqlSourceJdbcCdcSnapshotPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?
 ) : MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, primaryKey) {
     override val upperBound: List<JsonNode>? = null
     override val completeState: OpaqueStateValue
         get() = MySqlSourceCdcInitialSnapshotStateValue.getSnapshotCompletedState(stream)
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceCdcInitialSnapshotStateValue.snapshotCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
         )
 }
 
@@ -302,8 +307,8 @@ class MySqlSourceJdbcCdcSnapshotPartition(
 sealed class MySqlSourceJdbcCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
-    checkpointColumns: List<Field>,
-    val cursor: Field,
+    checkpointColumns: List<EmittedField>,
+    val cursor: EmittedField,
     private val explicitCursorUpperBound: JsonNode?,
 ) :
     MySqlSourceJdbcResumablePartition(selectQueryGenerator, streamState, checkpointColumns),
@@ -325,9 +330,9 @@ sealed class MySqlSourceJdbcCursorPartition(
 class MySqlSourceJdbcSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
-    cursor: Field,
+    cursor: EmittedField,
     cursorUpperBound: JsonNode?,
 ) :
     MySqlSourceJdbcCursorPartition(
@@ -348,10 +353,11 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
                 stream,
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             primaryKey = checkpointColumns,
-            primaryKeyCheckpoint = checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            primaryKeyCheckpoint =
+                checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             stream,
         )
@@ -360,10 +366,10 @@ class MySqlSourceJdbcSnapshotWithCursorPartition(
 class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    primaryKey: List<Field>,
+    primaryKey: List<EmittedField>,
     override val lowerBound: List<JsonNode>?,
     override val upperBound: List<JsonNode>?,
-    cursor: Field,
+    cursor: EmittedField,
     cursorUpperBound: JsonNode?,
     override val isLowerBoundIncluded: Boolean
 ) :
@@ -374,10 +380,10 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
         cursor,
         cursorUpperBound
     ) {
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.snapshotWithCursorCheckpoint(
             checkpointColumns,
-            checkpointColumns.map { lastRecord[it.id] ?: Jsons.nullNode() },
+            checkpointColumns.map { lastRecord.data.toJson()[it.id] ?: Jsons.nullNode() },
             cursor,
             stream,
         )
@@ -408,7 +414,7 @@ class MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
 class MySqlSourceJdbcCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
-    cursor: Field,
+    cursor: EmittedField,
     val cursorLowerBound: JsonNode,
     override val isLowerBoundIncluded: Boolean,
     cursorUpperBound: JsonNode?,
@@ -433,10 +439,10 @@ class MySqlSourceJdbcCursorIncrementalPartition(
                 stream,
             )
 
-    override fun incompleteState(lastRecord: ObjectNode): OpaqueStateValue =
+    override fun incompleteState(lastRecord: SelectQuerier.ResultRow): OpaqueStateValue =
         MySqlSourceJdbcStreamStateValue.cursorIncrementalCheckpoint(
             cursor,
-            cursorCheckpoint = lastRecord[cursor.id] ?: Jsons.nullNode(),
+            cursorCheckpoint = lastRecord.data.toJson()[cursor.id] ?: Jsons.nullNode(),
             stream,
         )
 }
@@ -484,12 +490,14 @@ class MySqlJdbcConcurrentPartitionsCreator<
             return listOf(JdbcNonResumablePartitionReader(partition))
         }
         // Sample the table for partition split boundaries and for record byte sizes.
-        val sample: Sample<Pair<OpaqueStateValue?, Long>> = collectSample { record: ObjectNode ->
-            val boundary: OpaqueStateValue? =
-                (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
-            val rowByteSize: Long = sharedState.rowByteSizeEstimator().apply(record)
-            boundary to rowByteSize
-        }
+        val sample: Sample<Pair<OpaqueStateValue?, Long>> =
+            collectSample { record: SelectQuerier.ResultRow ->
+                val boundary: OpaqueStateValue? =
+                    (partition as? JdbcSplittablePartition<*>)?.incompleteState(record)
+                val rowByteSize: Long =
+                    sharedState.rowByteSizeEstimator().apply(record.data.toJson())
+                boundary to rowByteSize
+            }
         if (sample.kind == Sample.Kind.EMPTY) {
             log.info { "Sampling query found that the table was empty." }
             return listOf(CheckpointOnlyPartitionReader())

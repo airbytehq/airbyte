@@ -102,6 +102,10 @@ The [Close.com API](https://developer.close.com/) uses the same [JSONSchema](htt
 The Close.com connector is subject to rate limits. For more information on this topic,
 [click here](https://developer.close.com/topics/rate-limits/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

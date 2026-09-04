@@ -25,7 +25,7 @@ Airbyte Agents is a data and context layer for AI agents. It gives your agents r
 
 <Grid columns="2">
 
-<CardWithIcon title="Interfaces" description="Choose how to work with your data: the web app, MCP server, Python SDK, or API." ctaText="Interfaces" ctaLink="/ai-agents/interfaces/" icon="fa-plug" />
+<CardWithIcon title="Interfaces" description="Choose how to work with your data across the interfaces Airbyte Agents supports." ctaText="Interfaces" ctaLink="/ai-agents/interfaces/" icon="fa-plug" />
 
 <CardWithIcon title="Agent connectors" description="Browse the catalog of open-source connectors that equip agents to call third-party APIs." ctaText="Agent connectors" ctaLink="/ai-agents/connectors/" icon="fa-puzzle-piece" />
 

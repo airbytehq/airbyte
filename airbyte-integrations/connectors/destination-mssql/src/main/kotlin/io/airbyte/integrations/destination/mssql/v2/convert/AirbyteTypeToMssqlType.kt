@@ -21,46 +21,42 @@ import io.airbyte.cdk.load.data.TimestampTypeWithTimezone
 import io.airbyte.cdk.load.data.TimestampTypeWithoutTimezone
 import io.airbyte.cdk.load.data.UnionType
 import io.airbyte.cdk.load.data.UnknownType
-import io.airbyte.integrations.destination.mssql.v2.LIMITS
 import java.sql.Types
 
 enum class MssqlType(val sqlType: Int, val sqlStringOverride: String? = null) {
-    TEXT(Types.LONGVARCHAR),
     BIT(Types.BOOLEAN),
-    DATE(Types.DATE),
     BIGINT(Types.BIGINT),
-    /**
-     * if you change the numeric precision/scale, remember to also update [LIMITS.MAX_NUMERIC] /
-     * [LIMITS.MIN_NUMERIC]
-     */
     DECIMAL(Types.DECIMAL, sqlStringOverride = "DECIMAL(38, 8)"),
     VARCHAR(Types.VARCHAR, sqlStringOverride = "VARCHAR(MAX)"),
     VARCHAR_INDEX(Types.VARCHAR, sqlStringOverride = "VARCHAR(200)"),
-    DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
+    TEXT(Types.LONGVARCHAR),
+    DATE(Types.DATE),
     TIME(Types.TIME),
-    DATETIME(Types.TIMESTAMP);
+    DATETIME(Types.TIMESTAMP),
+    DATETIMEOFFSET(Types.TIMESTAMP_WITH_TIMEZONE),
+    ;
 
     val sqlString: String = sqlStringOverride ?: name
 }
 
-class AirbyteTypeToMssqlType {
+object AirbyteTypeToMssqlType {
     fun convert(airbyteSchema: AirbyteType, isIndexed: Boolean = false): MssqlType {
         return when (airbyteSchema) {
-            is ObjectType -> MssqlType.TEXT
-            is ArrayType -> MssqlType.TEXT
-            is ArrayTypeWithoutSchema -> MssqlType.TEXT
             is BooleanType -> MssqlType.BIT
-            is DateType -> MssqlType.DATE
             is IntegerType -> MssqlType.BIGINT
             is NumberType -> MssqlType.DECIMAL
-            is ObjectTypeWithEmptySchema -> MssqlType.TEXT
-            is ObjectTypeWithoutSchema -> MssqlType.TEXT
             is StringType -> if (isIndexed) MssqlType.VARCHAR_INDEX else MssqlType.VARCHAR
-            is TimeTypeWithTimezone -> MssqlType.DATETIMEOFFSET
+            is DateType -> MssqlType.DATE
             is TimeTypeWithoutTimezone -> MssqlType.TIME
-            is TimestampTypeWithTimezone -> MssqlType.DATETIMEOFFSET
             is TimestampTypeWithoutTimezone -> MssqlType.DATETIME
-            is UnionType -> MssqlType.TEXT
+            is TimeTypeWithTimezone,
+            is TimestampTypeWithTimezone -> MssqlType.DATETIMEOFFSET
+            is ArrayType,
+            is ArrayTypeWithoutSchema,
+            is ObjectType,
+            is ObjectTypeWithEmptySchema,
+            is ObjectTypeWithoutSchema,
+            is UnionType,
             is UnknownType -> MssqlType.TEXT
         }
     }

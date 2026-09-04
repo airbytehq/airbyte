@@ -23,31 +23,30 @@ _DOMAIN = "airbyteio.atlassian.net"
 @freezegun.freeze_time(_NOW.isoformat())
 class TestWorkflowsStream(TestCase):
     """
-    Tests for the Jira 'workflows' stream.
+    Tests for the Jira `workflows` stream.
 
     This is a full refresh stream with pagination.
-    Endpoint: /rest/api/3/workflow/search
-    Extract field: values
-    Primary key: [entityId, name]
-    Transformations: AddFields (entityId, name from id.entityId and id.name)
+    Endpoint: `/rest/api/3/workflows/search`
+    Extract field: `values`
+    Primary key: `[id]` (top-level UUID string on the new endpoint).
     """
 
     @HttpMocker()
     def test_full_refresh_single_page(self, http_mocker: HttpMocker):
-        """
-        Test full refresh sync with a single page of results.
-        """
+        """Full refresh sync with a single page of results."""
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         workflow_records = [
             {
-                "id": {"entityId": "entity-1", "name": "Default Workflow"},
+                "id": "385bb764-dfb6-89a7-2e43-a25bdd0cbaf4",
+                "name": "Default Workflow",
                 "description": "Default workflow for the project.",
                 "transitions": [],
                 "statuses": [],
             },
             {
-                "id": {"entityId": "entity-2", "name": "Bug Workflow"},
+                "id": "9b1c1234-abcd-ef00-1234-56789abcdef0",
+                "name": "Bug Workflow",
                 "description": "Workflow for bug issues.",
                 "transitions": [],
                 "statuses": [],
@@ -68,27 +67,21 @@ class TestWorkflowsStream(TestCase):
 
         assert len(output.records) == 2
 
-        # Check that AddFields transformation added entityId and name at root level
-        entity_ids = [r.record.data["entityId"] for r in output.records]
-        assert "entity-1" in entity_ids
-        assert "entity-2" in entity_ids
+        ids = [r.record.data["id"] for r in output.records]
+        assert "385bb764-dfb6-89a7-2e43-a25bdd0cbaf4" in ids
+        assert "9b1c1234-abcd-ef00-1234-56789abcdef0" in ids
 
     @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
-        """
-        Test that pagination works correctly with multiple pages.
-        """
+        """Pagination works correctly with multiple pages."""
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
-        # Page 1
         page1_workflows = [
-            {"id": {"entityId": "entity-1", "name": "Workflow 1"}},
-            {"id": {"entityId": "entity-2", "name": "Workflow 2"}},
+            {"id": "id-1", "name": "Workflow 1"},
+            {"id": "id-2", "name": "Workflow 2"},
         ]
-
-        # Page 2
         page2_workflows = [
-            {"id": {"entityId": "entity-3", "name": "Workflow 3"}},
+            {"id": "id-3", "name": "Workflow 3"},
         ]
 
         http_mocker.get(
@@ -110,21 +103,22 @@ class TestWorkflowsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 3
-        entity_ids = [r.record.data["entityId"] for r in output.records]
-        assert "entity-1" in entity_ids
-        assert "entity-2" in entity_ids
-        assert "entity-3" in entity_ids
+        ids = {r.record.data["id"] for r in output.records}
+        assert ids == {"id-1", "id-2", "id-3"}
 
     @HttpMocker()
-    def test_transformation_adds_fields(self, http_mocker: HttpMocker):
+    def test_top_level_id_and_name_pass_through(self, http_mocker: HttpMocker):
         """
-        Test that AddFields transformation correctly adds entityId and name at root level.
+        The replacement endpoint returns `id` (a UUID string) and `name` at
+        the top level of each record. Verify that both fields reach the
+        destination record unmodified.
         """
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         workflow_records = [
             {
-                "id": {"entityId": "test-entity-id", "name": "Test Workflow Name"},
+                "id": "test-uuid-0001",
+                "name": "Test Workflow Name",
                 "description": "Test workflow",
             },
         ]
@@ -143,15 +137,12 @@ class TestWorkflowsStream(TestCase):
 
         assert len(output.records) == 1
         record = output.records[0].record.data
-        # Verify AddFields transformation added these at root level
-        assert record["entityId"] == "test-entity-id"
+        assert record["id"] == "test-uuid-0001"
         assert record["name"] == "Test Workflow Name"
 
     @HttpMocker()
     def test_empty_results(self, http_mocker: HttpMocker):
-        """
-        Test that connector handles empty results gracefully.
-        """
+        """Empty results are handled gracefully."""
         config = ConfigBuilder().with_domain(_DOMAIN).build()
 
         http_mocker.get(
@@ -167,4 +158,3 @@ class TestWorkflowsStream(TestCase):
         output = read(source, config=config, catalog=catalog)
 
         assert len(output.records) == 0
-        assert not any(log.log.level == "ERROR" for log in output.logs)

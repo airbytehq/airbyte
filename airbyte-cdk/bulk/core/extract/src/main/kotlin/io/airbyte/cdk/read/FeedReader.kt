@@ -105,14 +105,15 @@ class FeedReader(
     private suspend fun createPartitions(partitionsCreatorID: Long): List<PartitionReader> {
         val partitionsCreator: PartitionsCreator = run {
             for (factory in root.partitionsCreatorFactories) {
-                withContext(
-                    ctx(
-                        "round-$partitionsCreatorID-partition-creator-factory-acquire-resources-$factory"
-                    )
-                ) { acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory) }
+                val acquired: AutoCloseable =
+                    withContext(
+                        ctx(
+                            "round-$partitionsCreatorID-partition-creator-factory-acquire-resources-$factory"
+                        )
+                    ) { acquirePartitionsCreatorFactoryResources(partitionsCreatorID, factory) }
                 log.info { "Attempting bootstrap using ${factory::class}." }
                 return@run withContext(ctx("round-$partitionsCreatorID-make-partitions-creator")) {
-                    makePartitionsCreatorWithResources(factory)
+                    makePartitionsCreatorWithResources(factory, acquired)
                 }
                     ?: continue
             }
@@ -134,18 +135,20 @@ class FeedReader(
     private suspend fun acquirePartitionsCreatorFactoryResources(
         partitionsCreatorID: Long,
         partitionsCreatorFactory: PartitionsCreatorFactory,
-    ) {
+    ): AutoCloseable {
         while (true) {
-            val status: PartitionsCreatorFactory.TryAcquireResourcesStatus =
+            val result: PartitionsCreatorFactory.TryAcquireResourcesResult =
                 root.resourceAcquisitionMutex.withLock {
                     partitionsCreatorFactory.tryAcquireResources()
                 }
-            if (status == PartitionsCreatorFactory.TryAcquireResourcesStatus.READY_TO_RUN) break
+            if (result is PartitionsCreatorFactory.TryAcquireResourcesResult.ReadyToRun) {
+                log.info {
+                    "acquired resources to make partitions creator factory '${partitionsCreatorFactory::class.simpleName}' " +
+                        "for '${feed.label}' in round $partitionsCreatorID"
+                }
+                return result.acquired
+            }
             root.waitForResourceAvailability()
-        }
-        log.info {
-            "acquired resources to make partitions creator factory '${partitionsCreatorFactory::class.simpleName}' " +
-                "for '${feed.label}' in round $partitionsCreatorID"
         }
     }
 
@@ -168,11 +171,16 @@ class FeedReader(
 
     private fun makePartitionsCreatorWithResources(
         factory: PartitionsCreatorFactory,
+        acquired: AutoCloseable,
     ): PartitionsCreator? {
         return try {
             factory.make(feedBootstrap)
         } finally {
-            factory.releaseResources()
+            log.info {
+                "releasing resources acquired to make partitions creator factory " +
+                    "for '${feed.label}'"
+            }
+            acquired.close()
             root.notifyResourceAvailability()
         }
     }

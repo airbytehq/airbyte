@@ -3,10 +3,12 @@
 #
 
 import logging
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests_mock as rm
+import yaml
 from source_facebook_pages.source import SourceFacebookPages
 
 from airbyte_cdk.models import (
@@ -14,6 +16,7 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
+    FailureType,
     SyncMode,
 )
 
@@ -22,6 +25,7 @@ CONFIG = {"page_id": "1", "access_token": "token"}
 ACCESS_TOKEN_URL = "https://graph.facebook.com/1?fields=access_token&access_token=token"
 PAGE_URL = "https://graph.facebook.com/v24.0/1"
 FEED_URL = "https://graph.facebook.com/v24.0/1/feed"
+MANIFEST_PATH = Path(__file__).parents[1] / "source_facebook_pages" / "manifest.yaml"
 
 
 def _make_catalog(stream_name, selected_fields):
@@ -115,3 +119,30 @@ def test_without_catalog_at_init_requests_all_fields():
         assert (
             len(requested_fields) > 3
         ), f"Without catalog at init, expected all fields to be requested, but got only {len(requested_fields)}"
+
+
+def test_facebook_app_approval_error_is_config_error():
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
+
+    assert response_filter["error_message_contains"] == "This application has not been approved to use this API"
+    assert response_filter["failure_type"] == FailureType.config_error.value
+    assert response_filter["error_message"].startswith(
+        "The application used to create the Facebook access token has not been approved to use this API."
+    )
+
+
+def test_invalid_insights_metric_error_is_not_retried():
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
+
+    invalid_metric_filters = [f for f in response_filters if f.get("error_message_contains") == "must be a valid insights metric"]
+    assert len(invalid_metric_filters) == 1, "Expected exactly one response filter for Meta's invalid-metric error"
+
+    invalid_metric_filter = invalid_metric_filters[0]
+    assert invalid_metric_filter["action"] == "FAIL"
+    assert invalid_metric_filter["failure_type"] == FailureType.system_error.value
+
+    # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
+    blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
+    assert response_filters.index(invalid_metric_filter) < blanket_400_index

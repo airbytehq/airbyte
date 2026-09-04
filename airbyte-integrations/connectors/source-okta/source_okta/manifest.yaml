@@ -1884,6 +1884,7 @@ spec:
                 title: Private key
                 description: The private key in PEM format
                 airbyte_secret: true
+                multiline: true
                 order: 3
               scope:
                 type: string

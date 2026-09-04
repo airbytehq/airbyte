@@ -45,19 +45,6 @@ module.exports = {
           label: 'Java SDK',
           href: 'https://github.com/airbytehq/airbyte-api-java-sdk',
         },
-        {
-          type: 'category',
-          label: 'MCP Servers',
-          link: {
-            type: "doc",
-            id: 'mcp-servers/readme',
-          },
-          items: [
-            'mcp-servers/airbyte-knowledge-mcp',
-            'mcp-servers/pyairbyte-mcp',
-            // 'mcp-servers/connector-builder-mcp',
-          ],
-        },
       ],
     },
   ],

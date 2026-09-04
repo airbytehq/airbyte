@@ -9,3 +9,7 @@ MS Dynamics AX runs on the MSSQL database. You can use the [MSSQL connector](mss
 ### Output schema
 
 To understand your MS Dynamics AX database schema, see the [Microsoft docs](https://docs.microsoft.com/en-us/dynamicsax-2012/developer/database-erds-on-the-axerd-website). Otherwise, the schema will be loaded according to the rules of MSSQL connector.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.

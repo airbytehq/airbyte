@@ -1,0 +1,116 @@
+# AI Breaking Change Review Workflow
+#
+# Runs the `!breaking_change_review` Devin playbook on a connector breaking change,
+# producing an assessment that assists (and does not replace) the
+# @airbytehq/breaking-change-reviewers sign-off.
+#
+# Security model:
+# - Slash commands require write permission (only collaborators can trigger)
+# - This is workflow_dispatch, so secrets are always available
+# - We do not execute PR code; the session reads the diff, metadata, and docs
+
+name: AI Breaking Change Review Command
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number (if triggered from a PR)"
+        type: number
+        required: false
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      repo:
+        description: "Repo (passed by slash command dispatcher)"
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "Git ref (passed by slash command dispatcher)"
+        required: false
+
+run-name: "AI Breaking Change Review for PR #${{ github.event.inputs.pr }}"
+
+concurrency:
+  group: ai-breaking-change-review-${{ github.event.inputs.pr || 'unknown' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: read
+
+jobs:
+  ai-breaking-change-review:
+    name: Review breaking change with AI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get job variables
+        id: job-vars
+        run: echo "run-url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" | tee -a $GITHUB_OUTPUT
+
+      - name: Authenticate as GitHub App
+        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        id: get-app-token
+        with:
+          owner: "airbytehq"
+          repositories: "airbyte"
+          app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
+          private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
+
+      - name: Require PR context
+        if: inputs.pr == '' && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          body: |
+            > `/ai-breaking-change-review` can only be run on a pull request. Please run it from a PR comment.
+
+      - name: Stop if not running on a PR
+        if: inputs.pr == ''
+        run: exit 1
+
+      - name: Post start comment
+        if: inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **AI Breaking Change Review Started**
+            >
+            > Assessing whether the change needs to be breaking, its destination data-loss risk, and
+            > whether the migration guide, metadata message, and docs are accurate and sufficient.
+            > This assists the breaking-change reviewers; it is not their sign-off.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})
+
+      - name: Run AI Breaking Change Review
+        uses: aaronsteers/devin-action@main
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          playbook-macro: "!breaking_change_review"
+          prompt-text: "The pull request to review is ${{ inputs.pr }}."
+          devin-token: ${{ secrets.DEVIN_AI_API_KEY }}
+          github-token: ${{ steps.get-app-token.outputs.token }}
+          api-version: v3
+          org-id: ${{ vars.DEVIN_AI_ORG_ID }}
+          start-message: "🚨 **AI Breaking Change Review session starting...** Assessing whether the change needs to be breaking, its destination data-loss risk, and whether the migration guide, metadata message, and docs are accurate and sufficient for users to upgrade safely. Sign-off stays with @airbytehq/breaking-change-reviewers. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/breaking_change_review.md)"
+          tags: |
+            breaking-change
+            area/documentation
+
+      - name: Post failure comment
+        if: failure() && inputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          token: ${{ steps.get-app-token.outputs.token || github.token }}
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr }}
+          body: |
+            > **AI Breaking Change Review Failed**
+            >
+            > An error occurred while starting the review session.
+            > [View workflow run](${{ steps.job-vars.outputs.run-url }})

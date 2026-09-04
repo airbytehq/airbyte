@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - channel_annotations_a1
+    - report_types
 
 definitions:
   streams:
@@ -65,6 +65,41 @@ definitions:
         global_substream_cursor: true
         start_datetime:
           datetime: "{{ '1990-01-01T00:00:00.000000Z' if not config.get('testing_period') else format_datetime(now_utc() - duration(config.get('testing_period')), '%Y-%m-%dT00:00:00.000000Z')}}"
+
+    report_types:
+      type: DeclarativeStream
+      name: report_types
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: reportTypes
+          # Handled by ContentOwnerRequester, not the CDK's request options provider.
+          # Static values only -- these are not interpolated. See components.py.
+          extra_request_parameters:
+            includeSystemManaged: "true"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - reportTypes
+        paginator:
+          type: DefaultPaginator
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ response.get('nextPageToken') }}"
+            stop_condition: "{{ not response.get('nextPageToken') }}"
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: pageToken
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/report_types"
 
     base_report_stream:
       type: DeclarativeStream
@@ -432,10 +467,26 @@ definitions:
     error_handler:
       type: DefaultErrorHandler
       response_filters:
+        # A 401 here comes from the YouTube Reporting API itself, which means the OAuth token
+        # refresh already succeeded -- a bad or revoked refresh token fails earlier, against
+        # token_refresh_endpoint, and never reaches this handler. So the credentials are valid
+        # but unusable for this API, which in practice means the authorized Google account has
+        # no YouTube channel linked to it.
+        # `action` is required for this filter to apply at all: without it `_matches_filter`
+        # returns None, the filter is skipped, and the CDK's generic 401 text is shown instead
+        # of `error_message`.
         - type: HttpResponseFilter
+          action: FAIL
+          failure_type: config_error
           http_codes:
             - 401
-          error_message: Authentication failed. Please verify your credentials.
+          error_message: >-
+            The authorized Google account does not appear to have an associated YouTube
+            channel. The YouTube Analytics source requires an account that owns or manages a
+            YouTube channel, because all Reporting API data belongs to a channel or content
+            owner. Create a YouTube channel for this account, or re-authenticate with an
+            account that already has one. If you are connecting as a content owner, also
+            confirm the Content Owner ID is correct.
         - type: HttpResponseFilter
           http_codes:
             - 403
@@ -443,16 +494,23 @@ definitions:
             Authorization failed. Please ensure you have the correct
             permissions.
         - type: HttpResponseFilter
+          action: FAIL
+          failure_type: transient_error
+          predicate: >-
+            {{ response.get('error', {}).get('code') == 429 and
+            'FreeQuotaRequestsPerDayPerProject' in response|string }}
+          error_message: Daily YouTube API project quota is exhausted.
+        - type: HttpResponseFilter
           action: RETRY
           http_codes: []
           predicate: >-
-            {{ 'code' in response and response['error']['code'] >= 500 and
-            response['error']['code'] < 600 }}
+            {{ response.get('error', {}).get('code', 0) >= 500 and
+            response.get('error', {}).get('code', 0) < 600 }}
         - type: HttpResponseFilter
-          action: RETRY
+          action: RATE_LIMITED
           predicate: >-
-            {{ 'code' in response and response['error']['code'] == 429 and
-            'FreeQuotaRequestsPerDayPerProject' not in response }}
+            {{ response.get('error', {}).get('code') == 429 and
+            'FreeQuotaRequestsPerDayPerProject' not in response|string }}
       backoff_strategies:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 30
@@ -482,6 +540,7 @@ definitions:
       class_name: source_declarative_manifest.components.CustomDecoder
 
 streams:
+  - $ref: "#/definitions/streams/report_types"
   - $ref: "#/definitions/streams/channel_annotations_a1"
   - $ref: "#/definitions/streams/channel_basic_a3"
   - $ref: "#/definitions/streams/channel_cards_a1"
@@ -582,6 +641,7 @@ spec:
 
 metadata:
   autoImportSchema:
+    report_types: false
     channel_annotations_a1: false
     channel_basic_a3: false
     channel_cards_a1: false
@@ -607,6 +667,29 @@ metadata:
   assist: {}
 
 schemas:
+  report_types:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      id:
+        type:
+          - "null"
+          - string
+      name:
+        type:
+          - "null"
+          - string
+      deprecateTime:
+        type:
+          - "null"
+          - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
+      systemManaged:
+        type:
+          - "null"
+          - boolean
   channel_annotations_a1:
     type: object
     $schema: http://json-schema.org/draft-07/schema#

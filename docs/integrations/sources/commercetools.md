@@ -45,6 +45,10 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 3. The `projectKey` of the store, the generated `client_id` and `client_secret` are required for the integration
 4. You're ready to set up Commercetools in Airbyte!
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

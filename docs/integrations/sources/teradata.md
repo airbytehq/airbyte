@@ -59,6 +59,10 @@ You need a Teradata user which has read permissions on the database
 
    These parameters will be added at the end of the JDBC URL that the AirByte will use to connect to your Teradata database.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

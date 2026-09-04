@@ -15,10 +15,23 @@ definitions:
       response_filters:
         - action: FAIL
           error_message_contains: This application has not been approved to use this API
+          failure_type: config_error
           error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions. Please, visit https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app for more info about your own OAuth App.
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
           error_message: Request contains invalid/deprecated field.
+        # Meta rejects the whole Insights request when any single requested metric is
+        # invalid. This is permanent, so it must not fall through to the blanket 400 retry
+        # below, which would otherwise burn six attempts and hide the API's own message.
+        - action: FAIL
+          error_message_contains: must be a valid insights metric
+          failure_type: system_error
+          error_message: >-
+            Facebook rejected one or more of the Insights metrics this connector requested, so the
+            entire request failed. This usually means Meta deprecated a metric that the connector
+            still asks for. Upgrade to the latest connector version; if you are already on the
+            latest version, please report it at https://github.com/airbytehq/airbyte/issues. Facebook
+            returned: {{ response.get('error', {}).get('message', '') }}
         - http_codes: [400]
           action: RETRY
         - action: RETRY
@@ -311,12 +324,7 @@ definitions:
             {{ 
               'insights.metric(%s)' % ','.join([
               'post_media_view',
-              'post_impressions_unique',
-              'post_impressions_paid_unique',
-              'post_impressions_fan_unique',
-              'post_impressions_organic_unique',
-              'post_impressions_viral_unique',
-              'post_impressions_nonviral_unique',
+              'post_total_media_view_unique',
               'post_clicks',
               'post_clicks_by_type',
               'post_reactions_by_type_total',
@@ -341,10 +349,7 @@ definitions:
               'page_post_engagements',
               'page_fan_adds_by_paid_non_paid_unique',
               'page_media_view',
-              'page_impressions_unique',
-              'page_impressions_paid_unique',
-              'page_impressions_viral_unique',
-              'page_impressions_nonviral_unique',
+              'page_total_media_view_unique',
               ])
             }}
 streams:

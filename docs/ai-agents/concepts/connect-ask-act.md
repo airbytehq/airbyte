@@ -15,7 +15,7 @@ The platform manages the hard parts of connecting to third-party systems:
 
 - **Authentication.** The platform handles OAuth flows, API keys, and token refresh for you. Store end-user credentials once and use them from any interface.
 - **Multi-tenancy.** [Workspaces](../interfaces/sdk/workspaces) isolate connectors and credentials across tenants, teams, or environments within an organization.
-- **Multiple interfaces.** Use connectors through the [web app](../interfaces/ui) in chats and automations, the [Python SDK](../interfaces/sdk), the [HTTP API](../interfaces/api), or the [MCP server](../interfaces/mcp), whichever fits your stack.
+- **Multiple interfaces.** Use connectors through [the interface](../interfaces) that fits your stack.
 
 Connecting a new data source takes minutes, not weeks. You don't build or maintain API wrappers, manage credential storage, or handle token lifecycle.
 
@@ -45,12 +45,17 @@ execute(entity, action, params)
 - **Read.** `list`, `get`, and `search` retrieve records from a connector. When the Context Store is on, `context_store_search` provides fast, indexed retrieval.
 - **Write.** `create`, `update`, and `delete` push changes back to the source system, such as creating a ticket, updating a contact, or sending a message.
 
-This pattern is the same across every connector and every interface. Whether an agent runs in the web app, through the SDK, over the API, or via MCP, it calls the same entities and actions with the same parameters.
+This pattern is the same across every connector and every interface. Agents call the same entities and actions with the same parameters from any interface.
 
-Airbyte Agents act through two modes:
+Before an agent executes, it needs to know which entities and actions a connector supports. Rather than loading the entire connector schema into the prompt up front, agents introspect the connector just in time through **skill docs** — concise, chunked guidance the platform generates for each connector:
 
-- **[Chats](../interfaces/ui/chats).** Interactive, conversational sessions where an agent responds to prompts in real time.
-- **[Automations](../interfaces/ui/automations).** Manual or scheduled flows that run without human intervention.
+1. **Inspect the connector** to discover its metadata and Context Store readiness.
+2. **Read skill docs** for an outline of entities and actions, then read the specific section for the operation the agent is about to run.
+3. **Execute** the chosen entity and action.
+
+This progressive flow keeps the agent's context small and its calls accurate. The `build_connector_tools` helper wires these steps up as ready-to-use tools; see [Execute operations](../interfaces/sdk/execute) for the code.
+
+Airbyte Agents act through [**Chats**](../interfaces/ui/chats) — interactive, conversational sessions where an agent responds to prompts in real time.
 
 Airbyte logs every action an agent takes. You can review what happened, when, and why in the [Sessions](../admin/sessions) and [Tool calls](../admin/tool-calls) views.
 

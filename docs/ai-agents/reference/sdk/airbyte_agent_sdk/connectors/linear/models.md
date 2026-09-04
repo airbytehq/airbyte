@@ -1460,30 +1460,6 @@ Classes
     `url: str | None`
     :   The type of the None singleton.
 
-<a id="LinearAuthConfig"></a>
-
-`LinearAuthConfig(**data: Any)`
-:   Linear API Key Authentication - Authenticate using your Linear API key
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `api_key: str`
-    :   Your Linear API key from Settings > API > Personal API keys
-
-    `model_config`
-    :   The type of the None singleton.
-
 <a id="LinearCheckResult"></a>
 
 `LinearCheckResult(**data: Any)`
@@ -1853,6 +1829,63 @@ Classes
     * airbyte_agent_sdk.connectors.linear.models.LinearExecuteResult
     * pydantic.main.BaseModel
     * typing.Generic
+
+<a id="LinearLinearApiKeyAuthenticationAuthConfig"></a>
+
+`LinearLinearApiKeyAuthenticationAuthConfig(**data: Any)`
+:   Linear API Key Authentication - Authenticate using your Linear API key
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `api_key: str`
+    :   Your Linear API key from Settings > API > Personal API keys
+
+    `model_config`
+    :   The type of the None singleton.
+
+<a id="LinearOauth2AuthConfig"></a>
+
+`LinearOauth2AuthConfig(**data: Any)`
+:   OAuth2
+    
+    Create a new model by parsing and validating input data from keyword arguments.
+    
+    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
+    validated to form a valid model.
+    
+    `self` is explicitly positional-only to allow `self` as a field name.
+
+    ### Ancestors (in MRO)
+
+    * pydantic.main.BaseModel
+
+    ### Class variables
+
+    `access_token: str | None`
+    :   Your Linear OAuth2 access token (optional if refresh_token is provided)
+
+    `client_id: str`
+    :   Your Linear OAuth2 application client ID
+
+    `client_secret: str`
+    :   Your Linear OAuth2 application client secret
+
+    `model_config`
+    :   The type of the None singleton.
+
+    `refresh_token: str`
+    :   Your Linear OAuth2 refresh token
 
 <a id="Project"></a>
 
@@ -2728,9 +2761,6 @@ Classes
     `id: str | None`
     :   The type of the None singleton.
 
-    `invite_hash: str | None`
-    :   The type of the None singleton.
-
     `issue_count: float | None`
     :   The type of the None singleton.
 
@@ -2746,12 +2776,6 @@ Classes
     `key: str | None`
     :   The type of the None singleton.
 
-    `marked_as_duplicate_workflow_state: dict[str, typing.Any] | None`
-    :   The type of the None singleton.
-
-    `marked_as_duplicate_workflow_state_id: str | None`
-    :   The type of the None singleton.
-
     `model_config`
     :   The type of the None singleton.
 
@@ -2759,9 +2783,6 @@ Classes
     :   The type of the None singleton.
 
     `parent_team_id: str | None`
-    :   The type of the None singleton.
-
-    `private: bool | None`
     :   The type of the None singleton.
 
     `require_priority_to_leave_triage: bool | None`
@@ -2786,6 +2807,9 @@ Classes
     :   The type of the None singleton.
 
     `updated_at: str | None`
+    :   The type of the None singleton.
+
+    `visibility: str | None`
     :   The type of the None singleton.
 
 <a id="User"></a>
@@ -3059,9 +3083,6 @@ Classes
     :   The type of the None singleton.
 
     `initials: str | None`
-    :   The type of the None singleton.
-
-    `invite_hash: str | None`
     :   The type of the None singleton.
 
     `is_me: bool | None`

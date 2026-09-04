@@ -15,3 +15,7 @@ Reach out to your service representative or system admin to find the parameters 
 ### Output schema
 
 To understand your MS Dynamics Customer Engagement database schema, see the [Entity Reference documentation](https://docs.microsoft.com/en-us/dynamics365/customerengagement/on-premises/developer/about-entity-reference?view=op-9-1). Otherwise, the schema will be loaded according to the rules of MSSQL connector.
+
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
