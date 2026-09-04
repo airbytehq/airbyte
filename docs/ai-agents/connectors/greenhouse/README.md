@@ -3,9 +3,10 @@
 The Greenhouse agent connector is a Python package that equips AI agents to interact with Greenhouse through strongly typed, well-documented tools. It's ready to use directly in your Python app, in an agent framework, or exposed through an MCP.
 
 Greenhouse is an applicant tracking system (ATS) that helps companies manage their
-hiring process. This connector provides access to candidates, applications, jobs,
-offers, users, departments, offices, job posts, sources, and scheduled interviews
-for recruiting analytics and talent acquisition insights.
+hiring process via the Harvest v3 API with OAuth 2.0 authentication. This connector
+provides access to candidates, applications, jobs, offers, users, departments,
+offices, job posts, sources, and interviews for recruiting analytics and talent
+acquisition insights.
 
 
 ## Example prompts
@@ -13,7 +14,7 @@ for recruiting analytics and talent acquisition insights.
 The Greenhouse connector is optimized to handle prompts like these.
 
 - List all open jobs
-- Show me upcoming interviews this week
+- Show me recent interviews
 - Show me recent job offers
 - List recent applications
 - Show me candidates from \{company\} who applied last month
@@ -41,23 +42,22 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Candidates | [List](./REFERENCE.md#candidates-list), [Get](./REFERENCE.md#candidates-get), [Context Store Search](./REFERENCE.md#candidates-context-store-search) |
-| Applications | [List](./REFERENCE.md#applications-list), [Get](./REFERENCE.md#applications-get), [Context Store Search](./REFERENCE.md#applications-context-store-search) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Get](./REFERENCE.md#jobs-get), [Context Store Search](./REFERENCE.md#jobs-context-store-search) |
-| Offers | [List](./REFERENCE.md#offers-list), [Get](./REFERENCE.md#offers-get), [Context Store Search](./REFERENCE.md#offers-context-store-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Departments | [List](./REFERENCE.md#departments-list), [Get](./REFERENCE.md#departments-get), [Context Store Search](./REFERENCE.md#departments-context-store-search) |
-| Offices | [List](./REFERENCE.md#offices-list), [Get](./REFERENCE.md#offices-get), [Context Store Search](./REFERENCE.md#offices-context-store-search) |
-| Job Posts | [List](./REFERENCE.md#job-posts-list), [Get](./REFERENCE.md#job-posts-get), [Context Store Search](./REFERENCE.md#job-posts-context-store-search) |
+| Applications | [List](./REFERENCE.md#applications-list), [Context Store Search](./REFERENCE.md#applications-context-store-search) |
+| Candidates | [List](./REFERENCE.md#candidates-list), [Context Store Search](./REFERENCE.md#candidates-context-store-search) |
+| Departments | [List](./REFERENCE.md#departments-list), [Context Store Search](./REFERENCE.md#departments-context-store-search) |
+| Interviews | [List](./REFERENCE.md#interviews-list) |
+| Job Posts | [List](./REFERENCE.md#job-posts-list), [Context Store Search](./REFERENCE.md#job-posts-context-store-search), [Semantic Search](./REFERENCE.md#job-posts-semantic-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Context Store Search](./REFERENCE.md#jobs-context-store-search), [Semantic Search](./REFERENCE.md#jobs-semantic-search) |
+| Offers | [List](./REFERENCE.md#offers-list), [Context Store Search](./REFERENCE.md#offers-context-store-search) |
+| Offices | [List](./REFERENCE.md#offices-list), [Context Store Search](./REFERENCE.md#offices-context-store-search) |
 | Sources | [List](./REFERENCE.md#sources-list), [Context Store Search](./REFERENCE.md#sources-context-store-search) |
-| Scheduled Interviews | [List](./REFERENCE.md#scheduled-interviews-list), [Get](./REFERENCE.md#scheduled-interviews-get) |
-| Application Attachment | [Download](./REFERENCE.md#application-attachment-download) |
-| Candidate Attachment | [Download](./REFERENCE.md#candidate-attachment-download) |
+| Users | [List](./REFERENCE.md#users-list), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Attachments | [List](./REFERENCE.md#attachments-list), [Download](./REFERENCE.md#attachments-download) |
 
 
 ## Greenhouse API docs
 
-See the official [Greenhouse API reference](https://developers.greenhouse.io/harvest.html).
+See the official [Greenhouse API reference](https://harvestdocs.greenhouse.io/).
 
 ## Interfaces
 
@@ -101,7 +101,7 @@ Execute an action:
 airbyte-agent connectors execute --json '{
   "workspace": "<your_workspace_name>",
   "name": "greenhouse",
-  "entity": "candidates",
+  "entity": "applications",
   "action": "list"
 }'
 ```
@@ -400,7 +400,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -418,7 +421,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -443,7 +449,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -463,7 +472,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -486,7 +498,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -507,7 +522,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -529,7 +547,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -554,7 +575,10 @@ from airbyte_agent_sdk.connectors.greenhouse.models import GreenhouseAuthConfig
 
 connector = GreenhouseConnector(
     auth_config=GreenhouseAuthConfig(
-        api_key="<Your Greenhouse Harvest API Key from the Dev Center>"
+        client_id="<Client ID from the Greenhouse OAuth application>",
+        client_secret="<Client secret from the Greenhouse OAuth application>",
+        refresh_token="<Refresh token generated through the Greenhouse OAuth consent flow>",
+        access_token="<Access token generated through the Greenhouse OAuth consent flow (optional if refresh_token is provided)>"
     )
 )
 
@@ -579,4 +603,4 @@ If your organization restricts access to specific IPs, add the [Airbyte Agents I
 
 ## Version information
 
-**Connector version:** 0.1.8
+**Connector version:** 0.2.0
