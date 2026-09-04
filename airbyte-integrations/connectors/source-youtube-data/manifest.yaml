@@ -124,6 +124,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
+          error_handler: "#/definitions/comments_error_handler"
           path: commentThreads
           http_method: GET
           request_parameters:
@@ -207,6 +208,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
+          error_handler: "#/definitions/comments_error_handler"
           path: commentThreads
           http_method: GET
           request_parameters:
@@ -253,12 +255,96 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/youtube/v3/
+    error_handler: "#/definitions/base_error_handler"
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_method"]
       authenticators:
         api_key: "#/definitions/api_key_authenticator"
         oauth2.0: "#/definitions/oauth2_authenticator"
+  error_filters:
+    rate_limited:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error', {}).get('errors') or [{}])[0].get('reason', '') in ['rateLimitExceeded', 'userRateLimitExceeded'] }}"
+      action: RETRY
+    quota_exceeded:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error', {}).get('errors') or [{}])[0].get('reason', '') == 'quotaExceeded' }}"
+      action: FAIL
+      failure_type: transient_error
+      error_message: YouTube Data API quota for the configured Google Cloud project is exhausted. Quota resets daily at midnight Pacific Time.
+    api_not_enabled:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error', {}).get('errors') or [{}])[0].get('reason', '') == 'accessNotConfigured' }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: YouTube Data API v3 is not enabled for the Google Cloud project of the configured credentials. Enable the API in that project.
+    invalid_api_key:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error', {}).get('errors') or [{}])[0].get('reason', '') == 'keyInvalid' }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: YouTube API key is invalid. Verify the API key in the source settings.
+    channel_not_found:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error', {}).get('errors') or [{}])[0].get('reason', '') == 'channelNotFound' }}"
+      action: FAIL
+      failure_type: config_error
+      error_message: Configured YouTube channel ID does not exist. Verify the channel IDs in the source settings.
+    comments_disabled:
+      type: HttpResponseFilter
+      predicate: "{{ (response.get('error', {}).get('errors') or [{}])[0].get('reason', '') == 'commentsDisabled' }}"
+      action: IGNORE
+      error_message: Comments are disabled for the requested YouTube video or channel. No comment records are available.
+    unauthorized:
+      type: HttpResponseFilter
+      http_codes: [401]
+      action: FAIL
+      failure_type: config_error
+      error_message: YouTube API credentials are rejected. Verify the API key or OAuth credentials in the source settings.
+    forbidden:
+      type: HttpResponseFilter
+      http_codes: [403]
+      action: FAIL
+      failure_type: config_error
+      error_message: Access to the requested YouTube resource is forbidden for the configured credentials. Verify that the credentials have access to the configured channels.
+    bad_request:
+      type: HttpResponseFilter
+      http_codes: [400]
+      action: FAIL
+      failure_type: config_error
+      error_message: YouTube API rejected the request parameters. Verify the channel IDs and credentials in the source settings.
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/error_filters/rate_limited"
+      - $ref: "#/definitions/error_filters/quota_exceeded"
+      - $ref: "#/definitions/error_filters/api_not_enabled"
+      - $ref: "#/definitions/error_filters/invalid_api_key"
+      - $ref: "#/definitions/error_filters/channel_not_found"
+      - $ref: "#/definitions/error_filters/unauthorized"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - $ref: "#/definitions/error_filters/bad_request"
+  comments_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    backoff_strategies:
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - $ref: "#/definitions/error_filters/comments_disabled"
+      - $ref: "#/definitions/error_filters/rate_limited"
+      - $ref: "#/definitions/error_filters/quota_exceeded"
+      - $ref: "#/definitions/error_filters/api_not_enabled"
+      - $ref: "#/definitions/error_filters/invalid_api_key"
+      - $ref: "#/definitions/error_filters/channel_not_found"
+      - $ref: "#/definitions/error_filters/unauthorized"
+      - $ref: "#/definitions/error_filters/forbidden"
+      - $ref: "#/definitions/error_filters/bad_request"
 
 streams:
   - $ref: "#/definitions/streams/video"
@@ -266,6 +352,25 @@ streams:
   - $ref: "#/definitions/streams/comments"
   - $ref: "#/definitions/streams/videos"
   - $ref: "#/definitions/streams/channel_comments"
+
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 500
+          interval: PT1M
+      matchers:
+        - method: GET
+          url_base: https://www.googleapis.com
+          url_path_pattern: "^/youtube/v3/search"
+          weight: 100
+        - method: GET
+          url_base: https://www.googleapis.com
+          url_path_pattern: "^/youtube/v3/"
+          weight: 1
+  ratelimit_reset_header: Retry-After
+  status_codes_for_ratelimit_hit: [429]
 
 spec:
   type: Spec
