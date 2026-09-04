@@ -24,7 +24,7 @@ class KlaviyoRequestBuilder:
     """
 
     BASE_URL = "https://a.klaviyo.com/api"
-    REVISION = "2026-07-15"
+    REVISION = "2026-01-15"
 
     @classmethod
     def profiles_endpoint(cls, api_key: str) -> "KlaviyoRequestBuilder":

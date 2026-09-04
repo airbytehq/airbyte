@@ -30,7 +30,7 @@ definitions:
             sort: "updated"
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -109,7 +109,7 @@ definitions:
             additional-fields[profile]: subscriptions
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -219,7 +219,7 @@ definitions:
             sort: "datetime"
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -308,7 +308,7 @@ definitions:
             sort: "datetime"
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -393,7 +393,7 @@ definitions:
             sort: "updated"
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -475,7 +475,7 @@ definitions:
             sort: "updated_at"
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -576,7 +576,7 @@ definitions:
             sort: "updated_at"
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -672,7 +672,7 @@ definitions:
             sort: "updated"
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -751,7 +751,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -816,7 +816,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -872,7 +872,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -939,7 +939,7 @@ definitions:
             additional-fields[list]: profile_count
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -1012,7 +1012,7 @@ definitions:
           http_method: GET
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
           error_handler:
             type: CustomErrorHandler
             class_name: >-
@@ -1082,7 +1082,7 @@ definitions:
           request_parameters: {}
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
             Content-Type: application/json
           request_body_json:
             data:
@@ -1238,7 +1238,7 @@ definitions:
           request_parameters: {}
           request_headers:
             Accept: application/json
-            Revision: "2026-07-15"
+            Revision: "2026-01-15"
             Content-Type: application/json
           request_body_json:
             data:

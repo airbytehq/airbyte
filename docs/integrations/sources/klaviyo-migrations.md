@@ -2,7 +2,7 @@
 
 ## Upgrading to 4.0.0
 
-Klaviyo retires API revision `2024-10-15` on 2026-10-15. This release moves every stream to revision `2026-07-15`. Only the `campaigns` and `campaigns_detailed` streams change shape; all other streams keep the same schema and do not need to be cleared.
+Klaviyo retires API revision `2024-10-15` on 2026-10-15. This release moves every stream to revision `2026-01-15`. Only the `campaigns` and `campaigns_detailed` streams change shape; all other streams keep the same schema and do not need to be cleared.
 
 ### What changed in `campaigns` and `campaigns_detailed`
 
