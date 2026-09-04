@@ -59,3 +59,11 @@ data:
     - title: YouTube API quotas
       url: https://developers.google.com/youtube/v3/getting-started#quota
       type: rate_limits
+  releases:
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: fast
+      enableProgressiveRollout: true

@@ -41,7 +41,7 @@ The Linear GraphQL API supports `updatedAt` filtering via `filter: { updatedAt: 
 
 ### Future incremental stream candidates
 
-- **No API date filter (5 streams):** `customer_statuses`, `customer_tiers`, `initiative_to_projects`, `issue_relations`, `project_statuses` — these endpoints do not expose date-based filtering. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+- **No API date filter (5 streams):** `customer_statuses`, `customer_tiers`, `initiative_to_projects`, `issue_relations`, `project_statuses` — these endpoints do not expose date-based filtering. Verified via live API probing on 2026-08-28: each of the five queries rejects a `filter` argument with `GRAPHQL_VALIDATION_FAILED` (`Unknown argument "filter" on field "Query.<name>"`), while the `issues` control query accepts `filter` and fails only on authentication.
 
 ## Deletions
 
