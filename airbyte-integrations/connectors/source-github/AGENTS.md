@@ -12,8 +12,9 @@ therefore a **hybrid** connector right now, and a change usually has to be made 
 one of the two halves:
 
 - `source_github/manifest.yaml` — the migrated streams. Currently: `repositories`,
-  `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`. Their schemas are inline
-  (`InlineSchemaLoader`); there is no file under `source_github/schemas/` for them.
+  `assignees`, `branches`, `collaborators`, `issue_labels`, `tags`, `organizations`, `teams`,
+  `users`. Their schemas are inline (`InlineSchemaLoader`); there is no file under
+  `source_github/schemas/` for them.
 - `source_github/streams.py` — everything not yet migrated. These still extend
   `GithubStream`/`GithubStreamABC` and read their schema from `source_github/schemas/`.
 
@@ -23,14 +24,21 @@ Things worth knowing before touching either half:
   merge them with the manifest streams, so migrating a stream means deleting it from
   `streams.py`, dropping it from the `streams()` list, and adding it to `manifest.yaml`.
 - A few Python classes are _technical_ streams that are deliberately not in the catalog:
-  `RepositoryStats` and `Branches` (the latter is how `Commits` discovers branches). Do not
-  delete `Branches` even though the user-facing `branches` stream is declarative now. It has no
-  file under `source_github/schemas/` any more, so it overrides `get_json_schema()`; a technical
-  stream you keep behind after a migration needs the same treatment.
+  `RepositoryStats`, `Branches` (how `Commits` discovers branches) and `Teams` (parent of
+  `TeamMembers`, itself the parent of `TeamMemberships`). Do not delete `Branches` or `Teams`
+  even though the user-facing `branches` and `teams` streams are declarative now. Neither has a
+  file under `source_github/schemas/` any more, so both override `get_json_schema()` — returning
+  only the fields their children actually read, rather than a second copy of the inline schema
+  that could drift from it. A technical stream you keep behind after a migration needs the same
+  treatment, and `Teams` additionally keeps `use_cache = True` so its parent read shares
+  `teams.sqlite` with the declarative stream instead of paying for the listing twice.
 - Repository/organization resolution lives in the manifest (`repositories_resolver` and
   `repository_stats`, unioned by `repository_partition_router` /
-  `organization_partition_router`). The Python streams get their repo list by enumerating
-  those same routers, so both halves always slice identically.
+  `organization_resolution_partition_router`). The Python streams get their lists by enumerating
+  those same routers, so both halves slice identically — which is only true as long as a
+  migrated stream references the same router `SourceGithub` enumerates for its Python
+  counterpart. See the organization-router section below; the two org routers are not
+  interchangeable.
 - Error contract differs per stream group and is expressed by two composed error handlers in
   the manifest: `strict_access_error_handler` (403 fails — repo listing and resolution, which
   is what makes `check` surface bad token scopes) and `skip_inaccessible_error_handler`
@@ -122,17 +130,23 @@ not interchangeable:
   whether the login is an organization at all.
 - `organization_resolution_partition_router` derives orgs from response payloads —
   `owner/login` on the `orgs/{org}/repos` listing, `organization/login` on
-  `repos/{owner}/{repo}`. Every org-scoped stream (`Organizations`, `Teams`, `Users`, and their
-  substreams) must slice on this one, and `SourceGithub._resolve_repositories_and_organizations`
-  enumerates it for the Python streams.
+  `repos/{owner}/{repo}`. Every org-scoped stream must slice on this one: the declarative
+  `organizations`/`teams`/`users` via `organization_scoped_retriever`, and the Python `Teams`
+  and its substreams via `SourceGithub._resolve_repositories_and_organizations`, which
+  enumerates it. Its wildcard branch reads its parents through `repositories_resolver`, whose
+  `record_filter` is `wildcard_repository_filter`, so an organization whose wildcard matched no
+  repository is not a partition either — that is why the declarative streams need no equivalent
+  of the `repository_owners` filter `SourceGithub` applies by hand.
 
 The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: *list org repos*
 returns `owner` but no `organization`, while *get a repository* returns both, so using
 `owner/login` on the explicit-repo branch would hand user logins back to the org-scoped streams.
 
 2.2.0 wired the org-scoped streams to the config-derived router, and every affected sync died on
-the platform heartbeat (airbytehq/oncall#13422). When Step 3 migrates
-`Organizations`/`Teams`/`Users` into the manifest, they must reference the resolution router.
+the platform heartbeat (airbytehq/oncall#13422). Step 4 moved `organizations`/`teams`/`users` into
+the manifest and they reference the resolution router;
+`test_only_payload_confirmed_organizations_are_sliced` pins that, and reverting the `$ref` fails
+it for all three. Any org-scoped stream migrated from here on needs the same `$ref`.
 
 ## A swallowed error must close its resumable-full-refresh slice
 

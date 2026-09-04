@@ -29,12 +29,18 @@ def load_config(config_path: str = TEST_CONFIG_PATH) -> Mapping[str, Any]:
 
 
 def revert_migration(config_path: str = TEST_CONFIG_PATH) -> None:
+    """Restore the tracked fixture, byte for byte.
+
+    `test_config.json` is committed, and this rewrites it in place, so the formatting has to be
+    the one `prettier` (pre-commit, `types_or: [json, yaml]`) would produce — otherwise running
+    the suite locally leaves the fixture dirty and the next commit fails `Format Check`. A plain
+    `json.dumps` writes one long line with no trailing newline, which is exactly that failure.
+    """
     with open(config_path, "r") as test_config:
         config = json.load(test_config)
         config.pop("repositories")
         with open(config_path, "w") as updated_config:
-            config = json.dumps(config)
-            updated_config.write(config)
+            updated_config.write(json.dumps(config, indent=2) + "\n")
 
 
 def test_migrate_config():
