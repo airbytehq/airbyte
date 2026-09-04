@@ -135,7 +135,7 @@ def test_facebook_bad_request_fails_without_retrying():
             PAGE_URL,
             json={
                 "error": {
-                    "message": "Bad request",
+                    "message": "(#200) Requires pages_read_engagement permission to manage the object",
                     "type": "OAuthException",
                     "code": 100,
                 }
@@ -149,8 +149,10 @@ def test_facebook_bad_request_fails_without_retrying():
         assert page_request.call_count == 1
         assert output.errors
         assert output.errors[0].trace.error.failure_type == FailureType.config_error
-        assert "Facebook API request contains invalid Page fields, metrics, or permissions." in output.get_formatted_error_message()
-        assert "Bad request" in output.errors[0].trace.error.internal_message
+        formatted_error_message = output.get_formatted_error_message()
+        assert "Facebook API request contains invalid Page fields, metrics, or permissions." in formatted_error_message
+        assert "Facebook returned: (#200) Requires pages_read_engagement permission" in formatted_error_message
+        assert "pages_read_engagement" in output.errors[0].trace.error.internal_message
 
 
 def test_facebook_app_approval_error_is_config_error():

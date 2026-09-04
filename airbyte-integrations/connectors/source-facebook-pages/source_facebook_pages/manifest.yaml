@@ -39,7 +39,9 @@ definitions:
         - http_codes: [400]
           action: FAIL
           failure_type: config_error
-          error_message: Facebook API request contains invalid Page fields, metrics, or permissions.
+          error_message: >-
+            Facebook API request contains invalid Page fields, metrics, or permissions.
+            Facebook returned: {{ response.get('error', {}).get('message', '') }}
 
     authenticator:
       type: CustomAuthenticator
