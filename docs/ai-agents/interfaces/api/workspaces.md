@@ -31,7 +31,9 @@ rename rejects reuse of the old name.
 
 ## Create a new workspace
 
-You don't create workspaces directly. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) against a new `workspace_name`. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
+You don't create workspaces directly through the API. Airbyte creates one automatically the first time you mint a [scoped token](./authentication#scoped-token) against a new `workspace_name`. Use any stable string that makes sense in your app, for example an internal tenant ID or team slug.
+
+On the [Team and Custom plans](../../admin/billing.md#team), you can also create workspaces from the web app using the workspace picker in the sidebar.
 
 <!--
 AGENTIC-1140: create-connector doesn't autocreate a workspace. It 404s

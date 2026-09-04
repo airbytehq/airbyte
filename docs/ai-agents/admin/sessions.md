@@ -16,13 +16,14 @@ A session is a single agent run, from the moment an agent starts working to the 
 - The input and output tokens the agent consumed.
 - The resulting AOs charged to your plan.
 
-Airbyte logs sessions for work initiated in the web app. Work initiated through [MCP](../interfaces/mcp/readme.md), the [API](../reference/api/readme.md), or the [SDK](../interfaces/sdk/readme.md) is billed by tool call but isn't logged as a session. See [Session types](#session-types) for details.
+Airbyte logs sessions for work initiated in the web app. Work initiated through the [MCP](../interfaces/mcp/readme.md), the [API](../reference/api/readme.md), the [SDK](../interfaces/sdk/readme.md), or the [CLI](../interfaces/cli/readme.md) is billed by tool call, not by your agent's reasoning, and isn't logged as a session. See [Session types](#session-types) for details.
 
 ## How to understand the Sessions table
 
 The Sessions table lists the most recent sessions first. Each row represents one session, and the columns describe what the agent did and how much work it took.
 
 - **Source**: A descriptive name for the session, typically the chat's title.
+- **Workspace**: The workspace the session ran in. If that workspace has since been deleted, this shows an em dash (—). On Free and Individual plans, every session runs in the `default` workspace.
 - **Type**: Whether the session is a [Chat](#chat).
 - **Status**: Notes Active or Deleted. Active chats are resumable.
 - **Connectors**: The connectors the agent used during the session. Hover over a connector icon to see its name.
@@ -35,11 +36,13 @@ The Sessions table lists the most recent sessions first. Each row represents one
   - Click the **View** icon to open the session and see its messages and tool calls.
   - Click the **Chat** icon to jump to the chat the session belongs to.
 
-Use the **Type**, **Status**, and **Connectors** filters above the table to narrow the list. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors.
+Use the **Status**, **Connectors**, and **Workspace** filters above the table to narrow the list. The Status filter scopes to Active, which you can resume, or Deleted. The Connectors filter scopes to sessions that used one or more specific connectors. On the [Team and Custom plans](./billing.md#team), the **Workspace** filter scopes the list to one or more workspaces.
+
+Administrators see sessions from every workspace in the organization. Members see sessions from the workspaces they belong to. On Free and Individual plans there is only the `default` workspace, so this distinction doesn't apply.
 
 ## Session types {#session-types}
 
-Chat sessions are billed as AOs against your plan.
+Chat sessions are billed as AOs against your plan based on tool calls and reasoning.
 
 ### Chat {#chat}
 
@@ -52,8 +55,9 @@ Airbyte also processes tool calls from these sources, but doesn't log them as se
 - **[MCP](../interfaces/mcp/readme.md)**: Tool calls from agents connected through the Model Context Protocol.
 - **[API](../reference/api/readme.md)**: Direct calls to the Agent API.
 - **[SDK](../interfaces/sdk/readme.md)**: Calls made from an agent built with the Agent SDK.
+- **[CLI](../interfaces/cli/readme.md)**: Connector actions run through the `airbyte-agent` command line.
 
-These tool calls still consume AOs and appear in your [Usage panel](./billing.md#monitor-usage), but they don't have a corresponding Sessions row. To review them, open the Usage panel on the Billing page and filter by the **MCP**, **API**, or **SDK** source.
+These tool calls still consume AOs and appear in your [Usage panel](./billing.md#monitor-usage), but Airbyte doesn't charge for the reasoning your own agent performs and doesn't create a corresponding Sessions row. To review them, open the Usage panel on the Billing page and filter by the **MCP**, **API**, **SDK**, or **CLI** source.
 
 ## Review previous session data
 

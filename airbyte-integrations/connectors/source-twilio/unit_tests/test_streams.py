@@ -5,6 +5,7 @@
 from urllib.parse import parse_qs, urlencode, urlparse
 
 import pytest
+from components import TwilioConferencesStateMigration
 from conftest import TEST_CONFIG, get_source
 from freezegun import freeze_time
 
@@ -295,6 +296,103 @@ class TestIncrementalTwilioStream:
         assert "fewer Alert records per slice" in output.get_formatted_error_message()
 
 
+class TestConferenceParticipantsStream:
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_only_requests_active_conferences(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+
+        requested_statuses = []
+
+        def _match_active_status(req):
+            q = parse_qs(urlparse(req.url).query, keep_blank_values=True)
+            status = q.get("Status")
+            if status in (["init"], ["in-progress"]):
+                requested_statuses.extend(status)
+                return True
+            return False
+
+        conferences_matcher = requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={
+                "conferences": [
+                    {
+                        "sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:00:00Z",
+                        "status": "in-progress",
+                        "subresource_uris": {
+                            "participants": "/2010-04-01/Accounts/AC123/Conferences/CF2/Participants.json",
+                        },
+                    }
+                ]
+            },
+            status_code=200,
+            additional_matcher=_match_active_status,
+        )
+
+        # Participants for in-progress conference CF2
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences/CF2/Participants.json",
+            json={
+                "participants": [
+                    {
+                        "call_sid": "CA2",
+                        "conference_sid": "CF2",
+                        "account_sid": "AC123",
+                        "date_created": "2022-11-15T11:01:00Z",
+                        "date_updated": "2022-11-15T11:05:00Z",
+                        "status": "connected",
+                    }
+                ]
+            },
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert conferences_matcher.called, "Should request conferences with an active Status filter"
+        assert set(requested_statuses) == {"init", "in-progress"}, "Should request both init and in-progress conferences"
+        assert len(records) >= 1
+        assert records[0].record.data["conference_sid"] == "CF2"
+
+    @freeze_time("2022-11-16 12:03:11+00:00")
+    def test_conference_participants_empty_parent_returns_no_records(self, requests_mock):
+        accounts_json = {
+            "accounts": [
+                {
+                    "sid": "AC123",
+                    "date_created": "2022-01-01T00:00:00Z",
+                    "subresource_uris": {
+                        "conferences": "/2010-04-01/Accounts/AC123/Conferences.json",
+                    },
+                }
+            ],
+        }
+        requests_mock.get(f"{BASE}/Accounts.json", json=accounts_json, status_code=200)
+        requests_mock.get(
+            f"{BASE}/Accounts/AC123/Conferences.json",
+            json={"conferences": []},
+            status_code=200,
+        )
+
+        cfg = {**TEST_CONFIG, "start_date": "2022-11-15T00:00:00Z"}
+        records = read_from_stream(cfg, "conference_participants", SyncMode.full_refresh).records
+
+        assert len(records) == 0
+
+
 class TestTwilioNestedStream:
     @freeze_time("2022-11-16 12:03:11+00:00")
     def test_message_media_filters_num_media_zero(self, requests_mock):
@@ -472,3 +570,197 @@ class TestTwilioNestedStream:
         records = read_from_stream(TEST_CONFIG, stream_name, SyncMode.full_refresh).records
 
         assert len(records) == expected_count
+
+
+@pytest.mark.parametrize(
+    "input_state,expected_state,should_migrate",
+    [
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="single_partition_duplicated_for_all_statuses",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-10-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC456/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            True,
+            id="multiple_partitions_each_duplicated_with_own_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                    }
+                ]
+            },
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "init",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "in-progress",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {},
+                    },
+                ]
+            },
+            True,
+            id="partition_without_cursor_gets_empty_cursor",
+        ),
+        pytest.param(
+            {
+                "states": [
+                    {
+                        "partition": {
+                            "conference_status": "completed",
+                            "subresource_uri": "/2010-04-01/Accounts/AC123/Conferences.json",
+                            "parent_slice": {},
+                        },
+                        "cursor": {"date_created": "2022-11-01T00:00:00Z"},
+                    },
+                ]
+            },
+            None,
+            False,
+            id="already_migrated_no_op",
+        ),
+        pytest.param(
+            {},
+            None,
+            False,
+            id="empty_state_no_op",
+        ),
+    ],
+)
+def test_conferences_state_migration(input_state, expected_state, should_migrate):
+    migration = TwilioConferencesStateMigration()
+    assert migration.should_migrate(input_state) == should_migrate
+    if should_migrate:
+        assert migration.migrate(input_state) == expected_state

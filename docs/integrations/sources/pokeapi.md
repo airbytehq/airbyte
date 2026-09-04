@@ -6,39 +6,48 @@ This page contains the setup guide and reference information for the [PokéAPI](
 
 </HideInUI>
 
+## Overview
+
+The PokéAPI source retrieves one Pokémon resource from the [PokéAPI REST API](https://pokeapi.co/docs/v2#pokemon) for each sync. It reads from `https://pokeapi.co/api/v2/pokemon/{pokemon_name}`, where `pokemon_name` is the Pokémon you select when you configure the source. Use the connector primarily for tutorials, testing, and demonstrations.
+
+## Prerequisites
+
+None. PokéAPI is public and doesn't require authentication.
+
+## Setup guide
+
+1. Add a new PokéAPI source.
+2. For **Pokemon Name**, select the Pokémon whose data you want to sync.
+3. Test and save the source.
+
+## Supported sync modes
+
+The connector supports full refresh syncs. It doesn't support incremental syncs.
+
+## Supported streams
+
+This source provides one stream:
+
+| Stream | Primary key | Description |
+| :--- | :--- | :--- |
+| `pokemon` | `id` | One record containing details for the configured Pokémon, including its abilities, base stats, cries, forms, held items, moves, sprites, and types. The record also includes `past_abilities` and `past_stats`, which describe abilities and base stats the Pokémon had in earlier game generations. |
+
+## Limitations
+
+- A source configuration syncs one Pokémon. Create a separate source for each additional Pokémon you want to sync.
+- The connector restricts **Pokemon Name** to 898 defined values, ending with `calyrex`. You can't select Pokémon that aren't in this list.
+
+## Rate limits
+
+PokéAPI doesn't enforce rate limits on its REST API, but its [fair use policy](https://pokeapi.co/docs/v2#fairuse) asks clients to limit request frequency and cache responses. Schedule syncs responsibly. PokéAPI may permanently ban IP addresses that violate this policy.
+
 ## Tutorials
 
-The PokéAPI is primarily used as a tutorial and educational resource, as it requires zero dependencies. Learn how Airbyte and this connector works with these tutorials:
+These tutorials use PokéAPI as an example source:
 
 - [Airbyte Quickstart: An Introduction to Deploying and Syncing](/platform/using-airbyte/getting-started/oss-quickstart)
 - [Using Connector Builder and the low-code CDK](/platform/connector-development/connector-builder-ui/overview)
 - [How to Build ETL Sources in Under 30 Minutes: A Video Tutorial](https://www.youtube.com/watch?v=kJ3hLoNfz_E&t=13s&ab_channel=Airbyte)
-
-## Features
-
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental - Append Sync     | No         |
-| Replicate Incremental Deletes | No         |
-| SSL connection                | No         |
-| Namespaces                    | No         |
-
-This source uses the fully open [PokéAPI](https://pokeapi.co/docs/v2#info) to serve and retrieve information about Pokémon. This connector should be primarily used for educational purposes or for getting a trial source up and running without needing any dependencies. As this API is fully open and is not rate-limited, no authentication or rate-limiting is performed, so you can use this connector right out of the box without any further configuration.
-
-## Supported streams
-
-This source provides a single stream:
-
-- **pokemon** — returns detailed data for the Pokémon name you specify in the connector configuration, including base stats, abilities, types, sprites, moves, and held items.
-
-## Rate limiting and performance considerations
-
-According to the API's [fair use policy](https://pokeapi.co/docs/v2#fairuse), please make sure to cache resources retrieved from the PokéAPI wherever possible. That said, the PokéAPI does not perform rate limiting.
-
-## Data Type Mapping
-
-The PokéAPI uses the same [JSONSchema](https://json-schema.org/understanding-json-schema/reference/index.html) types that Airbyte uses internally \(`string`, `date-time`, `object`, `array`, `boolean`, `integer`, and `number`\), so no type conversions happen as part of this source.
 
 ## IP allow list
 
@@ -51,6 +60,15 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                         |
 | :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------- |
+| 0.3.69 | 2026-08-24 | [84977](https://github.com/airbytehq/airbyte/pull/84977) | Add missing `cries`, `past_abilities`, and `past_stats` fields to the `pokemon` stream schema |
+| 0.3.68 | 2026-08-18 | [84696](https://github.com/airbytehq/airbyte/pull/84696) | Update dependencies |
+| 0.3.67 | 2026-08-13 | [84389](https://github.com/airbytehq/airbyte/pull/84389) | No-op version bump to validate the new autopilot release-immediately checkbox workflow |
+| 0.3.66 | 2026-08-11 | [84043](https://github.com/airbytehq/airbyte/pull/84043) | Update dependencies |
+| 0.3.65 | 2026-08-04 | [83560](https://github.com/airbytehq/airbyte/pull/83560) | Update dependencies |
+| 0.3.64 | 2026-07-28 | [83032](https://github.com/airbytehq/airbyte/pull/83032) | Update dependencies |
+| 0.3.63 | 2026-07-21 | [82557](https://github.com/airbytehq/airbyte/pull/82557) | Update dependencies |
+| 0.3.62 | 2026-07-14 | [81961](https://github.com/airbytehq/airbyte/pull/81961) | Update dependencies |
+| 0.3.61 | 2026-07-10 | [81655](https://github.com/airbytehq/airbyte/pull/81655) | chore(source-pokeapi): dummy version bump for progressive rollout (autopilot) testing |
 | 0.3.60 | 2026-06-30 | [81200](https://github.com/airbytehq/airbyte/pull/81200) | Update dependencies |
 | 0.3.59 | 2026-06-25 | [80885](https://github.com/airbytehq/airbyte/pull/80885) | POC: Test autopilot rollout pipeline |
 | 0.3.58 | 2026-06-23 | [80588](https://github.com/airbytehq/airbyte/pull/80588) | Update dependencies |

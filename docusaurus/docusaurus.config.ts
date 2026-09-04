@@ -63,6 +63,7 @@ const config: Config = {
   // Assumed relative path.  If you are using airbytehq.github.io use /
   // anything else should match the repo name
   baseUrl: "/",
+  trailingSlash: false,
   onBrokenLinks: "throw",
 
   favicon: "img/favicon.png",
@@ -78,13 +79,6 @@ const config: Config = {
       type: "module",
       id: "unifytag",
       "data-api-key": "wk_BEtrdAz2_2qgdexg5KRa6YWLWVwDdieFC7CAHkDKz",
-    },
-    {
-      src: "https://cdn.jsdelivr.net/npm/hockeystack@latest/hockeystack.min.js",
-      async: true,
-      "data-apikey": "2094e2379643f69f7aec647a15f786",
-      "data-cookieless": "1",
-      "data-auto-identify": "1",
     },
   ],
   headTags: [
@@ -352,7 +346,7 @@ const config: Config = {
     require.resolve("./src/scripts/cloudStatus.js"),
     require.resolve("./src/scripts/download-abctl-buttons.js"),
     require.resolve("./src/scripts/fontAwesomeIcons.js"),
-    require.resolve("./src/scripts/kapaWithOsanoConsent.js"),
+    require.resolve("./src/scripts/kapaWithDataGrailConsent.js"),
   ],
 
   themeConfig: {
@@ -406,7 +400,7 @@ const config: Config = {
           type: "dropdown",
           position: "left",
           label: "Data Replication",
-          to: "/platform/",
+          to: "/platform",
           items: [
             {
               type: "docSidebar",

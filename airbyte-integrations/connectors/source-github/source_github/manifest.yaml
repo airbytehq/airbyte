@@ -1,0 +1,1331 @@
+version: "7.28.2"
+type: DeclarativeSource
+
+definitions:
+  # Config-derived Jinja fragments, hoisted so the two routers that expand wildcards and the
+  # two record filters that match against them cannot drift apart. `$ref` in value position
+  # resolves to the scalar before component construction, so these behave exactly like the
+  # literal strings they replace.
+  #
+  # `wildcard_organizations` lists the orgs named by a wildcard entry (`org/*`, `org/prefix*`,
+  # `org/pre*fix`). The star is matched wherever it sits in the repo part, which makes this
+  # expression the exact complement of the explicit-repo list below (`^([^*]+)$`, i.e. "contains
+  # no star") and consistent with `wildcard_repository_filter`. An earlier `[*]$` anchor left an
+  # entry with an interior star matching neither list, so it was dropped with no request and no
+  # warning while the legacy Python resolver expanded it.
+  # `wildcard_repository_filter` keeps a repo whose `full_name` matches any wildcard entry —
+  # and passes everything when config declares no wildcard at all, which is the legacy
+  # `Repositories(pattern=None)` behavior. That pass-all clause is inert for the resolver
+  # stream, whose partitions *are* the wildcard orgs: with no wildcards it has no partitions
+  # and the filter never runs.
+  wildcard_organizations: "{{ config.get('repositories', []) | map('regex_search', '^([^/]+)/[^/]*[*]') | select | unique | list }}"
+  wildcard_repository_filter: >-
+    {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
+       or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
+
+  requester_base:
+    type: HttpRequester
+    url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
+    authenticator:
+      type: RateLimitedMultipleTokenAuthenticator
+      # Precedence must match SourceGithub.get_access_token: legacy root-level
+      # `access_token` first, then `credentials.access_token`, then
+      # `credentials.personal_access_token` — so manifest and Python streams
+      # always authenticate with the same token.
+      tokens: "{{ config.get('access_token', config.get('credentials', {}).get('access_token', config.get('credentials', {}).get('personal_access_token', ''))) }}"
+      token_delimiter: ","
+      auth_method: "token"
+      header: "Authorization"
+      # Same `is not none` guard as the backoff caps below, and for the same reason. A default
+      # in `.get` only applies when the key is *absent*: a present-but-null `max_waiting_time`
+      # (reachable via the API, Terraform or embedded use) returns None, which renders as the
+      # literal "None", so the previous expression produced "PTNoneM" and every command failed at
+      # startup. The error reads `ISO8601Error: Unrecognised ISO 8601 date format: ''` because
+      # isodate splits on the "T" and reports the empty date half, not because the value was
+      # empty. `check_connection` passes 0 deliberately, so the guard must distinguish null from
+      # 0 — which is why this is `is not none` rather than `or 120`.
+      max_wait_time: "PT{{ config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120 }}M"
+      quota_status_source:
+        type: QuotaStatusSource
+        url: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}/rate_limit"
+        request_headers:
+          Accept: "application/vnd.github+json"
+          X-GitHub-Api-Version: "2022-11-28"
+        # GitHub Enterprise Server ships with HTTP API rate limiting disabled, and an instance
+        # in that state answers `GET /rate_limit` with 404 {"message": "Rate limiting is not
+        # enabled."}. Seeding runs before the first stream request, so without this the whole
+        # connection died on a generic "Resource not found" — every command, not just sync.
+        # Listed statuses seed that token's pools as untracked instead: no exhaustion waits, no
+        # proactive throttling, no rotation on exhaustion, while requests are still signed and
+        # tokens still rotate. Only 404, deliberately. An untracked token stays untracked for
+        # the whole sync (the endpoint is never consulted for it again), so a status the
+        # endpoint can also return transiently would cost quota tracking for the entire run.
+        # 401/403 must never be listed — a revoked credential would then read as "quota
+        # tracking unavailable" instead of as an auth failure. GitHub documents 404 as a
+        # possible response for this endpoint but never states that it means rate limiting is
+        # off; that mapping comes from GHES responses in the wild, which is exactly why the CDK
+        # leaves it to the connector.
+        unavailable_status_codes: [404]
+      quotas:
+        - type: TokenQuota
+          name: rest
+          remaining_path: ["resources", "core", "remaining"]
+          reset_path: ["resources", "core", "reset"]
+          limit_path: ["resources", "core", "limit"]
+          # Reconcile the pool against every response, not just the initial /rate_limit
+          # seeding. GitHub returns these headers on every authenticated REST response, and
+          # the local counters drift whenever the token is shared with another client, when
+          # requests overlap under `concurrency_level`, or when a sync outlives its seeding.
+          remaining_header: "X-RateLimit-Remaining"
+          reset_header: "X-RateLimit-Reset"
+          limit_header: "X-RateLimit-Limit"
+          # No `exhaustion_status_codes`, deliberately. GitHub's 403 is not exclusively a
+          # rate-limit code: a secondary limit (403 + `Retry-After`, primary quota untouched)
+          # and a missing-scope denial both use it, and neither carries
+          # `X-RateLimit-Remaining: 0`. Listing 403 would zero the pool for those, which on a
+          # single-token config leaves nothing to rotate to and turns a retryable wait into
+          # "Rate limit is exceeded for all provided tokens." Primary exhaustion needs no
+          # status code here: GitHub reports it as `X-RateLimit-Remaining: 0`, which the
+          # header reconciliation above already picks up.
+        - type: TokenQuota
+          name: graphql
+          remaining_path: ["resources", "graphql", "remaining"]
+          reset_path: ["resources", "graphql", "reset"]
+          limit_path: ["resources", "graphql", "limit"]
+          # /graphql answers with the same header names, scoped to the separate GraphQL
+          # point budget, so the pool reconciles the same way as `rest`.
+          remaining_header: "X-RateLimit-Remaining"
+          reset_header: "X-RateLimit-Reset"
+          limit_header: "X-RateLimit-Limit"
+          matchers:
+            - type: HttpRequestRegexMatcher
+              url_path_pattern: "/graphql"
+    request_headers:
+      User-Agent: "PostmanRuntime/7.28.0"
+    # Replicates the legacy GithubStreamABC error contract:
+    # - rate limits are waited out instead of failing the sync. GitHub signals them
+    #   three different ways, and the legacy handler retried on any of them
+    #   (errors_handlers.py::GithubStreamABCErrorHandler.interpret_response), so all
+    #   three are matched below, ahead of the 404/403 filters:
+    #     1. a `Retry-After` header (sent on most, but per the docs not all,
+    #        secondary-limit responses);
+    #     2. an "API rate limit exceeded" message (primary limit) or an
+    #        "exceeded a secondary rate limit" message (secondary limit without
+    #        `Retry-After` — note secondary limits are tracked separately from the
+    #        primary quota, so `X-RateLimit-Remaining` may still be non-zero);
+    #     3. `X-RateLimit-Remaining: 0` on an error response, which is the fallback
+    #        the docs prescribe when `Retry-After` is absent. The declarative
+    #        predicate cannot see the status code, so "is an error response" is
+    #        approximated by GitHub's error envelope (a JSON object with a
+    #        `message`); successful payloads are arrays, or objects without a
+    #        top-level `message`, and must not match — the request that spends the
+    #        last quota point returns 200 with `X-RateLimit-Remaining: 0` and its
+    #        records have to be kept (token rotation handles the exhausted token);
+    # - 404 on an organization or repository is skipped with a warning so one
+    #   deleted repo or renamed org doesn't fail the whole sync (`check` enumerates
+    #   the partition routers below and relies on the same skip semantics);
+    # - plain 403 fails with an actionable scopes/SSO message (matches the legacy
+    #   mapping so `check` can catch bad token scopes).
+    # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
+    error_handler:
+      type: DefaultErrorHandler
+      backoff_strategies:
+        # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
+        # rate-limit wait rather than only the ones the authenticator decides before sending.
+        # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap
+        # 1s: an interactive check then fails in seconds with the rate-limit message instead of
+        # sleeping until the reset. A sync keeps the user's budget.
+        #
+        # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
+        # `HttpClient` asked the authenticator for a spare credential only *after* a strategy
+        # returned a wait, and a cap raises instead of returning — so a budget shorter than the
+        # distance to the reset ended the stream rather than rotating onto a healthy token
+        # (measured on 7.28.0: 30min budget against a 60min reset failed with a second token
+        # idle). The rotation question is now asked first and the cap only governs waits that are
+        # actually taken, which `test_short_wait_budget_does_not_cost_token_rotation` proves end
+        # to end. 7.28.1 also resolves the cap at construction, so an expression this manifest
+        # got wrong fails at startup rather than at whichever rate limit reaches it first.
+        #
+        # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach
+        # the multiplication as None, and a falsy test would read check's deliberate 0 as absent
+        # and hand it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`,
+        # so a user on the spec's minimum of 1 minute would otherwise get a 60s cap equal to the
+        # `min_wait: 60` floor below, and every headerless 5xx would fail instead of retrying.
+        - type: WaitTimeFromHeader
+          header: "Retry-After"
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+        - type: WaitUntilTimeFromHeader
+          header: "X-RateLimit-Reset"
+          min_wait: 60
+          # The cap is compared against the computed wait, not the raw reset timestamp, and it
+          # is applied after `min_wait` — so during check, where the cap is 1s, even the 60s
+          # floor below is refused.
+          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+          # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
+          # timestamp already in the past, or seconds away, doesn't turn into a tight retry
+          # loop against a quota that hasn't actually refilled.
+          #
+          # It does NOT land on exactly the same responses legacy floored. Measured:
+          #
+          #                                     here    legacy
+          #   403 + Retry-After: 30              30s      60s    <- floor missing
+          #   403 + X-RateLimit-Reset now+10     60s      60s
+          #   403 + reset already past           60s      60s
+          #   500 / timeout, no such headers     60s     expo    <- floor leaking
+          #
+          # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
+          # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
+          # `min_wait` outright when its header is *absent* rather than treating it as a floor
+          # on a computed wait, and backoff_strategies are shared by every retryable response
+          # on this requester.
+          #
+          # Accepted deliberately, after measuring the alternatives:
+          #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
+          #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
+          #     strategies into one list -- its own docstring says the list "is not used to map
+          #     different strategies to different error conditions" -- and HttpClient takes the
+          #     first truthy one regardless of which branch matched. Byte-identical backoffs.
+          #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
+          #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
+          #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
+          #     refilled. That is what the floor exists to prevent.
+          #
+          # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
+          # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
+          # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
+          # With the header present but stale, max(negative, min_wait) already yields 60s, so
+          # the floor survives exactly where it belongs. Four other connectors combine these
+          # two strategies and would move the same way.
+          #
+          # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
+          # max_retries (5), on every stream that inherits this requester.
+          # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
+          # authenticator's counters against every response (the `*_header` fields on the
+          # quota pools above), so a primary rate limit — which GitHub reports as
+          # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
+          # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
+          # spare token it retries in 0.1s on that token instead of waiting out this window.
+          # This covers the reactive rotation the legacy strategy did at the 10-minute mark
+          # (backoff_strategies.py) and applies to manifest and Python streams alike, since
+          # both share one authenticator.
+          # Still waited out, correctly: a secondary rate limit, where the token's counters
+          # stay positive. GitHub scopes secondary limits per account, so rotating to another
+          # token of the same account would only be rejected again.
+      response_filters:
+        # Short-circuit successful responses before any rate-limit filter sees them.
+        # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
+        # (default_error_handler.py::interpret_response) and returns on the first match, so
+        # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
+        # throttling on its own account — is classified RATE_LIMITED: its records are
+        # discarded and the request is retried until `max_retries` runs out, failing the
+        # stream. The guard has to live in its own filter rather than as a conjunct in the
+        # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
+        # (http_response_filter.py::_matches_filter) and the predicate context carries only
+        # the parsed body and the headers — no status code.
+        # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
+        # computing, retry later", which `contributor_activity` backs off on today and which
+        # must not become a success when that stream migrates onto this requester.
+        - type: HttpResponseFilter
+          http_codes: [200]
+          action: SUCCESS
+        - type: HttpResponseFilter
+          predicate: "{{ 'Retry-After' in headers }}"
+          action: RATE_LIMITED
+          error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
+        - type: HttpResponseFilter
+          error_message_contains: "API rate limit exceeded"
+          action: RATE_LIMITED
+          error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
+        - type: HttpResponseFilter
+          error_message_contains: "secondary rate limit"
+          action: RATE_LIMITED
+          error_message: "GitHub secondary rate limit hit. Waiting before retrying."
+        - type: HttpResponseFilter
+          # `is not none` (rather than a bare `response.get('message')`) is required:
+          # InterpolatedBoolean compares the *rendered* string against a fixed
+          # false-values list that does not include "None", so a falsy `.get()` would
+          # evaluate to true and rate-limit successful responses.
+          predicate: "{{ headers.get('X-RateLimit-Remaining') == '0' and response is mapping and response.get('message') is not none }}"
+          action: RATE_LIMITED
+          error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
+        - type: HttpResponseFilter
+          http_codes: [404]
+          action: IGNORE
+          error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
+        # NOTE (Step 3+ migration checklist): 403 -> FAIL matches legacy behavior for
+        # `Repositories` ONLY — streams.py:162 re-raised 403 for that stream. Legacy
+        # SKIPPED 403 with a warning for Organizations/Teams/Users and the repo-scoped
+        # streams (streams.py:168-182), so migrating any of those under this shared
+        # filter would turn "skip the one org/repo you can't read" into a failed sync.
+        # Before migrating them, move this filter onto the per-stream error_handler (or
+        # switch it to IGNORE for those streams).
+        - type: HttpResponseFilter
+          http_codes: [403]
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            GitHub denied access (HTTP 403). Your token may be missing required scopes
+            (this connector typically needs: repo, read:org, read:user, read:project, workflow),
+            or this organization may require SAML SSO authorization.
+            See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
+
+  page_link_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: "page"
+    pagination_strategy:
+      # GitHub's documented end-of-data signal is the absence of a `rel="next"` link
+      # header — a short page is not guaranteed to be the last page. This mirrors the
+      # legacy GithubStreamABC.next_page_token (streams.py:79-85), which parsed `page`
+      # out of that same link. Inferring the end from `last_page_size < 100` instead
+      # would silently truncate the org repo list that drives every downstream partition.
+      # CursorPaginationStrategy replaces `headers["link"]` with `response.links`, so this
+      # walks that dict. Chained `.get(...)` with defaults is required rather than
+      # `headers.link.next.url`: on the last page there is no `next` link, and attribute
+      # access would raise Jinja's UndefinedError. InterpolatedString defaults `default` to
+      # the template itself, so JinjaInterpolation.eval's UndefinedError guard just
+      # re-evaluates the same failing expression and the error escapes, failing the sync.
+      # On the last page there is no `next` link, so `regex_search` gets "" and returns None;
+      # CursorPaginationStrategy ends on `token if token else None`, so pagination stops.
+      type: CursorPagination
+      cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
+
+  # Resolver streams: internal parent streams used only to drive the shared
+  # partition routers below. They are not exposed in the catalog.
+  #
+  # `repositories_resolver` expands wildcard patterns (e.g. `org/*`) by listing
+  # each wildcard org's repos and filtering them against the anchored pattern
+  # derived inline from config. `repository_stats` resolves explicit `org/repo`
+  # entries and exposes the canonical `full_name` and `organization.login`;
+  # entries that 404 are skipped with a warning (see `requester_base`'s
+  # error_handler), matching the legacy warn-and-continue behavior.
+  repositories_resolver_stream:
+    type: DeclarativeStream
+    name: repositories_resolver
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "orgs/{{ stream_partition.organization }}/repos"
+        http_method: GET
+        use_cache: true
+        request_parameters:
+          per_page: "100"
+          sort: "updated"
+          direction: "desc"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition:
+            $ref: "#/definitions/wildcard_repository_filter"
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        type: ListPartitionRouter
+        values:
+          $ref: "#/definitions/wildcard_organizations"
+        cursor_field: "organization"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          full_name:
+            type:
+              - "null"
+              - string
+          owner:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+
+  repository_stats_stream:
+    type: DeclarativeStream
+    name: repository_stats
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "repos/{{ stream_partition.repository }}"
+        http_method: GET
+        use_cache: true
+        # Kept for request-shape parity with the legacy resolver (GitHub ignores
+        # per_page on single-repo GETs).
+        request_parameters:
+          per_page: "100"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+      partition_router:
+        type: ListPartitionRouter
+        values: "{{ config.get('repositories', []) | map('regex_search', '^([^*]+)$') | select | unique | list }}"
+        cursor_field: "repository"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          full_name:
+            type:
+              - "null"
+              - string
+          organization:
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+
+  # Shared partition routers. Repo-scoped streams reference
+  # `repository_partition_router`; org-scoped streams reference
+  # `organization_partition_router`.
+  #
+  # `repository_partition_router` yields the deduplicated union of
+  # wildcard-expanded repos and validated explicit repos.
+  #
+  # `organization_partition_router` yields the deduplicated union of wildcard
+  # orgs (derived inline from config) and the orgs owning explicit repos.
+  # User-owned repos have no `organization` object, so the substream child
+  # skips them (they contribute a repository but not an organization).
+  repository_partition_router:
+    type: UnionPartitionRouter
+    partition_field: repository
+    partition_routers:
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repositories_resolver_stream"
+            parent_key: "full_name"
+            partition_field: "repository"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repository_stats_stream"
+            parent_key: "full_name"
+            partition_field: "repository"
+
+  organization_partition_router:
+    type: UnionPartitionRouter
+    partition_field: organization
+    partition_routers:
+      - type: ListPartitionRouter
+        values:
+          $ref: "#/definitions/wildcard_organizations"
+        cursor_field: "organization"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repository_stats_stream"
+            parent_key: "organization/login"
+            partition_field: "organization"
+
+  repositories_stream:
+    type: DeclarativeStream
+    name: repositories
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "orgs/{{ stream_partition.organization }}/repos"
+        http_method: GET
+        request_parameters:
+          per_page: "100"
+          sort: "updated"
+          direction: "desc"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+        record_filter:
+          type: RecordFilter
+          condition:
+            $ref: "#/definitions/wildcard_repository_filter"
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        $ref: "#/definitions/organization_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["organization"]
+            value: "{{ stream_partition.organization }}"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        # `or` rather than `config.get('start_date', default)`: the default is only
+        # substituted when the key is *absent*, so a present-but-null `start_date`
+        # (reachable via the API, Terraform or embedded use) would reach MinMaxDatetime as
+        # the literal string "None" and abort the stream. Any falsy value falls back to the
+        # epoch, matching the legacy "no start_date means replicate everything" behavior.
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # The listing is served most-recent-first (`sort=updated&direction=desc`), so the
+      # cursor stop condition ends pagination at the first page whose last record is at or
+      # below the partition cursor. This replaces the legacy `Repositories.is_sorted =
+      # "desc"` early break; without it every incremental sync walked the org's entire
+      # repo listing (ceil(repos/100) requests per org per sync instead of ~1).
+      # The CDK's data-feed post-pagination filter drops the boundary page's records that
+      # are at or below the partition cursor, so only records newer than the cursor are
+      # emitted. Note that ConcurrentPerPartitionCursor seeds a partition that has no state
+      # from the *global* cursor, so repos of an org added to `repositories` after the
+      # first sync are only emitted if updated after that cursor.
+      is_data_feed: true
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: Unique identifier of the repository.
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: Node ID of the repository.
+            type:
+              - "null"
+              - string
+          name:
+            description: Name of the repository.
+            type:
+              - "null"
+              - string
+          full_name:
+            description: Full name of the repository.
+            type:
+              - "null"
+              - string
+          owner:
+            description: Owner of the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          private:
+            description: Indicates if the repository is private.
+            type:
+              - "null"
+              - boolean
+          html_url:
+            description: URL of the repository's GitHub page.
+            type:
+              - "null"
+              - string
+          description:
+            description: Brief description of the repository.
+            type:
+              - "null"
+              - string
+          fork:
+            description: Indicates if the repository is a fork.
+            type:
+              - "null"
+              - boolean
+          url:
+            description: URL of the repository.
+            type:
+              - "null"
+              - string
+          archive_url:
+            description: URL to archive the repository.
+            type:
+              - "null"
+              - string
+          assignees_url:
+            description: URL to fetch assignees for issues in the repository.
+            type:
+              - "null"
+              - string
+          blobs_url:
+            description: URL to fetch blobs within the repository.
+            type:
+              - "null"
+              - string
+          branches_url:
+            description: URL to fetch branches within the repository.
+            type:
+              - "null"
+              - string
+          collaborators_url:
+            description: URL to fetch collaborators of the repository.
+            type:
+              - "null"
+              - string
+          comments_url:
+            description: URL to fetch comments within the repository.
+            type:
+              - "null"
+              - string
+          commits_url:
+            description: URL to fetch commits within the repository.
+            type:
+              - "null"
+              - string
+          compare_url:
+            description: URL to compare references within the repository.
+            type:
+              - "null"
+              - string
+          contents_url:
+            description: URL to fetch contents within the repository.
+            type:
+              - "null"
+              - string
+          contributors_url:
+            description: URL to fetch contributors to the repository.
+            type:
+              - "null"
+              - string
+          deployments_url:
+            description: URL to fetch deployments related to the repository.
+            type:
+              - "null"
+              - string
+          downloads_url:
+            description: URL to fetch downloads linked to the repository.
+            type:
+              - "null"
+              - string
+          events_url:
+            description: URL to fetch events related to the repository.
+            type:
+              - "null"
+              - string
+          forks_url:
+            description: URL to fetch forks of the repository.
+            type:
+              - "null"
+              - string
+          git_commits_url:
+            description: URL to fetch git commits within the repository.
+            type:
+              - "null"
+              - string
+          git_refs_url:
+            description: URL to fetch git references within the repository.
+            type:
+              - "null"
+              - string
+          git_tags_url:
+            description: URL to fetch git tags within the repository.
+            type:
+              - "null"
+              - string
+          git_url:
+            description: URL for Git protocol to interact with the repository.
+            type:
+              - "null"
+              - string
+          issue_comment_url:
+            description: URL to fetch issue comments within the repository.
+            type:
+              - "null"
+              - string
+          issue_events_url:
+            description: URL to fetch issue events within the repository.
+            type:
+              - "null"
+              - string
+          issues_url:
+            description: URL to fetch issues within the repository.
+            type:
+              - "null"
+              - string
+          keys_url:
+            description: URL to fetch keys associated with the repository.
+            type:
+              - "null"
+              - string
+          labels_url:
+            description: URL to fetch labels associated with the repository.
+            type:
+              - "null"
+              - string
+          languages_url:
+            description: URL to fetch languages used in the repository.
+            type:
+              - "null"
+              - string
+          merges_url:
+            description: URL to fetch merges related to the repository.
+            type:
+              - "null"
+              - string
+          milestones_url:
+            description: URL to fetch milestones within the repository.
+            type:
+              - "null"
+              - string
+          notifications_url:
+            description: URL to manage notifications for the repository.
+            type:
+              - "null"
+              - string
+          pulls_url:
+            description: URL to fetch pull requests within the repository.
+            type:
+              - "null"
+              - string
+          releases_url:
+            description: URL to fetch releases related to the repository.
+            type:
+              - "null"
+              - string
+          ssh_url:
+            description: SSH URL of the repository.
+            type:
+              - "null"
+              - string
+          stargazers_url:
+            description: URL to fetch users who starred the repository.
+            type:
+              - "null"
+              - string
+          statuses_url:
+            description: URL to fetch commit statuses within the repository.
+            type:
+              - "null"
+              - string
+          subscribers_url:
+            description: URL to fetch subscribers of the repository.
+            type:
+              - "null"
+              - string
+          subscription_url:
+            description: URL to manage subscriptions to notifications for the repository.
+            type:
+              - "null"
+              - string
+          tags_url:
+            description: URL to fetch tags within the repository.
+            type:
+              - "null"
+              - string
+          teams_url:
+            description: URL to manage repository teams.
+            type:
+              - "null"
+              - string
+          trees_url:
+            description: URL to fetch trees within the repository.
+            type:
+              - "null"
+              - string
+          clone_url:
+            description: URL to clone the repository.
+            type:
+              - "null"
+              - string
+          mirror_url:
+            description: URL of the mirror repository.
+            type:
+              - "null"
+              - string
+          hooks_url:
+            description: URL to manage webhooks for the repository.
+            type:
+              - "null"
+              - string
+          svn_url:
+            description: SVN URL of the repository.
+            type:
+              - "null"
+              - string
+          homepage:
+            description: URL of the repository's homepage.
+            type:
+              - "null"
+              - string
+          language:
+            description: Main programming language used in the repository.
+            type:
+              - "null"
+              - string
+          forks_count:
+            description: Count of forks for the repository.
+            type:
+              - "null"
+              - integer
+          stargazers_count:
+            description: Number of stars the repository has received.
+            type:
+              - "null"
+              - integer
+          watchers_count:
+            description: Count of watchers for the repository.
+            type:
+              - "null"
+              - integer
+          size:
+            description: Size of the repository in kilobytes.
+            type:
+              - "null"
+              - integer
+          default_branch:
+            description: Default branch of the repository.
+            type:
+              - "null"
+              - string
+          open_issues_count:
+            description: Count of open issues in the repository.
+            type:
+              - "null"
+              - integer
+          is_template:
+            description: Indicates if the repository is a template.
+            type:
+              - "null"
+              - boolean
+          topics:
+            description: Topics associated with the repository.
+            type:
+              - "null"
+              - array
+            items:
+              description: Individual topic related to the repository.
+              type:
+                - "null"
+                - string
+          license:
+            description: License information of the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              key:
+                description: Key identifier of the license.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the license.
+                type:
+                  - "null"
+                  - string
+              url:
+                description: URL to access license details.
+                type:
+                  - "null"
+                  - string
+              spdx_id:
+                description: SPDX identifier of the license.
+                type:
+                  - "null"
+                  - string
+              node_id:
+                description: Node ID of the license.
+                type:
+                  - "null"
+                  - string
+              html_url:
+                description: URL to view license details on the web.
+                type:
+                  - "null"
+                  - string
+          has_issues:
+            description: Indicates if the repository has issues enabled.
+            type:
+              - "null"
+              - boolean
+          has_projects:
+            description: Indicates if the repository has projects enabled.
+            type:
+              - "null"
+              - boolean
+          has_wiki:
+            description: Indicates if the repository has a wiki enabled.
+            type:
+              - "null"
+              - boolean
+          has_pages:
+            description: Indicates if the repository has GitHub Pages enabled.
+            type:
+              - "null"
+              - boolean
+          has_downloads:
+            description: Indicates if the repository has downloads available.
+            type:
+              - "null"
+              - boolean
+          archived:
+            description: Indicates if the repository is archived.
+            type:
+              - "null"
+              - boolean
+          disabled:
+            description: Indicates if the repository is disabled.
+            type:
+              - "null"
+              - boolean
+          visibility:
+            description: Visibility status of the repository.
+            type:
+              - "null"
+              - string
+          pushed_at:
+            description: Date and time when the repository was last pushed to.
+            type: string
+            format: date-time
+          created_at:
+            description: Date and time when the repository was created.
+            type: string
+            format: date-time
+          updated_at:
+            description: Date and time when the repository was last updated.
+            type: string
+            format: date-time
+          permissions:
+            description: Permissions granted to different roles for the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              admin:
+                description: Admin permission level.
+                type:
+                  - "null"
+                  - boolean
+              push:
+                description: Push permission level.
+                type:
+                  - "null"
+                  - boolean
+              pull:
+                description: Pull permission level.
+                type:
+                  - "null"
+                  - boolean
+              maintain:
+                description: Maintain permission level.
+                type:
+                  - "null"
+                  - boolean
+              triage:
+                description: Triage permission level.
+                type:
+                  - "null"
+                  - boolean
+          allow_forking:
+            description: Indicates if forking is allowed for the repository.
+            type:
+              - "null"
+              - boolean
+          forks:
+            description: Forks information related to the repository.
+            type:
+              - "null"
+              - integer
+          has_discussions:
+            description: Indicates if the repository has discussions.
+            type:
+              - "null"
+              - boolean
+          open_issues:
+            description: Number of open issues in the repository.
+            type:
+              - "null"
+              - integer
+          organization:
+            description: Organization the repository belongs to.
+            type:
+              - "null"
+              - string
+          watchers:
+            description: Watchers of the repository.
+            type:
+              - "null"
+              - integer
+          web_commit_signoff_required:
+            description: Indicates if web commit sign-off is required for contributions.
+            type:
+              - "null"
+              - boolean
+          security_and_analysis:
+            description: Security and analysis settings of the repository.
+            type:
+              - "null"
+              - object
+            properties:
+              secret_scanning:
+                description: Secret scanning status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+              secret_scanning_push_protection:
+                description: Secret scanning push protection status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+              secret_scanning_validity_checks:
+                description: Secret scanning validity checks status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+              dependabot_security_updates:
+                description: Dependabot security updates status.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  status:
+                    type:
+                      - "null"
+                      - string
+
+# Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
+# is per token, so this is conservative — a multi-token config could spend more than this
+# allows. Left global on purpose, because the CDK budget has no notion of which credential a
+# request will be signed with, and under-spending a secondary limit is much cheaper than
+# tripping one. It also only covers declarative requesters: the Python streams, and the
+# authenticator's own /rate_limit probes (RateLimitedMultipleTokenAuthenticator builds its
+# quota client without an api_budget), spend the same GitHub budget outside it.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        # Per GitHub docs, secondary rate limits allow no more than 900 points per
+        # minute for REST API endpoints (GET/HEAD/OPTIONS requests cost 1 point).
+        # https://docs.github.com/en/rest/using-the-rest-api/rate-limits-for-the-rest-api#about-secondary-rate-limits
+        - limit: 900
+          interval: PT1M
+      matchers: []
+
+concurrency_level:
+  type: ConcurrencyLevel
+  # `is not none` rather than `.get('num_workers', 4)`, the same guard the wait budget uses: a
+  # default in `.get` only applies when the key is *absent*, so a present-but-null `num_workers`
+  # (reachable via the API, Terraform or embedded use) renders as "None" and
+  # `ConcurrencyLevel.get_concurrency_level` raises `ValueError: default_concurrency did not
+  # evaluate to an integer` — while the source is being constructed, so every command fails.
+  default_concurrency: "{{ config['num_workers'] if config.get('num_workers') is not none else 4 }}"
+  max_concurrency: 25
+
+streams:
+  - $ref: "#/definitions/repositories_stream"
+
+check:
+  type: CheckStream
+  stream_names: []
+
+spec:
+  type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/github
+  connection_specification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: GitHub Source Spec
+    type: object
+    required:
+      - credentials
+      - repositories
+    additionalProperties: true
+    properties:
+      credentials:
+        title: Authentication
+        description: Choose how to authenticate to GitHub
+        type: object
+        order: 0
+        group: auth
+        oneOf:
+          - type: object
+            title: OAuth
+            required:
+              - access_token
+            properties:
+              option_title:
+                type: string
+                const: OAuth Credentials
+                order: 0
+              access_token:
+                type: string
+                title: Access Token
+                description: OAuth access token
+                airbyte_secret: true
+              client_id:
+                type: string
+                title: Client Id
+                description: OAuth Client Id
+                airbyte_secret: true
+              client_secret:
+                type: string
+                title: Client secret
+                description: OAuth Client secret
+                airbyte_secret: true
+          - type: object
+            title: Personal Access Token
+            required:
+              - personal_access_token
+            properties:
+              option_title:
+                type: string
+                const: PAT Credentials
+                order: 0
+              personal_access_token:
+                type: string
+                title: Personal Access Tokens
+                description: Log into GitHub and then generate a <a href="https://github.com/settings/tokens">personal access token</a>. To load balance your API quota consumption across multiple API tokens, input multiple tokens separated with ","
+                airbyte_secret: true
+      repository:
+        type: string
+        examples:
+          - airbytehq/airbyte airbytehq/another-repo
+          - airbytehq/*
+          - airbytehq/airbyte
+        title: GitHub Repositories
+        description: (DEPRECATED) Space-delimited list of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/airbyte airbytehq/another-repo` for multiple repositories.
+        airbyte_hidden: true
+        pattern: ^([\w.-]+/(\*|[\w.-]+(?<!\.git))\s+)*[\w.-]+/(\*|[\w.-]+(?<!\.git))$
+        pattern_descriptor: org/repo org/another-repo org/*
+      repositories:
+        type: array
+        items:
+          type: string
+          pattern: ^[\w.-]+/(([\w.-]*\*)|[\w.-]+(?<!\.git))$
+        minItems: 1
+        examples:
+          - airbytehq/airbyte
+          - airbytehq/another-repo
+          - airbytehq/*
+          - airbytehq/a*
+        title: GitHub Repositories
+        description: List of GitHub organizations/repositories, e.g. `airbytehq/airbyte` for single repository, `airbytehq/*` for get all repositories from organization and `airbytehq/a*` for matching multiple repositories by pattern.
+        order: 1
+        pattern_descriptor: org/repo org/another-repo org/* org/a*
+      start_date:
+        type: string
+        title: Start date
+        description: The date from which you'd like to replicate data from GitHub in the format YYYY-MM-DDT00:00:00Z. If the date is not set, all data will be replicated.  For the streams which support this configuration, only data generated on or after the start date will be replicated. This field doesn't apply to all streams, see the <a href="https://docs.airbyte.com/integrations/sources/github">docs</a> for more info
+        examples:
+          - "2021-03-01T00:00:00Z"
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+        pattern_descriptor: YYYY-MM-DDTHH:mm:ssZ
+        order: 2
+        format: date-time
+      api_url:
+        type: string
+        examples:
+          - https://github.com
+          - https://github.company.org
+          - https://github.company.org/api/v3/
+        title: API URL
+        default: https://api.github.com/
+        description: Please enter your basic URL from self-hosted GitHub instance or leave it empty to use GitHub.
+        order: 3
+      branch:
+        type: string
+        title: Branch
+        examples:
+          - airbytehq/airbyte/master airbytehq/airbyte/my-branch
+        description: (DEPRECATED) Space-delimited list of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.
+        airbyte_hidden: true
+        pattern_descriptor: org/repo/branch1 org/repo/branch2
+      branches:
+        type: array
+        items:
+          type: string
+        title: Branches
+        examples:
+          - airbytehq/airbyte/master
+          - airbytehq/airbyte/my-branch
+        description: List of GitHub repository branches to pull commits for, e.g. `airbytehq/airbyte/master`. If no branches are specified for a repository, the default branch will be pulled.
+        order: 4
+        pattern_descriptor: org/repo/branch1 org/repo/branch2
+      max_waiting_time:
+        type: integer
+        title: Max Waiting Time (in minutes)
+        examples:
+          - 10
+          - 60
+          - 120
+        default: 120
+        minimum: 1
+        maximum: 240
+        description: Max time (in minutes) the connector will wait on a rate limit before failing — both when all API tokens are already known to be exhausted and when GitHub rejects a request and asks the connector to wait. GitHub rate limits reset every 60 minutes, so values above 60 allow the connector to wait for a full reset cycle.
+        order: 5
+      num_workers:
+        type: integer
+        title: Number of Concurrent Threads
+        description: Number of concurrent threads for syncing. Higher values can speed up syncs but increase the risk of hitting GitHub's secondary rate limits.
+        default: 4
+        minimum: 1
+        maximum: 25
+        order: 6
+  advanced_auth:
+    auth_flow_type: oauth2.0
+    predicate_key:
+      - credentials
+      - option_title
+    predicate_value: OAuth Credentials
+    oauth_config_specification:
+      oauth_connector_input_specification:
+        scopes:
+          - scope: repo
+          - scope: read:org
+          - scope: read:repo_hook
+          - scope: read:user
+          - scope: read:project
+          - scope: read:discussion
+          - scope: workflow
+        consent_url: https://github.com/login/oauth/authorize?{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}
+        access_token_url: https://github.com/login/oauth/access_token?{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}
+        extract_output:
+          - access_token
+      complete_oauth_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          access_token:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - access_token
+      complete_oauth_server_input_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+          client_secret:
+            type: string
+      complete_oauth_server_output_specification:
+        type: object
+        additionalProperties: false
+        properties:
+          client_id:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_id
+          client_secret:
+            type: string
+            path_in_connector_config:
+              - credentials
+              - client_secret

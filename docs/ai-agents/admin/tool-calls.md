@@ -14,12 +14,12 @@ A tool call is a single action an agent takes against a connector. Each time an 
 
 Airbyte classifies tool calls as one of the following types:
 
-- **Direct**: A real-time request to a third-party API. Airbyte routes the call through the connector and returns the live response to the agent. Direct tool calls are useful for operational queries, real-time lookups, and actions that change state, like creating a ticket or sending a message.
+- **Direct**: A real-time request to a third-party API. Airbyte routes the call through the connector and returns the live response to the agent. Direct tool calls are useful for operational queries, real-time searches, and actions that change state, like creating a ticket or sending a message.
 - **Search**: A query against data Airbyte has already replicated into the Context Store. Airbyte answers the call from the cache without contacting the upstream API, which makes search tool calls fast and cost-efficient.
 
-Tool calls are the billable unit that most directly reflects the work your agents do. Airbyte combines tool calls with token usage to calculate [agent operations (AOs)](../concepts/agent-operations.md). For billing details, see [Billing and pricing](./billing.md).
+Tool calls are the billable unit that most directly reflects the work your agents do. For Airbyte-managed agents, Airbyte combines tool calls with token usage to calculate [agent operations (AOs)](../concepts/agent-operations.md). For agents you bring through the MCP, the API, the SDK, or the CLI, Airbyte bills tool calls only, not the reasoning your own model performs. For billing details, see [Billing and pricing](./billing.md).
 
-Tool calls can originate from any interface: Chat, MCP, the API, and the SDK. The Tool Calls page shows activity from all sources.
+Tool calls can originate from any interface, including Chat, MCP, the API, the SDK, and the CLI. The Tool Calls page shows activity from all sources.
 
 ## How to interpret the table
 
@@ -48,6 +48,8 @@ Use the filters above the table to narrow the activity to a specific subset:
 - **Workspace**: Show tool calls from a single workspace, or show all workspaces.
 - **Tool Type**: Show only Direct tool calls, only Search tool calls, or both.
 - **Status**: Show only successful calls, only failed calls, or both.
+
+Administrators see tool calls from every workspace in the organization; members see tool calls from the workspaces they belong to. Tool calls made in a workspace that was later deleted are preserved and still appear in the table.
 
 #### Columns
 

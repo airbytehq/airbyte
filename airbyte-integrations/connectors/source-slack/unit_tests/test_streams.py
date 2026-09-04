@@ -130,6 +130,14 @@ def test_get_updated_state(requests_mock, authenticator, token_config, current_s
     assert output.most_recent_state.stream_state.state == expected_state
 
 
+def test_threads_stream_accepts_fractional_cursor_state(token_config):
+    state = StateBuilder().with_stream_state("threads", {"float_ts": "1698686995.0"}).build()
+
+    stream = get_stream_by_name("threads", token_config, state)
+
+    assert stream.name == "threads"
+
+
 def test_threads_request_params(authenticator, token_config):
     stream = get_stream_by_name("threads", token_config)
     threads_slice = {"parent_slice": {"channel": "airbyte-for-beginners"}}
