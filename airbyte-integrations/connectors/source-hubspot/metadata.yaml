@@ -180,6 +180,9 @@ data:
     - title: HubSpot authentication
       url: https://developers.hubspot.com/docs/api/oauth-quickstart-guide
       type: authentication_guide
+    - title: HubSpot sunsetted and deprecated APIs
+      url: https://developers.hubspot.com/docs/api-reference/deprecated-apis
+      type: api_deprecations
     - title: HubSpot rate limits
       url: https://developers.hubspot.com/docs/api/usage-details
       type: rate_limits
