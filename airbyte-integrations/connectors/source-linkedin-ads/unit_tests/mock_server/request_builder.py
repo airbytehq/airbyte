@@ -68,6 +68,18 @@ class LinkedInAdsRequestBuilder:
         return builder
 
     @classmethod
+    def posts_endpoint(cls, post_urn: str) -> "LinkedInAdsRequestBuilder":
+        # GET /rest/posts/{urn} with the URN colons percent-encoded, mirroring the manifest's
+        # `posts/{{ stream_slice.get('post_urn') | replace(':', '%3A') }}` path.
+        return cls(f"/posts/{post_urn.replace(':', '%3A')}")
+
+    @classmethod
+    def video_endpoint(cls, video_urn: str) -> "LinkedInAdsRequestBuilder":
+        # GET /rest/videos/{urn} with the URN colons percent-encoded, mirroring the manifest's
+        # `videos/{{ stream_slice.get('video_urn') | replace(':', '%3A') }}` path.
+        return cls(f"/videos/{video_urn.replace(':', '%3A')}")
+
+    @classmethod
     def ad_analytics_endpoint(cls) -> "LinkedInAdsRequestBuilder":
         return cls("/adAnalytics")
 
