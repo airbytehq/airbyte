@@ -23,4 +23,5 @@
 
 from .destination import DestinationAwsDatalake
 
+
 __all__ = ["DestinationAwsDatalake"]

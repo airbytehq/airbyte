@@ -99,6 +99,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version | Date       | Pull Request                                               | Subject                                              |
 |:--------| :--------- | :--------------------------------------------------------- | :--------------------------------------------------- |
+| 0.1.59 | 2026-04-23 | [76949](https://github.com/airbytehq/airbyte/pull/76949) | Include stream name and nested field path in type-conversion errors |
 | 0.1.58 | 2025-05-24 | [59824](https://github.com/airbytehq/airbyte/pull/59824) | Update dependencies |
 | 0.1.57 | 2025-05-03 | [59366](https://github.com/airbytehq/airbyte/pull/59366) | Update dependencies |
 | 0.1.56 | 2025-04-26 | [58711](https://github.com/airbytehq/airbyte/pull/58711) | Update dependencies |
