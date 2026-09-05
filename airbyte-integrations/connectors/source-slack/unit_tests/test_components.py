@@ -154,8 +154,17 @@ def test_join_channel_read_other_error_logs_warning(requests_mock, token_config,
             # lookback window applied
             {"float_ts": 1753177470.0},
         ),
+        (
+            {
+                "use_global_cursor": True,
+                "state": {"float_ts": 1753263870.0},
+                "lookback_window": 86400,
+            },
+            # lookback window applied
+            {"float_ts": 1753177470.0},
+        ),
     ),
-    ids=["no_state", "old_format_state", "new_format_state"],
+    ids=["no_state", "old_format_state", "new_format_state", "global_cursor_state"],
 )
 def test_threads_state_migration(token_config, threads_stream_state, expected_parent_state):
     stream = get_stream_by_name("threads", token_config, StateBuilder().with_stream_state("threads", threads_stream_state).build())
