@@ -1340,8 +1340,16 @@ spec:
       wrike_instance:
         type: string
         title: Wrike Instance (hostname)
-        description: Wrike's instance such as `app-us2.wrike.com`
-        default: app-us2.wrike.com
+        description: >-
+          API hostname from the logged-in Wrike URL. Confirm with `GET /api/v4/contacts`.
+          `www.wrike.com` works for many US accounts; regional hosts look like
+          `app-us2.wrike.com` or `app-eu.wrike.com`. The previous default
+          `app-us2.wrike.com` returned HTTP 300 for some US trials.
+        default: www.wrike.com
+        examples:
+          - www.wrike.com
+          - app-us2.wrike.com
+          - app-eu.wrike.com
         order: 1
       start_date:
         type: string
