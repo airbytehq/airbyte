@@ -7,10 +7,6 @@ This page guides you through setting up the BigQuery destination connector.
 
 ## Prerequisites
 
-- For Airbyte Open Source users using the
-  [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector,
-  [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to
-  version `v0.40.0-alpha` or newer and upgrade your BigQuery connector to version `1.1.14` or newer
 - [A Google Cloud project with BigQuery enabled](https://cloud.google.com/bigquery/docs/quickstarts/query-public-dataset-console)
 - [A BigQuery dataset](https://cloud.google.com/bigquery/docs/quickstarts/quickstart-web-ui#create_a_dataset)
   to sync data to.
@@ -77,38 +73,38 @@ You cannot change the location later.
 :::
 
 7. For **Default Dataset ID**, enter the BigQuery
-   [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset).
+   [Dataset ID](https://cloud.google.com/bigquery/docs/datasets#create-dataset). Airbyte writes to
+   this dataset when a source doesn't specify a namespace.
 8. For **Loading Method**, select [Batched Standard Inserts](#using-batched-standard-inserts) or
-   [GCS Staging](#using-a-google-cloud-storage-bucket).
+   [GCS Staging](#using-a-google-cloud-storage-bucket). If you select **GCS Staging**, also provide:
+
+   - **GCS Bucket Name** and **GCS Bucket Path**: the bucket and directory that hold the staging
+     files.
+   - **HMAC Access Key** and **HMAC Secret**: the [HMAC key](https://cloud.google.com/storage/docs/authentication/hmackeys)
+     you created for the service account. The access ID is 61 characters long when it's linked to a
+     service account, and 24 characters long when it's linked to a user account. The secret is a
+     40-character base64-encoded string.
+   - **GCS Tmp Files Post-Processing**: whether Airbyte deletes the staging files after each load.
+     The default deletes them.
+
 9. For **Service Account Key JSON (Required for cloud, optional for open-source)**, enter the Google
    Cloud
    [Service Account Key in JSON format](https://cloud.google.com/iam/docs/creating-managing-service-account-keys).
+   If you self-manage Airbyte and leave this empty, the connector uses the
+   [default application credentials](https://cloud.google.com/docs/authentication/application-default-credentials)
+   of the environment it runs in.
 
 :::note
 Be sure to copy all contents in the Account Key JSON file including the brackets.
 :::
 
-11. For **Transformation Query Run Type (Optional)**, select **interactive** to have
-    [BigQuery run interactive query jobs](https://cloud.google.com/bigquery/docs/running-queries#queries)
-    or **batch** to have
-    [BigQuery run batch queries](https://cloud.google.com/bigquery/docs/running-queries#batch).
-
-:::note
-Interactive queries are executed as soon as possible and count towards daily concurrent
-quotas and limits, while batch queries are executed as soon as idle resources are available in
-the BigQuery shared resource pool. If BigQuery hasn't started the query within 24 hours,
-BigQuery changes the job priority to interactive. Batch queries don't count towards your
-concurrent rate limit, making it easier to start many queries at once.
-:::
-
-11. For **Google BigQuery Client Chunk Size (Optional)**, use the default value of 15 MiB. Later, if
-    you see networking or memory management problems with the sync (specifically on the
-    destination), try decreasing the chunk size. In that case, the sync will be slower but more
-    likely to succeed.
-
-12. For **Job Execution Project ID (Optional)**, leave the field empty to run BigQuery jobs in the
-    project you entered as **Project ID**. To run them in a different project — for example to keep
-    ingestion from competing with analytics workloads for the same project quotas — enter that
+10. For **CDC deletion mode**, choose how the connector handles records that a CDC-enabled source
+    marks as deleted. **Hard delete**, the default, removes the matching row from the final table.
+    **Soft delete** keeps the row, including its `_ab_cdc_deleted_at` value, so you retain a
+    tombstone record. This setting only affects streams that have an `_ab_cdc_deleted_at` column.
+11. For **Job Execution Project ID (Optional)**, leave the field empty to run BigQuery jobs in the
+    project you entered as **Project ID**. To run them in a different project, for example to keep
+    ingestion from competing with analytics workloads for the same project quotas, enter that
     project's ID.
 
 :::note
@@ -117,6 +113,26 @@ datasets under **Project ID**. The service account needs the
 [`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
 role on the job project, in addition to its existing roles on the dataset project.
 :::
+
+12. For **Legacy raw tables**, leave the option disabled unless you depend on the raw table format
+    that this connector wrote before version 3.0.0. See
+    [Legacy raw tables schema](#legacy-raw-tables-schema).
+13. For **Airbyte Internal Table Dataset Name**, optionally set the dataset that holds Airbyte's
+    internal tables, including raw tables in legacy mode. The default is `airbyte_internal`.
+
+### Service account key
+
+The connector authenticates with a Google Cloud
+[service account](https://cloud.google.com/iam/docs/service-accounts). Grant the service account the
+[`BigQuery User` and `BigQuery Data Editor`](https://cloud.google.com/bigquery/docs/access-control#bigquery)
+roles on the project that holds your target dataset, then
+[create a key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) and choose
+the JSON format. Paste the entire contents of the downloaded file, including the surrounding braces,
+into **Service Account Key JSON**.
+
+If you use GCS staging, grant the same service account the
+[`Storage Object Admin` role](https://cloud.google.com/storage/docs/access-control/iam-roles#standard-roles)
+on the staging bucket and create the HMAC key for that service account.
 
 ## Supported sync modes
 
@@ -134,22 +150,22 @@ The BigQuery destination connector supports the following
 ## Output schema
 
 The final table contains these fields, in addition to the columns declared in your stream schema:
-- `airbyte_raw_id`
+- `_airbyte_raw_id`
 - `_airbyte_generation_id`
-- `airbyte_extracted_at`
+- `_airbyte_extracted_at`
 - `_airbyte_meta`
 
 Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
-The output tables in BigQuery are partitioned by the Time-unit column `airbyte_extracted_at` at a
-daily granularity and clustered by `airbyte_extracted_at` and the table Primary Keys. Partitions
-boundaries are based on UTC time. This is useful to limit the number of partitions scanned when
-querying these partitioned tables, by using a predicate filter (a `WHERE` clause). Filters on the
-partitioning column are used to prune the partitions and reduce the query cost. (The parameter
-**Require partition filter** is not enabled by Airbyte, but you may toggle it by updating the
-produced tables.)
+The output tables in BigQuery are partitioned by the Time-unit column `_airbyte_extracted_at` at a
+daily granularity. Tables are clustered on `_airbyte_extracted_at`, and deduplicating streams also
+cluster on up to the first three primary key columns, because BigQuery allows a maximum of four
+clustering columns. Partition boundaries are based on UTC time. Partitioning limits the number of
+partitions scanned when you query these tables with a predicate filter (a `WHERE` clause) on the
+partitioning column, which reduces query cost. Airbyte doesn't enable BigQuery's
+**Require partition filter** setting, but you can enable it yourself on the produced tables.
 
-### Legacy Raw Tables schema
+### Legacy raw tables schema
 
 If you enable the `Legacy raw tables` option, the connector will write tables in this format.
 
@@ -182,9 +198,6 @@ namespace with `n` for converted namespaces.
 | Airbyte type                        | BigQuery type |
 | :---------------------------------- | :------------ |
 | STRING                              | STRING        |
-| STRING (BASE64)                     | STRING        |
-| STRING (BIG_NUMBER)                 | STRING        |
-| STRING (BIG_INTEGER)                | STRING        |
 | NUMBER                              | NUMERIC       |
 | INTEGER                             | INT64         |
 | BOOLEAN                             | BOOL          |
@@ -195,6 +208,10 @@ namespace with `n` for converted namespaces.
 | DATE                                | DATE          |
 | OBJECT                              | JSON          |
 | ARRAY                               | JSON          |
+| UNION                               | JSON          |
+
+If a primary key column maps to `JSON`, the sync fails, because BigQuery can't cluster on a JSON
+column.
 
 ## Troubleshooting
 
@@ -226,8 +243,6 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
     headers on requests to `bigquery.googleapis.com`.
   - Verify the service account key has not been rotated or revoked since the connection was
     configured.
-  - Try reducing the **Google BigQuery Client Chunk Size** from the default 15 MiB to a
-    smaller value (for example, 5 MiB).
   - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
     possible contributing factor.
 
@@ -280,14 +295,14 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.1.0 | 2026-08-25 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
+| 3.1.0 | 2026-09-03 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
 | 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
-| 3.0.23 | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 3.0.23 | 2026-07-15 | [82102](https://github.com/airbytehq/airbyte/pull/82102) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
 | 3.0.21 | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346) | Remove unnecessary NULL PK equality checks from merge SQL |
-| 3.0.20 | 2026-06-26 | [80932](https://github.com/airbytehq/airbyte/pull/80932) | Handle BigQueryException in getGenerationId() for legacy tables without _airbyte_generation_id column. |
-| 3.0.19 | 2026-05-21 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Promoting release candidate 3.0.19-rc.1 to a main version. |
-| 3.0.19-rc.1 | 2026-05-19 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
+| 3.0.20 | 2026-06-29 | [80932](https://github.com/airbytehq/airbyte/pull/80932) | Handle BigQueryException in getGenerationId() for legacy tables without _airbyte_generation_id column. |
+| 3.0.19 | 2026-05-22 | [78333](https://github.com/airbytehq/airbyte/pull/78333) | Promoting release candidate 3.0.19-rc.1 to a main version. |
+| 3.0.19-rc.1 | 2026-05-20 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.18-rc.1 | 2026-03-27 | [75541](https://github.com/airbytehq/airbyte/pull/75541) | Upgrade BigQuery Cloud dependencies and CDK version |
 | 3.0.17 | 2026-01-28 | [72427](https://github.com/airbytehq/airbyte/pull/72427) | Finalize upgrade CDK to 0.2.0 |
