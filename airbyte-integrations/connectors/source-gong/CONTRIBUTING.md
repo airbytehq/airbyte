@@ -18,3 +18,56 @@ The Gong API exposes incremental filtering via `fromDateTime` on the calls and s
 ### Future incremental stream candidates
 
 - **No API date filter (2 streams):** `scorecards`, `users` — these streams do not have a documented date-based filter on their list endpoints. A future agent should verify via live API probing whether undocumented filter parameters are accepted.
+
+## Error handling
+
+All requesters share the same response mappings, defined in `manifest.yaml` (`definitions.auth_error_filter`, `definitions.transient_error_filter`) and appended to each stream's error handler:
+
+| Response | Action | Failure type | Rationale |
+|---|---|---|---|
+| 404 with "… found corresponding to the provided filters" | IGNORE (empty stream) | — | Gong signals an empty result set as a 404 with this message; only that 404 is treated as empty. Warning: a key whose user lacks call visibility gets a byte-identical 404, so a misconfigured key looks like an empty source; this is indistinguishable server-side. |
+| Any other 404 | FAIL (terminal) | `system_error` | CDK default mapping ("Not found. The requested resource was not found on the server."). Catches bad paths and removed resources instead of silently emptying the stream. |
+| 401, 403 | FAIL | `config_error` | Invalid, expired, or scope-limited credentials. Surfaced with an actionable message instead of a raw exception. |
+| 429, 500, 502, 503, 504 | RETRY | `transient_error` | Backoff honors the `Retry-After` header (`WaitTimeFromHeader`). Retry-After can reach hours when the 10,000 requests/day quota is exhausted, which is why `maxSecondsBetweenMessages` is 86400. |
+| Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all FAIL filter is deliberately omitted: `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s, so a match-anything rule would fail successful requests. |
+
+## Competitor parity (Fivetran Gong schema)
+
+The stream inventory is deliberately unchanged at 6 streams. Everything Fivetran normalizes into child tables ships here as nested fields, mostly on `extensiveCalls`:
+
+| Fivetran table | Verdict | Our stream / field |
+|---|---|---|
+| CALL | covered | `calls`, `extensiveCalls` |
+| USER | covered | `users` |
+| SCORECARD | covered | `scorecards` |
+| SCORECARD_QUESTION | covered-as-field | `scorecards.questions[]` |
+| ANSWERED_SCORECARD | covered | `answeredScorecards` |
+| ANSWERED_SCORECARD_ANSWER | covered-as-field | `answeredScorecards.answers[]` |
+| CALL_TRANSCRIPT | covered | `callTranscripts.transcript[]` |
+| CALL_PARTICIPANT | covered-as-field | `extensiveCalls.parties[]` |
+| CALL_TRACKER / TRACKER | covered-as-field | `extensiveCalls.content.trackers[]` |
+| CALL_TOPIC | covered-as-field | `extensiveCalls.content.topics[]` |
+| CALL_OUTLINE / CALL_OUTLINE_ITEM | covered-as-field | `extensiveCalls.content.outline[]` / `.items[]` |
+| CALL_HIGHLIGHT / CALL_HIGHLIGHT_ITEM | covered-as-field | `extensiveCalls.content.highlights[]` / `.items[]` |
+| CALL_KEY_POINT | covered-as-field | `extensiveCalls.content.keyPoints[]` |
+| CALL_VIDEO | covered-as-field | `extensiveCalls.interaction.video[]`, `media.videoUrl` / `audioUrl` |
+| CALL_STRUCTURE | covered-as-field | `extensiveCalls.content.outline[].section` |
+| CALL_CONTEXT_* | covered-as-field | `extensiveCalls.context[].objects[].fields[]` |
+| Interaction stats / talk-time | covered-as-field | `extensiveCalls.interaction.speakers[]`, `interactionStats[]`, `questions` |
+
+Five Fivetran tables are intentionally not replicated. Justifications:
+
+| Fivetran table | Justification |
+|---|---|
+| TRACKER_LANGUAGE | Tracker *occurrences* ship on `extensiveCalls.content.trackers[]`; per-tracker language configuration is workspace settings metadata, not sales-activity data. Candidate future stream (`/v2/settings/trackers`) if requested. |
+| LANGUAGE_KEYWORDS | Keyword/language configuration metadata, same category as above — settings, not activity data. |
+| ENGAGE_FLOW | Gong Engage is a separate product with its own API surface; out of scope for this connector. |
+| ENTITY_VALUE / *_ENTITY_SCHEMA | CRM-entity schema metadata describing Gong's CRM integration config; the CRM-context *values* per call ship on `extensiveCalls.context[]`. |
+| PERMISSION_* | Permission-profile admin configuration; not sales-activity data, and results would vary with the API key user's own visibility. |
+
+## Breaking-change assessment (1.4.0)
+
+Two 1.4.0 areas were evaluated against the breaking-change checklist; both ship as non-breaking:
+
+- **`pointsOfInterest` retained despite upstream deletion** — Gong removed the field from `/v2/calls/extensive` in January 2025 (deadline 2025-01-23, tracked in oncall#10402; Gong's release notes and deprecations articles are linked from `metadata.yaml` `externalDocumentationUrls`). A live probe on 2026-08-30 confirmed 0 of 100 recent calls return the field — the column has been null since January 2025. The field stays in the request body and the `extensiveCalls` schema so existing destination columns are preserved; removing it is deferred to a future MAJOR version with a declared breaking change.
+- **Unset `start_date` scope** — a `ConfigMigration` in the spec pins `start_date: 1970-01-01T00:00:00Z` onto any config that omits it, so no connection's data scope changes. Note the consequence: the migration applies to all configs (new ones included), so unset-start-date behavior remains "sync all history" for everyone; the manifest's two-years fallback in `start_datetime` is defense in depth and is not reachable in normal operation.

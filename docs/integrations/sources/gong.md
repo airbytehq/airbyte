@@ -12,19 +12,27 @@ This page contains the setup guide and reference information for the [Gong](http
 - For OAuth 2.0 authentication: the following API scopes must be granted: `api:calls:read:basic`, `api:calls:read:extensive`, `api:calls:read:transcript`, `api:users:read`, `api:stats:scorecards`, `api:stats:interaction`, `api:settings:scorecards:read`
 - For API Key authentication: an access key and access key secret generated from the Gong API settings, with the same scopes listed above
 
+:::note
+The connection test validates connectivity by reading the `users` stream, so the `api:users:read` scope is always required — even if you only intend to sync call or scorecard streams. Without it, setting up the source fails with an unauthorized error. Credentials also inherit the data visibility of the Gong user who created them: a key whose user can't see certain calls silently returns fewer (or zero) records rather than an error.
+:::
+
 ## Setup guide
 
-### Step 1: Authenticate with Gong
+## Set up Gong
 
-You can authenticate to Gong using one of two methods:
+You can authenticate to Gong using one of two methods: OAuth 2.0 or an API key.
+
+### For Airbyte Cloud
 
 <!-- env:cloud -->
-
-**For Airbyte Cloud:**
 
 - **OAuth 2.0 (recommended)**. Click **Authenticate your Gong account** to sign in through Gong's OAuth flow. This method handles token refresh automatically. You need a Gong account with technical administrator permissions to authorize the connection.
 
 <!-- /env:cloud -->
+
+- **API Key**. Alternatively, authenticate with an access key and access key secret, generated as described in the Open Source section below.
+
+### For Airbyte Open Source
 
 - **API Key**. Authenticate using an access key and access key secret. To generate credentials:
   1. Log in to your Gong account as a technical administrator.
@@ -34,11 +42,11 @@ You can authenticate to Gong using one of two methods:
 
   For more details, see the [Gong API documentation](https://help.gong.io/docs/receive-access-to-the-api).
 
-### Step 2: Configure the connector
+### Configure the connector
 
 <FieldAnchor field="start_date">
 
-- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call. Without a start date, the initial sync fetches your entire call history, which can be large. Set a start date to limit how far back the first sync reaches.
+- **Start Date** (optional). The date from which to fetch data, in ISO-8601 format (for example, `2024-01-01T00:00:00Z`). This applies to incremental streams. If not specified, the connector syncs all available data from the earliest recorded call; set a start date to limit how far back the initial sync reaches.
 
 </FieldAnchor>
 
@@ -48,6 +56,11 @@ You can authenticate to Gong using one of two methods:
 
 </FieldAnchor>
 
+<FieldAnchor field="lookback_window_days">
+
+- **Lookback Window (days)** (optional). Number of days to subtract from the saved state at the start of each incremental sync. The default is 0 (sync strictly forward). Set this if calls or scorecards are updated after they were first replicated and you want later syncs to pick up those changes.
+
+</FieldAnchor>
 <HideInUI>
 
 ## Supported sync modes
@@ -57,7 +70,7 @@ The Gong source connector supports the following [sync modes](https://docs.airby
 - Full Refresh
 - Incremental
 
-## Supported streams
+## Supported Streams
 
 This source syncs the following streams:
 
@@ -98,6 +111,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
 | 1.3.5 | 2026-08-18 | [84600](https://github.com/airbytehq/airbyte/pull/84600) | Update dependencies |
 | 1.3.4 | 2026-08-11 | [83953](https://github.com/airbytehq/airbyte/pull/83953) | Update dependencies |
 | 1.3.3 | 2026-08-04 | [83474](https://github.com/airbytehq/airbyte/pull/83474) | Update dependencies |

@@ -32,8 +32,9 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -81,6 +82,8 @@ definitions:
                   - type: HttpResponseFilter
                     action: IGNORE
                     error_message_contains: found corresponding to the provided filters
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -110,8 +113,9 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
           type: RequestOption
           inject_into: request_parameter
@@ -141,8 +145,9 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             contentSelector:
               context: "Extended"
@@ -213,8 +218,9 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
           type: RequestOption
           inject_into: body_json
@@ -257,8 +263,9 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -305,8 +312,9 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
         record_selector:
           type: RecordSelector
           extractor:
@@ -339,8 +347,9 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         start_time_option:
           type: RequestOption
           inject_into: body_json
@@ -372,8 +381,9 @@ definitions:
                 response_filters:
                   - type: HttpResponseFilter
                     action: IGNORE
-                    http_codes:
-                      - 404
+                    error_message_contains: found corresponding to the provided filters
+                  - $ref: "#/definitions/auth_error_filter"
+                  - $ref: "#/definitions/transient_error_filter"
           request_body_json:
             filter:
               # stream_partition.call_id is a list of up to `group_size` call
@@ -424,8 +434,9 @@ definitions:
         start_datetime:
           type: MinMaxDatetime
           datetime: >-
-            {{ config.start_date or '1970-01-01T00:00:00Z' }}
+            {{ config.start_date or (now_utc() - duration('P730D')).strftime('%Y-%m-%dT%H:%M:%SZ') }}
           datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        lookback_window: "P{{ config.get('lookback_window_days') or 0 }}D"
         is_client_side_incremental: true
         global_substream_cursor: true
       transformations:
@@ -442,6 +453,28 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/callTranscripts"
+  auth_error_filter:
+    type: HttpResponseFilter
+    action: FAIL
+    failure_type: config_error
+    http_codes:
+      - 401
+      - 403
+    error_message: >-
+      Gong rejected the request as unauthorized. Verify that the Access Key and
+      Access Key Secret (or OAuth credentials) are valid and active, and that
+      the Gong user who created them has API access and visibility into the
+      requested data.
+  transient_error_filter:
+    type: HttpResponseFilter
+    action: RETRY
+    failure_type: transient_error
+    http_codes:
+      - 429
+      - 500
+      - 502
+      - 503
+      - 504
   base_requester:
     type: HttpRequester
     url_base: https://api.gong.io/v2/
@@ -608,6 +641,17 @@ spec:
         minimum: 1
         maximum: 10
         order: 2
+      lookback_window_days:
+        type: integer
+        title: Lookback Window (days)
+        description: >-
+          Number of days to subtract from the saved state cursor at the start
+          of each incremental sync. Use this to re-sync calls and scorecards
+          that were updated after they were first replicated. The default of 0
+          syncs strictly forward from the saved state.
+        default: 0
+        minimum: 0
+        order: 3
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -706,6 +750,17 @@ spec:
                 path: ["credentials", "auth_type"]
                 value: "APIKey"
             condition: "{{ config.get('access_key', False) and not config.get('credentials', {}).get('auth_type', False) }}"
+      - type: ConfigMigration
+        description: >-
+          Pin an explicit 1970 start date on configs that omit one, preserving
+          the pre-1.4.0 behavior of syncing all available history.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["start_date"]
+                value: "1970-01-01T00:00:00Z"
+            condition: "{{ not config.get('start_date') }}"
 
 metadata:
   autoImportSchema:
