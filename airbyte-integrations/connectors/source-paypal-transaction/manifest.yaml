@@ -39,6 +39,9 @@ definitions:
                     predicate: >-
                       {{ 'Data for the given start date is not available' in
                       response['message']}}
+                backoff_strategies:
+                  - type: ConstantBackoffStrategy
+                    backoff_time_in_seconds: 100
         record_selector:
           type: RecordSelector
           extractor:
