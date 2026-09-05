@@ -1,0 +1,33 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "type_mapping_stream",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": "integer" },
+            "title": { "type": "string" },
+            "flag": { "type": "boolean" },
+            "score": { "type": "number" },
+            "created_at": { "type": "string", "format": "date-time" },
+            "event_date": { "type": "string", "format": "date" },
+            "source_id": { "type": "integer" },
+            "nested": {
+              "type": "object",
+              "properties": {
+                "value": { "type": "integer" }
+              }
+            },
+            "big_number": { "type": "integer" }
+          }
+        },
+        "supported_sync_modes": ["incremental"]
+      },
+      "primary_key": [["id"]],
+      "sync_mode": "incremental",
+      "destination_sync_mode": "append_dedup"
+    }
+  ]
+}
