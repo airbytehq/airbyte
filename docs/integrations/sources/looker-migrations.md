@@ -8,7 +8,7 @@ Version 1.0.0 introduces changes to the connection configuration which has been 
 2. spaces and space_ancestors streams have been removed in favour of folders and folder_ancestors streams
 3. lookml_dashboards stream has been removed in favour of dashboards stream
 
-In addtion to affected streams, the schemas of the streams are expected to change.
+In addition to affected streams, the schemas of the streams are expected to change.
 
 For details about the API migration, check out [here](https://cloud.google.com/looker/docs/api-3x-deprecation)
 

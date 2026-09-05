@@ -32,7 +32,7 @@ After creating your account you will be able to get your `Client ID` and `Secret
 4. Enter your `Client ID`
 5. Enter your `Client secret`
 6. `Start Date`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`.
-7. Switch ON/Off the Sandbox toggle. By defaukt the toggle is OFF, meaning it work only in a produciton environment.
+7. Switch ON/Off the Sandbox toggle. By default the toggle is OFF, meaning it work only in a production environment.
 8. \_(Optional) `Dispute Start Date Range`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SS.sssZ`. - If you don't add a date and you sync the `lists_disputes stream`, it will use the default value of 180 days in the past to retrieve data - It is mandatory to add the milliseconds is you enter a datetime. - This option only works for `lists_disputes stream`
 
 9. _(Optional)`Refresh Token`:_ You can enter manually a refresh token. Right now the stream does this automatically.
@@ -72,7 +72,7 @@ This Source is capable of syncing the following core Streams:
 
 ### Transactions Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Transactions`            |
 | :--------------------------- | :------------------------ |
@@ -93,7 +93,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### Balances Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Balances`                |
 | :--------------------------- | :------------------------ |
@@ -114,7 +114,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### List Products Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `List Products`        |
 | :--------------------------- | :--------------------- |
@@ -133,7 +133,7 @@ The below table contains the configuraiton parameters available for this connect
 
 :::caution
 
-When configuring your stream take in consideration that the way the API works limits the speed on retreiving data. In some cases a +30K catalog retrieval could take between 10-15 minutes.
+When configuring your stream take in consideration that the way the API works limits the speed on retrieving data. In some cases a +30K catalog retrieval could take between 10-15 minutes.
 
 :::
 
@@ -141,7 +141,7 @@ When configuring your stream take in consideration that the way the API works li
 
 ### Show Products Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Show Prod. Details`   |
 | :--------------------------- | :--------------------- |
@@ -160,7 +160,7 @@ The below table contains the configuraiton parameters available for this connect
 
 :::caution
 
-When configuring this stream consider that the parent stream paginates with 20 number of items (Max alowed page size). The Paypal API calls are not concurrent, so the time it takes depends entirely on the server side.
+When configuring this stream consider that the parent stream paginates with 20 number of items (Max allowed page size). The Paypal API calls are not concurrent, so the time it takes depends entirely on the server side.
 This stream could take a considerable time syncing, so you should consider running the sync of this and the parent stream (`list_products`) at the end of the day.
 Depending on the size of the catalog it could take several hours to sync.
 
@@ -170,7 +170,7 @@ Depending on the size of the catalog it could take several hours to sync.
 
 ### List Disputes Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `List Disputes`          |
 | :--------------------------- | :----------------------- |
@@ -191,7 +191,7 @@ The below table contains the configuraiton parameters available for this connect
 
 ### Search Invoices Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features
+The below table contains the configuration parameters available for this connector and the default values and available features
 
 | **Param/Feature**            | `Search Invoices`         |
 | :--------------------------- | :------------------------ |
@@ -220,7 +220,7 @@ The `start_end` from the configuration, is passed to the body of the request and
 
 ### List Payments Stream
 
-The below table contains the configuraiton parameters available for this connector and the default values and available features.
+The below table contains the configuration parameters available for this connector and the default values and available features.
 
 | **Param/Feature**            | `List Payments`           |
 | :--------------------------- | :------------------------ |

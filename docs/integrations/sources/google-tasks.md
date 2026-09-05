@@ -13,7 +13,7 @@ Currently Code granted OAuth 2.0 is not directly supported by airbyte, thus you 
 Steps:
 - Visit google cloud `https://console.cloud.google.com/apis/api/tasks.googleapis.com/metrics` and enable the tasks api service
 - Go to the consent screen `https://console.cloud.google.com/apis/credentials/consent` and add your email for enabling postman testing access
-- Visit `https://console.cloud.google.com/apis/credentials` and create new credentails for OAuth 2.0 and copy client id and client secret 
+- Visit `https://console.cloud.google.com/apis/credentials` and create new credentials for OAuth 2.0 and copy client id and client secret 
 - Add callback url `https://oauth.pstmn.io/v1/callback` while credential creation
 - Goto postman client and select new tab for setting authorization to OAuth 2.0
   - Set scope as `https://www.googleapis.com/auth/tasks https://www.googleapis.com/auth/tasks.readonly`

@@ -12,7 +12,7 @@ Hubplanner is a tool to plan, schedule, report and manage your entire team.
 
 ## Airbyte Cloud
 
-- Comming Soon.
+- Coming Soon.
 
 ## Setup guide
 
