@@ -370,9 +370,9 @@ const config: Config = {
       indexName: "airbyte",
     },
     announcementBar: {
-      id: "try_airbyte_agents",
+      id: "try_airbyte_cloud",
       content:
-        '<a target="_blank" rel="noopener noreferrer" href="https://app.airbyte.ai?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_agents_docs_banner">Try Airbyte Agents</a>! No credit card needed.',
+        '<a target="_blank" rel="noopener noreferrer" href="https://cloud.airbyte.com/signup?utm_source=docs&utm_medium=banner&utm_campaign=airbyte_cloud_docs_banner">Try Airbyte Cloud!</a> Free trial for 30 days, no credit card needed.',
       backgroundColor: "#615eff",
       textColor: "#ffffff",
       isCloseable: false,
