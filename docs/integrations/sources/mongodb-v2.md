@@ -247,6 +247,7 @@ For more information regarding configuration parameters, please see [MongoDb Doc
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                  |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------|
+| 2.1.0 | 2026-09-02 | [83705](https://github.com/airbytehq/airbyte/pull/83705) | Support sharded clusters and object-type `_id` fields; detect `_id` types with index seeks instead of a full collection scan; bump Debezium to 3.6.2 and base image to 2.0.4 |
 | 2.0.7 | 2026-01-21 | [71049](https://github.com/airbytehq/airbyte/pull/71049) | Use debezium's own token validation logic to ensure that the saved resume token is present on the server (h/t @ed-kyu) |
 | 2.0.6   | 2026-01-21 | [70980](https://github.com/airbytehq/airbyte/pull/70980) | Convert non-array MongoDB values into arrays when the schema expects an array to prevent nulls.        |
 | 2.0.5   | 2026-01-14 | [71255](https://github.com/airbytehq/airbyte/pull/71255) | fix(source-mongodb-v2): Add helpful error message for BSONObjectTooLarge errors during CDC syncs |

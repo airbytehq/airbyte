@@ -391,6 +391,48 @@ class InitialSnapshotHandlerTest {
     assertTrue(thrown.getMessage().contains("_id fields with the following types are currently supported"));
   }
 
+  @Test
+  void testGetIdFieldTypesEmptyCollection() {
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of(), new InitialSnapshotHandler().getIdFieldTypes(collection));
+  }
+
+  @Test
+  void testGetIdFieldTypesSingleType() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID1, NAME_FIELD, NAME1)),
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID2, NAME_FIELD, NAME2)),
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID3, NAME_FIELD, NAME3))));
+
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of("objectId"), new InitialSnapshotHandler().getIdFieldTypes(collection));
+  }
+
+  @Test
+  void testGetIdFieldTypesNumericTypesInterleavedInOneBracket() {
+    // min (int 1) and max (int 3) are of the same type, but a double and a long interleave between
+    // them in the _id index; the numeric bracket must be probed per type
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(CURSOR_FIELD, 1, NAME_FIELD, NAME1)),
+        new Document(Map.of(CURSOR_FIELD, 1.5, NAME_FIELD, NAME2)),
+        new Document(Map.of(CURSOR_FIELD, 2L, NAME_FIELD, NAME3)),
+        new Document(Map.of(CURSOR_FIELD, 3, NAME_FIELD, NAME4))));
+
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of("int", "long", "double"), new InitialSnapshotHandler().getIdFieldTypes(collection));
+  }
+
+  @Test
+  void testGetIdFieldTypesMixedBrackets() {
+    insertDocuments(COLLECTION1, List.of(
+        new Document(Map.of(CURSOR_FIELD, OBJECT_ID1, NAME_FIELD, NAME1)),
+        new Document(Map.of(CURSOR_FIELD, "a-string-id", NAME_FIELD, NAME2)),
+        new Document(Map.of(CURSOR_FIELD, new Document("nested", 1), NAME_FIELD, NAME3))));
+
+    final var collection = mongoClient.getDatabase(DB_NAME).getCollection(COLLECTION1);
+    assertEquals(List.of("string", "object", "objectId"), new InitialSnapshotHandler().getIdFieldTypes(collection));
+  }
+
   private void assertConfiguredFieldsEqualsRecordDataFields(final Set<String> configuredStreamFields, final JsonNode recordMessageData) {
     final Set<String> recordDataFields = ImmutableSet.copyOf(recordMessageData.fieldNames());
     assertEquals(configuredStreamFields, recordDataFields,
