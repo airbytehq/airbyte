@@ -3,16 +3,24 @@
 #
 
 import base64
+import os
+import re
 import time
-from dataclasses import dataclass
+from calendar import monthrange
+from dataclasses import dataclass, field
+from datetime import date, datetime, timedelta, timezone
 from http import HTTPStatus
-from typing import Any, Mapping, Optional, Union
+from importlib.metadata import PackageNotFoundError, version as package_version
+from threading import Lock, Thread
+from typing import Any, Callable, ClassVar, Mapping, Optional, Union
+from urllib.parse import urlsplit
 
 import requests
 from requests import HTTPError
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.http_requester import HttpRequester
 from airbyte_cdk.sources.declarative.types import Config
 
 
@@ -47,6 +55,7 @@ class ServerToServerOauthAuthenticator(NoAuth):
     _generate_token_time = 0
     _access_token = None
     _grant_type = "account_credentials"
+    _token_lock: ClassVar[Lock] = Lock()
 
     def __post_init__(self, parameters: Mapping[str, Any]):
         self._account_id = InterpolatedString.create(self.account_id, parameters=parameters).eval(self.config)
@@ -57,8 +66,9 @@ class ServerToServerOauthAuthenticator(NoAuth):
     def __call__(self, request: requests.PreparedRequest) -> requests.PreparedRequest:
         """Attach the page access token to params to authenticate on the HTTP request"""
         if self._access_token is None or ((time.time() - self._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
-            self._generate_token_time = time.time()
-            self._access_token = self.generate_access_token()
+            with self._token_lock:
+                if self._access_token is None or ((time.time() - self._generate_token_time) > BEARER_TOKEN_EXPIRES_IN):
+                    self._access_token = self.generate_access_token()
         headers = {"Authorization": f"Bearer {self._access_token}", "Content-type": "application/json"}
         request.headers.update(headers)
 
@@ -85,3 +95,389 @@ class ServerToServerOauthAuthenticator(NoAuth):
             return rest.json().get("access_token")
         except Exception as e:
             raise Exception(f"Error while generating access token: {e}") from e
+
+
+@dataclass
+class ZoomPhoneLoggingRequester(HttpRequester):
+    """
+    Adds compact Zoom Phone request telemetry without logging secrets, bodies,
+    pagination token values, or resolved path IDs.
+    """
+
+    rate_limit_category: str = "UNKNOWN"
+    history_limit_months: Optional[int] = None
+    requester_role: str = "default"
+    _summary_every: ClassVar[int] = 500
+    _periodic_summary_interval_seconds: ClassVar[int] = 300
+    _periodic_summary_idle_grace_intervals: ClassVar[int] = 12
+    _runtime_version_logged: ClassVar[bool] = False
+    _runtime_version_lock: ClassVar[Lock] = Lock()
+    _rate_limit_configs_logged: ClassVar[set[tuple[str, str]]] = set()
+    _rate_limit_config_lock: ClassVar[Lock] = Lock()
+    _default_cache_directory: ClassVar[str] = "/source/.request-cache"
+    _request_count: int = field(default=0, init=False, repr=False)
+    _cache_hit_count: int = field(default=0, init=False, repr=False)
+    _total_duration_ms: int = field(default=0, init=False, repr=False)
+    _history_limit_checked: bool = field(default=False, init=False, repr=False)
+    _periodic_logger_started: bool = field(default=False, init=False, repr=False)
+    _periodic_logger_lock: Lock = field(default_factory=Lock, init=False, repr=False)
+    _metrics_lock: Lock = field(default_factory=Lock, init=False, repr=False)
+    _active_http_request_count: int = field(default=0, init=False, repr=False)
+    _last_activity_monotonic: float = field(default_factory=time.monotonic, init=False, repr=False)
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # Airbyte uses REQUEST_CACHE_PATH when constructing its CachedSession.
+        # Keep the Zoom Phone cache on the pod's disk-backed /source EmptyDir so
+        # large recording responses do not consume the container's memory limit.
+        cache_path = None
+        if self.use_cache:
+            cache_path = os.environ.get("REQUEST_CACHE_PATH") or self._default_cache_directory
+            os.makedirs(cache_path, exist_ok=True)
+            os.environ.setdefault("REQUEST_CACHE_PATH", cache_path)
+
+        super().__post_init__(parameters)
+
+        if not ZoomPhoneLoggingRequester._runtime_version_logged:
+            with ZoomPhoneLoggingRequester._runtime_version_lock:
+                if not ZoomPhoneLoggingRequester._runtime_version_logged:
+                    try:
+                        cdk_version = package_version("airbyte-cdk")
+                    except PackageNotFoundError:
+                        cdk_version = "unknown"
+                    configured_workers = self.config.get("num_workers", 20)
+                    light_rps = self.config.get("phone_light_requests_per_second", 20)
+                    medium_rps = self.config.get("phone_medium_requests_per_second", 10)
+                    heavy_rps = self.config.get("phone_heavy_requests_per_second", 5)
+                    heavy_per_day = self.config.get("phone_heavy_requests_per_day", 15000)
+                    self.logger.info(
+                        f"Runtime cdk={cdk_version} workers={configured_workers}"
+                    )
+                    self.logger.info(
+                        "API budget "
+                        f"light={light_rps}/s "
+                        f"medium={medium_rps}/s "
+                        f"heavy={heavy_rps}/s "
+                        f"heavy_day={heavy_per_day}/day"
+                    )
+                    ZoomPhoneLoggingRequester._runtime_version_logged = True
+
+        rate_config_key = (self.name, self.rate_limit_category)
+        with ZoomPhoneLoggingRequester._rate_limit_config_lock:
+            if rate_config_key not in ZoomPhoneLoggingRequester._rate_limit_configs_logged:
+                self.logger.info(
+                    f"RateLimit [{self.name}] category={self.rate_limit_category}"
+                )
+                ZoomPhoneLoggingRequester._rate_limit_configs_logged.add(rate_config_key)
+
+        session = self._http_client._session
+        session_name = type(session).__name__
+        cache_match_headers = "n/a"
+        if self.use_cache and hasattr(session, "settings"):
+            # The CDK constructs CachedLimiterSession with match_headers=True.
+            # For Zoom Phone parent-page reuse, authentication headers must not
+            # make an otherwise identical GET request a different cache key.
+            session.settings.match_headers = False
+            cache_match_headers = str(session.settings.match_headers).lower()
+
+        cache_file = (
+            os.path.join(cache_path, f"{self.name}.sqlite") if cache_path else "none"
+        )
+        if self.use_cache:
+            self.logger.info(
+                f"Cache [{self.name}] "
+                f"role={self.requester_role} "
+                f"session={session_name} "
+                f"file={cache_file} "
+                f"match_headers={cache_match_headers}"
+            )
+
+    @staticmethod
+    def _raw_value(value: Any) -> str:
+        if isinstance(value, InterpolatedString):
+            return value.string
+        return str(value or "")
+
+    def _safe_endpoint(self, url: str) -> str:
+        raw_path = self._raw_value(self.path)
+        if not raw_path:
+            return urlsplit(url).path
+
+        raw_base = self._raw_value(self.url_base)
+        base_path = urlsplit(raw_base).path.rstrip("/") if raw_base else ""
+        endpoint = f"{base_path}/{raw_path.lstrip('/')}"
+        endpoint = re.sub(
+            r"\{\{\s*([^{}]+?)\s*\}\}",
+            lambda match: "{" + match.group(1).strip() + "}",
+            endpoint,
+        )
+        return "/" + endpoint.lstrip("/")
+
+    @staticmethod
+    def _months_ago(months: int) -> date:
+        today = datetime.now(timezone.utc).date()
+        month_index = today.year * 12 + today.month - 1 - months
+        year, zero_based_month = divmod(month_index, 12)
+        month = zero_based_month + 1
+        day = min(today.day, monthrange(year, month)[1])
+        return date(year, month, day)
+
+    def _check_history_limit(self) -> None:
+        if (
+            self._history_limit_checked
+            or self.history_limit_months is None
+        ):
+            return
+
+        self._history_limit_checked = True
+        configured_start = self.config.get("phone_start_date")
+        if not configured_start:
+            return
+
+        try:
+            requested_start = date.fromisoformat(str(configured_start))
+        except (TypeError, ValueError):
+            return
+
+        earliest_start = self._months_ago(self.history_limit_months) + timedelta(days=1)
+        if requested_start < earliest_start:
+            self.logger.warning(
+                f"Notice [{self.name}] "
+                f"requested_phone_start_date={requested_start.isoformat()} "
+                f"exceeds_zoom_history_window={self.history_limit_months}m "
+                f"effective_start_date={earliest_start.isoformat()}"
+            )
+
+    def _log_summary(self, periodic: bool = False) -> None:
+        with self._metrics_lock:
+            request_count = self._request_count
+            cache_hit_count = self._cache_hit_count
+            total_duration_ms = self._total_duration_ms
+            active_http_requests = self._active_http_request_count
+            last_activity_monotonic = self._last_activity_monotonic
+
+        average_duration_ms = (
+            round(total_duration_ms / request_count) if request_count else 0
+        )
+
+        fields = [
+            f"[{self.name}]",
+            *(["(heartbeat)"] if periodic else []),
+            f"role={self.requester_role}",
+            f"requests={request_count}",
+            f"active={active_http_requests}",
+            f"avg_ms={average_duration_ms}",
+        ]
+
+        if periodic:
+            seconds_since_activity = max(
+                0, round(time.monotonic() - last_activity_monotonic)
+            )
+            fields.append(f"idle_s={seconds_since_activity}")
+
+        if self.use_cache:
+            cache_hit_rate = (
+                (cache_hit_count / request_count) * 100 if request_count else 0.0
+            )
+            fields.extend(
+                [
+                    f"cache_hits={cache_hit_count}",
+                    f"cache={cache_hit_rate:.1f}%",
+                ]
+            )
+
+        self.logger.info(" ".join(fields))
+
+    def _periodic_summary_loop(self) -> None:
+        while True:
+            time.sleep(self._periodic_summary_interval_seconds)
+
+            with self._metrics_lock:
+                request_count = self._request_count
+                active_http_requests = self._active_http_request_count
+                last_activity_monotonic = self._last_activity_monotonic
+
+            if request_count == 0 and active_http_requests == 0:
+                continue
+
+            seconds_since_activity = time.monotonic() - last_activity_monotonic
+            idle_grace_seconds = (
+                self._periodic_summary_interval_seconds
+                * self._periodic_summary_idle_grace_intervals
+            )
+            if active_http_requests == 0 and seconds_since_activity > idle_grace_seconds:
+                continue
+
+            self._log_summary(periodic=True)
+
+    def _ensure_periodic_logger_started(self) -> None:
+        if self._periodic_logger_started:
+            return
+
+        with self._periodic_logger_lock:
+            if self._periodic_logger_started:
+                return
+
+            Thread(
+                target=self._periodic_summary_loop,
+                name=f"zoom-periodic-summary-{self.name}",
+                daemon=True,
+            ).start()
+            self._periodic_logger_started = True
+
+    def send_request(
+        self,
+        stream_state: Optional[Any] = None,
+        stream_slice: Optional[Any] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        self._check_history_limit()
+        self._ensure_periodic_logger_started()
+        with self._metrics_lock:
+            self._active_http_request_count += 1
+            self._last_activity_monotonic = time.monotonic()
+
+        url = self._get_url(
+            path=path,
+            stream_state=stream_state,
+            stream_slice=stream_slice,
+            next_page_token=next_page_token,
+        )
+        endpoint = self._safe_endpoint(url)
+        params = self._request_params(
+            stream_state,
+            stream_slice,
+            next_page_token,
+            request_params,
+        )
+        started = time.monotonic()
+
+        try:
+            response = super().send_request(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_headers=request_headers,
+                request_params=request_params,
+                request_body_data=request_body_data,
+                request_body_json=request_body_json,
+                log_formatter=log_formatter,
+            )
+        except Exception as exc:
+            duration_ms = round((time.monotonic() - started) * 1000)
+            self.logger.warning(
+                f"Failed [{self.name}] "
+                f"method={self.get_method().value} "
+                f"endpoint={endpoint} "
+                f"category={self.rate_limit_category} "
+                f"duration_ms={duration_ms} "
+                f"error={type(exc).__name__}"
+            )
+            raise
+        finally:
+            with self._metrics_lock:
+                self._active_http_request_count = max(
+                    0, self._active_http_request_count - 1
+                )
+                self._last_activity_monotonic = time.monotonic()
+
+        duration_ms = round((time.monotonic() - started) * 1000)
+
+        if response is None:
+            self.logger.warning(
+                f"Response [{self.name}] "
+                f"method={self.get_method().value} "
+                f"endpoint={endpoint} "
+                f"category={self.rate_limit_category} "
+                f"status=none "
+                f"duration_ms={duration_ms}"
+            )
+            return response
+
+        headers = response.headers
+        from_cache = bool(getattr(response, "from_cache", False))
+        with self._metrics_lock:
+            self._request_count += 1
+            self._total_duration_ms += duration_ms
+            if from_cache:
+                self._cache_hit_count += 1
+            request_count = self._request_count
+
+        fields = [
+            f"[{self.name}]",
+            f"method={self.get_method().value}",
+            f"endpoint={endpoint}",
+            f"category={self.rate_limit_category}",
+            f"status={response.status_code}",
+            f"duration_ms={duration_ms}",
+        ]
+
+        if self.use_cache:
+            fields.append(f"cache_hit={from_cache}")
+
+        if not from_cache:
+            fields.append(f"http_ms={round(response.elapsed.total_seconds() * 1000)}")
+
+        for key in ("from", "to", "recording_status", "page_size"):
+            value = params.get(key)
+            if value is not None:
+                fields.append(f"{key}={value}")
+
+        if next_page_token is not None:
+            fields.append("continuation=true")
+
+        zoom_headers = (
+            ("zoom_category", "X-RateLimit-Category"),
+            ("zoom_limit_type", "X-RateLimit-Type"),
+            ("zoom_limit", "X-RateLimit-Limit"),
+            ("zoom_remaining", "X-RateLimit-Remaining"),
+            ("retry_after", "Retry-After"),
+        )
+        for label, header_name in zoom_headers:
+            value = headers.get(header_name)
+            if value is not None:
+                fields.append(f"{label}={value}")
+
+        message = " ".join(fields)
+        if response.status_code == HTTPStatus.TOO_MANY_REQUESTS or response.status_code >= 500:
+            self.logger.warning(message)
+        else:
+            self.logger.debug(message)
+
+        if request_count % self._summary_every == 0:
+            self._log_summary()
+
+        return response
+
+
+@dataclass
+class ZoomPhoneCachedRequester(ZoomPhoneLoggingRequester):
+    """
+    Zoom Phone requester that always enables Airbyte's request cache.
+
+    This class exists because CustomRequester manifests can instantiate the base
+    requester with use_cache=False even when the YAML contains use_cache: true.
+    For /phone/recordings we need caching to be guaranteed before HttpRequester
+    constructs HttpClient, otherwise the transcript parent performs another full
+    Zoom API traversal.
+    """
+
+    use_cache: bool = True
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        # Force caching before HttpRequester.__post_init__ creates HttpClient.
+        self.use_cache = True
+        super().__post_init__(parameters)
+
+        session_name = type(self._http_client._session).__name__
+        if session_name != "CachedLimiterSession":
+            raise RuntimeError(
+                "Cache initialization failed: expected "
+                f"CachedLimiterSession for stream={self.name}, got {session_name}"
+            )
