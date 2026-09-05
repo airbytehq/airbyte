@@ -1,199 +1,85 @@
-> NOTE: CLAUDE.md is a symlink to AGENTS.md; update AGENTS.md (not the symlink) when changing these instructions.
+> NOTE: CLAUDE.md and CONTRIBUTING.md are symlinks to AGENTS.md; update AGENTS.md (not the symlinks) when changing these instructions.
 
-# source-apple-search-ads: Unique Connector Behaviors
+# Contributing to source-apple-search-ads
 
-This connector is manifest-only (`language:manifest-only`, `cdk:low-code`); all behavior described
-below lives in `manifest.yaml`. It targets the Apple Ads (formerly Apple Search Ads) Campaign
-Management API v5 at `https://api.searchads.apple.com/api/v5`, and every request carries an
-`X-AP-Context: orgId={{ config.org_id }}` header, which the API requires on all campaign-management
-calls.
+For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-Streams: `campaigns`, `adgroups`, `keywords`, `ads` (entity streams, `primary_key: [id]`,
-full refresh) and `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`,
-`ads_report_daily` (report streams, incremental on `date`).
+## Authentication
 
-## 1. Authentication is two-legged only; there is no user-consent OAuth flow
+Apple Ads uses two-legged OAuth: the API user's client id and client secret are exchanged for an access token with `grant_type=client_credentials` at `https://appleid.apple.com/auth/oauth2/token`, and the organization is selected per request with the `X-AP-Context: orgId={org_id}` header rather than being implied by the token.
 
-The Apple Ads API implements OAuth 2 as a pure machine-to-machine (two-legged) flow. The API user
-generates an ECDSA P-256 (`prime256v1`) key pair with `openssl`, uploads the public key in the Apple
-Ads UI, and then signs a self-issued ES256 JWT that is used as the `client_secret`. Tokens are
-obtained by posting `grant_type=client_credentials&scope=searchadsorg` to
-`https://appleid.apple.com/auth/oauth2/token`. There is no authorization endpoint, no redirect URI,
-no user-consent screen, and no refresh token — see
-[Implementing OAuth for the Apple Ads API](https://developer.apple.com/documentation/apple_ads/implementing-oauth-for-the-apple-search-ads-api).
+There is deliberately no three-legged OAuth (`oauth_connector_input_specification`, and so no Cloud "Authenticate" button). Apple has no consent flow to delegate to: an account administrator invites an API user, uploads a public key, and mints a client secret out of band ([Implementing OAuth](https://developer.apple.com/documentation/apple_search_ads/implementing_oauth_for_the_apple_search_ads_api)). The credentials belong to the customer's own API user, not to an Airbyte-owned application, so there is nothing Airbyte can supply on the user's behalf. `client_id` and `client_secret` are therefore user-entered and both are marked `airbyte_secret`.
 
-The manifest therefore uses a plain `OAuthAuthenticator` with `grant_type: client_credentials`,
-`client_id` and `client_secret` taken from the connector config, and an overridable
-`token_refresh_endpoint`. It intentionally declares **no** `advanced_auth` block and **no**
-`oauth_connector_input_specification`: both describe a three-legged consent flow (Airbyte redirects
-the user to the vendor, the user approves, Airbyte exchanges a code), which this API does not offer.
-Declarative OAuth cannot be used for the same reason — there is no consent URL to declare.
+`token_refresh_endpoint` exists only so deployments that must proxy outbound calls to Apple's token endpoint can redirect them. It is `airbyte_hidden`, since overriding it points authentication at a third-party host. HTTPS is stated in the field description rather than enforced with a `pattern`: adding a `pattern` narrows what an already-saved config may hold, which invalidates any existing source using a non-HTTPS proxy at validation time — a config break, whereas this version's declared breaking change is schema-only.
 
-One consequence worth knowing: the `client_secret` JWT that users paste into the config is
-short-lived by Apple's own rules (Apple caps its `exp` at 180 days). Auth failures on a
-previously-working source are usually an expired JWT, not a revoked key.
+## Incremental Stream Considerations
 
-**Why this matters:** Certification criteria A-1 and A-2 expect OAuth to be implemented
-declaratively and offered first in the UI _where the API supports it_. This API does not support a
-user-consent flow at all, so the `client_id` / `client_secret` pair is the only possible credential
-shape; adding `advanced_auth` would advertise a flow that cannot work. Anyone "fixing" this
-connector by adding a declarative OAuth spec would produce a spec Apple cannot satisfy.
+The four report streams are incremental on a synthesized daily `date`. The four object streams are full refresh.
 
-## 2. The four `*_report_daily` streams are genuinely keyless
+| Stream                 | Volume Tier | Relationship                              | Cursor Field | API Incremental Support            | Current Status              | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------------------- | ----------- | ----------------------------------------- | ------------ | ---------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| campaigns              | small       | top-level parent of `adgroups`            | none         | `find` endpoint only               | deferred_parent_stream      | `GET /campaigns` has no filter parameters. Apple's `POST /campaigns/find` accepts selector conditions, so a `modificationTime` cursor is the plausible path (Fivetran keys its `campaign_history` table on `(id, modification_time)`), but it is unverified against a live org. It is also unsafe today: `campaigns` supplies partitions to `adgroups`, `ads`, and three report streams, so filtering it by cursor would silently drop children of unmodified campaigns. |
+| adgroups               | medium      | substream of `campaigns`; parent of `ads` | none         | `find` endpoint only               | deferred_parent_stream      | Same reasoning as `campaigns`; it is the partition source for `ads`.                                                                                                                                                                                                                                                                                                                                                                                                     |
+| keywords               | medium      | substream of `adgroups`                   | none         | `find` endpoint only               | deferred_needs_verification | Leaf stream, so cursoring it would not drop child partitions, but `GET .../keywords` takes no filter and the `find` variant's support for a `modificationTime` condition is unverified. Records already carry `modificationTime`.                                                                                                                                                                                                                                        |
+| ads                    | medium      | substream of `adgroups`                   | none         | `find` endpoint only               | deferred_needs_verification | Same as `keywords`.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| campaigns_report_daily | large       | top-level                                 | date         | request body `startTime`/`endTime` | incremental                 | `DatetimeBasedCursor`, `P1D` step and granularity, `lookback_window` days of overlap.                                                                                                                                                                                                                                                                                                                                                                                    |
+| adgroups_report_daily  | large       | substream of `campaigns`                  | date         | request body `startTime`/`endTime` | incremental                 | Uses `global_substream_cursor` — one cursor for all campaign partitions, not per-partition state (breaking change 1.0.0).                                                                                                                                                                                                                                                                                                                                                |
+| keywords_report_daily  | large       | substream of `campaigns`                  | date         | request body `startTime`/`endTime` | incremental                 | Same global cursor as `adgroups_report_daily`.                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ads_report_daily       | large       | substream of `campaigns`                  | date         | request body `startTime`/`endTime` | incremental                 | Same shape.                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 
-`campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`, and `ads_report_daily`
-declare no `primary_key`. They are aggregate reporting streams: the request is a `POST` to
-`/reports/campaigns[/{campaignId}/{adgroups|keywords|ads}]` with `granularity: DAILY`,
-`groupBy: ['countryOrRegion']`, and a `startTime`/`endTime` window; the API returns
-`data.reportingDataResponse.row[]` where each row is a metric aggregation, not a stored object. No
-row carries an API-assigned record identifier.
+Apple applies a 30-day attribution window, so report rows keep changing after their `date`. `lookback_window` (default 30) re-reads that tail on every sync; lowering it shortens syncs at the cost of late-attributed conversions.
 
-What actually identifies a row is a composite of fields the connector assembles itself with
-`AddFields` transformations: the reporting entity id (`campaignId`, `adGroupId`, `keywordId`, or
-`adId`, lifted out of the nested `record.metadata`), the `date` copied from
-`stream_slice.start_time`, and `countryorregion` lifted from `record.metadata.countryOrRegion`
-(the single `groupBy` dimension). Metrics are nested under the `granularity` array; entity
-attributes stay under `metadata`.
+## Primary keys and record shape
 
-That composite is not declared as a primary key because it is only unique as long as the request
-shape stays exactly as it is today: the tuple is a function of the hard-coded `granularity: DAILY`
-and `groupBy: ['countryOrRegion']` in the manifest, plus `step: P1D` on the cursor. Declaring it as
-a PK would make any future change to `groupBy` (adding a dimension) or `granularity` (HOURLY,
-WEEKLY, MONTHLY) a silently key-violating change rather than an additive one, and changing a
-declared PK afterwards is a breaking change for every existing connection. Keyless append is the
-honest description of what the API returns.
+- Object streams key on `id`.
+- Report streams have no API-provided key. Apple returns rows as `{metadata: {...}, granularity: [...]}`, and the connector flattens them: `date` is stamped from the slice (`stream_slice.start_time`, not an API field), and the object id (`campaignId`, `adGroupId`, `keywordId`, `adId`) plus `countryorregion` are lifted out of `metadata` with `AddFields`. Because every report is requested with `groupBy: countryOrRegion`, a row is only unique per `(date, <object>Id, countryorregion)`; accounts targeting multiple countries must add `countryorregion` to the primary key in the connection's stream settings to deduplicate correctly.
+- `endTime` on campaigns and ad groups is null for open-ended schedules; it is declared nullable rather than typed `null`.
+- Date and datetime fields declare JSON Schema formats. Apple returns local timestamps without an offset (`2026-01-01T00:00:00.000`), so `creationTime`, `modificationTime`, `startTime`, and `endTime` are `format: date-time` with `airbyte_type: timestamp_without_timezone`; the report `date` is `format: date`.
 
-**Why this matters:** S-1 requires either a real primary key on every stream or a named exception
-per stream with the reason. These four streams are the exception, and the reason is not "we did not
-get around to it": the identifying tuple is derived from the connector's own request parameters
-rather than from the API, so it is not a stable record identity. Users who need deduplicated
-reporting rows should dedupe on `(<entity>Id, date, countryorregion)` in the destination.
+## Deletions
 
-## 3. Deletions are replicated as a `deleted` flag on the entity streams
+Apple soft-deletes campaign structure: objects keep their `id` and carry `deleted: true` plus a terminal `status`/`servingStatus`, and `GET /campaigns` and friends keep returning them. `deleted` is therefore the single canonical deletion flag on `campaigns`, `adgroups`, `keywords`, and `ads`, and no request parameter is needed to include deleted rows. There is no deleted-records endpoint and no hard-delete signal; because the object streams are full refresh, a deletion is observed as the flag flipping on the next sync. Report streams have no deletion concept — Apple stops returning metrics rows for a deleted object rather than marking them.
 
-The canonical deletion pattern for this connector is **a deletion flag field on the primary
-streams**, not dedicated `deleted_*` streams. Apple soft-deletes campaign-management objects and
-returns `deleted: true|false` on `Campaign`, `AdGroup`, `Keyword`, and `Ad`; the schemas of
-`campaigns`, `adgroups`, `keywords`, and `ads` all include that boolean, so whatever Apple returns
-is passed through to the destination unchanged. There are no `deleted_*` streams and none should be
-added.
+## Error handling
 
-The important caveat is coverage, and it is not fully verified. The connector reads entities through
-the plain `GET` list endpoints (`/campaigns`,
-`/campaigns/{campaignId}/adgroups`, `/campaigns/{campaignId}/adgroups/{adgroupId}/targetingkeywords`,
-`/campaigns/{campaignId}/adgroups/{adgroupId}/ads`), which take no "include deleted" parameter, and
-Apple's reference pages for those endpoints do not state whether soft-deleted objects are included
-in the response. Apple's selector-based counterparts — `POST /campaigns/find` and friends — do
-accept a `deleted` [`Condition`](https://developer.apple.com/documentation/apple_ads/find-campaigns),
-which is the only documented way to explicitly select or exclude deleted objects. So the accurate
-statement is: the `deleted` flag is replicated when the API returns it, and the connector does not
-request deleted records explicitly. Whether the `GET` endpoints emit soft-deleted rows at all has
-not been confirmed against live data (this connector has no working sandbox; see
-`acceptance-test-config.yml`, where the connection test is expected to fail and the data tests are
-commented out).
+All eight streams and the `check` operation share the handler defined at `definitions.error_handler` in `manifest.yaml`. `keywords_report_daily` uses `definitions.error_handler_keywords_report_daily`, which is the same list with one extra IGNORE filter in front. Apple returns errors as `{"error": {"errors": [{"messageCode": ..., "message": ..., "field": ...}]}}`; the filters read `error.errors[0].message` only to *match* (via `error_message_contains` and the keyword-report predicate), and the message they emit is static — see the note below the table.
 
-Note that switching the entity streams to the `find` endpoints purely to guarantee deleted-record
-coverage would not be a free change: `find` is `POST` with a selector body and its own pagination,
-so it is a rewrite of four streams, and narrowing or widening the returned record set changes what
-existing connections sync.
+| Response                                                           | Action                   | Failure type      | Rationale                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------ | ------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Message contains `Invalid cert`                                    | FAIL                     | `config_error`    | The client secret is signed by a key Apple no longer accepts (rotated or expired key pair). Not retryable and not fixable by re-authenticating: the API user's secret must be regenerated. Matched before the 401 filter, because Apple returns it as a `401` with `messageCode: UNAUTHORIZED` and message `Invalid cert. cert null` — a shape reported on Apple's developer forums ([thread 702411](https://developer.apple.com/forums/thread/702411)) rather than documented, so the filter matches on the message substring. |
+| 401                                                                | REFRESH_TOKEN_THEN_RETRY | `transient_error` | Ordinary access-token expiry. The token lives up to 180 days but Apple also invalidates it on org changes, so the connector refreshes and retries rather than failing the sync.                                                                                                                                                                                                                                                                                                                                                 |
+| 403                                                                | FAIL                     | `config_error`    | Authorization, not authentication: the API user's role does not grant access to the requested resource, or `org_id` names an organization it cannot read. User-correctable, so it fails immediately. Remediation: confirm `org_id` names an organization the API user can read, and that its role grants campaign and report access (Apple Ads UI > Settings > API).                                                                                                                                                            |
+| 429, 500, 502, 503, 504                                            | RETRY                    | `transient_error` | Apple documents exponential retry for rate limiting and server errors. `max_retries: 10` with `ExponentialBackoffStrategy` at `backoff_factor` (default 5).                                                                                                                                                                                                                                                                                                                                                                     |
+| `CAMPAIGN DOES NOT CONTAIN KEYWORD` (`keywords_report_daily` only) | IGNORE                   | —                 | A campaign with no keywords is an empty partition, not an error. Scoped to that one stream so the same message elsewhere is not swallowed.                                                                                                                                                                                                                                                                                                                                                                                      |
+| Any other error response                                           | FAIL (terminal)          | `system_error`    | CDK `DefaultErrorHandler` fallback. An explicit catch-all filter is deliberately omitted: `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s, so a literal catch-all predicate would match successful responses.                                                                                                                                                                                                                                                                         |
 
-**Why this matters:** S-5 requires one canonical, documented deletion pattern per connector. This is
-that declaration — flag field, not `deleted_*` streams — and it deliberately stops short of claiming
-that every deletion reaches the destination, because the manifest does not implement anything that
-guarantees it. A future agent verifying S-5 against live credentials should check whether
-`GET /campaigns` returns rows with `deleted: true`, and only then decide whether the `find`
-endpoints are needed.
+All streams share `definitions.error_handler`; `keywords_report_daily` uses `definitions.error_handler_keywords_report_daily`, which is the same filter list with the IGNORE filter prepended. Filter order matters — the CDK returns the first match — so the `Invalid cert` filter must stay ahead of the 401 filter and the IGNORE filter ahead of everything.
 
-## 4. Entity streams are full refresh even though records carry `modificationTime`
+The `error_message` strings are deterministic and interpolate nothing: they name the failure condition only, with remediation kept in this document and in the [connector docs](https://docs.airbyte.com/integrations/sources/apple-search-ads). Interpolating Apple's own error text would make the message non-deterministic as a log key and risks echoing configuration values.
 
-Only the four report streams are incremental (`DatetimeBasedCursor` on `date`, `step: P1D`,
-`cursor_granularity: P1D`, with a user-configurable `lookback_window`). The four entity streams are
-full refresh, even though `campaigns`, `adgroups`, `keywords`, and `ads` records all include a
-`modificationTime` timestamp.
+## Rate limits and concurrency
 
-This is a deliberate deferral, not an API limitation, and it should be documented as such. Apple
-exposes selector-condition endpoints (`POST /campaigns/find` and the equivalents for ad groups,
-keywords, and ads) whose `Condition` objects accept `modificationTime` with operators such as
-`GREATER_THAN`, so server-side incremental filtering is available in principle. Three reasons keep
-the streams full refresh today:
+Apple does not publish numeric rate limits for the Campaign Management API; it documents rate limiting as a `429` with a recommendation to retry with exponential backoff, which is what the shared error handler does. Because there is no documented quota to size an `api_budget` against, throughput is bounded instead by `concurrency_level` (`num_workers`, default 2, max 20) and pagination at 1,000 records per page. Accounts with many campaigns or ad groups can raise `num_workers`; report streams fan out one request per campaign per day, so this is the main lever on sync duration and on how hard the account is hit.
 
-- Volume is small. Campaigns, ad groups, keywords, and ads are configuration objects, not event
-  data; a full refresh of an organization's campaign tree is cheap next to the daily report streams,
-  and the streams already page at `limit=1000` with `default_concurrency` from `num_workers`.
-- The `find` endpoints are a different request shape (`POST` with a selector body) than the `GET`
-  list endpoints in use, so this is a rewrite of four streams rather than adding a cursor.
-- Adding incremental sync to a stream that has none changes its state format from empty to a
-  per-stream cursor and changes the sync mode users see in the catalog. That has to ship as its own
-  reviewed change, not as a side effect of a documentation pass.
+`maxSecondsBetweenMessages` is 10,800s. Long report backfills on large accounts are the realistic heartbeat risk, since a single day-slice of `ads_report_daily` iterates every campaign partition.
 
-**Why this matters:** I-1 requires every stream with a viable cursor to be incremental, or a
-documented reason why not. `modificationTime` is a viable cursor, so this connector does not pass
-I-1 on the merits — it passes on a stated, revisitable deferral. Anyone picking this up should treat
-it as scoped work (switch to `find`, add `DatetimeBasedCursor` on `modificationTime`, verify
-substream partition routing still works) and not as a one-line manifest tweak.
+## Competitor parity (Fivetran)
 
-## 5. No `api_budget`: the Campaign Management API publishes no numeric quota
+Fivetran's [Apple Search Ads connector](https://fivetran.com/docs/connectors/applications/apple-search-ads) reads the same Campaign Management API. Its object tables are SCD type-2 histories keyed on `(id, modification_time)`; this connector emits current state instead, which is a modeling difference rather than missing data — history can be reconstructed downstream from append-mode syncs.
 
-The manifest configures no `api_budget`. The Rate Limits section of
-[Calling the Apple Ads API](https://developer.apple.com/documentation/apple_ads/calling-the-apple-search-ads-api)
-documents rate limiting only as retry guidance — "increase retry attempts exponentially by seconds",
-with a suggested ceiling (2 → 4 → 8 → 16 seconds). It publishes no requests-per-second, no
-requests-per-window, and no quota headers for this API version, so there is no published limit for
-an `api_budget` to match.
-
-Instead, every stream uses a `CompositeErrorHandler` with an `ExponentialBackoffStrategy` (report
-streams take the multiplier from the optional `backoff_factor` config field) and retries `429` and
-`500`; `401` maps to `REFRESH_TOKEN_THEN_RETRY`. That mirrors Apple's own prescription.
-
-There is one forward-looking caveat. Apple's newer **Apple Ads Platform API** (a different API from
-the Campaign Management API v5 this connector calls) _does_ return
-[IETF `RateLimit-Limit` / `RateLimit-Remaining` / `RateLimit-Reset` headers](https://developer.apple.com/documentation/apple-ads-platform-api/rate-limits).
-If this connector is ever migrated to that API, this justification no longer applies and the rate
-limits should be honored, either via `api_budget` or by respecting `Retry-After` on `429`.
-
-**Why this matters:** P-2 requires `api_budget` wherever the API publishes rate limits, and
-otherwise a documented statement that none are published. For v5 the honest answer is that Apple
-publishes backoff advice rather than a quota, so a hard-coded `api_budget` would be an invented
-number. Keep this section in sync with the API version the manifest's `url_base` actually points at.
-
-## 6. Stream coverage versus Fivetran (parity table)
-
-The comparison below is against Fivetran's Apple Search Ads connector, the required V-1 source. Rows
-are the tables Fivetran materializes, taken from
-[`fivetran/dbt_apple_search_ads`](https://github.com/fivetran/dbt_apple_search_ads) (the source
-package [`dbt_apple_search_ads_source`](https://github.com/fivetran/dbt_apple_search_ads_source) is
-deprecated and folded into it) and the
-[Fivetran connector schema/ERD](https://fivetran.com/docs/connectors/applications/apple-search-ads).
-
-| Fivetran table       | Verdict | Airbyte stream / notes                                                                                                                                                                                                                               |
-| -------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `campaign_history`   | covered | `campaigns`                                                                                                                                                                                                                                          |
-| `ad_group_history`   | covered | `adgroups`                                                                                                                                                                                                                                           |
-| `keyword_history`    | covered | `keywords`                                                                                                                                                                                                                                           |
-| `ad_history`         | covered | `ads`                                                                                                                                                                                                                                                |
-| `campaign_report`    | covered | `campaigns_report_daily`                                                                                                                                                                                                                             |
-| `ad_group_report`    | covered | `adgroups_report_daily`                                                                                                                                                                                                                              |
-| `keyword_report`     | covered | `keywords_report_daily`                                                                                                                                                                                                                              |
-| `ad_report`          | covered | `ads_report_daily`                                                                                                                                                                                                                                   |
-| `organization`       | missing | Apple exposes [`GET /acls`](https://developer.apple.com/documentation/apple_ads/get-user-acl) (org id, name, currency, timezone, payment model) and `GET /me`; neither is implemented as a stream.                                                   |
-| `search_term_report` | missing | Apple exposes `POST /reports/campaigns/{campaignId}/searchterms` and the [ad-group-scoped variant](https://developer.apple.com/documentation/apple_ads/get-search-term-level-within-ad-group-reports); no `search_terms_report_daily` stream exists. |
-
-Two notes on the `covered` verdicts, so they are not read as more than they are. First, Fivetran's
-`*_history` tables are versioned snapshots produced by Fivetran's history mode; the matching Airbyte
-streams replicate current state, and versioning is left to the destination sync mode. Second,
-Fivetran flattens report metrics into columns (`impressions`, `taps`, `local_spend_amount`, …) while
-these streams keep Apple's nested response shape — metrics live in the `granularity` array and
-entity attributes in `metadata`, so the data is present but not column-per-metric.
-
-The two `missing` rows are real and are **not** justified here as out of scope: both endpoints exist
-and both are ordinary reporting/reference resources. Implementing them belongs in its own sub-issue
-of the certification epic (V-1 asks for a single sub-issue listing all missing streams), not in a
-documentation change. Separately, Apple's v5 API also exposes resources neither Fivetran nor this
-connector covers — impression-share reports, product pages, and app locale resources among them;
-they are outside the V-1 comparison because V-1 is scored against competitor coverage, but they are
-worth knowing about when scoping that sub-issue.
-
-**Why this matters:** V-1 asks whether stream coverage matches the market, and passes only when
-there are no `missing` rows or each is justified. This connector has two genuine gaps, so the table
-is the record of that — deliberately not inflated to a clean sheet. Anyone adding streams here
-should update this table in the same change.
+| Fivetran table                                                                                                              | Verdict          | Reason                                                                                                                                                                                                                                                                                               |
+| --------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `campaign_history`                                                                                                          | covered          | `campaigns` (current state; see note above on history semantics).                                                                                                                                                                                                                                    |
+| `ad_group_history`                                                                                                          | covered          | `adgroups`.                                                                                                                                                                                                                                                                                          |
+| `ad_history`                                                                                                                | covered          | `ads`.                                                                                                                                                                                                                                                                                               |
+| keyword history table                                                                                                       | covered          | `keywords`.                                                                                                                                                                                                                                                                                          |
+| `campaign_report`                                                                                                           | covered          | `campaigns_report_daily`.                                                                                                                                                                                                                                                                            |
+| `ad_group_report`                                                                                                           | covered          | `adgroups_report_daily`.                                                                                                                                                                                                                                                                             |
+| `keyword_report`                                                                                                            | covered          | `keywords_report_daily`.                                                                                                                                                                                                                                                                             |
+| `ad_level_report`                                                                                                           | covered          | `ads_report_daily`.                                                                                                                                                                                                                                                                                  |
+| `country_or_region_history`                                                                                                 | covered-as-field | `campaigns.countriesOrRegions[]`, plus `countryorregion` on every report row.                                                                                                                                                                                                                        |
+| `targeting_dimensions_history`                                                                                              | covered-as-field | `adgroups.targetingDimensions`.                                                                                                                                                                                                                                                                      |
+| `ad_serving_state_reason_history`                                                                                           | covered-as-field | `ads.servingStateReasons[]`, `adgroups.servingStateReasons[]`.                                                                                                                                                                                                                                       |
+| `search_term_report`                                                                                                        | **missing**      | Apple's [search-term-level reports](https://developer.apple.com/documentation/apple_search_ads/get-search-term-level-reports) endpoint is not implemented. This is real coverage Fivetran has and this connector does not; a `search_terms_report_daily` stream is the one parity gap worth closing. |
+| `impression_share_report`                                                                                                   | out-of-scope     | A separate Apple API surface (Impression Share Report) with its own request model and eligibility rules, not part of the reporting endpoints this connector uses.                                                                                                                                    |
+| `creative_state_reason_history`, `product_page_history`, `product_page_locale`, `deep_link`, `locale_device`, `storefronts` | out-of-scope     | Creative-management and app-metadata endpoints (`/creativesets`, `/apps/.../productpages`, `/countriesorregions`) describing campaign setup surfaces rather than advertising performance or structure. Not requested by users to date; adding them is a scope expansion, not a parity fix.           |
