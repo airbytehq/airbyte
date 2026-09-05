@@ -5,6 +5,51 @@ check:
   stream_names:
   - accounts
 definitions:
+  error_handler:
+    type: DefaultErrorHandler
+    max_retries: 5
+    response_filters:
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      error_message_contains: errorCode=003200
+      error_message: QuickBooks rejected the app credentials backing this connection.
+    - type: HttpResponseFilter
+      action: FAIL
+      failure_type: config_error
+      error_message_contains: errorCode=003201
+      error_message: The QuickBooks user has not authorized this app for the configured company.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 401
+      failure_type: config_error
+      error_message: The QuickBooks OAuth grant is expired or revoked, so the source must be re-authenticated.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 403
+      failure_type: config_error
+      error_message: The QuickBooks OAuth grant lacks the accounting scope for the configured company.
+    - type: HttpResponseFilter
+      action: FAIL
+      http_codes:
+      - 404
+      failure_type: config_error
+      error_message: QuickBooks does not recognize the configured Realm ID.
+    - type: HttpResponseFilter
+      action: RETRY
+      http_codes:
+      - 429
+      - 500
+      - 502
+      - 503
+      - 504
+      failure_type: transient_error
+      error_message: QuickBooks returned a retryable throttling or server error.
+    backoff_strategies:
+    - type: ExponentialBackoffStrategy
+      factor: 5
   streams:
     accounts:
       type: DeclarativeStream
@@ -48,6 +93,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -222,6 +269,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -477,6 +526,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -827,6 +878,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1031,6 +1084,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1168,6 +1223,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1557,6 +1614,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1913,6 +1972,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2050,6 +2111,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2339,6 +2402,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2542,6 +2607,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -2980,6 +3047,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3534,6 +3603,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -3734,6 +3805,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4054,6 +4127,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4178,6 +4253,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4474,6 +4551,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -4922,6 +5001,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5316,6 +5397,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -5665,6 +5748,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6102,6 +6187,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6230,6 +6317,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6406,6 +6495,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6593,6 +6684,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6741,6 +6834,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -6925,6 +7020,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7089,6 +7186,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7352,6 +7451,8 @@ definitions:
           request_headers:
             Accept: application/json
             User-Agent: airbyte-connector
+          error_handler:
+            $ref: "#/definitions/error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -7637,6 +7738,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -7811,6 +7914,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8066,6 +8171,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8416,6 +8523,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8620,6 +8729,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -8757,6 +8868,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9146,6 +9259,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9502,6 +9617,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9639,6 +9756,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -9928,6 +10047,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -10131,6 +10252,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -10569,6 +10692,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11123,6 +11248,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11323,6 +11450,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11643,6 +11772,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -11767,6 +11898,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12063,6 +12196,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12511,6 +12646,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -12905,6 +13042,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13254,6 +13393,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13691,6 +13832,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13819,6 +13962,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -13995,6 +14140,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14182,6 +14329,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14330,6 +14479,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14514,6 +14665,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14678,6 +14831,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -14941,6 +15096,8 @@ streams:
       request_headers:
         Accept: application/json
         User-Agent: airbyte-connector
+      error_handler:
+        $ref: "#/definitions/error_handler"
     record_selector:
       type: RecordSelector
       extractor:
@@ -15173,20 +15330,17 @@ spec:
     - client_id
     - client_secret
     - refresh_token
-    - access_token
-    - token_expiry_date
     - realm_id
     - start_date
-    - sandbox
     properties:
       realm_id:
         type: string
         order: 0
         title: Realm ID
         description: >-
-          Labeled Company ID. The Make API Calls panel is populated with
-          the realm id and the current access token.
-        airbyte_secret: true
+          Labeled Company ID of the QuickBooks company to sync. It is shown
+          in the Make API Calls panel of the Intuit developer portal, and in
+          the QuickBooks UI under Settings > Additional Information.
       auth_type:
         type: string
         order: 1
@@ -15204,7 +15358,10 @@ spec:
         type: string
         order: 3
         title: Access Token
-        description: Access token for making authenticated requests.
+        description: >-
+          Access token for making authenticated requests. Optional: the
+          connector obtains and refreshes it from the refresh token, and
+          persists the current value here.
         airbyte_secret: true
       client_secret:
         type: string
@@ -15225,7 +15382,9 @@ spec:
         order: 6
         title: Token Expiry Date
         format: date-time
-        description: The date-time when the access token should be refreshed.
+        description: >-
+          The date-time when the access token should be refreshed. Optional:
+          the connector maintains this value after each token refresh.
       start_date:
         type: string
         order: 7
