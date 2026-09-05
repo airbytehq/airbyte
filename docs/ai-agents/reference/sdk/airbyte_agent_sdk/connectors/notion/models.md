@@ -67,6 +67,7 @@ Classes
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[DataSourcesSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[PagesSearchData]
     * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
