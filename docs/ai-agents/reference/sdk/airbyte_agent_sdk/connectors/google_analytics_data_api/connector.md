@@ -47,6 +47,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against daily_active_users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, property_id: str, date_ranges: list[DailyActiveUsersListParamsDaterangesItem] | None = None, dimensions: list[DailyActiveUsersListParamsDimensionsItem] | None = None, metrics: list[DailyActiveUsersListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], DailyActiveUsersListResultMeta]`
     :   Returns daily active user counts (1-day active users) by date.
         
@@ -110,6 +125,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against devices records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, property_id: str, date_ranges: list[DevicesListParamsDaterangesItem] | None = None, dimensions: list[DevicesListParamsDimensionsItem] | None = None, metrics: list[DevicesListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], DevicesListResultMeta]`
     :   Returns device-related metrics broken down by device category, operating system, browser, and date, including users, sessions, and page views.
         
@@ -162,6 +192,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against four_weekly_active_users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[FourWeeklyActiveUsersListParamsDaterangesItem] | None = None, dimensions: list[FourWeeklyActiveUsersListParamsDimensionsItem] | None = None, metrics: list[FourWeeklyActiveUsersListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], FourWeeklyActiveUsersListResultMeta]`
     :   Returns 28-day active user counts by date.
@@ -408,7 +453,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -518,6 +563,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against locations records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, property_id: str, date_ranges: list[LocationsListParamsDaterangesItem] | None = None, dimensions: list[LocationsListParamsDimensionsItem] | None = None, metrics: list[LocationsListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], LocationsListResultMeta]`
     :   Returns geographic metrics broken down by region, country, city, and date, including users, sessions, bounce rate, and page views.
         
@@ -573,6 +633,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against pages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[PagesListParamsDaterangesItem] | None = None, dimensions: list[PagesListParamsDimensionsItem] | None = None, metrics: list[PagesListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], PagesListResultMeta]`
     :   Returns page-level metrics including page views and bounce rate, broken down by host name, page path, and date.
@@ -636,6 +711,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against traffic_sources records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, property_id: str, date_ranges: list[TrafficSourcesListParamsDaterangesItem] | None = None, dimensions: list[TrafficSourcesListParamsDimensionsItem] | None = None, metrics: list[TrafficSourcesListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], TrafficSourcesListResultMeta]`
     :   Returns traffic source metrics broken down by session source, session medium, and date, including users, sessions, bounce rate, and page views.
         
@@ -696,6 +786,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against website_overview records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, property_id: str, date_ranges: list[WebsiteOverviewListParamsDaterangesItem] | None = None, dimensions: list[WebsiteOverviewListParamsDimensionsItem] | None = None, metrics: list[WebsiteOverviewListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], WebsiteOverviewListResultMeta]`
     :   Returns website overview metrics including total users, new users, sessions, bounce rate, page views, and average session duration by date.
         
@@ -748,6 +853,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against weekly_active_users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, property_id: str, date_ranges: list[WeeklyActiveUsersListParamsDaterangesItem] | None = None, dimensions: list[WeeklyActiveUsersListParamsDimensionsItem] | None = None, metrics: list[WeeklyActiveUsersListParamsMetricsItem] | None = None, keep_empty_rows: bool | None = None, return_property_quota: bool | None = None, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_analytics_data_api.models.GoogleAnalyticsDataApiExecuteResultWithMeta[list[Row], WeeklyActiveUsersListResultMeta]`
     :   Returns weekly active user counts (7-day active users) by date.

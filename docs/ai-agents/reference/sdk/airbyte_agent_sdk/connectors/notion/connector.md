@@ -84,6 +84,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against blocks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `create(self, children: list[BlocksCreateParamsChildrenItem], block_id: str, **kwargs) ‑> list[airbyte_agent_sdk.connectors.notion.models.Block]`
     :   Creates and appends new children blocks to the specified parent block or page
         
@@ -188,6 +203,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against comments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `create(self, rich_text: list[CommentsCreateParamsRichTextItem], parent: dict[str, Any] | None = None, discussion_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Comment`
     :   Creates a comment on a page or block, or replies to an existing discussion thread
         
@@ -260,6 +290,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against data_sources records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, data_source_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.DataSource`
     :   Retrieves a data source object using the ID specified
@@ -530,7 +575,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -639,6 +684,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against pages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `create(self, parent: dict[str, Any], properties: dict[str, Any] | None = None, children: list[dict[str, Any]] | None = None, icon: PagesCreateParamsIcon | None | None = None, cover: PagesCreateParamsCover | None | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.Page`
     :   Creates a new page as a child of an existing page or data source
         
@@ -729,6 +789,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.notion.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, user_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.notion.models.User`
     :   Retrieves a single user by ID

@@ -68,6 +68,7 @@ Classes
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[IssuesSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[ProjectsSearchData]
     * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.jira.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

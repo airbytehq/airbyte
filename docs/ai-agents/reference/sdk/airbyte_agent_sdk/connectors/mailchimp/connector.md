@@ -51,6 +51,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against automations records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, count: int | None = None, offset: int | None = None, before_create_time: str | None = None, since_create_time: str | None = None, before_start_time: str | None = None, since_start_time: str | None = None, status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[Automation], AutomationsListResultMeta]`
     :   Get a summary of an account's classic automations
         
@@ -120,6 +135,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against campaigns records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, campaign_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.Campaign`
     :   Get information about a specific campaign
@@ -194,6 +224,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against email_activity records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, campaign_id: str, count: int | None = None, offset: int | None = None, since: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[EmailActivity], EmailActivityListResultMeta]`
     :   Get a list of member's subscriber activity in a specific campaign
         
@@ -243,6 +288,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against interest_categories records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, list_id: str, interest_category_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.InterestCategory`
     :   Get information about a specific interest category
@@ -304,6 +364,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against interests records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, list_id: str, interest_category_id: str, interest_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.Interest`
     :   Get interests or group names for a specific category
@@ -388,6 +463,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against list_members records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, list_id: str, subscriber_hash: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.ListMember`
     :   Get information about a specific list member
@@ -477,6 +567,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against lists records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, list_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.List`
     :   Get information about a specific list in your Mailchimp account
@@ -735,7 +840,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -856,6 +961,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against reports records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, campaign_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.Report`
     :   Get report details for a specific sent campaign
         
@@ -931,6 +1051,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against segment_members records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, list_id: str, segment_id: str, count: int | None = None, offset: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[SegmentMember], SegmentMembersListResultMeta]`
     :   Get information about members in a saved segment
         
@@ -983,6 +1118,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against segments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, list_id: str, segment_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.Segment`
     :   Get information about a specific segment
@@ -1046,6 +1196,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tags records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, list_id: str, name: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[Tag], TagsListResultMeta]`
     :   Search for tags on a list by name
         
@@ -1097,6 +1262,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.mailchimp.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against unsubscribes records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, campaign_id: str, count: int | None = None, offset: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.mailchimp.models.MailchimpExecuteResultWithMeta[list[Unsubscribe], UnsubscribesListResultMeta]`
     :   Get information about members who have unsubscribed from a specific campaign

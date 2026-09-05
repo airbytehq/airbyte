@@ -66,6 +66,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against applications records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, updated_at: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Application], ApplicationsListResultMeta]`
     :   Returns a cursor-paginated list of applications.
         
@@ -185,6 +200,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against candidates records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, updated_at: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Candidate], CandidatesListResultMeta]`
     :   Returns a cursor-paginated list of candidates.
         
@@ -235,6 +265,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against departments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Department], DepartmentsListResultMeta]`
     :   Returns a cursor-paginated list of departments.
@@ -477,7 +522,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -611,6 +656,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against job_posts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, updated_at: str | None = None, active: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[JobPost], JobPostsListResultMeta]`
     :   Returns a cursor-paginated list of job posts.
         
@@ -672,6 +732,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against jobs records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, updated_at: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Job], JobsListResultMeta]`
     :   Returns a cursor-paginated list of jobs.
         
@@ -730,6 +805,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against offers records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, updated_at: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Offer], OffersListResultMeta]`
     :   Returns a cursor-paginated list of offers.
         
@@ -783,6 +873,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against offices records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Office], OfficesListResultMeta]`
     :   Returns a cursor-paginated list of offices.
         
@@ -831,6 +936,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against sources records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[Source], SourcesListResultMeta]`
     :   Returns a cursor-paginated list of sources.
@@ -893,6 +1013,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.greenhouse.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, cursor: str | None = None, per_page: int | None = None, ids: list[int] | None = None, updated_at: str | None = None, show_service_accounts: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.greenhouse.models.GreenhouseExecuteResultWithMeta[list[User], UsersListResultMeta]`
     :   Returns a cursor-paginated list of users.

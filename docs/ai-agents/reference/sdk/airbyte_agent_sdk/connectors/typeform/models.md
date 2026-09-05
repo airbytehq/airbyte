@@ -68,6 +68,7 @@ Classes
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[ThemesSearchData]
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[WebhooksSearchData]
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[WorkspacesSearchData]
+    * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

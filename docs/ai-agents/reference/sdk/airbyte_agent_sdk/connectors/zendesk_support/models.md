@@ -83,6 +83,7 @@ Classes
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TicketsSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[TriggersSearchData]
     * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.zendesk_support.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

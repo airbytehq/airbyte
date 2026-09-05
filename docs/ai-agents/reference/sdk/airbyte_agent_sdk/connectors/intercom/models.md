@@ -201,6 +201,7 @@ Classes
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[ContactsSearchData]
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[ConversationsSearchData]
     * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[TeamsSearchData]
+    * airbyte_agent_sdk.connectors.intercom.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
