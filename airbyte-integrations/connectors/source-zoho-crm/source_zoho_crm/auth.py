@@ -9,6 +9,10 @@ import requests
 from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
 
 
+# Timeout (in seconds) for the token refresh request so a hung endpoint cannot stall the sync indefinitely.
+TOKEN_REFRESH_TIMEOUT = 60
+
+
 class ZohoOauth2Authenticator(Oauth2Authenticator):
     def _prepare_refresh_token_params(self) -> Dict[str, str]:
         return {
@@ -28,7 +32,12 @@ class ZohoOauth2Authenticator(Oauth2Authenticator):
         Returns a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), params=self._prepare_refresh_token_params())
+            response = requests.request(
+                method="POST",
+                url=self.get_token_refresh_endpoint(),
+                params=self._prepare_refresh_token_params(),
+                timeout=TOKEN_REFRESH_TIMEOUT,
+            )
             response.raise_for_status()
             response_json = response.json()
             return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
