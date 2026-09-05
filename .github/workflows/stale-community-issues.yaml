@@ -19,7 +19,7 @@ jobs:
           repositories: "airbyte"
           app-id: ${{ secrets.OCTAVIA_BOT_APP_ID }}
           private-key: ${{ secrets.OCTAVIA_BOT_PRIVATE_KEY }}
-      - uses: actions/stale@b5d41d4d0e39afb4e3d58060a07f6fb1ce2caa77 # v10.2.0
+      - uses: actions/stale@b5d41d4e1d5dceea10e7104786b73624c18a190f # v10.2.0
         id: stale
         with:
           any-of-labels: "community"
