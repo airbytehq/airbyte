@@ -67,7 +67,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /management/attribute-classes
+          path: /management/contact-attribute-keys
           http_method: GET
         record_selector:
           type: RecordSelector
@@ -88,7 +88,7 @@ definitions:
         type: SimpleRetriever
         requester:
           $ref: "#/definitions/base_requester"
-          path: /management/people
+          path: /management/contacts
           http_method: GET
         record_selector:
           type: RecordSelector
