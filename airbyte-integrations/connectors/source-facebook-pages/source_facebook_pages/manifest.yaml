@@ -19,10 +19,15 @@ definitions:
           error_message: The application used to create the Facebook access token has not been approved to use this API. Possibly, some of the requested fields require additional scopes/permissions. The Airbyte OAuth App is being in process of requesting needed scopes. In the meantime, we suggest you use your own access token with the necessary permissions. Please, visit https://docs.airbyte.com/integrations/sources/facebook-pages#creating-your-own-oauth-app for more info about your own OAuth App.
         - action: FAIL
           error_message_contains: Tried accessing nonexisting field
+          failure_type: config_error
           error_message: Request contains invalid/deprecated field.
+        - error_message_contains: Please reduce the amount of data you're asking for, then retry your request
+          action: FAIL
+          failure_type: config_error
+          error_message: Facebook API response data exceeds the request limit.
         # Meta rejects the whole Insights request when any single requested metric is
-        # invalid. This is permanent, so it must not fall through to the blanket 400 retry
-        # below, which would otherwise burn six attempts and hide the API's own message.
+        # invalid. This is permanent, so it must not fall through to the blanket 400 filter
+        # below, which would otherwise hide the API's own message.
         - action: FAIL
           error_message_contains: must be a valid insights metric
           failure_type: system_error
@@ -33,9 +38,11 @@ definitions:
             latest version, please report it at https://github.com/airbytehq/airbyte/issues. Facebook
             returned: {{ response.get('error', {}).get('message', '') }}
         - http_codes: [400]
-          action: RETRY
-        - action: RETRY
-          error_message_contains: Please reduce the amount of data you're asking for, then retry your request
+          action: FAIL
+          failure_type: config_error
+          error_message: >-
+            Facebook API request contains invalid Page fields, metrics, or permissions.
+            Facebook returned: {{ response.get('error', {}).get('message', '') }}
 
     authenticator:
       type: CustomAuthenticator
