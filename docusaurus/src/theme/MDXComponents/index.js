@@ -1,5 +1,6 @@
 // Import the original mapper
 import { AgentConnectorTitle } from "@site/src/components/AgentConnectorTitle";
+import { ApiMember, ApiSignature } from "@site/src/components/ApiReference";
 import { AppliesTo } from "@site/src/components/AppliesTo";
 import { ConnectorTypeBanner } from "@site/src/components/ConnectorTypeBanner";
 import { Arcade } from "@site/src/components/Arcade";
@@ -25,6 +26,8 @@ export default {
   // Re-use the default mapping
   ...MDXComponents,
   AgentConnectorTitle,
+  ApiMember,
+  ApiSignature,
   Arcade,
   AppliesTo,
   ConnectorTypeBanner,
