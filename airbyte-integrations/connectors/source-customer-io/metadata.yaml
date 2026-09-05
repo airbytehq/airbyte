@@ -34,15 +34,18 @@ data:
     - cdk:low-code
     - language:manifest-only
   externalDocumentationUrls:
-    - title: Customer.io API reference
-      url: https://customer.io/docs/api/
+    - title: Customer.io App API reference
+      url: https://docs.customer.io/integrations/api/app/
       type: api_reference
-    - title: Customer.io authentication
-      url: https://customer.io/docs/api/#section/Authentication
+    - title: Customer.io App API authentication
+      url: https://docs.customer.io/integrations/api/app/#section/Authentication
       type: authentication_guide
-    - title: Customer.io rate limits
-      url: https://customer.io/docs/api/#section/Rate-Limiting
+    - title: Customer.io App API rate limits
+      url: https://docs.customer.io/integrations/api/app/#rate-limits
       type: rate_limits
+    - title: Customer.io release notes
+      url: https://docs.customer.io/release-notes/
+      type: api_release_history
     - title: Customer.io Status
       url: https://status.customer.io/
       type: status_page
