@@ -1,5 +1,44 @@
 # Klaviyo Migration Guide
 
+## Upgrading to 4.0.0
+
+Klaviyo retires API revision `2024-10-15` on 2026-10-15. This release moves every stream to revision `2026-01-15`. Only the `campaigns` and `campaigns_detailed` streams change shape; all other streams keep the same schema and do not need to be cleared.
+
+### What changed in `campaigns` and `campaigns_detailed`
+
+Klaviyo flattened `send_strategy`. The method-specific option objects are gone and their fields now sit directly under `send_strategy`:
+
+| Before                                                | After                                             |
+| ----------------------------------------------------- | ------------------------------------------------- |
+| `send_strategy.options_static.datetime`               | `send_strategy.datetime`                          |
+| `send_strategy.options_static.is_local`               | `send_strategy.options.is_local`                  |
+| `send_strategy.options_static.send_past_recipients_immediately` | `send_strategy.options.send_past_recipients_immediately` |
+| `send_strategy.options_sto.date`                      | `send_strategy.date`                              |
+| `send_strategy.options_throttled.datetime`            | `send_strategy.datetime`                          |
+| `send_strategy.options_throttled.throttle_percentage` | `send_strategy.throttle_percentage`               |
+
+`send_strategy.method` is unchanged. Fields that do not apply to the campaign's method are `null`.
+
+### What changed in `campaigns_detailed` only
+
+Each entry of `campaign_messages` now carries its channel-specific configuration under `attributes.definition`:
+
+| Before                                        | After                                                    |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `campaign_messages[].attributes.channel`        | `campaign_messages[].attributes.definition.channel`        |
+| `campaign_messages[].attributes.label`          | `campaign_messages[].attributes.definition.label`          |
+| `campaign_messages[].attributes.content.*`      | `campaign_messages[].attributes.definition.content.*`      |
+| `campaign_messages[].attributes.render_options.*` | `campaign_messages[].attributes.definition.render_options.*` |
+
+`definition` also exposes mobile push message fields that the previous revision did not return (`content.title`, `content.dynamic_image`, `content.action_buttons`, `options.badge`, `options.on_open`, `options.play_sound`, `kv_pairs`, `notification_type`). `created_at`, `updated_at` and `send_times` are unchanged.
+
+### Migration steps
+
+1. Upgrade the connector to version 4.0.0.
+2. In your connection, open the **Schema** tab and click **Refresh source schema**. Accept the changes for `campaigns` and `campaigns_detailed`.
+3. Clear `campaigns` and `campaigns_detailed` so existing rows are re-read in the new shape. Without this, rows written under the old field names stay in your destination alongside rows written under the new ones.
+4. Update any downstream models that read `send_strategy.options_static`, `send_strategy.options_sto`, `send_strategy.options_throttled`, or the campaign message `channel`, `label`, `content` and `render_options` fields to the new paths above.
+
 ## Upgrading to 3.0.0
 
 This release changes the record shape of `flow_series_reports`, changes what `campaign_values_reports` writes in `date`, and changes the reporting periods both report streams request. Both streams need a schema refresh and a clear.
