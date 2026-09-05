@@ -7,6 +7,10 @@ The Extract CDK provides functionality for source connectors including schema di
 <details>
   <summary>Expand to review</summary>
 
+### 1.1.12 — 2026-09-04
+
+[#85350](https://github.com/airbytehq/airbyte/pull/85350) — Fix the first concurrent snapshot partition excluding its lower bound for composite primary keys (rows sharing the minimum first-column value were skipped) in `buildWhereClause` and `TriggerPartition`.
+
 ### 1.1.11 — 2026-09-02
 
 [#85313](https://github.com/airbytehq/airbyte/pull/85313) — Tolerate empty STREAM-typed input state in global (CDC) mode instead of failing.

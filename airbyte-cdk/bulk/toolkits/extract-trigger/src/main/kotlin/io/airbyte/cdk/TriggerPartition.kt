@@ -186,8 +186,10 @@ sealed class TriggerSplittablePartition(
                 lowerBound?.let { checkpointColumns.zip(it) } ?: listOf()
             val lowerBoundDisj: List<WhereClauseNode> =
                 zippedLowerBound.mapIndexed { idx: Int, (gtCol: EmittedField, gtValue: JsonNode) ->
+                    // Inclusive comparison applies to the last column of the *bound*, which may
+                    // be a strict prefix of the checkpoint columns. See DefaultJdbcPartition.
                     val lastLeaf: WhereClauseLeafNode =
-                        if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
+                        if (isLowerBoundIncluded && idx == zippedLowerBound.size - 1) {
                             GreaterOrEqual(gtCol, gtValue)
                         } else {
                             Greater(gtCol, gtValue)
