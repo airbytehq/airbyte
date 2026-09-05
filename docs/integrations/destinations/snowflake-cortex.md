@@ -1,30 +1,77 @@
 # Snowflake Cortex Destination
 
-## Overview
+This destination writes records into Snowflake tables that use the [`VECTOR`](https://docs.snowflake.com/en/sql-reference/data-types-vector) data type, so you can query them with [Snowflake Cortex](https://docs.snowflake.com/en/user-guide/snowflake-cortex) functions such as `VECTOR_COSINE_SIMILARITY` or with Cortex Search and LLM functions.
 
-This page guides you through the process of setting up the [Snowflake](https://www.snowflake.com/en/) as a vector destination.
+Every sync does three things:
 
-There are three parts to this:
-* Processing - split up individual records in chunks so they will fit the context window and decide which fields to use as context and which are supplementary metadata.
-* Embedding - convert the text into a vector representation using a pre-trained model (Currently, OpenAI's `text-embedding-ada-002` and Cohere's `embed-english-light-v2.0` are supported. Coming soon: Hugging Face's `e5-base-v2`).
-* Snowflake Connection - where to store the vectors. This configures a vector store using Snowflake tables having the `VECTOR` data type.
+- **Processing**: splits each record into text chunks that fit the embedding model's context window, and decides which fields become embedded text and which become metadata.
+- **Embedding**: turns each chunk into a vector by calling an embedding service that you configure, such as OpenAI or Cohere. The connector calls that service directly. It does not use Snowflake's `EMBED_TEXT_*` functions, so embedding happens outside your Snowflake account and is billed by the embedding provider.
+- **Indexing**: writes one row per chunk into a Snowflake table named after the stream.
 
 ## Prerequisites
 
-To use the Snowflake Cortex destination, you'll need:
+- A Snowflake account, and a warehouse, database, and schema for Airbyte to write to.
+- A Snowflake user and a role with `USAGE` on the warehouse, database, and schema, and `CREATE TABLE` on the schema. The connector creates, replaces, and deletes tables in the schema you configure, so a read-only role isn't sufficient.
+- An API key for an embedding service, unless you use the fake embeddings option for testing.
 
-- An account with API access for OpenAI or Cohere (depending on which embedding method you want to use)
-- A Snowflake account with support for vector type columns
+### Authentication
 
-You'll need the following information to configure the destination:
+This destination signs in to Snowflake with a username and password. It doesn't support key pair authentication, OAuth, or SSO, so you can't use a Snowflake user that requires MFA or an external identity provider.
 
-- **Embedding service API Key** - The API key for your OpenAI or Cohere account
-- **Snowflake Account** - The account name for your Snowflake account
-- **Snowflake User** - The user name for your Snowflake account
-- **Snowflake Password** - The password for your Snowflake account
-- **Snowflake Database** - The database name in Snowflake to load data into
-- **Snowflake Warehouse** - The warehouse name in Snowflake to use
-- **Snowflake Role** - The role name in Snowflake to use.
+Snowflake is [phasing out sign-in with only a password](https://docs.snowflake.com/en/user-guide/security-mfa-rollout). Because no person is present to answer an MFA prompt during a sync, create a dedicated user with `TYPE = LEGACY_SERVICE`, which Snowflake exempts from MFA enforcement. Check Snowflake's rollout schedule for the dates that apply to your account, because that exemption is temporary.
+
+## Configure the destination
+
+### Snowflake connection
+
+| Field | Description |
+| :--- | :--- |
+| Host | Your account identifier, in the form `<organization>-<account>`, which is the part of your account URL before `.snowflakecomputing.com`. |
+| Role | The role the connector activates for the session. |
+| Warehouse | The warehouse that runs the load. |
+| Database | The database that holds the tables. |
+| Default Schema | The schema the connector writes to. It's created if it doesn't exist. |
+| Username | The Snowflake user. |
+| Password | The password for that user. |
+
+### Embedding
+
+Choose one embedding option. The number of dimensions the option produces determines the width of the `VECTOR(FLOAT, n)` column, and Snowflake supports at most 4096 dimensions.
+
+| Option | Model | Dimensions |
+| :--- | :--- | :--- |
+| OpenAI | `text-embedding-ada-002` | 1536 |
+| Azure OpenAI | The deployment you point at, which must serve `text-embedding-ada-002` | 1536 |
+| Cohere | `embed-english-light-v2.0` | 1024 |
+| OpenAI-compatible | The model you name on your own endpoint | You specify |
+| Fake | None. Generates random vectors for testing without embedding costs. | 1536 |
+
+Sync speed is usually limited by the embedding service, not by Snowflake. For OpenAI, the connector batches chunks to stay under the token limits described in the [OpenAI rate limit documentation](https://platform.openai.com/docs/guides/rate-limits).
+
+Changing the embedding option changes the vector length, and the connector doesn't alter the type of an existing `embedding` column. If you switch options for a connection that has already synced, drop the affected tables so the connector recreates them.
+
+### Processing
+
+The connector concatenates the fields you list as text fields, then splits the result into chunks. Chunk length is measured in tokens produced by the `tiktoken` library, up to 8191 tokens, the limit of `text-embedding-ada-002`. Configure an overlap if you want consecutive chunks to share context. Chunking uses the [LangChain](https://python.langchain.com/docs/introduction/) text splitters, and you can split on a separator, on Markdown headers, or on the syntax of a programming language.
+
+When you name text or metadata fields, use dot notation for nested fields, such as `user.name`, and wildcards to reach into arrays, such as `users.*.name`. Field name mappings rename the extracted fields after extraction, so map `from_field` to the path you selected, not to the original nested field name.
+
+Metadata fields are stored as-is in the `metadata` column and aren't embedded, so you can filter on them but not retrieve them by similarity. The connector adds these metadata fields itself:
+
+- `_ab_stream` identifies the source stream and namespace.
+- `_ab_record_id` holds the stream identifier and the record's primary key values. It's only added for streams that sync with deduplication and define a primary key.
+
+### Output table schema
+
+Each stream is written to a table with the same name as the stream. The table has these columns:
+
+| Column | Type | Description |
+| :--- | :--- | :--- |
+| `document_id` | `VARCHAR` | Identifies the source record, in the form `Stream_<stream>_Key_<primary key values>`. Streams with no primary key get a random value instead, which means the connector can't recognize later versions of the same record. |
+| `chunk_id` | `VARCHAR` | Identifies the chunk. Each record produces one row per chunk. |
+| `metadata` | `VARIANT` | The metadata fields for the record. |
+| `document_content` | `VARIANT` | The text of the chunk. |
+| `embedding` | `VECTOR(FLOAT, n)` | The chunk's vector, where `n` is the dimension count of your embedding option. |
 
 ## Supported sync modes
 
@@ -36,50 +83,18 @@ You'll need the following information to configure the destination:
 | [Incremental Sync - Append](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append) | Yes |
 | [Incremental Sync - Append + Deduped](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes/incremental-append-deduped) | Yes |
 
-## Data type mapping
-
-All fields specified as metadata fields will be stored in the metadata object of the document and can be used for filtering. The following data types are allowed for metadata fields:
-* String
-* Number (integer or floating point, gets converted to a 64 bit floating point)
-* Booleans (true, false)
-* List of String
-
-All other fields are ignored.
-
-## Configuration
-
-### Processing
-
-Each record will be split into text fields and meta fields as configured in the "Processing" section. All text fields are concatenated into a single string and then split into chunks of configured length. If specified, the metadata fields are stored as-is along with the embedded text chunks. Please note that meta data fields can only be used for filtering and not for retrieval and have to be of type string, number, boolean (all other values are ignored). Please note that there's a 40kb limit on the _total_ size of the metadata saved for each entry.  Options around configuring the chunking process use the [Langchain Python library](https://python.langchain.com/docs/get_started/introduction).
-
-When specifying text fields, you can access nested fields in the record by using dot notation, e.g. `user.name` will access the `name` field in the `user` object. It's also possible to use wildcards to access all fields in an object, e.g. `users.*.name` will access all `names` fields in all entries of the `users` array.
-
-The chunk length is measured in tokens produced by the `tiktoken` library. The maximum is 8191 tokens, which is the maximum length supported by the `text-embedding-ada-002` model.
-
-The stream name gets added as a metadata field `_ab_stream` to each document. If available, the primary key of the record is used to identify the document to avoid duplications when updated versions of records are indexed. It is added as the `_ab_record_id` metadata field.
-
-### Embedding
-
-The connector can use one of the following embedding methods:
-
-1. OpenAI - using [OpenAI API](https://beta.openai.com/docs/api-reference/text-embedding) , the connector will produce embeddings using the `text-embedding-ada-002` model with **1536 dimensions**. This integration will be constrained by the [speed of the OpenAI embedding API](https://platform.openai.com/docs/guides/rate-limits/overview).
-
-2. Cohere - using the [Cohere API](https://docs.cohere.com/reference/embed), the connector will produce embeddings using the `embed-english-light-v2.0` model with **1024 dimensions**.
-
-For testing purposes, it's also possible to use the [Fake embeddings](https://python.langchain.com/docs/modules/data_connection/text_embedding/integrations/fake) integration. It will generate random embeddings and is suitable to test a data pipeline without incurring embedding costs.
-
-### Indexing/Data Storage 
-
-To get started, sign up for [Snowflake](https://www.snowflake.com/en/). Ensure you have set a database, and a data wareshouse before running the Snowflake Cortex destination. All streams will be indexed/stored into a table with the same name. The table will be created if it doesn't exist. The table will have the following columns: 
-- document_id (string) - the unique identifier of the document, creating from appending the primary keys in the stream schema
-- chunk_id (string) - the unique identifier of the chunk, created by appending the chunk number to the document_id
-- metadata (variant) - the metadata of the document, stored as key-value pairs
-- page_content (string) - the text content of the chunk
-- embedding (vector) - the embedding of the chunk, stored as a list of floats
+Because one record becomes several rows, deduplication works on whole documents: for every `document_id` in the batch, the connector deletes all existing chunks of that document before inserting the new ones. Deduplication needs a primary key, so define one on the stream if you sync with dedup.
 
 ## Namespace support
 
-This destination does not support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces).
+This destination doesn't support [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). Every stream is written to the schema you set in **Default Schema**.
+
+## Limitations
+
+- Password authentication only, as described in [Authentication](#authentication).
+- Vectors are capped at Snowflake's limit of 4096 dimensions.
+- The `embedding` column can't be used as a clustering key, and `VECTOR` values can't be nested inside a `VARIANT`. See Snowflake's [`VECTOR` data type documentation](https://docs.snowflake.com/en/sql-reference/data-types-vector) for the full list of restrictions.
+- Chunk text is always written to `document_content`. There's no option to store vectors without the source text.
 
 ## Changelog
 
@@ -121,6 +136,6 @@ This destination does not support [namespaces](https://docs.airbyte.com/platform
 | 0.2.0   | 2024-05-30 | [#38337](https://github.com/airbytehq/airbyte/pull/38337) | Fix `merge` behavior when multiple chunks exist for a document. Includes additional refactoring and improvements.
 | 0.1.2   | 2024-05-17 | [#38327](https://github.com/airbytehq/airbyte/pull/38327) | Fix chunking related issue.
 | 0.1.1   | 2024-05-15 | [#38206](https://github.com/airbytehq/airbyte/pull/38206) | Bug fixes.
-| 0.1.0   | 2024-05-13 | [#37333](https://github.com/airbytehq/airbyte/pull/36807) | Add support for Snowflake as a Vector destination.
+| 0.1.0   | 2024-05-14 | [#36807](https://github.com/airbytehq/airbyte/pull/36807) | Add support for Snowflake as a Vector destination.
 
 </details>
