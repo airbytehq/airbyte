@@ -35,6 +35,18 @@ def test_stream_slices(requests_mock, config_pass, report_url, mock_report_respo
     assert list(stream.stream_slices(**inputs)) is not None
 
 
+def test_stream_slices_until_today_false(requests_mock, config_pass_until_today_false, report_url, mock_report_response):
+    # Regression test for https://github.com/airbytehq/airbyte/issues/69799:
+    # end_datetime used to call .strftime() on day_delta()'s already-formatted
+    # string result, raising jinja2.exceptions.UndefinedError before any request was made.
+    requests_mock.get(url=report_url, status_code=200, json=mock_report_response)
+    stream = get_stream_by_name("AdjustReport", config_pass_until_today_false)
+    period = 5
+    start = datetime.today() - timedelta(days=period)
+    inputs = {"sync_mode": SyncMode.incremental, "cursor_field": "day", "stream_state": {"day": start.isoformat()}}
+    assert list(stream.stream_slices(**inputs)) is not None
+
+
 def test_supports_incremental(config_pass):
     stream = get_stream_by_name("AdjustReport", config_pass)
     assert stream.supports_incremental
