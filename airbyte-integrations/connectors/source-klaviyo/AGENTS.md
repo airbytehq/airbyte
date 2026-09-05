@@ -49,6 +49,10 @@ The only streams that allow for slicing (and hence may perform more concurrent H
 
 The manifest caps every `Retry-After` wait at 600 seconds. Daily-quota 429 responses can return multi-hour wait values that outlive the platform heartbeat, so the connector fails fast with a rate-limit error instead of sleeping until the next daily reset.
 
+### Reporting daily quota pacing
+
+Klaviyo's Flow Series Reports and Campaign Values Reports endpoints each allow 225 requests per day. The manifest paces each of these endpoints at 1 request per `PT6M24S` (about 225 requests per day per endpoint), so large reporting backfills run more slowly but the quota is spread across the day instead of being spent in the first couple of hours. The quota is account-wide and shared across private-key integrations. Reporting requests send `Connection: close` because Klaviyo's edge drops idle keep-alive connections long before the 384s pacing gap (verified by `RemoteDisconnected` after about 400s idle).
+
 ## Incremental Stream Considerations
 
 The Klaviyo API supports cursor-based pagination and `filter` parameters with `greater-than` on `datetime` and `updated` fields for high-volume endpoints (profiles, events, campaigns, flows, lists, segments, etc.), which the connector already uses for 13 incremental streams. The single remaining FR parent stream (`metrics_for_reporting`) is a config-style lookup that lists available metric definitions without date-based filtering.
