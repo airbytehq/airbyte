@@ -1,0 +1,415 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  A source connector for the smsmode API dedicated to RCS (Rich Communication
+  Services), supporting message performance logs and monthly channel-specific
+  consumption data tracking.
+
+check:
+  type: CheckStream
+  stream_names:
+    - rcs_messages
+    - consumptions_rcs
+
+definitions:
+  linked:
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        api_token: "{{ config[\"api_key\"] }}"
+        inject_into:
+          type: RequestOption
+          field_name: X-Api-Key
+          inject_into: header
+      request_headers:
+        Accept: application/json
+
+streams:
+  - type: DeclarativeStream
+    name: rcs_messages
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: pageSize
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 10
+          start_from_page: 1
+      requester:
+        type: HttpRequester
+        url: https://rest.smsmode.com/rcs/v1/messages
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Api-Key
+            inject_into: header
+        error_handler:
+          type: DefaultErrorHandler
+          max_retries: 10
+          backoff_strategies:
+            - type: ExponentialBackoffStrategy
+              factor: 2
+        request_headers:
+          Accept: application/json
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          type:
+            type:
+              - string
+              - "null"
+          body:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              text:
+                type:
+                  - string
+                  - "null"
+              suggestions:
+                type:
+                  - array
+                  - "null"
+                items:
+                  type:
+                    - object
+                    - "null"
+                  properties:
+                    type:
+                      type:
+                        - string
+                        - "null"
+                    url:
+                      type:
+                        - string
+                        - "null"
+                    text:
+                      type:
+                        - string
+                        - "null"
+                    phoneNumber:
+                      type:
+                        - string
+                        - "null"
+                    webviewSize:
+                      type:
+                        - string
+                        - "null"
+                    postbackData:
+                      type:
+                        - string
+                        - "null"
+          from:
+            type:
+              - string
+              - "null"
+          href:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          status:
+            type:
+              - object
+              - "null"
+            properties:
+              value:
+                type:
+                  - string
+                  - "null"
+              lookup:
+                type:
+                  - object
+                  - "null"
+                properties:
+                  mcc:
+                    type:
+                      - string
+                      - "null"
+                  mnc:
+                    type:
+                      - string
+                      - "null"
+                  mccMnc:
+                    type:
+                      - string
+                      - "null"
+                  country:
+                    type:
+                      - string
+                      - "null"
+                  network:
+                    type:
+                      - string
+                      - "null"
+                  countryPrefix:
+                    type:
+                      - string
+                      - "null"
+                  isoCountryCode:
+                    type:
+                      - string
+                      - "null"
+              deliveryDate:
+                type:
+                  - string
+                  - "null"
+          channel:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              flow:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              channelId:
+                type:
+                  - string
+                  - "null"
+          sentDate:
+            type:
+              - string
+              - "null"
+          validity:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              timeUnit:
+                type:
+                  - string
+                  - "null"
+          direction:
+            type:
+              - string
+              - "null"
+          messageId:
+            type:
+              - string
+              - "null"
+          recipient:
+            type:
+              - object
+              - "null"
+            properties:
+              to:
+                type:
+                  - string
+                  - "null"
+          acceptedAt:
+            type:
+              - string
+              - "null"
+          callbackUrlMo:
+            type:
+              - string
+              - "null"
+          callbackUrlStatus:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: consumptions_rcs
+    retriever:
+      type: SimpleRetriever
+      decoder:
+        type: JsonDecoder
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: pageSize
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      requester:
+        type: HttpRequester
+        url: https://rest.smsmode.com/commons/v1/consumptions
+        http_method: GET
+        authenticator:
+          type: ApiKeyAuthenticator
+          api_token: "{{ config[\"api_key\"] }}"
+          inject_into:
+            type: RequestOption
+            field_name: X-Api-Key
+            inject_into: header
+        request_headers:
+          Accept: application/json
+        request_parameters:
+          startDate: "{{ config['start_date'] }}"
+          searchBy[periodType]: MONTH
+          searchBy[channel.type]: RCS
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - items
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/schema#
+        properties:
+          href:
+            type:
+              - string
+              - "null"
+          price:
+            type:
+              - object
+              - "null"
+            properties:
+              amount:
+                type:
+                  - number
+                  - "null"
+              currency:
+                type:
+                  - string
+                  - "null"
+          channel:
+            type:
+              - object
+              - "null"
+            properties:
+              type:
+                type:
+                  - string
+                  - "null"
+              flow:
+                type:
+                  - string
+                  - "null"
+              name:
+                type:
+                  - string
+                  - "null"
+              channelId:
+                type:
+                  - string
+                  - "null"
+          quantity:
+            type:
+              - number
+              - "null"
+          startDate:
+            type:
+              - string
+              - "null"
+          periodType:
+            type:
+              - string
+              - "null"
+          consumptionId:
+            type:
+              - string
+              - "null"
+        additionalProperties: true
+
+spec:
+  type: Spec
+  documentation_url: https://dev.smsmode.com/rcs/v1/
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+      - start_date
+    properties:
+      api_key:
+        type: string
+        order: 0
+        title: API Key
+        airbyte_secret: true
+      start_date:
+        type: string
+        description: "Date de début de récupération de l'historique (Format: YYYY-MM-DD)"
+        order: 1
+        title: Start Date
+        examples:
+          - "2025-01-01"
+    additionalProperties: true
+
+metadata:
+  assist:
+    docsUrl: https://dev.smsmode.com/rcs/v1/
+  testedStreams:
+    rcs_messages:
+      isStale: false
+      hasRecords: true
+      streamHash: 515023f011d61011695382a2e66fe759cebe20ef
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+    consumptions_rcs:
+      isStale: false
+      hasRecords: true
+      streamHash: 944697cd69498b93f872c29f12c3909067b7ef52
+      hasResponse: true
+      primaryKeysAreUnique: true
+      primaryKeysArePresent: true
+      responsesAreSuccessful: true
+  autoImportSchema:
+    rcs_messages: true
+    consumptions_rcs: true
