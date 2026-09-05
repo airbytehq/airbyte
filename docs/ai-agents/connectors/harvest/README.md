@@ -42,24 +42,24 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Clients | [List](./REFERENCE.md#clients-list), [Get](./REFERENCE.md#clients-get), [Context Store Search](./REFERENCE.md#clients-context-store-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Company | [Get](./REFERENCE.md#company-get), [Context Store Search](./REFERENCE.md#company-context-store-search) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
-| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Context Store Search](./REFERENCE.md#tasks-context-store-search) |
-| Time Entries | [List](./REFERENCE.md#time-entries-list), [Get](./REFERENCE.md#time-entries-get), [Context Store Search](./REFERENCE.md#time-entries-context-store-search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Context Store Search](./REFERENCE.md#invoices-context-store-search) |
-| Invoice Item Categories | [List](./REFERENCE.md#invoice-item-categories-list), [Get](./REFERENCE.md#invoice-item-categories-get), [Context Store Search](./REFERENCE.md#invoice-item-categories-context-store-search) |
-| Estimates | [List](./REFERENCE.md#estimates-list), [Get](./REFERENCE.md#estimates-get), [Context Store Search](./REFERENCE.md#estimates-context-store-search) |
-| Estimate Item Categories | [List](./REFERENCE.md#estimate-item-categories-list), [Get](./REFERENCE.md#estimate-item-categories-get), [Context Store Search](./REFERENCE.md#estimate-item-categories-context-store-search) |
-| Expenses | [List](./REFERENCE.md#expenses-list), [Get](./REFERENCE.md#expenses-get), [Context Store Search](./REFERENCE.md#expenses-context-store-search) |
-| Expense Categories | [List](./REFERENCE.md#expense-categories-list), [Get](./REFERENCE.md#expense-categories-get), [Context Store Search](./REFERENCE.md#expense-categories-context-store-search) |
-| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get), [Context Store Search](./REFERENCE.md#roles-context-store-search) |
-| User Assignments | [List](./REFERENCE.md#user-assignments-list), [Context Store Search](./REFERENCE.md#user-assignments-context-store-search) |
-| Task Assignments | [List](./REFERENCE.md#task-assignments-list), [Context Store Search](./REFERENCE.md#task-assignments-context-store-search) |
-| Time Projects | [List](./REFERENCE.md#time-projects-list), [Context Store Search](./REFERENCE.md#time-projects-context-store-search) |
-| Time Tasks | [List](./REFERENCE.md#time-tasks-list), [Context Store Search](./REFERENCE.md#time-tasks-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Clients | [List](./REFERENCE.md#clients-list), [Get](./REFERENCE.md#clients-get), [Context Store Search](./REFERENCE.md#clients-context-store-search), [Context Store SQL Query](./REFERENCE.md#clients-context-store-sql-query) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Company | [Get](./REFERENCE.md#company-get), [Context Store Search](./REFERENCE.md#company-context-store-search), [Context Store SQL Query](./REFERENCE.md#company-context-store-sql-query) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Get](./REFERENCE.md#tasks-get), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#tasks-context-store-sql-query) |
+| Time Entries | [List](./REFERENCE.md#time-entries-list), [Get](./REFERENCE.md#time-entries-get), [Context Store Search](./REFERENCE.md#time-entries-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-entries-context-store-sql-query) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Context Store Search](./REFERENCE.md#invoices-context-store-search), [Context Store SQL Query](./REFERENCE.md#invoices-context-store-sql-query) |
+| Invoice Item Categories | [List](./REFERENCE.md#invoice-item-categories-list), [Get](./REFERENCE.md#invoice-item-categories-get), [Context Store Search](./REFERENCE.md#invoice-item-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#invoice-item-categories-context-store-sql-query) |
+| Estimates | [List](./REFERENCE.md#estimates-list), [Get](./REFERENCE.md#estimates-get), [Context Store Search](./REFERENCE.md#estimates-context-store-search), [Context Store SQL Query](./REFERENCE.md#estimates-context-store-sql-query) |
+| Estimate Item Categories | [List](./REFERENCE.md#estimate-item-categories-list), [Get](./REFERENCE.md#estimate-item-categories-get), [Context Store Search](./REFERENCE.md#estimate-item-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#estimate-item-categories-context-store-sql-query) |
+| Expenses | [List](./REFERENCE.md#expenses-list), [Get](./REFERENCE.md#expenses-get), [Context Store Search](./REFERENCE.md#expenses-context-store-search), [Context Store SQL Query](./REFERENCE.md#expenses-context-store-sql-query) |
+| Expense Categories | [List](./REFERENCE.md#expense-categories-list), [Get](./REFERENCE.md#expense-categories-get), [Context Store Search](./REFERENCE.md#expense-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#expense-categories-context-store-sql-query) |
+| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get), [Context Store Search](./REFERENCE.md#roles-context-store-search), [Context Store SQL Query](./REFERENCE.md#roles-context-store-sql-query) |
+| User Assignments | [List](./REFERENCE.md#user-assignments-list), [Context Store Search](./REFERENCE.md#user-assignments-context-store-search), [Context Store SQL Query](./REFERENCE.md#user-assignments-context-store-sql-query) |
+| Task Assignments | [List](./REFERENCE.md#task-assignments-list), [Context Store Search](./REFERENCE.md#task-assignments-context-store-search), [Context Store SQL Query](./REFERENCE.md#task-assignments-context-store-sql-query) |
+| Time Projects | [List](./REFERENCE.md#time-projects-list), [Context Store Search](./REFERENCE.md#time-projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-projects-context-store-sql-query) |
+| Time Tasks | [List](./REFERENCE.md#time-tasks-list), [Context Store Search](./REFERENCE.md#time-tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-tasks-context-store-sql-query) |
 
 
 ## Harvest API docs

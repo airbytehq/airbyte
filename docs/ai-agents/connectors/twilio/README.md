@@ -47,17 +47,17 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
-| Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Context Store Search](./REFERENCE.md#calls-context-store-search) |
-| Messages | [List](./REFERENCE.md#messages-list), [Create](./REFERENCE.md#messages-create), [Get](./REFERENCE.md#messages-get), [Context Store Search](./REFERENCE.md#messages-context-store-search), [Semantic Search](./REFERENCE.md#messages-semantic-search) |
-| Incoming Phone Numbers | [List](./REFERENCE.md#incoming-phone-numbers-list), [Create](./REFERENCE.md#incoming-phone-numbers-create), [Get](./REFERENCE.md#incoming-phone-numbers-get), [Context Store Search](./REFERENCE.md#incoming-phone-numbers-context-store-search) |
-| Recordings | [List](./REFERENCE.md#recordings-list), [Get](./REFERENCE.md#recordings-get), [Context Store Search](./REFERENCE.md#recordings-context-store-search) |
-| Conferences | [List](./REFERENCE.md#conferences-list), [Get](./REFERENCE.md#conferences-get), [Context Store Search](./REFERENCE.md#conferences-context-store-search) |
-| Usage Records | [List](./REFERENCE.md#usage-records-list), [Context Store Search](./REFERENCE.md#usage-records-context-store-search) |
-| Addresses | [List](./REFERENCE.md#addresses-list), [Get](./REFERENCE.md#addresses-get), [Context Store Search](./REFERENCE.md#addresses-context-store-search) |
-| Queues | [List](./REFERENCE.md#queues-list), [Get](./REFERENCE.md#queues-get), [Context Store Search](./REFERENCE.md#queues-context-store-search) |
-| Transcriptions | [List](./REFERENCE.md#transcriptions-list), [Get](./REFERENCE.md#transcriptions-get), [Context Store Search](./REFERENCE.md#transcriptions-context-store-search) |
-| Outgoing Caller Ids | [List](./REFERENCE.md#outgoing-caller-ids-list), [Get](./REFERENCE.md#outgoing-caller-ids-get), [Context Store Search](./REFERENCE.md#outgoing-caller-ids-context-store-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [Context Store Search](./REFERENCE.md#accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#accounts-context-store-sql-query) |
+| Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Context Store Search](./REFERENCE.md#calls-context-store-search), [Context Store SQL Query](./REFERENCE.md#calls-context-store-sql-query) |
+| Messages | [List](./REFERENCE.md#messages-list), [Create](./REFERENCE.md#messages-create), [Get](./REFERENCE.md#messages-get), [Context Store Search](./REFERENCE.md#messages-context-store-search), [Context Store SQL Query](./REFERENCE.md#messages-context-store-sql-query), [Semantic Search](./REFERENCE.md#messages-semantic-search) |
+| Incoming Phone Numbers | [List](./REFERENCE.md#incoming-phone-numbers-list), [Create](./REFERENCE.md#incoming-phone-numbers-create), [Get](./REFERENCE.md#incoming-phone-numbers-get), [Context Store Search](./REFERENCE.md#incoming-phone-numbers-context-store-search), [Context Store SQL Query](./REFERENCE.md#incoming-phone-numbers-context-store-sql-query) |
+| Recordings | [List](./REFERENCE.md#recordings-list), [Get](./REFERENCE.md#recordings-get), [Context Store Search](./REFERENCE.md#recordings-context-store-search), [Context Store SQL Query](./REFERENCE.md#recordings-context-store-sql-query) |
+| Conferences | [List](./REFERENCE.md#conferences-list), [Get](./REFERENCE.md#conferences-get), [Context Store Search](./REFERENCE.md#conferences-context-store-search), [Context Store SQL Query](./REFERENCE.md#conferences-context-store-sql-query) |
+| Usage Records | [List](./REFERENCE.md#usage-records-list), [Context Store Search](./REFERENCE.md#usage-records-context-store-search), [Context Store SQL Query](./REFERENCE.md#usage-records-context-store-sql-query) |
+| Addresses | [List](./REFERENCE.md#addresses-list), [Get](./REFERENCE.md#addresses-get), [Context Store Search](./REFERENCE.md#addresses-context-store-search), [Context Store SQL Query](./REFERENCE.md#addresses-context-store-sql-query) |
+| Queues | [List](./REFERENCE.md#queues-list), [Get](./REFERENCE.md#queues-get), [Context Store Search](./REFERENCE.md#queues-context-store-search), [Context Store SQL Query](./REFERENCE.md#queues-context-store-sql-query) |
+| Transcriptions | [List](./REFERENCE.md#transcriptions-list), [Get](./REFERENCE.md#transcriptions-get), [Context Store Search](./REFERENCE.md#transcriptions-context-store-search), [Context Store SQL Query](./REFERENCE.md#transcriptions-context-store-sql-query) |
+| Outgoing Caller Ids | [List](./REFERENCE.md#outgoing-caller-ids-list), [Get](./REFERENCE.md#outgoing-caller-ids-get), [Context Store Search](./REFERENCE.md#outgoing-caller-ids-context-store-search), [Context Store SQL Query](./REFERENCE.md#outgoing-caller-ids-context-store-sql-query) |
 
 
 ## Twilio API docs

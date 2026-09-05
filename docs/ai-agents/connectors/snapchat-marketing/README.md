@@ -37,14 +37,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Context Store Search](./REFERENCE.md#organizations-context-store-search) |
-| Adaccounts | [List](./REFERENCE.md#adaccounts-list), [Get](./REFERENCE.md#adaccounts-get), [Context Store Search](./REFERENCE.md#adaccounts-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Adsquads | [List](./REFERENCE.md#adsquads-list), [Get](./REFERENCE.md#adsquads-get), [Context Store Search](./REFERENCE.md#adsquads-context-store-search) |
-| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get), [Context Store Search](./REFERENCE.md#ads-context-store-search) |
-| Creatives | [List](./REFERENCE.md#creatives-list), [Get](./REFERENCE.md#creatives-get), [Context Store Search](./REFERENCE.md#creatives-context-store-search) |
-| Media | [List](./REFERENCE.md#media-list), [Get](./REFERENCE.md#media-get), [Context Store Search](./REFERENCE.md#media-context-store-search) |
-| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search) |
+| Organizations | [List](./REFERENCE.md#organizations-list), [Get](./REFERENCE.md#organizations-get), [Context Store Search](./REFERENCE.md#organizations-context-store-search), [Context Store SQL Query](./REFERENCE.md#organizations-context-store-sql-query) |
+| Adaccounts | [List](./REFERENCE.md#adaccounts-list), [Get](./REFERENCE.md#adaccounts-get), [Context Store Search](./REFERENCE.md#adaccounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#adaccounts-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Adsquads | [List](./REFERENCE.md#adsquads-list), [Get](./REFERENCE.md#adsquads-get), [Context Store Search](./REFERENCE.md#adsquads-context-store-search), [Context Store SQL Query](./REFERENCE.md#adsquads-context-store-sql-query) |
+| Ads | [List](./REFERENCE.md#ads-list), [Get](./REFERENCE.md#ads-get), [Context Store Search](./REFERENCE.md#ads-context-store-search), [Context Store SQL Query](./REFERENCE.md#ads-context-store-sql-query) |
+| Creatives | [List](./REFERENCE.md#creatives-list), [Get](./REFERENCE.md#creatives-get), [Context Store Search](./REFERENCE.md#creatives-context-store-search), [Context Store SQL Query](./REFERENCE.md#creatives-context-store-sql-query) |
+| Media | [List](./REFERENCE.md#media-list), [Get](./REFERENCE.md#media-get), [Context Store Search](./REFERENCE.md#media-context-store-search), [Context Store SQL Query](./REFERENCE.md#media-context-store-sql-query) |
+| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search), [Context Store SQL Query](./REFERENCE.md#segments-context-store-sql-query) |
 
 
 ## Snapchat-Marketing API docs

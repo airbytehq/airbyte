@@ -55,26 +55,26 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Semantic Search](./REFERENCE.md#tasks-semantic-search) |
+| Tasks | [List](./REFERENCE.md#tasks-list), [Create](./REFERENCE.md#tasks-create), [Get](./REFERENCE.md#tasks-get), [Update](./REFERENCE.md#tasks-update), [Delete](./REFERENCE.md#tasks-delete), [Context Store Search](./REFERENCE.md#tasks-context-store-search), [Context Store SQL Query](./REFERENCE.md#tasks-context-store-sql-query), [Semantic Search](./REFERENCE.md#tasks-semantic-search) |
 | Project Tasks | [List](./REFERENCE.md#project-tasks-list) |
 | Workspace Task Search | [List](./REFERENCE.md#workspace-task-search-list) |
-| Projects | [List](./REFERENCE.md#projects-list), [Create](./REFERENCE.md#projects-create), [Get](./REFERENCE.md#projects-get), [Update](./REFERENCE.md#projects-update), [Delete](./REFERENCE.md#projects-delete), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Semantic Search](./REFERENCE.md#projects-semantic-search) |
+| Projects | [List](./REFERENCE.md#projects-list), [Create](./REFERENCE.md#projects-create), [Get](./REFERENCE.md#projects-get), [Update](./REFERENCE.md#projects-update), [Delete](./REFERENCE.md#projects-delete), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query), [Semantic Search](./REFERENCE.md#projects-semantic-search) |
 | Task Projects | [List](./REFERENCE.md#task-projects-list) |
 | Team Projects | [List](./REFERENCE.md#team-projects-list) |
 | Workspace Projects | [List](./REFERENCE.md#workspace-projects-list) |
-| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Context Store Search](./REFERENCE.md#workspaces-context-store-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Context Store Search](./REFERENCE.md#workspaces-context-store-search), [Context Store SQL Query](./REFERENCE.md#workspaces-context-store-sql-query) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
 | Workspace Users | [List](./REFERENCE.md#workspace-users-list) |
 | Team Users | [List](./REFERENCE.md#team-users-list) |
-| Teams | [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Semantic Search](./REFERENCE.md#teams-semantic-search) |
+| Teams | [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Context Store SQL Query](./REFERENCE.md#teams-context-store-sql-query), [Semantic Search](./REFERENCE.md#teams-semantic-search) |
 | Workspace Teams | [List](./REFERENCE.md#workspace-teams-list) |
 | User Teams | [List](./REFERENCE.md#user-teams-list) |
-| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download), [Context Store Search](./REFERENCE.md#attachments-context-store-search) |
+| Attachments | [List](./REFERENCE.md#attachments-list), [Get](./REFERENCE.md#attachments-get), [Download](./REFERENCE.md#attachments-download), [Context Store Search](./REFERENCE.md#attachments-context-store-search), [Context Store SQL Query](./REFERENCE.md#attachments-context-store-sql-query) |
 | Workspace Tags | [List](./REFERENCE.md#workspace-tags-list), [Create](./REFERENCE.md#workspace-tags-create) |
-| Tags | [Get](./REFERENCE.md#tags-get), [Update](./REFERENCE.md#tags-update), [Delete](./REFERENCE.md#tags-delete), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
+| Tags | [Get](./REFERENCE.md#tags-get), [Update](./REFERENCE.md#tags-update), [Delete](./REFERENCE.md#tags-delete), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
 | Tag Tasks | [List](./REFERENCE.md#tag-tasks-list) |
 | Project Sections | [List](./REFERENCE.md#project-sections-list), [Create](./REFERENCE.md#project-sections-create) |
-| Sections | [Get](./REFERENCE.md#sections-get), [Update](./REFERENCE.md#sections-update), [Delete](./REFERENCE.md#sections-delete), [Context Store Search](./REFERENCE.md#sections-context-store-search) |
+| Sections | [Get](./REFERENCE.md#sections-get), [Update](./REFERENCE.md#sections-update), [Delete](./REFERENCE.md#sections-delete), [Context Store Search](./REFERENCE.md#sections-context-store-search), [Context Store SQL Query](./REFERENCE.md#sections-context-store-sql-query) |
 | Section Tasks | [List](./REFERENCE.md#section-tasks-list), [Create](./REFERENCE.md#section-tasks-create) |
 | Task Subtasks | [List](./REFERENCE.md#task-subtasks-list) |
 | Task Dependencies | [List](./REFERENCE.md#task-dependencies-list) |

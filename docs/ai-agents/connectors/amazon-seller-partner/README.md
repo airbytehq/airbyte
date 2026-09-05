@@ -40,10 +40,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Context Store Search](./REFERENCE.md#orders-context-store-search) |
-| Order Items | [List](./REFERENCE.md#order-items-list), [Context Store Search](./REFERENCE.md#order-items-context-store-search) |
-| List Financial Event Groups | [List](./REFERENCE.md#list-financial-event-groups-list), [Context Store Search](./REFERENCE.md#list-financial-event-groups-context-store-search) |
-| List Financial Events | [List](./REFERENCE.md#list-financial-events-list), [Context Store Search](./REFERENCE.md#list-financial-events-context-store-search) |
+| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Context Store Search](./REFERENCE.md#orders-context-store-search), [Context Store SQL Query](./REFERENCE.md#orders-context-store-sql-query) |
+| Order Items | [List](./REFERENCE.md#order-items-list), [Context Store Search](./REFERENCE.md#order-items-context-store-search), [Context Store SQL Query](./REFERENCE.md#order-items-context-store-sql-query) |
+| List Financial Event Groups | [List](./REFERENCE.md#list-financial-event-groups-list), [Context Store Search](./REFERENCE.md#list-financial-event-groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#list-financial-event-groups-context-store-sql-query) |
+| List Financial Events | [List](./REFERENCE.md#list-financial-events-list), [Context Store Search](./REFERENCE.md#list-financial-events-context-store-search), [Context Store SQL Query](./REFERENCE.md#list-financial-events-context-store-sql-query) |
 | Catalog Items | [List](./REFERENCE.md#catalog-items-list), [Get](./REFERENCE.md#catalog-items-get) |
 | Reports | [List](./REFERENCE.md#reports-list), [Get](./REFERENCE.md#reports-get) |
 

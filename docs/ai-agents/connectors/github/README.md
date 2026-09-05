@@ -54,30 +54,30 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [API Search](./REFERENCE.md#repositories-api_search), [Context Store Search](./REFERENCE.md#repositories-context-store-search) |
-| Org Repositories | [List](./REFERENCE.md#org-repositories-list), [Context Store Search](./REFERENCE.md#org-repositories-context-store-search) |
-| Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get), [Context Store Search](./REFERENCE.md#branches-context-store-search) |
-| Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get), [Context Store Search](./REFERENCE.md#commits-context-store-search) |
-| Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get), [Context Store Search](./REFERENCE.md#releases-context-store-search) |
-| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Semantic Search](./REFERENCE.md#issues-semantic-search) |
-| Comments | [Create](./REFERENCE.md#comments-create), [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Context Store Search](./REFERENCE.md#comments-context-store-search), [Semantic Search](./REFERENCE.md#comments-semantic-search) |
-| Pull Requests | [Create](./REFERENCE.md#pull-requests-create), [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [API Search](./REFERENCE.md#pull-requests-api_search), [Context Store Search](./REFERENCE.md#pull-requests-context-store-search), [Semantic Search](./REFERENCE.md#pull-requests-semantic-search) |
-| Reviews | [List](./REFERENCE.md#reviews-list), [Context Store Search](./REFERENCE.md#reviews-context-store-search) |
-| Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get), [Context Store Search](./REFERENCE.md#pr-comments-context-store-search) |
-| Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get), [Context Store Search](./REFERENCE.md#labels-context-store-search) |
-| Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get), [Context Store Search](./REFERENCE.md#milestones-context-store-search) |
-| Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list), [Context Store Search](./REFERENCE.md#organizations-context-store-search) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
-| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
-| Stargazers | [List](./REFERENCE.md#stargazers-list), [Context Store Search](./REFERENCE.md#stargazers-context-store-search) |
-| Viewer | [Get](./REFERENCE.md#viewer-get), [Context Store Search](./REFERENCE.md#viewer-context-store-search) |
-| Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list), [Context Store Search](./REFERENCE.md#viewer-repositories-context-store-search) |
-| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
-| Project Items | [List](./REFERENCE.md#project-items-list), [Context Store Search](./REFERENCE.md#project-items-context-store-search) |
-| Discussions | [List](./REFERENCE.md#discussions-list), [Get](./REFERENCE.md#discussions-get), [API Search](./REFERENCE.md#discussions-api_search), [Context Store Search](./REFERENCE.md#discussions-context-store-search) |
-| File Content | [Get](./REFERENCE.md#file-content-get), [Context Store Search](./REFERENCE.md#file-content-context-store-search) |
-| Directory Content | [List](./REFERENCE.md#directory-content-list), [Context Store Search](./REFERENCE.md#directory-content-context-store-search) |
+| Repositories | [Get](./REFERENCE.md#repositories-get), [List](./REFERENCE.md#repositories-list), [API Search](./REFERENCE.md#repositories-api_search), [Context Store Search](./REFERENCE.md#repositories-context-store-search), [Context Store SQL Query](./REFERENCE.md#repositories-context-store-sql-query) |
+| Org Repositories | [List](./REFERENCE.md#org-repositories-list), [Context Store Search](./REFERENCE.md#org-repositories-context-store-search), [Context Store SQL Query](./REFERENCE.md#org-repositories-context-store-sql-query) |
+| Branches | [List](./REFERENCE.md#branches-list), [Get](./REFERENCE.md#branches-get), [Context Store Search](./REFERENCE.md#branches-context-store-search), [Context Store SQL Query](./REFERENCE.md#branches-context-store-sql-query) |
+| Commits | [List](./REFERENCE.md#commits-list), [Get](./REFERENCE.md#commits-get), [Context Store Search](./REFERENCE.md#commits-context-store-search), [Context Store SQL Query](./REFERENCE.md#commits-context-store-sql-query) |
+| Releases | [List](./REFERENCE.md#releases-list), [Get](./REFERENCE.md#releases-get), [Context Store Search](./REFERENCE.md#releases-context-store-search), [Context Store SQL Query](./REFERENCE.md#releases-context-store-sql-query) |
+| Issues | [List](./REFERENCE.md#issues-list), [Get](./REFERENCE.md#issues-get), [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Update](./REFERENCE.md#issues-update), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Context Store SQL Query](./REFERENCE.md#issues-context-store-sql-query), [Semantic Search](./REFERENCE.md#issues-semantic-search) |
+| Comments | [Create](./REFERENCE.md#comments-create), [List](./REFERENCE.md#comments-list), [Get](./REFERENCE.md#comments-get), [Context Store Search](./REFERENCE.md#comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#comments-context-store-sql-query), [Semantic Search](./REFERENCE.md#comments-semantic-search) |
+| Pull Requests | [Create](./REFERENCE.md#pull-requests-create), [List](./REFERENCE.md#pull-requests-list), [Get](./REFERENCE.md#pull-requests-get), [API Search](./REFERENCE.md#pull-requests-api_search), [Context Store Search](./REFERENCE.md#pull-requests-context-store-search), [Context Store SQL Query](./REFERENCE.md#pull-requests-context-store-sql-query), [Semantic Search](./REFERENCE.md#pull-requests-semantic-search) |
+| Reviews | [List](./REFERENCE.md#reviews-list), [Context Store Search](./REFERENCE.md#reviews-context-store-search), [Context Store SQL Query](./REFERENCE.md#reviews-context-store-sql-query) |
+| Pr Comments | [List](./REFERENCE.md#pr-comments-list), [Get](./REFERENCE.md#pr-comments-get), [Context Store Search](./REFERENCE.md#pr-comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#pr-comments-context-store-sql-query) |
+| Labels | [List](./REFERENCE.md#labels-list), [Get](./REFERENCE.md#labels-get), [Context Store Search](./REFERENCE.md#labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#labels-context-store-sql-query) |
+| Milestones | [List](./REFERENCE.md#milestones-list), [Get](./REFERENCE.md#milestones-get), [Context Store Search](./REFERENCE.md#milestones-context-store-search), [Context Store SQL Query](./REFERENCE.md#milestones-context-store-sql-query) |
+| Organizations | [Get](./REFERENCE.md#organizations-get), [List](./REFERENCE.md#organizations-list), [Context Store Search](./REFERENCE.md#organizations-context-store-search), [Context Store SQL Query](./REFERENCE.md#organizations-context-store-sql-query) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Context Store SQL Query](./REFERENCE.md#teams-context-store-sql-query) |
+| Tags | [List](./REFERENCE.md#tags-list), [Get](./REFERENCE.md#tags-get), [Context Store Search](./REFERENCE.md#tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#tags-context-store-sql-query) |
+| Stargazers | [List](./REFERENCE.md#stargazers-list), [Context Store Search](./REFERENCE.md#stargazers-context-store-search), [Context Store SQL Query](./REFERENCE.md#stargazers-context-store-sql-query) |
+| Viewer | [Get](./REFERENCE.md#viewer-get), [Context Store Search](./REFERENCE.md#viewer-context-store-search), [Context Store SQL Query](./REFERENCE.md#viewer-context-store-sql-query) |
+| Viewer Repositories | [List](./REFERENCE.md#viewer-repositories-list), [Context Store Search](./REFERENCE.md#viewer-repositories-context-store-search), [Context Store SQL Query](./REFERENCE.md#viewer-repositories-context-store-sql-query) |
+| Projects | [List](./REFERENCE.md#projects-list), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query) |
+| Project Items | [List](./REFERENCE.md#project-items-list), [Context Store Search](./REFERENCE.md#project-items-context-store-search), [Context Store SQL Query](./REFERENCE.md#project-items-context-store-sql-query) |
+| Discussions | [List](./REFERENCE.md#discussions-list), [Get](./REFERENCE.md#discussions-get), [API Search](./REFERENCE.md#discussions-api_search), [Context Store Search](./REFERENCE.md#discussions-context-store-search), [Context Store SQL Query](./REFERENCE.md#discussions-context-store-sql-query) |
+| File Content | [Get](./REFERENCE.md#file-content-get), [Context Store Search](./REFERENCE.md#file-content-context-store-search), [Context Store SQL Query](./REFERENCE.md#file-content-context-store-sql-query) |
+| Directory Content | [List](./REFERENCE.md#directory-content-list), [Context Store Search](./REFERENCE.md#directory-content-context-store-search), [Context Store SQL Query](./REFERENCE.md#directory-content-context-store-sql-query) |
 
 
 ## Github API docs
