@@ -1,0 +1,15 @@
+{
+  "database_config": {
+    "cluster_type": "SELF_MANAGED_REPLICA_SET",
+    "connection_string": "mongodb://source-mongodb-v2-db-backend:27017/?replicaSet=rs0",
+    "databases": ["test_db"],
+    "schema_enforced": true
+  },
+  "initial_waiting_seconds": 120,
+  "queue_size": 10000,
+  "discover_sample_size": 10000,
+  "discover_timeout_seconds": 600,
+  "invalid_cdc_cursor_position_behavior": "Fail sync",
+  "update_capture_mode": "Lookup",
+  "initial_load_timeout_hours": 8
+}
