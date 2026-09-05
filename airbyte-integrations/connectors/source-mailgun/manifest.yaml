@@ -202,7 +202,7 @@ definitions:
           datetime: "{{ today_utc() }}"
           datetime_format: "%Y-%m-%d"
         step: P1M
-        cursor_granularity: PT0.000001S
+        cursor_granularity: PT1S
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -757,7 +757,7 @@ streams:
         datetime: "{{ today_utc() }}"
         datetime_format: "%Y-%m-%d"
       step: P1M
-      cursor_granularity: PT0.000001S
+      cursor_granularity: PT1S
     schema_loader:
       type: InlineSchemaLoader
       schema:
