@@ -7,6 +7,10 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
+### 1.0.26 — 2026-08-31
+
+[#75211](https://github.com/airbytehq/airbyte/pull/75211) — Fix: handle null generationId/syncId in DestinationStreamFactory to prevent NPE on older platforms.
+
 ### 1.0.25 — 2026-08-20
 
 Fix: truncate-refresh dedup syncs no longer replace an already-committed real table with an empty or partial result on a later job attempt.
