@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.toolkits.iceberg.parquet
 
+import io.airbyte.cdk.load.message.Meta
 import jakarta.inject.Singleton
 import org.apache.iceberg.Schema
 import org.apache.iceberg.types.Type
@@ -91,7 +92,7 @@ class IcebergTypesComparator {
             parentPath = null,
             incomingType = incomingSchema.asStruct(),
             existingType = existingSchema.asStruct(),
-            diff = diff
+            diff = diff,
         )
 
         val incomingIdentifierNames = incomingSchema.identifierFieldNames().toSet()
@@ -113,7 +114,8 @@ class IcebergTypesComparator {
         parentPath: String?,
         incomingType: Types.StructType,
         existingType: Types.StructType,
-        diff: ColumnDiff
+        diff: ColumnDiff,
+        relaxNestedNullability: Boolean = false,
     ) {
         val incomingFieldsByName = incomingType.fields().associateBy { it.name() }
         val existingFieldsByName = existingType.fields().associateBy { it.name() }
@@ -130,15 +132,19 @@ class IcebergTypesComparator {
                 // The column exists in both => check for type differences at top-level
                 if (
                     parentPath.isNullOrBlank() &&
-                        !typesAreEqual(incomingField.type(), existingField.type())
+                        !typesAreEqual(
+                            incomingField.type(),
+                            existingField.type(),
+                            ignoreNullability = fieldName == Meta.COLUMN_NAME_AB_META,
+                        )
                 ) {
                     diff.updatedDataTypes.add(fqName)
                 }
 
-                // Check if it changed from required to optional at top-level
+                // Check if it changed from required to optional
                 val wasRequired = !existingField.isOptional
                 val isNowOptional = incomingField.isOptional
-                if (parentPath.isNullOrBlank() && wasRequired && isNowOptional) {
+                if (wasRequired && isNowOptional) {
                     diff.newlyOptionalColumns.add(fqName)
                 }
 
@@ -148,8 +154,38 @@ class IcebergTypesComparator {
                         parentPath = fqName,
                         incomingType = incomingField.type().asStructType(),
                         existingType = existingField.type().asStructType(),
-                        diff = diff
+                        diff = diff,
+                        relaxNestedNullability =
+                            fieldName == Meta.COLUMN_NAME_AB_META || relaxNestedNullability,
                     )
+                }
+
+                // If both are lists, compare element optionality and recurse into element structs.
+                if (
+                    relaxNestedNullability &&
+                        incomingField.type().isListType &&
+                        existingField.type().isListType
+                ) {
+                    val incomingList = incomingField.type().asListType()
+                    val existingList = existingField.type().asListType()
+                    val elementPath = fullyQualifiedName(fqName, "element")
+
+                    if (!existingList.isElementOptional && incomingList.isElementOptional) {
+                        diff.newlyOptionalColumns.add(elementPath)
+                    }
+
+                    if (
+                        incomingList.elementType().isStructType &&
+                            existingList.elementType().isStructType
+                    ) {
+                        compareStructFields(
+                            parentPath = elementPath,
+                            incomingType = incomingList.elementType().asStructType(),
+                            existingType = existingList.elementType().asStructType(),
+                            diff = diff,
+                            relaxNestedNullability = true,
+                        )
+                    }
                 }
             }
         }
@@ -171,10 +207,15 @@ class IcebergTypesComparator {
      *
      * @param incomingType the type from the incoming schema.
      * @param existingType the type from the existing schema.
+     * @param ignoreNullability whether nested field and list element nullability should be ignored.
      * @return `true` if they are effectively the same type, `false` otherwise.
      * @throws IllegalArgumentException if an unsupported or unmapped Iceberg type is encountered.
      */
-    fun typesAreEqual(incomingType: Type, existingType: Type): Boolean {
+    fun typesAreEqual(
+        incomingType: Type,
+        existingType: Type,
+        ignoreNullability: Boolean = false,
+    ): Boolean {
         if (existingType.typeId() != incomingType.typeId()) return false
 
         return when (val typeId = existingType.typeId()) {
@@ -201,9 +242,14 @@ class IcebergTypesComparator {
                     "Expected LIST types, but received $existingType and $incomingType."
                 }
                 val sameElementType =
-                    typesAreEqual(incomingType.elementType(), existingType.elementType())
+                    typesAreEqual(
+                        incomingType.elementType(),
+                        existingType.elementType(),
+                        ignoreNullability,
+                    )
                 sameElementType &&
-                    (existingType.isElementOptional == incomingType.isElementOptional)
+                    (ignoreNullability ||
+                        existingType.isElementOptional == incomingType.isElementOptional)
             }
             Type.TypeID.STRUCT -> {
                 val incomingStructFields =
@@ -214,8 +260,20 @@ class IcebergTypesComparator {
                 // For all fields in existing, ensure there's a matching field in incoming
                 for ((name, existingField) in existingStructFields) {
                     val incomingField = incomingStructFields[name] ?: return false
-                    if (existingField.isOptional != incomingField.isOptional) return false
-                    if (!typesAreEqual(incomingField.type(), existingField.type())) return false
+                    if (
+                        !ignoreNullability && existingField.isOptional != incomingField.isOptional
+                    ) {
+                        return false
+                    }
+                    if (
+                        !typesAreEqual(
+                            incomingField.type(),
+                            existingField.type(),
+                            ignoreNullability
+                        )
+                    ) {
+                        return false
+                    }
                 }
                 // If there are extra fields in `incoming`, that doesn't mean they're "unequal" per
                 // se —
