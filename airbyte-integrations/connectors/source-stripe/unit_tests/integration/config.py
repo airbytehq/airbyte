@@ -34,5 +34,9 @@ class ConfigBuilder:
         self._config["slice_range"] = number_of_days
         return self
 
+    def with_event_based_incremental_sync_mode(self, mode: str) -> "ConfigBuilder":
+        self._config["event_based_incremental_sync_mode"] = mode
+        return self
+
     def build(self) -> Dict[str, Any]:
         return self._config
