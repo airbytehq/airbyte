@@ -44,7 +44,10 @@ def test_stream_slices_until_today_false(requests_mock, config_pass_until_today_
     period = 5
     start = datetime.today() - timedelta(days=period)
     inputs = {"sync_mode": SyncMode.incremental, "cursor_field": "day", "stream_state": {"day": start.isoformat()}}
-    assert list(stream.stream_slices(**inputs)) is not None
+    slices = list(stream.stream_slices(**inputs))
+    assert len(slices) > 0
+    expected_end_time = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    assert slices[-1]["end_time"][:10] == expected_end_time[:10]
 
 
 def test_supports_incremental(config_pass):
