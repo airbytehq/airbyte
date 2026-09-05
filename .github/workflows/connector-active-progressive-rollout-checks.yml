@@ -118,8 +118,38 @@ jobs:
       GITHUB_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
     steps:
-      - name: Checkout Airbyte
+      - name: Check whether connector exists on master
         if: matrix.connector
+        id: connector-on-master
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector }}
+          BASE_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          metadata_path="airbyte-integrations/connectors/${CONNECTOR_NAME}/metadata.yaml"
+          error_log="${RUNNER_TEMP}/gh-api-error.log"
+          gh api "repos/${BASE_REPOSITORY}/contents/${metadata_path}?ref=master" --silent 2>"${error_log}" \
+            && exists="true" \
+            || exists="false"
+          [[ "${exists}" == "true" ]] || grep -q "HTTP 404" "${error_log}" || {
+            echo "::error::Could not determine whether ${CONNECTOR_NAME} exists on master."
+            cat "${error_log}"
+            exit 1
+          }
+          echo "exists=${exists}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Skip rollout gate for net-new connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists != 'true'
+        env:
+          CONNECTOR_NAME: ${{ matrix.connector }}
+        run: echo "::notice::${CONNECTOR_NAME} does not exist on master yet, so it cannot have an active progressive rollout. Skipping the rollout gate."
+
+      - name: Checkout Airbyte
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: ${{ needs.generate-matrix.outputs.checkout-repository }}
@@ -128,15 +158,21 @@ jobs:
           fetch-depth: 1
 
       - name: Install uv
-        if: matrix.connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
 
       - name: Install Ops CLI
-        if: matrix.connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         run: uv tool install airbyte-internal-ops
 
       - name: Install Cloud SQL Proxy
-        if: matrix.connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         env:
           CLOUD_SQL_PROXY_VERSION: v2.15.0
           CLOUD_SQL_PROXY_SHA256: cf3e9d069ea0d09cdfddce77daa36811bb0b963b1169e9c3f1586433ca7325fa
@@ -152,14 +188,18 @@ jobs:
           cloud-sql-proxy --version
 
       - name: Start Cloud SQL Proxy
-        if: matrix.connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         env:
           # Local Cloud SQL Proxy port for prod DB queries.
           DB_PORT: "15432"
         run: airbyte-ops cloud db start-proxy --port "${DB_PORT}"
 
       - name: Get rollout status
-        if: matrix.connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         id: rollout-status
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
@@ -173,20 +213,20 @@ jobs:
           } | tee -a "${GITHUB_OUTPUT}"
 
       - name: Get master connector version
-        if: matrix.connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         id: master-version
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
         run: |
-          if VERSION=$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master 2>/dev/null); then
-            echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
-          else
-            echo "Connector ${CONNECTOR_NAME} not found on master (net-new connector). Skipping version check."
-            echo "version=" | tee -a "${GITHUB_OUTPUT}"
-          fi
+          VERSION="$(airbyte-ops gh connector get-version --name "${CONNECTOR_NAME}" --ref master)"
+          echo "version=${VERSION}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Resolve rollout gate state
-        if: matrix.connector
+        if: >
+          matrix.connector &&
+          steps.connector-on-master.outputs.exists == 'true'
         id: rollout-gate-state
         env:
           ROLLOUT_STATUS_JSON: ${{ steps.rollout-status.outputs.json }}
