@@ -51,12 +51,12 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Issues | [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search) |
-| Projects | [API Search](./REFERENCE.md#projects-api_search), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search) |
-| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [API Search](./REFERENCE.md#issue-fields-api_search), [Context Store Search](./REFERENCE.md#issue-fields-context-store-search) |
-| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete), [Context Store Search](./REFERENCE.md#issue-comments-context-store-search) |
-| Issue Worklogs | [Get](./REFERENCE.md#issue-worklogs-get), [List](./REFERENCE.md#issue-worklogs-list), [Create](./REFERENCE.md#issue-worklogs-create), [Context Store Search](./REFERENCE.md#issue-worklogs-context-store-search) |
+| Issues | [API Search](./REFERENCE.md#issues-api_search), [Create](./REFERENCE.md#issues-create), [Get](./REFERENCE.md#issues-get), [Update](./REFERENCE.md#issues-update), [Delete](./REFERENCE.md#issues-delete), [Context Store Search](./REFERENCE.md#issues-context-store-search), [Context Store SQL Query](./REFERENCE.md#issues-context-store-sql-query) |
+| Projects | [API Search](./REFERENCE.md#projects-api_search), [Get](./REFERENCE.md#projects-get), [Context Store Search](./REFERENCE.md#projects-context-store-search), [Context Store SQL Query](./REFERENCE.md#projects-context-store-sql-query) |
+| Users | [Get](./REFERENCE.md#users-get), [List](./REFERENCE.md#users-list), [API Search](./REFERENCE.md#users-api_search), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Issue Fields | [List](./REFERENCE.md#issue-fields-list), [API Search](./REFERENCE.md#issue-fields-api_search), [Context Store Search](./REFERENCE.md#issue-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#issue-fields-context-store-sql-query) |
+| Issue Comments | [List](./REFERENCE.md#issue-comments-list), [Create](./REFERENCE.md#issue-comments-create), [Get](./REFERENCE.md#issue-comments-get), [Update](./REFERENCE.md#issue-comments-update), [Delete](./REFERENCE.md#issue-comments-delete), [Context Store Search](./REFERENCE.md#issue-comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#issue-comments-context-store-sql-query) |
+| Issue Worklogs | [Get](./REFERENCE.md#issue-worklogs-get), [List](./REFERENCE.md#issue-worklogs-list), [Create](./REFERENCE.md#issue-worklogs-create), [Context Store Search](./REFERENCE.md#issue-worklogs-context-store-search), [Context Store SQL Query](./REFERENCE.md#issue-worklogs-context-store-sql-query) |
 | Issues Assignee | [Update](./REFERENCE.md#issues-assignee-update) |
 | Issue Transitions | [List](./REFERENCE.md#issue-transitions-list), [Create](./REFERENCE.md#issue-transitions-create) |
 | Issue Links | [Create](./REFERENCE.md#issue-links-create) |

@@ -44,14 +44,14 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Website Overview | [List](./REFERENCE.md#website-overview-list), [Context Store Search](./REFERENCE.md#website-overview-context-store-search) |
-| Daily Active Users | [List](./REFERENCE.md#daily-active-users-list), [Context Store Search](./REFERENCE.md#daily-active-users-context-store-search) |
-| Weekly Active Users | [List](./REFERENCE.md#weekly-active-users-list), [Context Store Search](./REFERENCE.md#weekly-active-users-context-store-search) |
-| Four Weekly Active Users | [List](./REFERENCE.md#four-weekly-active-users-list), [Context Store Search](./REFERENCE.md#four-weekly-active-users-context-store-search) |
-| Traffic Sources | [List](./REFERENCE.md#traffic-sources-list), [Context Store Search](./REFERENCE.md#traffic-sources-context-store-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
-| Devices | [List](./REFERENCE.md#devices-list), [Context Store Search](./REFERENCE.md#devices-context-store-search) |
-| Locations | [List](./REFERENCE.md#locations-list), [Context Store Search](./REFERENCE.md#locations-context-store-search) |
+| Website Overview | [List](./REFERENCE.md#website-overview-list), [Context Store Search](./REFERENCE.md#website-overview-context-store-search), [Context Store SQL Query](./REFERENCE.md#website-overview-context-store-sql-query) |
+| Daily Active Users | [List](./REFERENCE.md#daily-active-users-list), [Context Store Search](./REFERENCE.md#daily-active-users-context-store-search), [Context Store SQL Query](./REFERENCE.md#daily-active-users-context-store-sql-query) |
+| Weekly Active Users | [List](./REFERENCE.md#weekly-active-users-list), [Context Store Search](./REFERENCE.md#weekly-active-users-context-store-search), [Context Store SQL Query](./REFERENCE.md#weekly-active-users-context-store-sql-query) |
+| Four Weekly Active Users | [List](./REFERENCE.md#four-weekly-active-users-list), [Context Store Search](./REFERENCE.md#four-weekly-active-users-context-store-search), [Context Store SQL Query](./REFERENCE.md#four-weekly-active-users-context-store-sql-query) |
+| Traffic Sources | [List](./REFERENCE.md#traffic-sources-list), [Context Store Search](./REFERENCE.md#traffic-sources-context-store-search), [Context Store SQL Query](./REFERENCE.md#traffic-sources-context-store-sql-query) |
+| Pages | [List](./REFERENCE.md#pages-list), [Context Store Search](./REFERENCE.md#pages-context-store-search), [Context Store SQL Query](./REFERENCE.md#pages-context-store-sql-query) |
+| Devices | [List](./REFERENCE.md#devices-list), [Context Store Search](./REFERENCE.md#devices-context-store-search), [Context Store SQL Query](./REFERENCE.md#devices-context-store-sql-query) |
+| Locations | [List](./REFERENCE.md#locations-list), [Context Store Search](./REFERENCE.md#locations-context-store-search), [Context Store SQL Query](./REFERENCE.md#locations-context-store-sql-query) |
 
 
 ## Google-Analytics-Data-Api API docs

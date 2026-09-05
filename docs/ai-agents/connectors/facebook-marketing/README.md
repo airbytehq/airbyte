@@ -53,15 +53,15 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Current User | [Get](./REFERENCE.md#current-user-get) |
-| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Get](./REFERENCE.md#ad-accounts-get), [Context Store Search](./REFERENCE.md#ad-accounts-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Create](./REFERENCE.md#ad-sets-create), [Get](./REFERENCE.md#ad-sets-get), [Update](./REFERENCE.md#ad-sets-update), [Context Store Search](./REFERENCE.md#ad-sets-context-store-search) |
-| Ads | [List](./REFERENCE.md#ads-list), [Create](./REFERENCE.md#ads-create), [Get](./REFERENCE.md#ads-get), [Update](./REFERENCE.md#ads-update), [Context Store Search](./REFERENCE.md#ads-context-store-search) |
-| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list), [Context Store Search](./REFERENCE.md#ad-creatives-context-store-search), [Semantic Search](./REFERENCE.md#ad-creatives-semantic-search) |
-| Ads Insights | [List](./REFERENCE.md#ads-insights-list), [Context Store Search](./REFERENCE.md#ads-insights-context-store-search) |
-| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list), [Context Store Search](./REFERENCE.md#custom-conversions-context-store-search) |
-| Images | [List](./REFERENCE.md#images-list), [Context Store Search](./REFERENCE.md#images-context-store-search) |
-| Videos | [List](./REFERENCE.md#videos-list), [Context Store Search](./REFERENCE.md#videos-context-store-search) |
+| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Get](./REFERENCE.md#ad-accounts-get), [Context Store Search](./REFERENCE.md#ad-accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-accounts-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Create](./REFERENCE.md#campaigns-create), [Get](./REFERENCE.md#campaigns-get), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Ad Sets | [List](./REFERENCE.md#ad-sets-list), [Create](./REFERENCE.md#ad-sets-create), [Get](./REFERENCE.md#ad-sets-get), [Update](./REFERENCE.md#ad-sets-update), [Context Store Search](./REFERENCE.md#ad-sets-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-sets-context-store-sql-query) |
+| Ads | [List](./REFERENCE.md#ads-list), [Create](./REFERENCE.md#ads-create), [Get](./REFERENCE.md#ads-get), [Update](./REFERENCE.md#ads-update), [Context Store Search](./REFERENCE.md#ads-context-store-search), [Context Store SQL Query](./REFERENCE.md#ads-context-store-sql-query) |
+| Ad Creatives | [List](./REFERENCE.md#ad-creatives-list), [Context Store Search](./REFERENCE.md#ad-creatives-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-creatives-context-store-sql-query), [Semantic Search](./REFERENCE.md#ad-creatives-semantic-search) |
+| Ads Insights | [List](./REFERENCE.md#ads-insights-list), [Context Store Search](./REFERENCE.md#ads-insights-context-store-search), [Context Store SQL Query](./REFERENCE.md#ads-insights-context-store-sql-query) |
+| Custom Conversions | [List](./REFERENCE.md#custom-conversions-list), [Context Store Search](./REFERENCE.md#custom-conversions-context-store-search), [Context Store SQL Query](./REFERENCE.md#custom-conversions-context-store-sql-query) |
+| Images | [List](./REFERENCE.md#images-list), [Context Store Search](./REFERENCE.md#images-context-store-search), [Context Store SQL Query](./REFERENCE.md#images-context-store-sql-query) |
+| Videos | [List](./REFERENCE.md#videos-list), [Context Store Search](./REFERENCE.md#videos-context-store-search), [Context Store SQL Query](./REFERENCE.md#videos-context-store-sql-query) |
 | Pixels | [List](./REFERENCE.md#pixels-list), [Get](./REFERENCE.md#pixels-get) |
 | Pixel Stats | [List](./REFERENCE.md#pixel-stats-list) |
 | Ad Library | [List](./REFERENCE.md#ad-library-list) |

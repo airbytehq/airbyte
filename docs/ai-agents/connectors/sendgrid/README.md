@@ -38,20 +38,20 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search) |
-| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Singlesends | [List](./REFERENCE.md#singlesends-list), [Get](./REFERENCE.md#singlesends-get), [Context Store Search](./REFERENCE.md#singlesends-context-store-search) |
-| Templates | [List](./REFERENCE.md#templates-list), [Get](./REFERENCE.md#templates-get), [Context Store Search](./REFERENCE.md#templates-context-store-search) |
-| Singlesend Stats | [List](./REFERENCE.md#singlesend-stats-list), [Context Store Search](./REFERENCE.md#singlesend-stats-context-store-search) |
-| Bounces | [List](./REFERENCE.md#bounces-list), [Context Store Search](./REFERENCE.md#bounces-context-store-search) |
-| Blocks | [List](./REFERENCE.md#blocks-list), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search), [Context Store SQL Query](./REFERENCE.md#lists-context-store-sql-query) |
+| Segments | [List](./REFERENCE.md#segments-list), [Get](./REFERENCE.md#segments-get), [Context Store Search](./REFERENCE.md#segments-context-store-search), [Context Store SQL Query](./REFERENCE.md#segments-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Singlesends | [List](./REFERENCE.md#singlesends-list), [Get](./REFERENCE.md#singlesends-get), [Context Store Search](./REFERENCE.md#singlesends-context-store-search), [Context Store SQL Query](./REFERENCE.md#singlesends-context-store-sql-query) |
+| Templates | [List](./REFERENCE.md#templates-list), [Get](./REFERENCE.md#templates-get), [Context Store Search](./REFERENCE.md#templates-context-store-search), [Context Store SQL Query](./REFERENCE.md#templates-context-store-sql-query) |
+| Singlesend Stats | [List](./REFERENCE.md#singlesend-stats-list), [Context Store Search](./REFERENCE.md#singlesend-stats-context-store-search), [Context Store SQL Query](./REFERENCE.md#singlesend-stats-context-store-sql-query) |
+| Bounces | [List](./REFERENCE.md#bounces-list), [Context Store Search](./REFERENCE.md#bounces-context-store-search), [Context Store SQL Query](./REFERENCE.md#bounces-context-store-sql-query) |
+| Blocks | [List](./REFERENCE.md#blocks-list), [Context Store Search](./REFERENCE.md#blocks-context-store-search), [Context Store SQL Query](./REFERENCE.md#blocks-context-store-sql-query) |
 | Spam Reports | [List](./REFERENCE.md#spam-reports-list) |
-| Invalid Emails | [List](./REFERENCE.md#invalid-emails-list), [Context Store Search](./REFERENCE.md#invalid-emails-context-store-search) |
-| Global Suppressions | [List](./REFERENCE.md#global-suppressions-list), [Context Store Search](./REFERENCE.md#global-suppressions-context-store-search) |
-| Suppression Groups | [List](./REFERENCE.md#suppression-groups-list), [Get](./REFERENCE.md#suppression-groups-get), [Context Store Search](./REFERENCE.md#suppression-groups-context-store-search) |
-| Suppression Group Members | [List](./REFERENCE.md#suppression-group-members-list), [Context Store Search](./REFERENCE.md#suppression-group-members-context-store-search) |
+| Invalid Emails | [List](./REFERENCE.md#invalid-emails-list), [Context Store Search](./REFERENCE.md#invalid-emails-context-store-search), [Context Store SQL Query](./REFERENCE.md#invalid-emails-context-store-sql-query) |
+| Global Suppressions | [List](./REFERENCE.md#global-suppressions-list), [Context Store Search](./REFERENCE.md#global-suppressions-context-store-search), [Context Store SQL Query](./REFERENCE.md#global-suppressions-context-store-sql-query) |
+| Suppression Groups | [List](./REFERENCE.md#suppression-groups-list), [Get](./REFERENCE.md#suppression-groups-get), [Context Store Search](./REFERENCE.md#suppression-groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#suppression-groups-context-store-sql-query) |
+| Suppression Group Members | [List](./REFERENCE.md#suppression-group-members-list), [Context Store Search](./REFERENCE.md#suppression-group-members-context-store-search), [Context Store SQL Query](./REFERENCE.md#suppression-group-members-context-store-sql-query) |
 
 
 ## Sendgrid API docs

@@ -37,20 +37,20 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Get](./REFERENCE.md#ad-accounts-get), [Context Store Search](./REFERENCE.md#ad-accounts-context-store-search) |
-| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Context Store Search](./REFERENCE.md#boards-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Context Store Search](./REFERENCE.md#ad-groups-context-store-search) |
-| Ads | [List](./REFERENCE.md#ads-list), [Context Store Search](./REFERENCE.md#ads-context-store-search) |
-| Board Sections | [List](./REFERENCE.md#board-sections-list), [Context Store Search](./REFERENCE.md#board-sections-context-store-search) |
-| Board Pins | [List](./REFERENCE.md#board-pins-list), [Context Store Search](./REFERENCE.md#board-pins-context-store-search) |
-| Catalogs | [List](./REFERENCE.md#catalogs-list), [Context Store Search](./REFERENCE.md#catalogs-context-store-search) |
-| Catalogs Feeds | [List](./REFERENCE.md#catalogs-feeds-list), [Context Store Search](./REFERENCE.md#catalogs-feeds-context-store-search) |
-| Catalogs Product Groups | [List](./REFERENCE.md#catalogs-product-groups-list), [Context Store Search](./REFERENCE.md#catalogs-product-groups-context-store-search) |
-| Audiences | [List](./REFERENCE.md#audiences-list), [Context Store Search](./REFERENCE.md#audiences-context-store-search) |
-| Conversion Tags | [List](./REFERENCE.md#conversion-tags-list), [Context Store Search](./REFERENCE.md#conversion-tags-context-store-search) |
-| Customer Lists | [List](./REFERENCE.md#customer-lists-list), [Context Store Search](./REFERENCE.md#customer-lists-context-store-search) |
-| Keywords | [List](./REFERENCE.md#keywords-list), [Context Store Search](./REFERENCE.md#keywords-context-store-search) |
+| Ad Accounts | [List](./REFERENCE.md#ad-accounts-list), [Get](./REFERENCE.md#ad-accounts-get), [Context Store Search](./REFERENCE.md#ad-accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-accounts-context-store-sql-query) |
+| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Context Store Search](./REFERENCE.md#boards-context-store-search), [Context Store SQL Query](./REFERENCE.md#boards-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Context Store Search](./REFERENCE.md#ad-groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-groups-context-store-sql-query) |
+| Ads | [List](./REFERENCE.md#ads-list), [Context Store Search](./REFERENCE.md#ads-context-store-search), [Context Store SQL Query](./REFERENCE.md#ads-context-store-sql-query) |
+| Board Sections | [List](./REFERENCE.md#board-sections-list), [Context Store Search](./REFERENCE.md#board-sections-context-store-search), [Context Store SQL Query](./REFERENCE.md#board-sections-context-store-sql-query) |
+| Board Pins | [List](./REFERENCE.md#board-pins-list), [Context Store Search](./REFERENCE.md#board-pins-context-store-search), [Context Store SQL Query](./REFERENCE.md#board-pins-context-store-sql-query) |
+| Catalogs | [List](./REFERENCE.md#catalogs-list), [Context Store Search](./REFERENCE.md#catalogs-context-store-search), [Context Store SQL Query](./REFERENCE.md#catalogs-context-store-sql-query) |
+| Catalogs Feeds | [List](./REFERENCE.md#catalogs-feeds-list), [Context Store Search](./REFERENCE.md#catalogs-feeds-context-store-search), [Context Store SQL Query](./REFERENCE.md#catalogs-feeds-context-store-sql-query) |
+| Catalogs Product Groups | [List](./REFERENCE.md#catalogs-product-groups-list), [Context Store Search](./REFERENCE.md#catalogs-product-groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#catalogs-product-groups-context-store-sql-query) |
+| Audiences | [List](./REFERENCE.md#audiences-list), [Context Store Search](./REFERENCE.md#audiences-context-store-search), [Context Store SQL Query](./REFERENCE.md#audiences-context-store-sql-query) |
+| Conversion Tags | [List](./REFERENCE.md#conversion-tags-list), [Context Store Search](./REFERENCE.md#conversion-tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#conversion-tags-context-store-sql-query) |
+| Customer Lists | [List](./REFERENCE.md#customer-lists-list), [Context Store Search](./REFERENCE.md#customer-lists-context-store-search), [Context Store SQL Query](./REFERENCE.md#customer-lists-context-store-sql-query) |
+| Keywords | [List](./REFERENCE.md#keywords-list), [Context Store Search](./REFERENCE.md#keywords-context-store-search), [Context Store SQL Query](./REFERENCE.md#keywords-context-store-sql-query) |
 
 
 ## Pinterest API docs

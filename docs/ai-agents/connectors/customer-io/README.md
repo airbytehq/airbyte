@@ -56,9 +56,9 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Campaign Actions | [List](./REFERENCE.md#campaign-actions-list), [Get](./REFERENCE.md#campaign-actions-get), [Context Store Search](./REFERENCE.md#campaign-actions-context-store-search), [Semantic Search](./REFERENCE.md#campaign-actions-semantic-search) |
-| Newsletters | [List](./REFERENCE.md#newsletters-list), [Get](./REFERENCE.md#newsletters-get), [Context Store Search](./REFERENCE.md#newsletters-context-store-search) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Campaign Actions | [List](./REFERENCE.md#campaign-actions-list), [Get](./REFERENCE.md#campaign-actions-get), [Context Store Search](./REFERENCE.md#campaign-actions-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaign-actions-context-store-sql-query), [Semantic Search](./REFERENCE.md#campaign-actions-semantic-search) |
+| Newsletters | [List](./REFERENCE.md#newsletters-list), [Get](./REFERENCE.md#newsletters-get), [Context Store Search](./REFERENCE.md#newsletters-context-store-search), [Context Store SQL Query](./REFERENCE.md#newsletters-context-store-sql-query) |
 | Segments | [List](./REFERENCE.md#segments-list), [Create](./REFERENCE.md#segments-create), [Get](./REFERENCE.md#segments-get) |
 | Messages | [List](./REFERENCE.md#messages-list), [Get](./REFERENCE.md#messages-get) |
 | Activities | [List](./REFERENCE.md#activities-list) |

@@ -36,7 +36,7 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Context Store Search](./REFERENCE.md#notes-context-store-search), [Semantic Search](./REFERENCE.md#notes-semantic-search) |
+| Notes | [List](./REFERENCE.md#notes-list), [Get](./REFERENCE.md#notes-get), [Context Store Search](./REFERENCE.md#notes-context-store-search), [Context Store SQL Query](./REFERENCE.md#notes-context-store-sql-query), [Semantic Search](./REFERENCE.md#notes-semantic-search) |
 
 
 ## Granola API docs

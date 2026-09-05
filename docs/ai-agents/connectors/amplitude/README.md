@@ -30,11 +30,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Annotations | [List](./REFERENCE.md#annotations-list), [Get](./REFERENCE.md#annotations-get), [Context Store Search](./REFERENCE.md#annotations-context-store-search) |
-| Cohorts | [List](./REFERENCE.md#cohorts-list), [Get](./REFERENCE.md#cohorts-get), [Context Store Search](./REFERENCE.md#cohorts-context-store-search) |
-| Events List | [List](./REFERENCE.md#events-list-list), [Context Store Search](./REFERENCE.md#events-list-context-store-search) |
-| Active Users | [List](./REFERENCE.md#active-users-list), [Context Store Search](./REFERENCE.md#active-users-context-store-search) |
-| Average Session Length | [List](./REFERENCE.md#average-session-length-list), [Context Store Search](./REFERENCE.md#average-session-length-context-store-search) |
+| Annotations | [List](./REFERENCE.md#annotations-list), [Get](./REFERENCE.md#annotations-get), [Context Store Search](./REFERENCE.md#annotations-context-store-search), [Context Store SQL Query](./REFERENCE.md#annotations-context-store-sql-query) |
+| Cohorts | [List](./REFERENCE.md#cohorts-list), [Get](./REFERENCE.md#cohorts-get), [Context Store Search](./REFERENCE.md#cohorts-context-store-search), [Context Store SQL Query](./REFERENCE.md#cohorts-context-store-sql-query) |
+| Events List | [List](./REFERENCE.md#events-list-list), [Context Store Search](./REFERENCE.md#events-list-context-store-search), [Context Store SQL Query](./REFERENCE.md#events-list-context-store-sql-query) |
+| Active Users | [List](./REFERENCE.md#active-users-list), [Context Store Search](./REFERENCE.md#active-users-context-store-search), [Context Store SQL Query](./REFERENCE.md#active-users-context-store-sql-query) |
+| Average Session Length | [List](./REFERENCE.md#average-session-length-list), [Context Store Search](./REFERENCE.md#average-session-length-context-store-search), [Context Store SQL Query](./REFERENCE.md#average-session-length-context-store-sql-query) |
 
 
 ## Amplitude API docs

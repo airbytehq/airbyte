@@ -67,10 +67,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Channels | [List](./REFERENCE.md#channels-list), [Get](./REFERENCE.md#channels-get), [Create](./REFERENCE.md#channels-create), [Update](./REFERENCE.md#channels-update), [Context Store Search](./REFERENCE.md#channels-context-store-search) |
-| Channel Messages | [List](./REFERENCE.md#channel-messages-list), [Context Store Search](./REFERENCE.md#channel-messages-context-store-search), [Semantic Search](./REFERENCE.md#channel-messages-semantic-search) |
-| Threads | [List](./REFERENCE.md#threads-list), [Context Store Search](./REFERENCE.md#threads-context-store-search), [Semantic Search](./REFERENCE.md#threads-semantic-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Channels | [List](./REFERENCE.md#channels-list), [Get](./REFERENCE.md#channels-get), [Create](./REFERENCE.md#channels-create), [Update](./REFERENCE.md#channels-update), [Context Store Search](./REFERENCE.md#channels-context-store-search), [Context Store SQL Query](./REFERENCE.md#channels-context-store-sql-query) |
+| Channel Messages | [List](./REFERENCE.md#channel-messages-list), [Context Store Search](./REFERENCE.md#channel-messages-context-store-search), [Context Store SQL Query](./REFERENCE.md#channel-messages-context-store-sql-query), [Semantic Search](./REFERENCE.md#channel-messages-semantic-search) |
+| Threads | [List](./REFERENCE.md#threads-list), [Context Store Search](./REFERENCE.md#threads-context-store-search), [Context Store SQL Query](./REFERENCE.md#threads-context-store-sql-query), [Semantic Search](./REFERENCE.md#threads-semantic-search) |
 | Messages | [Create](./REFERENCE.md#messages-create), [Update](./REFERENCE.md#messages-update), [Delete](./REFERENCE.md#messages-delete) |
 | Channel Topics | [Create](./REFERENCE.md#channel-topics-create) |
 | Channel Purposes | [Create](./REFERENCE.md#channel-purposes-create) |

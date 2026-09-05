@@ -42,13 +42,13 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Accessible Customers | [List](./REFERENCE.md#accessible-customers-list) |
-| Accounts | [List](./REFERENCE.md#accounts-list), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Update](./REFERENCE.md#ad-groups-update), [Context Store Search](./REFERENCE.md#ad-groups-context-store-search) |
-| Ad Group Ads | [List](./REFERENCE.md#ad-group-ads-list), [Context Store Search](./REFERENCE.md#ad-group-ads-context-store-search) |
-| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Create](./REFERENCE.md#campaign-labels-create), [Context Store Search](./REFERENCE.md#campaign-labels-context-store-search) |
-| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Create](./REFERENCE.md#ad-group-labels-create), [Context Store Search](./REFERENCE.md#ad-group-labels-context-store-search) |
-| Ad Group Ad Labels | [List](./REFERENCE.md#ad-group-ad-labels-list), [Context Store Search](./REFERENCE.md#ad-group-ad-labels-context-store-search) |
+| Accounts | [List](./REFERENCE.md#accounts-list), [Context Store Search](./REFERENCE.md#accounts-context-store-search), [Context Store SQL Query](./REFERENCE.md#accounts-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Update](./REFERENCE.md#campaigns-update), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Ad Groups | [List](./REFERENCE.md#ad-groups-list), [Update](./REFERENCE.md#ad-groups-update), [Context Store Search](./REFERENCE.md#ad-groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-groups-context-store-sql-query) |
+| Ad Group Ads | [List](./REFERENCE.md#ad-group-ads-list), [Context Store Search](./REFERENCE.md#ad-group-ads-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-group-ads-context-store-sql-query) |
+| Campaign Labels | [List](./REFERENCE.md#campaign-labels-list), [Create](./REFERENCE.md#campaign-labels-create), [Context Store Search](./REFERENCE.md#campaign-labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaign-labels-context-store-sql-query) |
+| Ad Group Labels | [List](./REFERENCE.md#ad-group-labels-list), [Create](./REFERENCE.md#ad-group-labels-create), [Context Store Search](./REFERENCE.md#ad-group-labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-group-labels-context-store-sql-query) |
+| Ad Group Ad Labels | [List](./REFERENCE.md#ad-group-ad-labels-list), [Context Store Search](./REFERENCE.md#ad-group-ad-labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#ad-group-ad-labels-context-store-sql-query) |
 | Labels | [Create](./REFERENCE.md#labels-create) |
 
 

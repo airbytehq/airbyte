@@ -44,18 +44,18 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Incidents | [List](./REFERENCE.md#incidents-list), [Get](./REFERENCE.md#incidents-get), [Context Store Search](./REFERENCE.md#incidents-context-store-search), [Semantic Search](./REFERENCE.md#incidents-semantic-search) |
-| Alerts | [List](./REFERENCE.md#alerts-list), [Get](./REFERENCE.md#alerts-get), [Context Store Search](./REFERENCE.md#alerts-context-store-search), [Semantic Search](./REFERENCE.md#alerts-semantic-search) |
-| Escalations | [List](./REFERENCE.md#escalations-list), [Get](./REFERENCE.md#escalations-get), [Context Store Search](./REFERENCE.md#escalations-context-store-search) |
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Incident Updates | [List](./REFERENCE.md#incident-updates-list), [Context Store Search](./REFERENCE.md#incident-updates-context-store-search), [Semantic Search](./REFERENCE.md#incident-updates-semantic-search) |
-| Incident Roles | [List](./REFERENCE.md#incident-roles-list), [Get](./REFERENCE.md#incident-roles-get), [Context Store Search](./REFERENCE.md#incident-roles-context-store-search) |
-| Incident Statuses | [List](./REFERENCE.md#incident-statuses-list), [Get](./REFERENCE.md#incident-statuses-get), [Context Store Search](./REFERENCE.md#incident-statuses-context-store-search) |
-| Incident Timestamps | [List](./REFERENCE.md#incident-timestamps-list), [Get](./REFERENCE.md#incident-timestamps-get), [Context Store Search](./REFERENCE.md#incident-timestamps-context-store-search) |
-| Severities | [List](./REFERENCE.md#severities-list), [Get](./REFERENCE.md#severities-get), [Context Store Search](./REFERENCE.md#severities-context-store-search) |
-| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Context Store Search](./REFERENCE.md#custom-fields-context-store-search) |
-| Catalog Types | [List](./REFERENCE.md#catalog-types-list), [Get](./REFERENCE.md#catalog-types-get), [Context Store Search](./REFERENCE.md#catalog-types-context-store-search) |
-| Schedules | [List](./REFERENCE.md#schedules-list), [Get](./REFERENCE.md#schedules-get), [Context Store Search](./REFERENCE.md#schedules-context-store-search) |
+| Incidents | [List](./REFERENCE.md#incidents-list), [Get](./REFERENCE.md#incidents-get), [Context Store Search](./REFERENCE.md#incidents-context-store-search), [Context Store SQL Query](./REFERENCE.md#incidents-context-store-sql-query), [Semantic Search](./REFERENCE.md#incidents-semantic-search) |
+| Alerts | [List](./REFERENCE.md#alerts-list), [Get](./REFERENCE.md#alerts-get), [Context Store Search](./REFERENCE.md#alerts-context-store-search), [Context Store SQL Query](./REFERENCE.md#alerts-context-store-sql-query), [Semantic Search](./REFERENCE.md#alerts-semantic-search) |
+| Escalations | [List](./REFERENCE.md#escalations-list), [Get](./REFERENCE.md#escalations-get), [Context Store Search](./REFERENCE.md#escalations-context-store-search), [Context Store SQL Query](./REFERENCE.md#escalations-context-store-sql-query) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Incident Updates | [List](./REFERENCE.md#incident-updates-list), [Context Store Search](./REFERENCE.md#incident-updates-context-store-search), [Context Store SQL Query](./REFERENCE.md#incident-updates-context-store-sql-query), [Semantic Search](./REFERENCE.md#incident-updates-semantic-search) |
+| Incident Roles | [List](./REFERENCE.md#incident-roles-list), [Get](./REFERENCE.md#incident-roles-get), [Context Store Search](./REFERENCE.md#incident-roles-context-store-search), [Context Store SQL Query](./REFERENCE.md#incident-roles-context-store-sql-query) |
+| Incident Statuses | [List](./REFERENCE.md#incident-statuses-list), [Get](./REFERENCE.md#incident-statuses-get), [Context Store Search](./REFERENCE.md#incident-statuses-context-store-search), [Context Store SQL Query](./REFERENCE.md#incident-statuses-context-store-sql-query) |
+| Incident Timestamps | [List](./REFERENCE.md#incident-timestamps-list), [Get](./REFERENCE.md#incident-timestamps-get), [Context Store Search](./REFERENCE.md#incident-timestamps-context-store-search), [Context Store SQL Query](./REFERENCE.md#incident-timestamps-context-store-sql-query) |
+| Severities | [List](./REFERENCE.md#severities-list), [Get](./REFERENCE.md#severities-get), [Context Store Search](./REFERENCE.md#severities-context-store-search), [Context Store SQL Query](./REFERENCE.md#severities-context-store-sql-query) |
+| Custom Fields | [List](./REFERENCE.md#custom-fields-list), [Get](./REFERENCE.md#custom-fields-get), [Context Store Search](./REFERENCE.md#custom-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#custom-fields-context-store-sql-query) |
+| Catalog Types | [List](./REFERENCE.md#catalog-types-list), [Get](./REFERENCE.md#catalog-types-get), [Context Store Search](./REFERENCE.md#catalog-types-context-store-search), [Context Store SQL Query](./REFERENCE.md#catalog-types-context-store-sql-query) |
+| Schedules | [List](./REFERENCE.md#schedules-list), [Get](./REFERENCE.md#schedules-get), [Context Store Search](./REFERENCE.md#schedules-context-store-search), [Context Store SQL Query](./REFERENCE.md#schedules-context-store-sql-query) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get) |
 
 

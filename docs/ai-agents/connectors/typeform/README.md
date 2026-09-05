@@ -34,12 +34,12 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Forms | [List](./REFERENCE.md#forms-list), [Get](./REFERENCE.md#forms-get), [Context Store Search](./REFERENCE.md#forms-context-store-search), [Semantic Search](./REFERENCE.md#forms-semantic-search) |
-| Responses | [List](./REFERENCE.md#responses-list), [Context Store Search](./REFERENCE.md#responses-context-store-search), [Semantic Search](./REFERENCE.md#responses-semantic-search) |
-| Webhooks | [List](./REFERENCE.md#webhooks-list), [Context Store Search](./REFERENCE.md#webhooks-context-store-search) |
-| Workspaces | [List](./REFERENCE.md#workspaces-list), [Context Store Search](./REFERENCE.md#workspaces-context-store-search) |
-| Images | [List](./REFERENCE.md#images-list), [Context Store Search](./REFERENCE.md#images-context-store-search) |
-| Themes | [List](./REFERENCE.md#themes-list), [Context Store Search](./REFERENCE.md#themes-context-store-search) |
+| Forms | [List](./REFERENCE.md#forms-list), [Get](./REFERENCE.md#forms-get), [Context Store Search](./REFERENCE.md#forms-context-store-search), [Context Store SQL Query](./REFERENCE.md#forms-context-store-sql-query), [Semantic Search](./REFERENCE.md#forms-semantic-search) |
+| Responses | [List](./REFERENCE.md#responses-list), [Context Store Search](./REFERENCE.md#responses-context-store-search), [Context Store SQL Query](./REFERENCE.md#responses-context-store-sql-query), [Semantic Search](./REFERENCE.md#responses-semantic-search) |
+| Webhooks | [List](./REFERENCE.md#webhooks-list), [Context Store Search](./REFERENCE.md#webhooks-context-store-search), [Context Store SQL Query](./REFERENCE.md#webhooks-context-store-sql-query) |
+| Workspaces | [List](./REFERENCE.md#workspaces-list), [Context Store Search](./REFERENCE.md#workspaces-context-store-search), [Context Store SQL Query](./REFERENCE.md#workspaces-context-store-sql-query) |
+| Images | [List](./REFERENCE.md#images-list), [Context Store Search](./REFERENCE.md#images-context-store-search), [Context Store SQL Query](./REFERENCE.md#images-context-store-sql-query) |
+| Themes | [List](./REFERENCE.md#themes-list), [Context Store Search](./REFERENCE.md#themes-context-store-search), [Context Store SQL Query](./REFERENCE.md#themes-context-store-sql-query) |
 
 
 ## Typeform API docs

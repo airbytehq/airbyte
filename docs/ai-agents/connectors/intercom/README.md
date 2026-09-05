@@ -55,10 +55,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [Context Store Search](./REFERENCE.md#contacts-context-store-search) |
-| Conversations | [List](./REFERENCE.md#conversations-list), [Create](./REFERENCE.md#conversations-create), [Get](./REFERENCE.md#conversations-get), [Update](./REFERENCE.md#conversations-update), [Delete](./REFERENCE.md#conversations-delete), [Context Store Search](./REFERENCE.md#conversations-context-store-search), [Semantic Search](./REFERENCE.md#conversations-semantic-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Delete](./REFERENCE.md#companies-delete), [Context Store Search](./REFERENCE.md#companies-context-store-search) |
-| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Create](./REFERENCE.md#contacts-create), [Get](./REFERENCE.md#contacts-get), [Update](./REFERENCE.md#contacts-update), [Delete](./REFERENCE.md#contacts-delete), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query) |
+| Conversations | [List](./REFERENCE.md#conversations-list), [Create](./REFERENCE.md#conversations-create), [Get](./REFERENCE.md#conversations-get), [Update](./REFERENCE.md#conversations-update), [Delete](./REFERENCE.md#conversations-delete), [Context Store Search](./REFERENCE.md#conversations-context-store-search), [Context Store SQL Query](./REFERENCE.md#conversations-context-store-sql-query), [Semantic Search](./REFERENCE.md#conversations-semantic-search) |
+| Companies | [List](./REFERENCE.md#companies-list), [Create](./REFERENCE.md#companies-create), [Get](./REFERENCE.md#companies-get), [Update](./REFERENCE.md#companies-update), [Delete](./REFERENCE.md#companies-delete), [Context Store Search](./REFERENCE.md#companies-context-store-search), [Context Store SQL Query](./REFERENCE.md#companies-context-store-sql-query) |
+| Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search), [Context Store SQL Query](./REFERENCE.md#teams-context-store-sql-query) |
 | Admins | [List](./REFERENCE.md#admins-list), [Get](./REFERENCE.md#admins-get) |
 | Tags | [List](./REFERENCE.md#tags-list), [Create](./REFERENCE.md#tags-create), [Get](./REFERENCE.md#tags-get), [Delete](./REFERENCE.md#tags-delete) |
 | Notes | [Create](./REFERENCE.md#notes-create) |

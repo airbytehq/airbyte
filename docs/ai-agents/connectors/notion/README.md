@@ -47,11 +47,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Create](./REFERENCE.md#pages-create), [Get](./REFERENCE.md#pages-get), [Update](./REFERENCE.md#pages-update), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
-| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Update](./REFERENCE.md#data-sources-update), [Context Store Search](./REFERENCE.md#data-sources-context-store-search) |
-| Blocks | [List](./REFERENCE.md#blocks-list), [Create](./REFERENCE.md#blocks-create), [Get](./REFERENCE.md#blocks-get), [Update](./REFERENCE.md#blocks-update), [Context Store Search](./REFERENCE.md#blocks-context-store-search) |
-| Comments | [List](./REFERENCE.md#comments-list), [Create](./REFERENCE.md#comments-create), [Context Store Search](./REFERENCE.md#comments-context-store-search), [Semantic Search](./REFERENCE.md#comments-semantic-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Pages | [List](./REFERENCE.md#pages-list), [Create](./REFERENCE.md#pages-create), [Get](./REFERENCE.md#pages-get), [Update](./REFERENCE.md#pages-update), [Context Store Search](./REFERENCE.md#pages-context-store-search), [Context Store SQL Query](./REFERENCE.md#pages-context-store-sql-query) |
+| Data Sources | [List](./REFERENCE.md#data-sources-list), [Get](./REFERENCE.md#data-sources-get), [Update](./REFERENCE.md#data-sources-update), [Context Store Search](./REFERENCE.md#data-sources-context-store-search), [Context Store SQL Query](./REFERENCE.md#data-sources-context-store-sql-query) |
+| Blocks | [List](./REFERENCE.md#blocks-list), [Create](./REFERENCE.md#blocks-create), [Get](./REFERENCE.md#blocks-get), [Update](./REFERENCE.md#blocks-update), [Context Store Search](./REFERENCE.md#blocks-context-store-search), [Context Store SQL Query](./REFERENCE.md#blocks-context-store-sql-query) |
+| Comments | [List](./REFERENCE.md#comments-list), [Create](./REFERENCE.md#comments-create), [Context Store Search](./REFERENCE.md#comments-context-store-search), [Context Store SQL Query](./REFERENCE.md#comments-context-store-sql-query), [Semantic Search](./REFERENCE.md#comments-semantic-search) |
 
 
 ## Notion API docs

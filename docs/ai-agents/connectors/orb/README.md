@@ -47,10 +47,10 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
-| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Context Store Search](./REFERENCE.md#subscriptions-context-store-search) |
-| Plans | [List](./REFERENCE.md#plans-list), [Get](./REFERENCE.md#plans-get), [Context Store Search](./REFERENCE.md#plans-context-store-search) |
-| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Context Store Search](./REFERENCE.md#invoices-context-store-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search), [Context Store SQL Query](./REFERENCE.md#customers-context-store-sql-query) |
+| Subscriptions | [List](./REFERENCE.md#subscriptions-list), [Get](./REFERENCE.md#subscriptions-get), [Context Store Search](./REFERENCE.md#subscriptions-context-store-search), [Context Store SQL Query](./REFERENCE.md#subscriptions-context-store-sql-query) |
+| Plans | [List](./REFERENCE.md#plans-list), [Get](./REFERENCE.md#plans-get), [Context Store Search](./REFERENCE.md#plans-context-store-search), [Context Store SQL Query](./REFERENCE.md#plans-context-store-sql-query) |
+| Invoices | [List](./REFERENCE.md#invoices-list), [Get](./REFERENCE.md#invoices-get), [Context Store Search](./REFERENCE.md#invoices-context-store-search), [Context Store SQL Query](./REFERENCE.md#invoices-context-store-sql-query) |
 
 
 ## Orb API docs

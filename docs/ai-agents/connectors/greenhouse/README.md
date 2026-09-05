@@ -42,16 +42,16 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Applications | [List](./REFERENCE.md#applications-list), [Context Store Search](./REFERENCE.md#applications-context-store-search) |
-| Candidates | [List](./REFERENCE.md#candidates-list), [Context Store Search](./REFERENCE.md#candidates-context-store-search) |
-| Departments | [List](./REFERENCE.md#departments-list), [Context Store Search](./REFERENCE.md#departments-context-store-search) |
+| Applications | [List](./REFERENCE.md#applications-list), [Context Store Search](./REFERENCE.md#applications-context-store-search), [Context Store SQL Query](./REFERENCE.md#applications-context-store-sql-query) |
+| Candidates | [List](./REFERENCE.md#candidates-list), [Context Store Search](./REFERENCE.md#candidates-context-store-search), [Context Store SQL Query](./REFERENCE.md#candidates-context-store-sql-query) |
+| Departments | [List](./REFERENCE.md#departments-list), [Context Store Search](./REFERENCE.md#departments-context-store-search), [Context Store SQL Query](./REFERENCE.md#departments-context-store-sql-query) |
 | Interviews | [List](./REFERENCE.md#interviews-list) |
-| Job Posts | [List](./REFERENCE.md#job-posts-list), [Context Store Search](./REFERENCE.md#job-posts-context-store-search), [Semantic Search](./REFERENCE.md#job-posts-semantic-search) |
-| Jobs | [List](./REFERENCE.md#jobs-list), [Context Store Search](./REFERENCE.md#jobs-context-store-search), [Semantic Search](./REFERENCE.md#jobs-semantic-search) |
-| Offers | [List](./REFERENCE.md#offers-list), [Context Store Search](./REFERENCE.md#offers-context-store-search) |
-| Offices | [List](./REFERENCE.md#offices-list), [Context Store Search](./REFERENCE.md#offices-context-store-search) |
-| Sources | [List](./REFERENCE.md#sources-list), [Context Store Search](./REFERENCE.md#sources-context-store-search) |
-| Users | [List](./REFERENCE.md#users-list), [Context Store Search](./REFERENCE.md#users-context-store-search) |
+| Job Posts | [List](./REFERENCE.md#job-posts-list), [Context Store Search](./REFERENCE.md#job-posts-context-store-search), [Context Store SQL Query](./REFERENCE.md#job-posts-context-store-sql-query), [Semantic Search](./REFERENCE.md#job-posts-semantic-search) |
+| Jobs | [List](./REFERENCE.md#jobs-list), [Context Store Search](./REFERENCE.md#jobs-context-store-search), [Context Store SQL Query](./REFERENCE.md#jobs-context-store-sql-query), [Semantic Search](./REFERENCE.md#jobs-semantic-search) |
+| Offers | [List](./REFERENCE.md#offers-list), [Context Store Search](./REFERENCE.md#offers-context-store-search), [Context Store SQL Query](./REFERENCE.md#offers-context-store-sql-query) |
+| Offices | [List](./REFERENCE.md#offices-list), [Context Store Search](./REFERENCE.md#offices-context-store-search), [Context Store SQL Query](./REFERENCE.md#offices-context-store-sql-query) |
+| Sources | [List](./REFERENCE.md#sources-list), [Context Store Search](./REFERENCE.md#sources-context-store-search), [Context Store SQL Query](./REFERENCE.md#sources-context-store-sql-query) |
+| Users | [List](./REFERENCE.md#users-list), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
 | Attachments | [List](./REFERENCE.md#attachments-list), [Download](./REFERENCE.md#attachments-download) |
 
 

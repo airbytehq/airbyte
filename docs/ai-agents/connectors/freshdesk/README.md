@@ -39,16 +39,16 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Context Store Search](./REFERENCE.md#tickets-context-store-search), [Semantic Search](./REFERENCE.md#tickets-semantic-search) |
-| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Semantic Search](./REFERENCE.md#contacts-semantic-search) |
-| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Context Store Search](./REFERENCE.md#agents-context-store-search) |
-| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search) |
-| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Context Store Search](./REFERENCE.md#companies-context-store-search), [Semantic Search](./REFERENCE.md#companies-semantic-search) |
-| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get), [Context Store Search](./REFERENCE.md#roles-context-store-search) |
-| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search), [Semantic Search](./REFERENCE.md#satisfaction-ratings-semantic-search) |
-| Surveys | [List](./REFERENCE.md#surveys-list), [Context Store Search](./REFERENCE.md#surveys-context-store-search) |
-| Time Entries | [List](./REFERENCE.md#time-entries-list), [Context Store Search](./REFERENCE.md#time-entries-context-store-search), [Semantic Search](./REFERENCE.md#time-entries-semantic-search) |
-| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search) |
+| Tickets | [List](./REFERENCE.md#tickets-list), [Get](./REFERENCE.md#tickets-get), [Context Store Search](./REFERENCE.md#tickets-context-store-search), [Context Store SQL Query](./REFERENCE.md#tickets-context-store-sql-query), [Semantic Search](./REFERENCE.md#tickets-semantic-search) |
+| Contacts | [List](./REFERENCE.md#contacts-list), [Get](./REFERENCE.md#contacts-get), [Context Store Search](./REFERENCE.md#contacts-context-store-search), [Context Store SQL Query](./REFERENCE.md#contacts-context-store-sql-query), [Semantic Search](./REFERENCE.md#contacts-semantic-search) |
+| Agents | [List](./REFERENCE.md#agents-list), [Get](./REFERENCE.md#agents-get), [Context Store Search](./REFERENCE.md#agents-context-store-search), [Context Store SQL Query](./REFERENCE.md#agents-context-store-sql-query) |
+| Groups | [List](./REFERENCE.md#groups-list), [Get](./REFERENCE.md#groups-get), [Context Store Search](./REFERENCE.md#groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#groups-context-store-sql-query) |
+| Companies | [List](./REFERENCE.md#companies-list), [Get](./REFERENCE.md#companies-get), [Context Store Search](./REFERENCE.md#companies-context-store-search), [Context Store SQL Query](./REFERENCE.md#companies-context-store-sql-query), [Semantic Search](./REFERENCE.md#companies-semantic-search) |
+| Roles | [List](./REFERENCE.md#roles-list), [Get](./REFERENCE.md#roles-get), [Context Store Search](./REFERENCE.md#roles-context-store-search), [Context Store SQL Query](./REFERENCE.md#roles-context-store-sql-query) |
+| Satisfaction Ratings | [List](./REFERENCE.md#satisfaction-ratings-list), [Context Store Search](./REFERENCE.md#satisfaction-ratings-context-store-search), [Context Store SQL Query](./REFERENCE.md#satisfaction-ratings-context-store-sql-query), [Semantic Search](./REFERENCE.md#satisfaction-ratings-semantic-search) |
+| Surveys | [List](./REFERENCE.md#surveys-list), [Context Store Search](./REFERENCE.md#surveys-context-store-search), [Context Store SQL Query](./REFERENCE.md#surveys-context-store-sql-query) |
+| Time Entries | [List](./REFERENCE.md#time-entries-list), [Context Store Search](./REFERENCE.md#time-entries-context-store-search), [Context Store SQL Query](./REFERENCE.md#time-entries-context-store-sql-query), [Semantic Search](./REFERENCE.md#time-entries-semantic-search) |
+| Ticket Fields | [List](./REFERENCE.md#ticket-fields-list), [Context Store Search](./REFERENCE.md#ticket-fields-context-store-search), [Context Store SQL Query](./REFERENCE.md#ticket-fields-context-store-sql-query) |
 
 
 ## Freshdesk API docs

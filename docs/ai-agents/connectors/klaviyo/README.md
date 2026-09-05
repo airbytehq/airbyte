@@ -43,13 +43,13 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get), [Context Store Search](./REFERENCE.md#profiles-context-store-search) |
-| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search) |
-| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search) |
-| Events | [List](./REFERENCE.md#events-list), [Context Store Search](./REFERENCE.md#events-context-store-search) |
-| Metrics | [List](./REFERENCE.md#metrics-list), [Get](./REFERENCE.md#metrics-get), [Context Store Search](./REFERENCE.md#metrics-context-store-search) |
-| Flows | [List](./REFERENCE.md#flows-list), [Get](./REFERENCE.md#flows-get), [Context Store Search](./REFERENCE.md#flows-context-store-search) |
-| Email Templates | [List](./REFERENCE.md#email-templates-list), [Get](./REFERENCE.md#email-templates-get), [Context Store Search](./REFERENCE.md#email-templates-context-store-search), [Semantic Search](./REFERENCE.md#email-templates-semantic-search) |
+| Profiles | [List](./REFERENCE.md#profiles-list), [Get](./REFERENCE.md#profiles-get), [Context Store Search](./REFERENCE.md#profiles-context-store-search), [Context Store SQL Query](./REFERENCE.md#profiles-context-store-sql-query) |
+| Lists | [List](./REFERENCE.md#lists-list), [Get](./REFERENCE.md#lists-get), [Context Store Search](./REFERENCE.md#lists-context-store-search), [Context Store SQL Query](./REFERENCE.md#lists-context-store-sql-query) |
+| Campaigns | [List](./REFERENCE.md#campaigns-list), [Get](./REFERENCE.md#campaigns-get), [Context Store Search](./REFERENCE.md#campaigns-context-store-search), [Context Store SQL Query](./REFERENCE.md#campaigns-context-store-sql-query) |
+| Events | [List](./REFERENCE.md#events-list), [Context Store Search](./REFERENCE.md#events-context-store-search), [Context Store SQL Query](./REFERENCE.md#events-context-store-sql-query) |
+| Metrics | [List](./REFERENCE.md#metrics-list), [Get](./REFERENCE.md#metrics-get), [Context Store Search](./REFERENCE.md#metrics-context-store-search), [Context Store SQL Query](./REFERENCE.md#metrics-context-store-sql-query) |
+| Flows | [List](./REFERENCE.md#flows-list), [Get](./REFERENCE.md#flows-get), [Context Store Search](./REFERENCE.md#flows-context-store-search), [Context Store SQL Query](./REFERENCE.md#flows-context-store-sql-query) |
+| Email Templates | [List](./REFERENCE.md#email-templates-list), [Get](./REFERENCE.md#email-templates-get), [Context Store Search](./REFERENCE.md#email-templates-context-store-search), [Context Store SQL Query](./REFERENCE.md#email-templates-context-store-sql-query), [Semantic Search](./REFERENCE.md#email-templates-semantic-search) |
 
 
 ## Klaviyo API docs

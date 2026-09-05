@@ -43,17 +43,17 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customer | [List](./REFERENCE.md#customer-list), [Get](./REFERENCE.md#customer-get), [Context Store Search](./REFERENCE.md#customer-context-store-search) |
-| Subscription | [List](./REFERENCE.md#subscription-list), [Get](./REFERENCE.md#subscription-get), [Context Store Search](./REFERENCE.md#subscription-context-store-search) |
-| Invoice | [List](./REFERENCE.md#invoice-list), [Get](./REFERENCE.md#invoice-get), [Context Store Search](./REFERENCE.md#invoice-context-store-search) |
-| Credit Note | [List](./REFERENCE.md#credit-note-list), [Get](./REFERENCE.md#credit-note-get), [Context Store Search](./REFERENCE.md#credit-note-context-store-search) |
-| Coupon | [List](./REFERENCE.md#coupon-list), [Get](./REFERENCE.md#coupon-get), [Context Store Search](./REFERENCE.md#coupon-context-store-search) |
-| Transaction | [List](./REFERENCE.md#transaction-list), [Get](./REFERENCE.md#transaction-get), [Context Store Search](./REFERENCE.md#transaction-context-store-search) |
-| Event | [List](./REFERENCE.md#event-list), [Get](./REFERENCE.md#event-get), [Context Store Search](./REFERENCE.md#event-context-store-search) |
-| Order | [List](./REFERENCE.md#order-list), [Get](./REFERENCE.md#order-get), [Context Store Search](./REFERENCE.md#order-context-store-search) |
-| Item | [List](./REFERENCE.md#item-list), [Get](./REFERENCE.md#item-get), [Context Store Search](./REFERENCE.md#item-context-store-search) |
-| Item Price | [List](./REFERENCE.md#item-price-list), [Get](./REFERENCE.md#item-price-get), [Context Store Search](./REFERENCE.md#item-price-context-store-search) |
-| Payment Source | [List](./REFERENCE.md#payment-source-list), [Get](./REFERENCE.md#payment-source-get), [Context Store Search](./REFERENCE.md#payment-source-context-store-search) |
+| Customer | [List](./REFERENCE.md#customer-list), [Get](./REFERENCE.md#customer-get), [Context Store Search](./REFERENCE.md#customer-context-store-search), [Context Store SQL Query](./REFERENCE.md#customer-context-store-sql-query) |
+| Subscription | [List](./REFERENCE.md#subscription-list), [Get](./REFERENCE.md#subscription-get), [Context Store Search](./REFERENCE.md#subscription-context-store-search), [Context Store SQL Query](./REFERENCE.md#subscription-context-store-sql-query) |
+| Invoice | [List](./REFERENCE.md#invoice-list), [Get](./REFERENCE.md#invoice-get), [Context Store Search](./REFERENCE.md#invoice-context-store-search), [Context Store SQL Query](./REFERENCE.md#invoice-context-store-sql-query) |
+| Credit Note | [List](./REFERENCE.md#credit-note-list), [Get](./REFERENCE.md#credit-note-get), [Context Store Search](./REFERENCE.md#credit-note-context-store-search), [Context Store SQL Query](./REFERENCE.md#credit-note-context-store-sql-query) |
+| Coupon | [List](./REFERENCE.md#coupon-list), [Get](./REFERENCE.md#coupon-get), [Context Store Search](./REFERENCE.md#coupon-context-store-search), [Context Store SQL Query](./REFERENCE.md#coupon-context-store-sql-query) |
+| Transaction | [List](./REFERENCE.md#transaction-list), [Get](./REFERENCE.md#transaction-get), [Context Store Search](./REFERENCE.md#transaction-context-store-search), [Context Store SQL Query](./REFERENCE.md#transaction-context-store-sql-query) |
+| Event | [List](./REFERENCE.md#event-list), [Get](./REFERENCE.md#event-get), [Context Store Search](./REFERENCE.md#event-context-store-search), [Context Store SQL Query](./REFERENCE.md#event-context-store-sql-query) |
+| Order | [List](./REFERENCE.md#order-list), [Get](./REFERENCE.md#order-get), [Context Store Search](./REFERENCE.md#order-context-store-search), [Context Store SQL Query](./REFERENCE.md#order-context-store-sql-query) |
+| Item | [List](./REFERENCE.md#item-list), [Get](./REFERENCE.md#item-get), [Context Store Search](./REFERENCE.md#item-context-store-search), [Context Store SQL Query](./REFERENCE.md#item-context-store-sql-query) |
+| Item Price | [List](./REFERENCE.md#item-price-list), [Get](./REFERENCE.md#item-price-get), [Context Store Search](./REFERENCE.md#item-price-context-store-search), [Context Store SQL Query](./REFERENCE.md#item-price-context-store-sql-query) |
+| Payment Source | [List](./REFERENCE.md#payment-source-list), [Get](./REFERENCE.md#payment-source-get), [Context Store Search](./REFERENCE.md#payment-source-context-store-search), [Context Store SQL Query](./REFERENCE.md#payment-source-context-store-sql-query) |
 
 
 ## Chargebee API docs

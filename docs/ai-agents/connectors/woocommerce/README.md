@@ -44,22 +44,22 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search) |
-| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Context Store Search](./REFERENCE.md#orders-context-store-search) |
-| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Context Store Search](./REFERENCE.md#products-context-store-search) |
-| Coupons | [List](./REFERENCE.md#coupons-list), [Get](./REFERENCE.md#coupons-get), [Context Store Search](./REFERENCE.md#coupons-context-store-search) |
-| Product Categories | [List](./REFERENCE.md#product-categories-list), [Get](./REFERENCE.md#product-categories-get), [Context Store Search](./REFERENCE.md#product-categories-context-store-search) |
-| Product Tags | [List](./REFERENCE.md#product-tags-list), [Get](./REFERENCE.md#product-tags-get), [Context Store Search](./REFERENCE.md#product-tags-context-store-search) |
-| Product Reviews | [List](./REFERENCE.md#product-reviews-list), [Get](./REFERENCE.md#product-reviews-get), [Context Store Search](./REFERENCE.md#product-reviews-context-store-search) |
-| Product Attributes | [List](./REFERENCE.md#product-attributes-list), [Get](./REFERENCE.md#product-attributes-get), [Context Store Search](./REFERENCE.md#product-attributes-context-store-search) |
-| Product Variations | [List](./REFERENCE.md#product-variations-list), [Get](./REFERENCE.md#product-variations-get), [Context Store Search](./REFERENCE.md#product-variations-context-store-search) |
-| Order Notes | [List](./REFERENCE.md#order-notes-list), [Get](./REFERENCE.md#order-notes-get), [Context Store Search](./REFERENCE.md#order-notes-context-store-search) |
-| Refunds | [List](./REFERENCE.md#refunds-list), [Get](./REFERENCE.md#refunds-get), [Context Store Search](./REFERENCE.md#refunds-context-store-search) |
-| Payment Gateways | [List](./REFERENCE.md#payment-gateways-list), [Get](./REFERENCE.md#payment-gateways-get), [Context Store Search](./REFERENCE.md#payment-gateways-context-store-search) |
-| Shipping Methods | [List](./REFERENCE.md#shipping-methods-list), [Get](./REFERENCE.md#shipping-methods-get), [Context Store Search](./REFERENCE.md#shipping-methods-context-store-search) |
-| Shipping Zones | [List](./REFERENCE.md#shipping-zones-list), [Get](./REFERENCE.md#shipping-zones-get), [Context Store Search](./REFERENCE.md#shipping-zones-context-store-search) |
-| Tax Rates | [List](./REFERENCE.md#tax-rates-list), [Get](./REFERENCE.md#tax-rates-get), [Context Store Search](./REFERENCE.md#tax-rates-context-store-search) |
-| Tax Classes | [List](./REFERENCE.md#tax-classes-list), [Context Store Search](./REFERENCE.md#tax-classes-context-store-search) |
+| Customers | [List](./REFERENCE.md#customers-list), [Get](./REFERENCE.md#customers-get), [Context Store Search](./REFERENCE.md#customers-context-store-search), [Context Store SQL Query](./REFERENCE.md#customers-context-store-sql-query) |
+| Orders | [List](./REFERENCE.md#orders-list), [Get](./REFERENCE.md#orders-get), [Context Store Search](./REFERENCE.md#orders-context-store-search), [Context Store SQL Query](./REFERENCE.md#orders-context-store-sql-query) |
+| Products | [List](./REFERENCE.md#products-list), [Get](./REFERENCE.md#products-get), [Context Store Search](./REFERENCE.md#products-context-store-search), [Context Store SQL Query](./REFERENCE.md#products-context-store-sql-query) |
+| Coupons | [List](./REFERENCE.md#coupons-list), [Get](./REFERENCE.md#coupons-get), [Context Store Search](./REFERENCE.md#coupons-context-store-search), [Context Store SQL Query](./REFERENCE.md#coupons-context-store-sql-query) |
+| Product Categories | [List](./REFERENCE.md#product-categories-list), [Get](./REFERENCE.md#product-categories-get), [Context Store Search](./REFERENCE.md#product-categories-context-store-search), [Context Store SQL Query](./REFERENCE.md#product-categories-context-store-sql-query) |
+| Product Tags | [List](./REFERENCE.md#product-tags-list), [Get](./REFERENCE.md#product-tags-get), [Context Store Search](./REFERENCE.md#product-tags-context-store-search), [Context Store SQL Query](./REFERENCE.md#product-tags-context-store-sql-query) |
+| Product Reviews | [List](./REFERENCE.md#product-reviews-list), [Get](./REFERENCE.md#product-reviews-get), [Context Store Search](./REFERENCE.md#product-reviews-context-store-search), [Context Store SQL Query](./REFERENCE.md#product-reviews-context-store-sql-query) |
+| Product Attributes | [List](./REFERENCE.md#product-attributes-list), [Get](./REFERENCE.md#product-attributes-get), [Context Store Search](./REFERENCE.md#product-attributes-context-store-search), [Context Store SQL Query](./REFERENCE.md#product-attributes-context-store-sql-query) |
+| Product Variations | [List](./REFERENCE.md#product-variations-list), [Get](./REFERENCE.md#product-variations-get), [Context Store Search](./REFERENCE.md#product-variations-context-store-search), [Context Store SQL Query](./REFERENCE.md#product-variations-context-store-sql-query) |
+| Order Notes | [List](./REFERENCE.md#order-notes-list), [Get](./REFERENCE.md#order-notes-get), [Context Store Search](./REFERENCE.md#order-notes-context-store-search), [Context Store SQL Query](./REFERENCE.md#order-notes-context-store-sql-query) |
+| Refunds | [List](./REFERENCE.md#refunds-list), [Get](./REFERENCE.md#refunds-get), [Context Store Search](./REFERENCE.md#refunds-context-store-search), [Context Store SQL Query](./REFERENCE.md#refunds-context-store-sql-query) |
+| Payment Gateways | [List](./REFERENCE.md#payment-gateways-list), [Get](./REFERENCE.md#payment-gateways-get), [Context Store Search](./REFERENCE.md#payment-gateways-context-store-search), [Context Store SQL Query](./REFERENCE.md#payment-gateways-context-store-sql-query) |
+| Shipping Methods | [List](./REFERENCE.md#shipping-methods-list), [Get](./REFERENCE.md#shipping-methods-get), [Context Store Search](./REFERENCE.md#shipping-methods-context-store-search), [Context Store SQL Query](./REFERENCE.md#shipping-methods-context-store-sql-query) |
+| Shipping Zones | [List](./REFERENCE.md#shipping-zones-list), [Get](./REFERENCE.md#shipping-zones-get), [Context Store Search](./REFERENCE.md#shipping-zones-context-store-search), [Context Store SQL Query](./REFERENCE.md#shipping-zones-context-store-sql-query) |
+| Tax Rates | [List](./REFERENCE.md#tax-rates-list), [Get](./REFERENCE.md#tax-rates-get), [Context Store Search](./REFERENCE.md#tax-rates-context-store-search), [Context Store SQL Query](./REFERENCE.md#tax-rates-context-store-sql-query) |
+| Tax Classes | [List](./REFERENCE.md#tax-classes-list), [Context Store Search](./REFERENCE.md#tax-classes-context-store-search), [Context Store SQL Query](./REFERENCE.md#tax-classes-context-store-sql-query) |
 
 
 ## Woocommerce API docs

@@ -38,11 +38,11 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Spaces | [List](./REFERENCE.md#spaces-list), [Get](./REFERENCE.md#spaces-get), [Context Store Search](./REFERENCE.md#spaces-context-store-search) |
-| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Context Store Search](./REFERENCE.md#pages-context-store-search) |
-| Blog Posts | [List](./REFERENCE.md#blog-posts-list), [Get](./REFERENCE.md#blog-posts-get), [Context Store Search](./REFERENCE.md#blog-posts-context-store-search) |
-| Groups | [List](./REFERENCE.md#groups-list), [Context Store Search](./REFERENCE.md#groups-context-store-search) |
-| Audit | [List](./REFERENCE.md#audit-list), [Context Store Search](./REFERENCE.md#audit-context-store-search) |
+| Spaces | [List](./REFERENCE.md#spaces-list), [Get](./REFERENCE.md#spaces-get), [Context Store Search](./REFERENCE.md#spaces-context-store-search), [Context Store SQL Query](./REFERENCE.md#spaces-context-store-sql-query) |
+| Pages | [List](./REFERENCE.md#pages-list), [Get](./REFERENCE.md#pages-get), [Context Store Search](./REFERENCE.md#pages-context-store-search), [Context Store SQL Query](./REFERENCE.md#pages-context-store-sql-query) |
+| Blog Posts | [List](./REFERENCE.md#blog-posts-list), [Get](./REFERENCE.md#blog-posts-get), [Context Store Search](./REFERENCE.md#blog-posts-context-store-search), [Context Store SQL Query](./REFERENCE.md#blog-posts-context-store-sql-query) |
+| Groups | [List](./REFERENCE.md#groups-list), [Context Store Search](./REFERENCE.md#groups-context-store-search), [Context Store SQL Query](./REFERENCE.md#groups-context-store-sql-query) |
+| Audit | [List](./REFERENCE.md#audit-list), [Context Store Search](./REFERENCE.md#audit-context-store-search), [Context Store SQL Query](./REFERENCE.md#audit-context-store-sql-query) |
 
 
 ## Confluence API docs

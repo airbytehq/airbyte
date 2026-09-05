@@ -56,12 +56,12 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Profile | [Get](./REFERENCE.md#profile-get), [Context Store Search](./REFERENCE.md#profile-context-store-search) |
-| Messages | [List](./REFERENCE.md#messages-list), [Get](./REFERENCE.md#messages-get), [Create](./REFERENCE.md#messages-create), [Update](./REFERENCE.md#messages-update), [Context Store Search](./REFERENCE.md#messages-context-store-search) |
-| Labels | [List](./REFERENCE.md#labels-list), [Create](./REFERENCE.md#labels-create), [Get](./REFERENCE.md#labels-get), [Update](./REFERENCE.md#labels-update), [Delete](./REFERENCE.md#labels-delete), [Context Store Search](./REFERENCE.md#labels-context-store-search) |
-| Drafts | [List](./REFERENCE.md#drafts-list), [Create](./REFERENCE.md#drafts-create), [Get](./REFERENCE.md#drafts-get), [Update](./REFERENCE.md#drafts-update), [Delete](./REFERENCE.md#drafts-delete), [Context Store Search](./REFERENCE.md#drafts-context-store-search) |
+| Profile | [Get](./REFERENCE.md#profile-get), [Context Store Search](./REFERENCE.md#profile-context-store-search), [Context Store SQL Query](./REFERENCE.md#profile-context-store-sql-query) |
+| Messages | [List](./REFERENCE.md#messages-list), [Get](./REFERENCE.md#messages-get), [Create](./REFERENCE.md#messages-create), [Update](./REFERENCE.md#messages-update), [Context Store Search](./REFERENCE.md#messages-context-store-search), [Context Store SQL Query](./REFERENCE.md#messages-context-store-sql-query) |
+| Labels | [List](./REFERENCE.md#labels-list), [Create](./REFERENCE.md#labels-create), [Get](./REFERENCE.md#labels-get), [Update](./REFERENCE.md#labels-update), [Delete](./REFERENCE.md#labels-delete), [Context Store Search](./REFERENCE.md#labels-context-store-search), [Context Store SQL Query](./REFERENCE.md#labels-context-store-sql-query) |
+| Drafts | [List](./REFERENCE.md#drafts-list), [Create](./REFERENCE.md#drafts-create), [Get](./REFERENCE.md#drafts-get), [Update](./REFERENCE.md#drafts-update), [Delete](./REFERENCE.md#drafts-delete), [Context Store Search](./REFERENCE.md#drafts-context-store-search), [Context Store SQL Query](./REFERENCE.md#drafts-context-store-sql-query) |
 | Drafts Send | [Create](./REFERENCE.md#drafts-send-create) |
-| Threads | [List](./REFERENCE.md#threads-list), [Get](./REFERENCE.md#threads-get), [Context Store Search](./REFERENCE.md#threads-context-store-search) |
+| Threads | [List](./REFERENCE.md#threads-list), [Get](./REFERENCE.md#threads-get), [Context Store Search](./REFERENCE.md#threads-context-store-search), [Context Store SQL Query](./REFERENCE.md#threads-context-store-sql-query) |
 | Messages Trash | [Create](./REFERENCE.md#messages-trash-create) |
 | Messages Untrash | [Create](./REFERENCE.md#messages-untrash-create) |
 

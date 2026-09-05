@@ -41,22 +41,22 @@ This connector supports the following entities and actions. For more details, se
 
 | Entity | Actions |
 |--------|---------|
-| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Calls | [List](./REFERENCE.md#calls-list), [Get](./REFERENCE.md#calls-get), [Context Store Search](./REFERENCE.md#calls-context-store-search) |
-| Calls Extensive | [List](./REFERENCE.md#calls-extensive-list), [Context Store Search](./REFERENCE.md#calls-extensive-context-store-search) |
+| Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search), [Context Store SQL Query](./REFERENCE.md#users-context-store-sql-query) |
+| Calls | [List](./REFERENCE.md#calls-list), [Get](./REFERENCE.md#calls-get), [Context Store Search](./REFERENCE.md#calls-context-store-search), [Context Store SQL Query](./REFERENCE.md#calls-context-store-sql-query) |
+| Calls Extensive | [List](./REFERENCE.md#calls-extensive-list), [Context Store Search](./REFERENCE.md#calls-extensive-context-store-search), [Context Store SQL Query](./REFERENCE.md#calls-extensive-context-store-sql-query) |
 | Call Audio | [Download](./REFERENCE.md#call-audio-download) |
 | Call Video | [Download](./REFERENCE.md#call-video-download) |
 | Workspaces | [List](./REFERENCE.md#workspaces-list) |
-| Call Transcripts | [List](./REFERENCE.md#call-transcripts-list), [Context Store Search](./REFERENCE.md#call-transcripts-context-store-search), [Semantic Search](./REFERENCE.md#call-transcripts-semantic-search) |
+| Call Transcripts | [List](./REFERENCE.md#call-transcripts-list), [Context Store Search](./REFERENCE.md#call-transcripts-context-store-search), [Context Store SQL Query](./REFERENCE.md#call-transcripts-context-store-sql-query), [Semantic Search](./REFERENCE.md#call-transcripts-semantic-search) |
 | Stats Activity Aggregate | [List](./REFERENCE.md#stats-activity-aggregate-list) |
 | Stats Activity Day By Day | [List](./REFERENCE.md#stats-activity-day-by-day-list) |
 | Stats Interaction | [List](./REFERENCE.md#stats-interaction-list) |
-| Settings Scorecards | [List](./REFERENCE.md#settings-scorecards-list), [Context Store Search](./REFERENCE.md#settings-scorecards-context-store-search) |
+| Settings Scorecards | [List](./REFERENCE.md#settings-scorecards-list), [Context Store Search](./REFERENCE.md#settings-scorecards-context-store-search), [Context Store SQL Query](./REFERENCE.md#settings-scorecards-context-store-sql-query) |
 | Settings Trackers | [List](./REFERENCE.md#settings-trackers-list) |
 | Library Folders | [List](./REFERENCE.md#library-folders-list) |
 | Library Folder Content | [List](./REFERENCE.md#library-folder-content-list) |
 | Coaching | [List](./REFERENCE.md#coaching-list) |
-| Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list), [Context Store Search](./REFERENCE.md#stats-activity-scorecards-context-store-search) |
+| Stats Activity Scorecards | [List](./REFERENCE.md#stats-activity-scorecards-list), [Context Store Search](./REFERENCE.md#stats-activity-scorecards-context-store-search), [Context Store SQL Query](./REFERENCE.md#stats-activity-scorecards-context-store-sql-query) |
 
 
 ## Gong API docs
