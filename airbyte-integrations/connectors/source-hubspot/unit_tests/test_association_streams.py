@@ -4,11 +4,15 @@
 
 from unittest.mock import Mock
 
+import freezegun
 import pytest
 import yaml
 from requests import Response
 
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
+
+from .conftest import read_from_stream
 
 
 @pytest.fixture
@@ -373,70 +377,129 @@ class TestCustomObjectAssociationDynamicStreams:
 
 
 class TestCustomObjectAssociationCursorField:
-    """Tests that custom object association streams always use hs_lastmodifieddate."""
+    """Tests that custom object association streams use the same contacts-vs-other cursor conditional
+    as the standard association streams.
 
-    def test_custom_stream_always_uses_hs_lastmodifieddate(self, resolved_manifest):
-        """The custom object DynamicDeclarativeStream components_mapping should always set hs_lastmodifieddate
-        (not conditionally based on contacts like the standard association streams)."""
-        # Find the DynamicDeclarativeStream that uses base_custom_object_association_stream
-        dynamic_streams = resolved_manifest.get("dynamic_streams", [])
-        custom_dynamic = None
-        for ds in dynamic_streams:
-            # After resolution, we can't check $ref directly. Check if the components_resolver
-            # reads from custom_object_association_streams config pointer
-            resolver = ds.get("components_resolver", {})
-            stream_config = resolver.get("stream_config", {})
-            configs_pointer = stream_config.get("configs_pointer", [])
-            if "custom_object_association_streams" in configs_pointer:
-                custom_dynamic = ds
-                break
+    ``custom_object_association_streams`` explicitly accepts standard object names (including
+    ``contacts``) as ``from_object`` (see the connector spec). Because the ``contacts`` object exposes
+    its last-modified timestamp as ``lastmodifieddate`` (all other objects use ``hs_lastmodifieddate``),
+    the parent-stream cursor mappings must honor the same ``contacts`` conditional the standard
+    association resolver uses -- otherwise a ``from_object: contacts`` custom association stream would
+    filter/cursor on a property the contacts object does not use. This was hardcoded to
+    ``hs_lastmodifieddate`` when the streams were introduced in PR #71259.
+    """
 
+    # The three parent-stream cursor mappings that must match between the standard and custom
+    # resolvers, keyed by the trailing field-path segment that identifies each one.
+    _CURSOR_MAPPING_KEYS = ("cursor_filter_property_field", "cursor_field", "path")
+
+    _EXPECTED_CONDITIONAL = "{{ 'lastmodifieddate' if components_values['from_object'] == 'contacts' else 'hs_lastmodifieddate' }}"
+
+    @staticmethod
+    def _find_dynamic_stream(resolved_manifest, configs_pointer_key):
+        for ds in resolved_manifest.get("dynamic_streams", []):
+            # After resolution, we can't check $ref directly. Identify the stream by the config
+            # pointer its components_resolver reads from.
+            configs_pointer = ds.get("components_resolver", {}).get("stream_config", {}).get("configs_pointer", [])
+            if configs_pointer_key in configs_pointer:
+                return ds
+        return None
+
+    @classmethod
+    def _cursor_mappings(cls, dynamic_stream):
+        """Return the parent-stream cursor mappings keyed by their identifying field-path segment."""
+        result = {}
+        for mapping in dynamic_stream["components_resolver"]["components_mapping"]:
+            field_path = mapping.get("field_path", [])
+            # Only consider mappings that target the parent stream's cursor configuration.
+            if "stream" not in field_path:
+                continue
+            for key in cls._CURSOR_MAPPING_KEYS:
+                if key in field_path:
+                    result[key] = mapping
+        return result
+
+    def test_custom_stream_uses_contacts_conditional(self, resolved_manifest):
+        """The custom object resolver should set the parent-stream cursor via the contacts conditional,
+        NOT a hardcoded hs_lastmodifieddate."""
+        custom_dynamic = self._find_dynamic_stream(resolved_manifest, "custom_object_association_streams")
         assert custom_dynamic is not None, "Expected to find a DynamicDeclarativeStream for custom_object_association_streams"
 
-        # Check that cursor_field and cursor_filter_property_field are always hs_lastmodifieddate (no contacts conditional)
-        mappings = custom_dynamic["components_resolver"]["components_mapping"]
-        cursor_field_mapping = None
-        cursor_filter_mapping = None
-        for mapping in mappings:
-            field_path = mapping.get("field_path", [])
-            if "cursor_field" in field_path:
-                cursor_field_mapping = mapping
-            if "cursor_filter_property_field" in field_path:
-                cursor_filter_mapping = mapping
+        mappings = self._cursor_mappings(custom_dynamic)
+        for key in self._CURSOR_MAPPING_KEYS:
+            assert key in mappings, f"Expected a parent-stream mapping for '{key}'"
+            value = mappings[key]["value"]
+            assert value == self._EXPECTED_CONDITIONAL, f"Mapping for '{key}' should use the contacts conditional, got: {value}"
 
-        assert cursor_field_mapping is not None, "Expected a mapping for cursor_field"
-        assert cursor_filter_mapping is not None, "Expected a mapping for cursor_filter_property_field"
+    def test_custom_and_standard_cursor_mappings_match(self, resolved_manifest):
+        """The custom and standard resolvers must resolve the parent cursor fields identically, so
+        that a from_object of contacts is handled the same way in both."""
+        custom_dynamic = self._find_dynamic_stream(resolved_manifest, "custom_object_association_streams")
+        standard_dynamic = self._find_dynamic_stream(resolved_manifest, "association_streams")
+        assert custom_dynamic is not None and standard_dynamic is not None
 
-        # These should be hardcoded to hs_lastmodifieddate, NOT a Jinja conditional
-        assert cursor_field_mapping["value"] == "hs_lastmodifieddate"
-        assert cursor_filter_mapping["value"] == "hs_lastmodifieddate"
+        custom_mappings = self._cursor_mappings(custom_dynamic)
+        standard_mappings = self._cursor_mappings(standard_dynamic)
+        for key in self._CURSOR_MAPPING_KEYS:
+            assert (
+                custom_mappings[key]["value"] == standard_mappings[key]["value"]
+            ), f"Custom and standard resolvers disagree on the '{key}' cursor mapping"
 
     def test_standard_stream_has_contacts_conditional(self, resolved_manifest):
-        """In contrast, the standard association stream should have a conditional for contacts vs other objects."""
-        dynamic_streams = resolved_manifest.get("dynamic_streams", [])
-        standard_dynamic = None
-        for ds in dynamic_streams:
-            resolver = ds.get("components_resolver", {})
-            stream_config = resolver.get("stream_config", {})
-            configs_pointer = stream_config.get("configs_pointer", [])
-            if "association_streams" in configs_pointer:
-                standard_dynamic = ds
-                break
-
+        """The standard association stream should have a conditional for contacts vs other objects."""
+        standard_dynamic = self._find_dynamic_stream(resolved_manifest, "association_streams")
         assert standard_dynamic is not None, "Expected to find a DynamicDeclarativeStream for association_streams"
 
-        mappings = standard_dynamic["components_resolver"]["components_mapping"]
-        cursor_field_mapping = None
-        for mapping in mappings:
-            field_path = mapping.get("field_path", [])
-            if "cursor_field" in field_path:
-                cursor_field_mapping = mapping
-                break
-
+        cursor_field_mapping = self._cursor_mappings(standard_dynamic).get("cursor_field")
         assert cursor_field_mapping is not None
         # Standard streams use Jinja conditional for contacts
         assert "contacts" in cursor_field_mapping["value"]
         assert "lastmodifieddate" in cursor_field_mapping["value"]
+
+    @freezegun.freeze_time("2024-03-02T00:00:00Z")
+    def test_contacts_custom_association_read_uses_contacts_cursor(self, requests_mock, mock_config):
+        """A resolved contacts custom association stream should query and read with lastmodifieddate."""
+        config = mock_config | {
+            "start_date": "2024-03-01T00:00:00Z",
+            "custom_object_association_streams": [{"from_object": "contacts", "to_object": "p_custom"}],
+        }
+        requests_mock.get("https://api.hubapi.com/crm/v3/schemas", json={})
+        contacts_search = requests_mock.post(
+            "https://api.hubapi.com/crm/v3/objects/contacts/search",
+            json={"results": [{"id": "123", "properties": {"lastmodifieddate": "2024-03-01T12:00:00.000Z"}}]},
+        )
+        requests_mock.post(
+            "https://api.hubapi.com/crm/v4/associations/contacts/p_custom/batch/read",
+            json={
+                "results": [
+                    {
+                        "from": {"id": "123"},
+                        "to": [
+                            {
+                                "toObjectId": "456",
+                                "associationTypes": [{"typeId": 1, "category": "USER_DEFINED", "label": "test"}],
+                            }
+                        ],
+                    }
+                ]
+            },
+        )
+
+        output = read_from_stream(config, "associations_contacts_p_custom", SyncMode.full_refresh)
+
+        assert not output.errors
+        assert [record.record.data for record in output.records] == [
+            {
+                "from_id": "123",
+                "to_id": "456",
+                "association_type_id": 1,
+                "category": "USER_DEFINED",
+                "label": "test",
+            }
+        ]
+        request_body = contacts_search.last_request.json()
+        assert [filter_["propertyName"] for filter_ in request_body["filters"][:2]] == ["lastmodifieddate"] * 2
+        assert request_body["properties"] == ["hs_object_id", "lastmodifieddate"]
 
 
 class TestCustomObjectAssociationExtractor:
