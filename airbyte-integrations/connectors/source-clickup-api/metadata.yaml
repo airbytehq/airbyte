@@ -46,14 +46,20 @@ data:
     baseImage: docker.io/airbyte/source-declarative-manifest:7.25.1@sha256:cdbd1578932d121f2852c065fbabebc49ccbf00078606dc503be5e4c66b373df
   externalDocumentationUrls:
     - title: ClickUp API reference
-      url: https://clickup.com/api/
+      url: https://developer.clickup.com/reference
+      type: api_reference
+    - title: ClickUp API v2 and v3 differences
+      url: https://developer.clickup.com/docs/general-v2-v3-api
       type: api_reference
     - title: ClickUp authentication
-      url: https://clickup.com/api/developer-portal/authentication/
+      url: https://developer.clickup.com/docs/authentication
       type: authentication_guide
     - title: ClickUp rate limits
-      url: https://clickup.com/api/developer-portal/rate-limits/
+      url: https://developer.clickup.com/docs/rate-limits
       type: rate_limits
+    - title: ClickUp changelog
+      url: https://feedback.clickup.com/changelog
+      type: api_release_history
     - title: ClickUp Status
       url: https://status.clickup.com/
       type: status_page
