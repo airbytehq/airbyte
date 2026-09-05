@@ -15,6 +15,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.sql.SQLException
 
+private const val MISSING_REPLICATION_SLOT_MESSAGE = "Postgres CDC replication slot is missing."
+private const val MULTIPLE_REPLICATION_SLOTS_MESSAGE =
+    "Postgres CDC replication slot is not unique."
+
+private fun replicationSlotConfigError(
+    displayMessage: String,
+    internalMessage: String,
+): RuntimeException = RuntimeException(internalMessage, ConfigErrorException(displayMessage))
+
 @Singleton
 class ReplicationSlotManager(
     val config: PostgresSourceConfiguration,
@@ -171,8 +180,19 @@ class ReplicationSlotManager(
                 )
             },
             noResultsCase = {
-                throw ConfigErrorException(
-                    "Replication slot '$slot' not found using the query: $sql"
+                throw replicationSlotConfigError(
+                    displayMessage = MISSING_REPLICATION_SLOT_MESSAGE,
+                    internalMessage =
+                        "No pgoutput replication slot matched configured replication slot '$slot' " +
+                            "in database '${config.database}'."
+                )
+            },
+            multipleResultsCase = {
+                throw replicationSlotConfigError(
+                    displayMessage = MULTIPLE_REPLICATION_SLOTS_MESSAGE,
+                    internalMessage =
+                        "Multiple pgoutput replication slots matched configured replication slot '$slot' " +
+                            "in database '${config.database}'."
                 )
             }
         )
