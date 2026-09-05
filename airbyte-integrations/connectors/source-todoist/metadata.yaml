@@ -1,7 +1,7 @@
 data:
   allowedHosts:
     hosts:
-      - api.todoist.com/rest/v2
+      - api.todoist.com
   remoteRegistries:
     pypi:
       enabled: false
@@ -19,7 +19,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 1a3d38e4-dc6b-4154-b56b-582f9e978ecd
-  dockerImageTag: 0.3.43
+  dockerImageTag: 0.3.44
   dockerRepository: airbyte/source-todoist
   githubIssueLabel: source-todoist
   icon: todoist.svg
@@ -46,9 +46,9 @@ data:
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Todoist REST API
-      url: https://developer.todoist.com/rest/v2/
+      url: https://developer.todoist.com/api/v1/
       type: api_reference
     - title: Todoist authentication
-      url: https://developer.todoist.com/rest/v2/#authorization
+      url: https://developer.todoist.com/api/v1/#authorization
       type: authentication_guide
 metadataSpecVersion: "1.0"

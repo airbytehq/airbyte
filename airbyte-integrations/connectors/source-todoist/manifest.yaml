@@ -23,7 +23,18 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_cursor") or "" }}'
+            stop_condition: '{{ not response.get("next_cursor") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -41,14 +52,25 @@ definitions:
           type: RecordSelector
           extractor:
             type: DpathExtractor
-            field_path: []
+            field_path:
+              - results
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: cursor
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: '{{ response.get("next_cursor") or "" }}'
+            stop_condition: '{{ not response.get("next_cursor") }}'
       schema_loader:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/projects"
   base_requester:
     type: HttpRequester
-    url_base: https://api.todoist.com/rest/v2
+    url_base: https://api.todoist.com/api/v1
     authenticator:
       type: BearerAuthenticator
       api_token: '{{ config["token"] }}'
