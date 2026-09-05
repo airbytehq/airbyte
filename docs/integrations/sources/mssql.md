@@ -137,6 +137,8 @@ We use
 with transaction logs to capture row-level `INSERT`, `UPDATE` and `DELETE` operations that occur on
 CDC-enabled tables.
 
+Advanced CDC options include initial waiting time, poll interval, and the maximum number of transactions per CDC iteration.
+
 Some extra setup requiring at least _db_owner_ permissions on the database\(s\) you intend to sync
 from will be required \(detailed [below](mssql.md#setting-up-cdc-for-mssql)\).
 
@@ -540,6 +542,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.0.1       | 2026-09-02 | [85303](https://github.com/airbytehq/airbyte/pull/85303)                                                         | Emit CDC checkpoints while slowly progressing through a large CDC log and add the "Max Transactions per CDC Iteration" option to speed up catching up. |
 | 5.0.0       | 2026-05-01 | [10595](https://github.com/airbytehq/oncall/issues/10595)                                                         | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics. |
 | 4.4.12      | 2026-06-16 | [80156](https://github.com/airbytehq/airbyte/pull/80156)                                                          | Log a message when a `DECIMAL`/`NUMERIC` column with scale 0 is discovered, ahead of an upcoming `number` -> `integer` remapping. No functional change. |
 | 4.4.11      | 2026-06-11 | [79128](https://github.com/airbytehq/airbyte/pull/79128)                                                          | Fix incremental sync failure when the saved state has a null cursor (table was empty on prior CDK version).                                     |

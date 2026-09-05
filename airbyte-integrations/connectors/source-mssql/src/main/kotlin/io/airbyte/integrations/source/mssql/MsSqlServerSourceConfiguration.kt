@@ -145,7 +145,8 @@ data class CdcIncrementalConfiguration(
     val initialWaitingSeconds: Duration,
     val invalidCdcCursorPositionBehavior: InvalidCdcCursorPositionBehavior,
     val initialLoadTimeout: Duration,
-    val pollIntervalMs: Int
+    val pollIntervalMs: Int,
+    val maxIterationTransactions: Int = 500,
 ) : IncrementalConfiguration
 
 enum class InvalidCdcCursorPositionBehavior {
@@ -193,6 +194,12 @@ constructor(
 
                     // Validate poll interval vs heartbeat interval
                     val pollIntervalMs = incrementalSpec.pollIntervalMs ?: 500
+                    val maxIterationTransactions = incrementalSpec.maxIterationTransactions ?: 500
+                    if (maxIterationTransactions < 0) {
+                        throw ConfigErrorException(
+                            "Field \"Max Transactions per CDC Iteration\" must be 0 (unbounded) or a positive number."
+                        )
+                    }
                     val heartbeatIntervalMs =
                         MsSqlServerSourceConfigurationSpecification.DEFAULT_HEARTBEAT_INTERVAL_MS
                     if (pollIntervalMs >= heartbeatIntervalMs) {
@@ -207,6 +214,7 @@ constructor(
                         invalidCdcCursorPositionBehavior,
                         initialLoadTimeout,
                         pollIntervalMs,
+                        maxIterationTransactions,
                     )
                 }
             }
