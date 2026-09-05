@@ -155,7 +155,11 @@ Refer to Facebook's official documentation on [Access Levels and Authorization](
 </FieldAnchor>
 
 <FieldAnchor field="end_date">
-3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate data for all Incremental streams. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+3. (Optional) For **End Date**, use the provided datepicker, or enter the date programmatically in the `YYYY-MM-DDTHH:mm:ssZ` format. This is the date until which you'd like to replicate Insights data. All data generated between the start date and this end date will be replicated. Not setting this option will result in always syncing the latest data.
+
+   :::note
+   End Date only bounds the Insights streams: the built-in Ads Insights stream, the Prebuilt Ads Insights Reports, and Custom Insights streams. The other incremental streams (`activities`, `ad_sets`, `ads`, `ad_creatives_from_ads`, `campaigns`, `images`, and `videos`) query Facebook by cursor value only and always sync up to the present.
+   :::
 </FieldAnchor>
 
 <FieldAnchor field="campaign_statuses">
@@ -174,6 +178,8 @@ Refer to Facebook's official documentation on [Access Levels and Authorization](
    When no statuses are selected for Campaign Statuses, AdSet Statuses, or Ad Statuses, the connector relies on the Facebook Marketing API's default behavior, which **excludes records in ARCHIVED and DELETED states**. This means archived campaigns, ad sets, and ads will not appear in your synced data.
 
    To ensure a complete dataset, explicitly select all statuses you want to include. This is especially important when using Full Refresh sync mode, because previously synced records that have since been archived will not be re-fetched unless you include the ARCHIVED status.
+
+   Changing any of these status settings later widens the set of records the connector asks for, so records that were previously filtered out may sit before your saved cursor. When the connector detects the change, it discards the saved cursor for the affected incremental streams and re-reads from your **Start Date**, or from the beginning of your history if you left Start Date empty.
    :::
 
 <FieldAnchor field="fetch_thumbnail_images">
@@ -252,6 +258,10 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
    12. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to this custom insight stream. When enabled, action metrics such as `actions`, `action_values`, and `cost_per_action_type` include an `incrementality` field. This setting applies only to this specific custom insight. For more details, see the global **Include Incrementality** setting described below.
 </FieldAnchor>
 
+<FieldAnchor field="custom_insights.include_engaged_view">
+   13. (Optional) Toggle **Include Engaged View** to add the `1d_ev` attribution window to this custom insight stream. This setting applies only to this specific custom insight. For more details, see the global **Include Engaged View** setting described below.
+</FieldAnchor>
+
 <FieldAnchor field="page_size">
 10. (Optional) For **Page Size of Requests**, you can specify the number of records per page for paginated responses. Most users do not need to set this field unless specific issues arise or there are unique use cases that require tuning the connector's settings. The default value is set to retrieve 100 records per page.
 </FieldAnchor>
@@ -268,7 +278,11 @@ To retrieve specific fields from Facebook Ads Insights combined with other break
 13. (Optional) Toggle **Include Incrementality** to add the `incrementality` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"incrementality"` to the `action_attribution_windows` parameter sent to the Facebook API. Action metrics such as `actions`, `action_values`, and `cost_per_action_type` then include an `incrementality` field containing the incremental lift value attributed to the ad. This field is only populated for ad accounts that have active [Conversion Lift](https://developers.facebook.com/docs/marketing-api/guides/lift-studies/) studies configured in Facebook. For accounts without lift studies, the field is `null`. Disabled by default. For more details on the `incrementality` attribution window, refer to the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference.
 </FieldAnchor>
 
-14. Click **Set up source** and wait for the tests to complete.
+<FieldAnchor field="include_engaged_view">
+14. (Optional) Toggle **Include Engaged View** to add the `1d_ev` attribution window to all built-in Ads Insights streams. When enabled, the connector appends `"1d_ev"` to the `action_attribution_windows` parameter sent to the Facebook API, and action metrics such as `actions`, `action_values`, and `cost_per_action_type` gain a `1d_ev` field holding conversions that occurred within one day of an engaged view of the ad. Since March 2026, Meta also counts conversions that follow a share, save, or other non-link click in this window, and refers to it as engage-through attribution. Only the one-day window is available; Meta's API does not accept `7d_ev` or `28d_ev`. Disabled by default. For details, see the [Ads Action Stats](https://developers.facebook.com/docs/marketing-api/reference/ads-action-stats/) API reference and Meta's [attribution announcement](https://www.facebook.com/business/news/click-attribution).
+</FieldAnchor>
+
+15. Click **Set up source** and wait for the tests to complete.
 
 <HideInUI>
 
@@ -305,9 +319,14 @@ The `rule` field in the `Custom Audiences` stream may not be synced for all reco
 :::
 
 :::info Ad Creatives From Ads
-The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema matches `ad_creatives` with one addition - an `updated_time` field carrying the parent ad's timestamp - but this stream only returns creatives associated with ads; orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
+The `ad_creatives_from_ads` stream is an alternative to `ad_creatives` that fetches creative data through the Ads endpoint instead of the AdCreatives endpoint. Use this stream if `ad_creatives` fails with the error "Please reduce the amount of data you're asking for." The output schema matches `ad_creatives` with one addition — an `updated_time` field carrying the parent ad's timestamp — but this stream only returns creatives associated with ads; orphaned creatives not linked to any ad are excluded. For more details, see the [Troubleshooting](#please-reduce-the-amount-of-data-error-on-the-ad-creatives-stream) section.
 
 When using incremental sync, the cursor is the parent ad's `updated_time` because AdCreative does not expose a timestamp of its own. Content changes always create a new creative and are picked up, but in-place renames, status or ad-label changes on a creative, and edits to the page post behind `effective_object_story_id` may not move the parent ad's timestamp and can be missed; use full refresh to capture those changes. The first incremental sync always reads the full ads history to seed the cursor (the `start_date` setting is not applied to this stream), so the time savings begin with the second sync.
+
+Two further details of the incremental behavior are worth knowing:
+
+- The connector saves the cursor once per ad account at the end of that account's read, not after each record. A sync that fails partway through re-reads that account from the previous cursor value.
+- If a creative fetch fails — the payload-size error this stream exists to avoid can also hit an individual creative — the cursor does not advance past the ad that owns it, so the next sync retries it. When the same creative fails on every sync, the cursor stays pinned and the stream keeps re-reading from that point. The sync log names the account and the number of failed fetches.
 :::
 
 Airbyte also supports the following Prebuilt Facebook Ad Insights Reports:
@@ -381,6 +400,10 @@ If you sync multiple ad accounts in different timezones within a single connecti
 
 The Facebook Marketing connector uses the `lookback_window` parameter to repeatedly read data from the last `<lookback_window>` days during an Incremental sync. This means some data will be synced twice (or possibly more often) despite the cursor value being up to date, in order to capture updated ads conversion data from Facebook. You can change this date window by adjusting the `lookback_window` parameter when setting up the source, up to a maximum of 28 days. Smaller values will result in fewer duplicates, while larger values provide more accurate results. For a deeper understanding of the purpose and role of the attribution window, refer to this [Meta article](https://www.facebook.com/business/help/458681590974355?id=768381033531365).
 
+### Action attribution windows
+
+Separately from the lookback window, the connector asks Facebook to break down action metrics by attribution window. Every Insights stream requests `1d_click`, `7d_click`, `28d_click`, and `1d_view` by default. Two more windows are opt-in: enable **Include Incrementality** for `incrementality`, and **Include Engaged View** for `1d_ev`. Enabling either one adds fields to the action metrics (`actions`, `action_values`, `cost_per_action_type`, and similar) rather than changing existing ones, so you must refresh the connection's schema to sync the new fields. The global settings apply to all built-in Insights streams; each custom insight has its own copy of both toggles.
+
 </HideInUI>
 
 ## IP allow list
@@ -416,9 +439,11 @@ This response indicates that the Facebook Graph API is refusing a synchronous re
 
 ### "Please reduce the amount of data" error on the Ad Creatives stream
 
-If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation. The output schema is identical to `ad_creatives`.
+If the `ad_creatives` stream fails with the error "Please reduce the amount of data you're asking for, then retry your request" and you do not want to disable any fields, you can switch to the `ad_creatives_from_ads` stream instead. This alternative stream fetches the same creative data but retrieves it through the Ads endpoint one creative at a time, which avoids the data-size limitation.
 
-Note that `ad_creatives_from_ads` is slower than `ad_creatives` because it makes individual API calls per creative. It also only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
+Because it makes one API call per creative, a full refresh of `ad_creatives_from_ads` is slower than `ad_creatives` — on large accounts, substantially so. Since version 6.1.0 the stream also supports incremental sync, which limits that per-creative fan-out to ads changed since the last sync and is the better choice for accounts with a large creative catalog or a frequent sync schedule. See the [Ad Creatives From Ads](#supported-streams) stream note for the cursor's limitations before you choose it.
+
+This stream only returns creatives that are associated with ads — orphaned creatives that are not linked to any ad will not be included.
 
 ### Missing records in Campaigns, Ad Sets, or Ads streams {#missing-records-status-filtering}
 
@@ -502,8 +527,8 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 6.1.1 | 2026-08-24 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | feat(source-facebook-marketing): add opt-in engaged view (ev) attribution window (AI-Triage PR) |
-| 6.1.0 | 2026-08-04 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
+| 6.1.1 | 2026-08-25 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | Add opt-in `Include Engaged View` setting that requests the `1d_ev` action attribution window |
+| 6.1.0 | 2026-08-12 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
 | 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
 | 6.0.1 | 2026-06-24 | [80779](https://github.com/airbytehq/airbyte/pull/80779) | Fix TypeError in `CursorPatch.load_next_page()` when Facebook API returns malformed (non-dict) responses or data items |
 | 6.0.0 | 2026-06-23 | [80324](https://github.com/airbytehq/airbyte/pull/80324) | Replace deprecated `ads_insights_dma` and `ads_insights_demographics_dma_region` streams with `ads_insights_comscore_market` and `ads_insights_demographics_comscore_market_region` following Meta's DMA → Comscore Market transition. Remove `dma` from Custom Insights breakdowns. |
