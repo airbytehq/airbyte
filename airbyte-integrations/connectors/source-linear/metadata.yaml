@@ -52,11 +52,11 @@ data:
                 "workflow_states",
               ]
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.1@sha256:2a3c870b5a43b525210647a969064c8e4713b792cd1c443df8d5f2b7e0d9e872
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.3.post5.dev33815635514@sha256:f4e881fead21473447f1b87614aa39da7f0b19731cff9be1be90fafa86cd4a42
   connectorSubtype: api
   connectorType: source
   definitionId: 1c5d8316-ed42-4473-8fbc-2626f03f070c
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   dockerRepository: airbyte/source-linear
   githubIssueLabel: source-linear
   icon: icon.svg
