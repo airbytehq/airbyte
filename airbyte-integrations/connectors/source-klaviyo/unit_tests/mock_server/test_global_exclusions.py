@@ -57,7 +57,14 @@ class TestGlobalExclusionsStream(TestCase):
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -135,7 +142,14 @@ class TestGlobalExclusionsStream(TestCase):
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -189,14 +203,21 @@ class TestGlobalExclusionsStream(TestCase):
 
         Given: No previous state (first sync)
         When: Running an incremental sync
-        Then: The connector should use start_date from config and emit state message
+        Then: The connector should request the full suppression list and emit state message
         """
         config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -244,13 +265,20 @@ class TestGlobalExclusionsStream(TestCase):
         When: Running an incremental sync
         Then: The connector should use the state cursor and return only new/updated records
         """
-        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 30, tzinfo=timezone.utc)).build()
         state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-30T00:00:00+00:00"}).build()
 
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,2024-05-29T23:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             HttpResponse(
                 body=json.dumps(
@@ -291,6 +319,175 @@ class TestGlobalExclusionsStream(TestCase):
         latest_state = output.most_recent_state.stream_state.__dict__
         # Note: The connector returns datetime with +0000 format (without colon)
         assert latest_state["updated"] == "2024-05-31T10:00:00+0000"
+
+    @HttpMocker()
+    def test_incremental_request_carries_cursor_filter_from_state(self, http_mocker: HttpMocker):
+        """
+        The request must carry the cursor boundary so the API filters server-side instead of the connector paging all profiles.
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 30, tzinfo=timezone.utc)).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-30T08:00:00+00:00"}).build()
+        request = (
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,2024-05-30T07:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
+            .build()
+        )
+        http_mocker.get(
+            request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "profile",
+                                "id": "profile_cursor_boundary",
+                                "attributes": {
+                                    "email": "cursor@example.com",
+                                    "updated": "2024-05-30T09:00:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-30T09:00:00+00:00"}]
+                                            }
+                                        },
+                                        "sms": {"marketing": {}},
+                                    },
+                                },
+                            }
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog, state=state)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "profile_cursor_boundary"
+        http_mocker.assert_number_of_calls(request, 1)
+
+    @HttpMocker()
+    def test_incremental_request_applies_one_hour_lookback_to_state_cursor(self, http_mocker: HttpMocker):
+        """The request boundary is the stored cursor minus the PT1H lookback so an equal-cursor record is re-read."""
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 30, tzinfo=timezone.utc)).build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": "2024-05-30T08:00:00+00:00"}).build()
+        request = (
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,2024-05-30T07:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
+            .build()
+        )
+        http_mocker.get(
+            request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "profile",
+                                "id": "profile_at_cursor",
+                                "attributes": {
+                                    "email": "cursor@example.com",
+                                    "updated": "2024-05-30T08:00:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2024-05-30T08:00:00+00:00"}]
+                                            }
+                                        },
+                                        "sms": {"marketing": {}},
+                                    },
+                                },
+                            }
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config, state=state)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        output = read(source, config=config, catalog=catalog, state=state)
+
+        http_mocker.assert_number_of_calls(request, 1)
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "profile_at_cursor"
+        assert output.most_recent_state.stream_state.__dict__["updated"] == "2024-05-30T08:00:00+0000"
+
+    @HttpMocker()
+    def test_stateless_read_is_not_bounded_by_start_date(self, http_mocker: HttpMocker):
+        """
+        A stateless read should return suppressed profiles older than the configured start date.
+        """
+        config = ConfigBuilder().with_api_key(_API_KEY).with_start_date(datetime(2024, 5, 31, tzinfo=timezone.utc)).build()
+        request = (
+            KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
+            .build()
+        )
+        http_mocker.get(
+            request,
+            HttpResponse(
+                body=json.dumps(
+                    {
+                        "data": [
+                            {
+                                "type": "profile",
+                                "id": "profile_before_start_date",
+                                "attributes": {
+                                    "email": "older@example.com",
+                                    "updated": "2020-01-02T00:00:00+00:00",
+                                    "subscriptions": {
+                                        "email": {
+                                            "marketing": {
+                                                "suppression": [{"reason": "USER_SUPPRESSED", "timestamp": "2020-01-02T00:00:00+00:00"}]
+                                            }
+                                        },
+                                        "sms": {"marketing": {}},
+                                    },
+                                },
+                            }
+                        ],
+                        "links": {"self": "https://a.klaviyo.com/api/profiles", "next": None},
+                    }
+                ),
+                status_code=200,
+            ),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "profile_before_start_date"
+        http_mocker.assert_number_of_calls(request, 1)
 
     @HttpMocker()
     def test_pagination_multiple_pages(self, http_mocker: HttpMocker):
@@ -378,7 +575,14 @@ class TestGlobalExclusionsStream(TestCase):
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             [
                 HttpResponse(
@@ -446,7 +650,14 @@ class TestGlobalExclusionsStream(TestCase):
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint("invalid_key")
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Invalid API key"}]}),
@@ -482,7 +693,14 @@ class TestGlobalExclusionsStream(TestCase):
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             HttpResponse(
                 body=json.dumps({"errors": [{"detail": "Forbidden - insufficient permissions"}]}),
@@ -515,7 +733,14 @@ class TestGlobalExclusionsStream(TestCase):
         # Global exclusions stream uses profiles endpoint with additional-fields[profile]: subscriptions
         http_mocker.get(
             KlaviyoRequestBuilder.profiles_endpoint(_API_KEY)
-            .with_query_params({"additional-fields[profile]": "subscriptions", "page[size]": "100"})
+            .with_query_params(
+                {
+                    "filter": "greater-than(updated,1970-01-01T00:00:00+0000)",
+                    "sort": "updated",
+                    "additional-fields[profile]": "subscriptions",
+                    "page[size]": "100",
+                }
+            )
             .build(),
             HttpResponse(
                 body=json.dumps(

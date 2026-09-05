@@ -53,6 +53,8 @@ The manifest caps every `Retry-After` wait at 600 seconds. Daily-quota 429 respo
 
 The Klaviyo API supports cursor-based pagination and `filter` parameters with `greater-than` on `datetime` and `updated` fields for high-volume endpoints (profiles, events, campaigns, flows, lists, segments, etc.), which the connector already uses for 13 incremental streams. The single remaining FR parent stream (`metrics_for_reporting`) is a config-style lookup that lists available metric definitions without date-based filtering.
 
+The `global_exclusions` stream pins its cursor start to the Unix epoch so `start_date` does not bound it. A stateless read therefore returns the full suppression list. It also carries a one-hour `lookback_window`, because the API filter is a strict `greater-than` and profiles updated at exactly the stored cursor value would otherwise be skipped. The lookback re-reads records already emitted by the previous sync, so an incremental sync emits the last hour of suppression changes again; deduplicating destinations upsert them on the `id` primary key, while append-only destinations keep them as duplicate rows.
+
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
 | campaigns | medium | top-level parent | updated_at | updated_at | incremental |  |
