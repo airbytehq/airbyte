@@ -13,7 +13,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 9e1fe63c-80ad-44fe-8927-10e66c9e209b
-  dockerImageTag: 0.1.14
+  dockerImageTag: 0.2.0
   dockerRepository: airbyte/source-nexus-datasets
   githubIssueLabel: source-nexus-datasets
   icon: nexus-datasets.svg
@@ -23,6 +23,15 @@ data:
   releaseStage: alpha
   supportLevel: community
   documentationUrl: https://docs.airbyte.com/integrations/sources/nexus-datasets
+  releases:
+    breakingChanges:
+      0.2.0:
+        message: >-
+          This version introduces dynamic schema discovery. The record structure has changed from
+          wrapped format (raw_data, raw_data_string) to flat records with dynamically discovered
+          fields matching the dataset model. Users must refresh the source schema and reset all
+          affected streams after upgrading.
+        upgradeDeadline: "2026-08-28"
   tags:
     - language:manifest-only
     - cdk:low-code
