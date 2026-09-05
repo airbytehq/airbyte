@@ -50,12 +50,18 @@ data:
             alias: airbyte-connector-testing-secret-store
   externalDocumentationUrls:
     - title: Gong API reference
-      url: https://us-66463.app.gong.io/settings/api/documentation
+      url: https://help.gong.io/apidocs
       type: api_reference
-    - title: Gong authentication
-      url: https://us-66463.app.gong.io/settings/api/documentation#overview
+    - title: Gong OAuth app and authentication guide
+      url: https://help.gong.io/docs/create-an-app-for-gong
       type: authentication_guide
     - title: Gong rate limits
-      url: https://us-66463.app.gong.io/settings/api/documentation#rate-limits
+      url: https://help.gong.io/apidocs
       type: rate_limits
+    - title: Gong release notes
+      url: https://help.gong.io/docs/release-notes
+      type: api_release_history
+    - title: Gong public API change notices
+      url: https://help.gong.io/docs/public-api-change-deprecating-call-action-items-in-the-extensive-endpoint
+      type: api_deprecations
 metadataSpecVersion: "1.0"
