@@ -128,9 +128,11 @@ All other `run.sh` options (`--command`, `--fixture`, `--config-template`,
   reproduce schemaless (`data` blob) behavior.
 - **`_id` types.** Fixtures use integer `_id`s for readability; use
   `ObjectId()` in a fixture when the bug depends on ObjectId serialization.
-- **Discovery only sees non-empty collections.** A `db.createCollection()`
-  without documents is still discovered, but with `schema_enforced: true`
-  it will have no sampled fields beyond `_id`.
+- **Schema inference needs documents.** An empty collection created with
+  `db.createCollection()` is still listed by `discover`, but with
+  `schema_enforced: true` its schema has no sampled fields beyond `_id`.
+  Insert at least one document in the fixture for every field you expect
+  in the catalog.
 - **Reset drops databases, not the replica set.** `--reset=fixture` removes
   all non-system databases and reapplies fixtures; the oplog and resume
   tokens survive. Use `--reset=backend` when a run must start from a fresh
