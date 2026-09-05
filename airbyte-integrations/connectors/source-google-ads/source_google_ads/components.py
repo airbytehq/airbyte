@@ -8,16 +8,20 @@ import json
 import logging
 import re
 import threading
-from dataclasses import dataclass, field
+from dataclasses import InitVar, dataclass, field
 from datetime import datetime, timedelta
 from itertools import groupby
 from typing import Any, Callable, ClassVar, Dict, Generator, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import anyascii
 import requests
+from google.auth import exceptions as google_auth_exceptions
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from google.oauth2 import service_account
 from requests.adapters import HTTPAdapter
 
 from airbyte_cdk import AirbyteTracedException, FailureType, InterpolatedString
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator
 from airbyte_cdk.sources.declarative.decoders.composite_raw_decoder import JsonParser
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
@@ -33,7 +37,7 @@ from airbyte_cdk.sources.streams.concurrent.default_stream import DefaultStream
 from airbyte_cdk.sources.types import Config, Record, StreamSlice, StreamState
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
-from .google_ads import GoogleAds
+from .google_ads import GoogleAds, build_service_account_credentials
 
 
 logger = logging.getLogger("airbyte")
@@ -57,6 +61,52 @@ class TimeoutHTTPAdapter(HTTPAdapter):
     def send(self, request: requests.PreparedRequest, **kwargs: Any) -> requests.Response:  # type: ignore[override]
         kwargs.setdefault("timeout", self.timeout)
         return super().send(request, **kwargs)
+
+
+@dataclass
+class GoogleAdsServiceAccountAuthenticator(DeclarativeAuthenticator):
+    """Mints Google Ads bearer tokens from a service account key.
+
+    Selected by the manifest's `SelectiveAuthenticator` when `credentials.auth_type` is
+    `Service`. Credentials are built once and refreshed on expiry.
+    """
+
+    config: Mapping[str, Any]
+    parameters: InitVar[Mapping[str, Any]]
+
+    def __post_init__(self, parameters: Mapping[str, Any]) -> None:
+        self._credentials: Optional[service_account.Credentials] = None
+        self._lock = threading.Lock()
+        self._request = GoogleAuthRequest()
+
+    @property
+    def auth_header(self) -> str:
+        return "Authorization"
+
+    @property
+    def token(self) -> str:
+        credentials = self._get_or_refresh_credentials()
+        return f"Bearer {credentials.token}"
+
+    def _get_or_refresh_credentials(self) -> service_account.Credentials:
+        with self._lock:
+            if self._credentials is None:
+                self._credentials = self._build_credentials()
+            if not self._credentials.valid:
+                try:
+                    self._credentials.refresh(self._request)
+                except google_auth_exceptions.RefreshError as e:
+                    # Google rejected the key or the delegation, e.g. the service account was never
+                    # added to the Google Ads account, or domain-wide delegation is not granted for
+                    # the adwords scope. That is a config problem, not a transient system failure.
+                    raise AirbyteTracedException(
+                        message="Could not obtain an access token for the service account. Confirm the service account has access to the Google Ads account, and that `Impersonated Email` is only set when domain-wide delegation is configured.",
+                        failure_type=FailureType.config_error,
+                    ) from e
+            return self._credentials
+
+    def _build_credentials(self) -> service_account.Credentials:
+        return build_service_account_credentials(self.config["credentials"])
 
 
 def _mount_timeout_adapter(requester: Any) -> None:

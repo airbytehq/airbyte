@@ -9,51 +9,104 @@
     "properties": {
       "credentials": {
         "type": "object",
-        "description": "",
         "title": "Google Credentials",
+        "description": "Choose how to authenticate to Google Ads. Most users should use OAuth. Service Account is intended for server-to-server environments that already have Google Ads service account access configured.",
         "order": 0,
-        "required": [
-          "developer_token",
-          "client_id",
-          "client_secret",
-          "refresh_token"
-        ],
-        "properties": {
-          "developer_token": {
-            "type": "string",
-            "title": "Developer Token",
-            "order": 0,
-            "description": "The Developer Token granted by Google to use their APIs. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
-            "airbyte_secret": true
+        "oneOf": [
+          {
+            "title": "OAuth Credentials",
+            "type": "object",
+            "required": [
+              "developer_token",
+              "client_id",
+              "client_secret",
+              "refresh_token"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Client",
+                "default": "Client",
+                "order": 0
+              },
+              "developer_token": {
+                "type": "string",
+                "title": "Developer Token",
+                "order": 1,
+                "description": "The Developer Token granted by Google to use their APIs. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "airbyte_secret": true
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "order": 2,
+                "description": "The Client ID of your Google Ads developer application. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>."
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "order": 3,
+                "description": "The Client Secret of your Google Ads developer application. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "airbyte_secret": true
+              },
+              "refresh_token": {
+                "type": "string",
+                "title": "Refresh Token",
+                "order": 4,
+                "description": "The token used to obtain a new Access Token. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "order": 5,
+                "description": "The Access Token for making authenticated requests. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "airbyte_secret": true
+              }
+            }
           },
-          "client_id": {
-            "type": "string",
-            "title": "Client ID",
-            "order": 1,
-            "description": "The Client ID of your Google Ads developer application. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>."
-          },
-          "client_secret": {
-            "type": "string",
-            "title": "Client Secret",
-            "order": 2,
-            "description": "The Client Secret of your Google Ads developer application. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
-            "airbyte_secret": true
-          },
-          "refresh_token": {
-            "type": "string",
-            "title": "Refresh Token",
-            "order": 3,
-            "description": "The token used to obtain a new Access Token. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
-            "airbyte_secret": true
-          },
-          "access_token": {
-            "type": "string",
-            "title": "Access Token",
-            "order": 4,
-            "description": "The Access Token for making authenticated requests. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
-            "airbyte_secret": true
+          {
+            "title": "Service Account Key Authentication",
+            "type": "object",
+            "required": [
+              "auth_type",
+              "developer_token",
+              "service_account_info"
+            ],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "Service",
+                "order": 0
+              },
+              "developer_token": {
+                "type": "string",
+                "title": "Developer Token",
+                "order": 1,
+                "description": "The Developer Token granted by Google to use their APIs. For detailed instructions on finding this value, refer to our <a href=\"https://docs.airbyte.com/integrations/sources/google-ads#setup-guide\">documentation</a>.",
+                "airbyte_secret": true
+              },
+              "service_account_info": {
+                "type": "string",
+                "title": "Service Account JSON Key",
+                "order": 2,
+                "description": "The full JSON content of the service account key file. For detailed instructions, refer to <a href=\"https://developers.google.com/google-ads/api/docs/oauth/service-accounts\">Google's documentation</a>.",
+                "airbyte_secret": true,
+                "multiline": true,
+                "examples": [
+                  "{ \"type\": \"service_account\", \"project_id\": \"YOUR_PROJECT_ID\", \"private_key_id\": \"YOUR_PRIVATE_KEY_ID\", \"private_key\": \"-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n\", \"client_email\": \"name@project.iam.gserviceaccount.com\", ... }"
+                ]
+              },
+              "impersonated_email": {
+                "type": "string",
+                "title": "Impersonated Email",
+                "order": 3,
+                "description": "Optional email of the Google Ads user to impersonate via domain-wide delegation. Leave blank when the service account itself has direct access to the Google Ads account.",
+                "examples": ["user@example.com"]
+              }
+            }
           }
-        }
+        ]
       },
       "customer_id": {
         "title": "Customer ID(s)",
@@ -146,6 +199,8 @@
   },
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "Client",
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
