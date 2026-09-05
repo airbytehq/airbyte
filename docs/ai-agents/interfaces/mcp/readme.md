@@ -20,7 +20,7 @@ Airbyte hosts and manages this remote MCP server, so there's nothing to install.
 - You prefer conversational, prompt-driven access to your connected data.
 - You don't need to run commands offline or in a CI pipeline.
 
-If you need to process large result sets, make many sequential calls in one turn, run long-running operations, or compose output with shell tools, use the [CLI](../cli/readme.md) instead. The CLI also provides fuller, prescriptive guidance through an installable agent skill; see [Use the CLI with AI agents](../cli/using-with-ai-agents.md). If you're building a Python agent with a framework like Pydantic AI or LangChain, see the [SDK](../sdk/readme.md). For non-Python backends or custom admin flows, see the [API](../api/readme.md).
+If you need to process large result sets, make many sequential calls in one turn, run long-running operations, or compose output with shell tools, use the [CLI](../cli/readme.md) instead. The CLI also provides fuller, prescriptive guidance through an installable agent skill; see [Use the CLI with AI agents](../cli/using-with-ai-agents.md). If you're building a Python agent with a framework like Pydantic AI or LangChain, see the [SDK](../sdk/readme.md). For non-Python backends or custom admin flows, see the [API](../api/readme.md). If your client can't use MCP but can point at a custom model, or you want Airbyte to do the reasoning and answer in plain language, see the [Airbyte model](../model/readme.md).
 
 ## Requirements
 
