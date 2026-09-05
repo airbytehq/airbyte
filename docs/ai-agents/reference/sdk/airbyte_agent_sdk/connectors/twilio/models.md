@@ -442,6 +442,7 @@ Classes
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[RecordingsSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[TranscriptionsSearchData]
     * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[UsageRecordsSearchData]
+    * airbyte_agent_sdk.connectors.twilio.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

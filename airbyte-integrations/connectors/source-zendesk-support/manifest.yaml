@@ -1026,17 +1026,22 @@ definitions:
           backoff_strategies:
             - type: WaitTimeFromHeader
               header: Retry-After
+          # Every filter here is keyed on the status code, never on the response body. Zendesk's
+          # collaboration-api returns permission denials for this endpoint as a 403 with an empty
+          # `text/html` body, so a body-substring filter never matches and the request falls through
+          # to whatever comes next. Denials are also per ticket rather than per stream: side
+          # conversations are gated by plan, add-on, brand and group, so individual tickets are
+          # refused while the rest of the stream reads fine. Skip the ticket, keep the sync.
           response_filters:
             - http_codes: [422]
               action: IGNORE
               error_message: "Skipping side conversations for this ticket because the Zendesk API returned an unprocessable entity error. This typically means the ticket type does not support side conversations. Other tickets will continue to sync normally."
-            - error_message_contains: "You do not have access"
+            - http_codes: [403]
               action: IGNORE
-              error_message: "Skipping stream '{{ parameters.get('name') }}' because the authenticated user lacks permission to access this resource. This is expected for non-admin accounts on admin-only endpoints. Other streams will still sync."
-            - http_codes: [403, 404]
-              action: FAIL
-              failure_type: config_error
-              error_message: "Unable to read data for stream '{{ parameters.get('name') }}'. The endpoint returned an error indicating a configuration issue. Please ensure that your account has the necessary access level and that the endpoint is available. Error message: {{ response.get('error') }}"
+              error_message: "Skipping side conversations for this ticket because Zendesk denied access to it. Side conversations require the Collaboration add-on, and access can also be restricted per brand or group. Other tickets will continue to sync normally."
+            - http_codes: [404]
+              action: IGNORE
+              error_message: "Skipping side conversations for this ticket because the ticket no longer exists. This is expected for deleted tickets. Other tickets will continue to sync normally."
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1763,10 +1768,11 @@ spec:
         consent_url: "https://{{subdomain}}.zendesk.com/oauth/authorizations/new?response_type=code&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}"
         scopes:
           - scope: read
-        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}"
+        access_token_url: "https://{{subdomain}}.zendesk.com/oauth/tokens?grant_type=authorization_code&{{auth_code_param}}&{{client_id_param}}&{{client_secret_param}}&{{redirect_uri_param}}&{{scopes_param}}&expires_in=172800"
         extract_output:
           - access_token
           - refresh_token
+          - expires_in
 
 schemas:
   article_attachments:

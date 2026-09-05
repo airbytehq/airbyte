@@ -74,6 +74,7 @@ Classes
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[SchedulesSearchData]
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[SeveritiesSearchData]
     * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.incident_io.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
