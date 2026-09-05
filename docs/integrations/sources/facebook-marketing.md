@@ -502,6 +502,7 @@ Facebook’s Ads Insights API dynamically aggregates and filters metrics. Purcha
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:-----------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.1.2 | 2026-09-01 | [78685](https://github.com/airbytehq/airbyte/pull/78685) | Update dependencies |
 | 6.1.1 | 2026-08-24 | [74266](https://github.com/airbytehq/airbyte/pull/74266) | feat(source-facebook-marketing): add opt-in engaged view (ev) attribution window (AI-Triage PR) |
 | 6.1.0 | 2026-08-04 | [83704](https://github.com/airbytehq/airbyte/pull/83704) | Add incremental sync support to the ad_creatives_from_ads stream |
 | 6.0.2 | 2026-06-30 | [81331](https://github.com/airbytehq/airbyte/pull/81331) | Hide legacy top-level `access_token` field from UI to prevent Chrome autofill from corrupting OAuth tokens |
