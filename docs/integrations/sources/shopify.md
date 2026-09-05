@@ -11,7 +11,7 @@ This page contains the setup guide and reference information for the [Shopify](h
 - An active [Shopify store](https://www.shopify.com).
 - If you are syncing data from a store that you do not own, you will need to [request access to your client's store](https://help.shopify.com/en/partners/dashboard/managing-stores/request-access#request-access) (not required for account owners).
 <!-- env:oss  -->
-- For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#scopes-required-for-custom-app).
+- For **Airbyte Open Source** users: A custom Shopify application with [`read_` scopes enabled](#custom-app-scopes).
 <!-- /env:oss -->
 
 ## Setup guide
@@ -43,9 +43,11 @@ For existing **Airbyte Cloud** customers, if you are currently using the **API P
 3. Click **Install** to install the Airbyte application. Log in to your account, if you are not already logged in. Select the store you want to sync and review the consent form. Click **Install app** to finish the installation.
 <FieldAnchor field="shop">
 4. The **Shopify Store** field will be automatically filled after you authenticate your Shopify account based on the store you selected. Once populated, confirm the value is accurate.
+
 </FieldAnchor>
 <FieldAnchor field="start_date">
 5. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+
 </FieldAnchor>
 6. Click **Set up source** and wait for the connection test to complete.
 <!-- /env:cloud -->
@@ -67,55 +69,44 @@ Authentication to the Shopify API requires a [custom application](https://help.s
 2. In the dashboard, navigate to **Settings** > **App and sales channels** > **Develop apps** > **Create an app**.
 3. Select a name for your new app.
 4. Select **Configure Admin API scopes**.
-5. Grant access to the [following list of scopes](#scopes-required-for-custom-app). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc ).
+5. Grant access to the [following list of scopes](#custom-app-scopes). Only select scopes prefixed with `read_`, not `write_` (e.g. `read_locations`,`read_price_rules`, etc).
 6. Click **Install app** to give this app access to your data.
 7. Once installed, go to **API Credentials** to copy the **Admin API Access Token**. You are now ready to set up the source in Airbyte!
 
 #### Connect using API Password
 
 1. Enter a **Source name**.
-2. Enter your **Shopify Store** name. You can find this in your URL when logged in to Shopify or within the Store details section of your Settings.
+<FieldAnchor field="shop">
+2. Enter your **Shopify Store** name. This is the subdomain from your store's `myshopify.com` URL. For example, if your URL is `https://my-store.myshopify.com`, enter `my-store`. You can also paste the full URL (e.g. `https://my-store.myshopify.com`) and it will be normalized automatically. Find your store name in the URL bar when logged in to Shopify, or under **Settings** > **Store details**.
+</FieldAnchor>
 3. For **API Password**, enter your custom application's Admin API access token.
-4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Please note that this defaults to January 1st, 2020.
+<FieldAnchor field="start_date">
+4. (Optional) You may set a **Replication Start Date** as the starting point for your data replication. Any data created before this date will not be synced. Defaults to January 1st, 2020.
+</FieldAnchor>
 5. Click **Set up source** and wait for the connection test to complete.
 
 ### Custom app scopes
 
-Add the following scopes to your custom app to ensure Airbyte can sync all available data. For more information on access scopes, see the [Shopify docs](https://shopify.dev/docs/api/usage/access-scopes).
+Grant these scopes to sync all available data. The connector checks your granted scopes at the start of every sync and only syncs the streams your scopes allow. If a scope is missing, the connector logs a warning like `The stream 'Orders' could not be synced without the 'read_orders' scope` and skips that stream instead of failing the sync. Grant only the scopes for the streams you need. For more information, see the [Shopify access scopes documentation](https://shopify.dev/docs/api/usage/access-scopes).
 
-- `read_analytics`
-- `read_assigned_fulfillment_orders`
-- `read_content`
-- `read_customers`
-- `read_discounts`
-- `read_draft_orders`
-- `read_fulfillments`
-- `read_gdpr_data_request`
-- `read_gift_cards`
-- `read_inventory`
-- `read_legal_policies`
-- `read_locations`
-- `read_locales`
-- `read_marketing_events`
-- `read_merchant_managed_fulfillment_orders`
-- `read_online_store_pages`
-- `read_order_edits`
-- `read_orders`
-- `read_price_rules`
-- `read_product_listings`
-- `read_products`
-- `read_publications`
-- `read_reports`
-- `read_resource_feedbacks`
-- `read_script_tags`
-- `read_shipping`
-- `read_shopify_payments_accounts`
-- `read_shopify_payments_bank_accounts`
-- `read_shopify_payments_disputes`
-- `read_shopify_payments_payouts`
-- `read_themes`
-- `read_third_party_fulfillment_orders`
-- `read_translations`
+| Scope | Streams it enables |
+| :--- | :--- |
+| `read_content` | Pages, Metafield Pages |
+| `read_customers` | Customers, Customer Address, Metafield Customers |
+| `read_discounts` | Discount Codes, Discount Codes Sync |
+| `read_draft_orders` | Draft Orders, Metafield Draft Orders |
+| `read_inventory` | Inventory Items, Inventory Levels, Product Variants |
+| `read_locations` | Locations, Metafield Locations |
+| `read_merchant_managed_fulfillment_orders` | Fulfillment Orders |
+| `read_online_store_pages` | Articles, Blogs, Metafield Articles, Metafield Blogs |
+| `read_orders` | Orders, Order Refunds, Order Risks, Order Agreements, Transactions, Tender Transactions, Fulfillments, Abandoned Checkouts, Customer Journey Summary, Metafield Orders |
+| `read_price_rules` | Price Rules |
+| `read_products` | Products, Deleted Products, Product Images, Product Variants, Collections, Collection Products, Collects, Custom Collections, Smart Collections, and the product, product image, product variant, collection, and smart collection metafield streams |
+| `read_publications` | Collections |
+| `read_shipping` | Countries |
+| `read_shopify_payments_payouts` | Balance Transactions, Disputes |
+
+The Shop and Metafield Shops streams don't require a scope beyond app installation. Product Variants requires both `read_products` and `read_inventory`, and Collections requires both `read_products` and `read_publications`.
 
 <!-- /env:oss -->
 
@@ -128,7 +119,9 @@ The Shopify source connector supports the following [sync modes](https://docs.ai
 - Full Refresh
 - Incremental
 
-This source syncs data using the [Shopify REST API](https://shopify.dev/api/admin-rest), the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql), and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries). Streams labeled "(GraphQL)" in the list below use the GraphQL or BULK API; unlabeled streams use the REST API.
+The following streams are full refresh only, because the Shopify endpoints behind them don't support filtering by an updated timestamp: Countries, Locations, and Shop. Collects and Balance Transactions sync incrementally by record ID rather than by timestamp, so they replicate new records but not updates to existing ones.
+
+This source syncs data using the [Shopify REST API](https://shopify.dev/api/admin-rest), the [Shopify GraphQL API](https://shopify.dev/api/admin-graphql), and the [Shopify GraphQL BULK API](https://shopify.dev/docs/api/usage/bulk-operations/queries). Streams labeled "(GraphQL)" in the list below use the GraphQL or BULK API; unlabeled streams use the REST API. The connector calls Shopify Admin API version `2025-10`.
 
 ## Supported Streams
 
@@ -154,7 +147,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Inventory Items (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryItem)
 - [Inventory Levels (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/InventoryLevel)
 - [Locations](https://shopify.dev/api/admin-rest/latest/resources/location)
-- [Metafields (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections
+- [Metafields](https://shopify.dev/docs/api/admin-graphql/latest/objects/Metafield) — Available as separate streams for: Articles, Blogs, Collections, Customers, Draft Orders, Locations, Orders, Pages, Product Images, Products, Product Variants, Shops, and Smart Collections. The Collections, Customers, Draft Orders, Locations, Orders, Products, Product Images, and Product Variants metafield streams use the BULK API. The rest use the REST API.
 - [Order Agreements (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderAgreement)
 - [Orders](https://shopify.dev/api/admin-rest/latest/resources/order#top)
 - [Order Refunds](https://shopify.dev/api/admin-rest/latest/resources/refund#top)
@@ -167,8 +160,7 @@ This source syncs data using the [Shopify REST API](https://shopify.dev/api/admi
 - [Shop](https://shopify.dev/api/admin-rest/latest/resources/shop)
 - [Smart Collections](https://shopify.dev/api/admin-rest/latest/resources/smartcollection)
 - [Tender Transactions](https://shopify.dev/api/admin-rest/latest/resources/tendertransaction)
-- [Transactions](https://shopify.dev/api/admin-rest/latest/resources/transaction#top)
-- [Transactions (GraphQL)](https://shopify.dev/docs/api/admin-graphql/latest/objects/OrderTransaction)
+- [Transactions](https://shopify.dev/api/admin-rest/latest/resources/transaction#top) — Uses the BULK API by default. Enabling **Add `user_id` to Transactions** switches this stream to the REST API, which returns the `user_id` field but syncs more slowly.
 
 ### Entity-Relationship Diagram (ERD)
 <EntityRelationshipDiagram></EntityRelationshipDiagram>
@@ -196,6 +188,19 @@ Shopify's Bulk Operations API silently truncates the nested `codes` connection a
 
 **Recommendation:** Enable the **Discount Codes Sync** stream if you have any discounts with more than ~100 redeem codes. You may run both streams simultaneously — they produce records with the same schema, so you can deduplicate downstream by `id`.
 
+## Tuning sync performance
+
+Most stores don't need to change these settings. Adjust them if BULK jobs time out, syncs are slower than you'd like, or you're missing late-arriving records. The setting names below match the labels in the connector's configuration form.
+
+| Setting | Default | What it does |
+| :--- | :--- | :--- |
+| **GraphQL BULK Date Range in Days** | 30 | The size of the date window each BULK job covers. The connector shrinks the window automatically when a job times out, but lowering it up front helps large stores finish BULK streams. |
+| **BULK Job termination threshold** | 7200 seconds | How long a single BULK job may run before the connector cancels it and retries with a smaller date window. Accepts 3600 to 21600. |
+| **BULK Job checkpoint (rows collected)** | 100000 | How many rows a BULK job collects before the connector checkpoints it, consumes the partial result, and resumes from where it left off. Accepts 15000 to 1000000. Lower it if BULK jobs on high-volume streams fail before finishing. |
+| **Add `Presentment prices` to Product Variants** | On | Includes the `presentmentPrices` field in the Product Variants query. Turn it off if you don't need presentment prices and the stream is slow. |
+| **Add `user_id` to Transactions (slower)** | Off | Switches the Transactions stream from the BULK API to the REST API so records include `user_id`. |
+| **Lookback Window (in Days)** | 0 | Rewinds the saved cursor by this many days on each incremental sync so the connector re-fetches recent records. Accepts 0 to 30. Use a small value of 1 to 3 days if a sync misses records because updates occur while it runs. It has no effect on Collects or Balance Transactions, which sync by record ID. |
+
 ## Marketing Attribution data
 Data related to [marketing attribution](https://www.shopify.com/au/blog/marketing-attribution) can be found across a few different streams. Sync these streams to understand marketing performance:
 - `Customer Journey Summary` (firstVisit.source, firstVisit.sourcetype)
@@ -219,6 +224,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Integration Type | Airbyte Type |
 |:-----------------|:-------------|
 | `string`         | `string`     |
+| `integer`        | `integer`    |
 | `number`         | `number`     |
 | `array`          | `array`      |
 | `object`         | `object`     |
