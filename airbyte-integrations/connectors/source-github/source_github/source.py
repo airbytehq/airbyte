@@ -143,8 +143,8 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
     def _resolve_repositories_and_organizations(self, config: Mapping[str, Any]) -> Tuple[List[str], List[str]]:
         """Resolve wildcard patterns and explicit repos by enumerating the manifest's
-        shared partition routers — the same components manifest streams slice on at
-        read time, so the Python streams are guaranteed to see identical lists.
+        partition routers — the same components manifest streams slice on at read
+        time, so repo-scoped Python streams see the same repository list.
 
         Wildcard patterns (`org/*`, `org/prefix*`) expand via `repositories_resolver`;
         explicit `org/repo` entries validate via `repository_stats`; entries that 404
@@ -152,6 +152,11 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         manifest). User-owned repos contribute a repository but no organization.
         The resolver streams' `use_cache: true` means this enumeration warms the HTTP
         cache the manifest streams reuse when reading.
+
+        Organizations come from `organization_resolution_partition_router` — payload-
+        confirmed logins only — which is deliberately narrower than the
+        `organization_partition_router` the `repositories` stream slices on; see that
+        definition's comment in the manifest.
 
         Returns (organizations, repositories), both sorted and deduplicated.
         """
@@ -175,15 +180,15 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             return sorted({stream_slice.partition[partition_key] for stream_slice in router.stream_slices()})
 
         repositories = enumerate_router("repository_partition_router", "repository")
-        # The organization router unions config-derived wildcard orgs with the orgs
-        # owning explicit repos, so a wildcard entry whose org doesn't exist (404) or
-        # matched no repos would still yield a partition. Keep only orgs that own at
-        # least one resolved repository — the legacy resolver derived orgs from
-        # fetched repo metadata, so orgs without any synced repo never surfaced.
+        # `organization_resolution_partition_router`, not `organization_partition_router`: a
+        # login that config only *claims* is an org must never reach the org-scoped streams.
+        # Config-derived orgs put a user login on `Organizations`, `Teams` and `Users`, where
+        # `orgs/{user}` 404s on every request. The `in repository_owners` filter is a backstop:
+        # an org owning no resolved repository has nothing to sync.
         repository_owners = {repository.split("/", 1)[0] for repository in repositories}
         organizations = [
             organization
-            for organization in enumerate_router("organization_partition_router", "organization")
+            for organization in enumerate_router("organization_resolution_partition_router", "organization")
             if organization in repository_owners
         ]
         return organizations, repositories

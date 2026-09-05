@@ -213,10 +213,33 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
+            self._close_slice_after_swallowed_error(stream_slice)
         # Exhausting every token no longer raises a connector-specific exception here: the
         # shared authenticator raises AirbyteTracedException(transient_error) itself, which the
         # `except AirbyteTracedException` branch above re-raises untouched (it carries no
         # response to classify).
+
+    def _close_slice_after_swallowed_error(self, stream_slice: Optional[Mapping[str, Any]]) -> None:
+        """Mark the slice complete when `read_records` skipped it instead of raising.
+
+        `HttpStream._read_pages` closes a resumable-full-refresh slice only after the last
+        page, so an error swallowed mid-slice leaves the partition's cursor state empty and
+        `CursorBasedCheckpointReader._find_next_slice` hands the same partition back forever
+        — no record, no STATE, and the platform kills the attempt on the source heartbeat.
+        Closing the slice makes a swallowed error terminal, as the warning above implies.
+        """
+        cursor = self.get_cursor()
+        if not isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            return
+        # Only close a partition the slice actually names. Several substreams read their parent
+        # by calling its `read_records` straight from `stream_slices()` with a bare mapping that
+        # has no `partition` key (`TeamMembers`, `IssueTimelineEvents`, `utils.read_full_refresh`,
+        # ...), and those parents are shared instances that emit their own STATE later — closing
+        # `_extract_slice_fields`' `{}` fallback would put a meaningless entry in it.
+        partition = (stream_slice or {}).get("partition")
+        if not partition:
+            return
+        cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
 
 
 class GithubStream(GithubStreamABC):
@@ -1876,9 +1899,7 @@ class ContributorActivity(GithubStream):
                     # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
                     # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
                     # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
-                    partition_obj = stream_slice.get("partition")
-                    if self.cursor and partition_obj:
-                        self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+                    self._close_slice_after_swallowed_error(stream_slice)
                 else:
                     raise e
             else:

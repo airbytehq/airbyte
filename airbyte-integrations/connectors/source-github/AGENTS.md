@@ -43,6 +43,45 @@ Not rotated, deliberately: a secondary rate limit, where the token's counters st
 GitHub scopes secondary limits per account, so another token of the same account gets rejected
 the same way; the reset wait is the correct response there.
 
+## Organizations must be payload-confirmed, never taken from config text
+
+`repositories` accepts wildcard entries (`owner/*`). The owner in such an entry is only a
+*candidate* organization — GitHub has no way to tell an org from a personal account by name, so
+`GET /orgs/{login}` 404s whenever the owner is a user. Two routers exist for this reason and are
+not interchangeable:
+
+- `organization_partition_router` derives orgs from the config string. Only the `repositories`
+  stream may use it, because that stream has to *attempt* `orgs/{login}/repos` to discover
+  whether the login is an organization at all.
+- `organization_resolution_partition_router` derives orgs from response payloads —
+  `owner/login` on the `orgs/{org}/repos` listing, `organization/login` on
+  `repos/{owner}/{repo}`. Every org-scoped stream (`Organizations`, `Teams`, `Users`, and their
+  substreams) must slice on this one, and `SourceGithub._resolve_repositories_and_organizations`
+  enumerates it for the Python streams.
+
+The asymmetric `parent_key`s are load-bearing, not an inconsistency to tidy: *list org repos*
+returns `owner` but no `organization`, while *get a repository* returns both, so using
+`owner/login` on the explicit-repo branch would hand user logins back to the org-scoped streams.
+
+2.2.0 wired the org-scoped streams to the config-derived router, and every affected sync died on
+the platform heartbeat (airbytehq/oncall#13422). When Step 3 migrates
+`Organizations`/`Teams`/`Users` into the manifest, they must reference the resolution router.
+
+## A swallowed error must close its resumable-full-refresh slice
+
+`HttpStream._read_pages` closes an RFR slice only after the last page returns, so an error raised
+mid-slice and then *swallowed* — logged and returned from, rather than re-raised — leaves the
+partition's cursor state empty. `CursorBasedCheckpointReader._find_next_slice` reads empty as
+"still in progress" and hands the same partition back, forever: no record, no STATE, and the
+platform eventually kills the attempt on the source heartbeat rather than the stream skipping in
+milliseconds.
+
+Any new `read_records` path that logs a warning and returns instead of raising must call
+`GithubStreamABC._close_slice_after_swallowed_error(stream_slice)`. It no-ops for incremental
+streams and for slices that carry no `partition` key — several substreams read their parent by
+calling `read_records` directly with a bare mapping, and those parents are shared instances whose
+STATE would otherwise gain a meaningless `{"partition": {}}` entry.
+
 ## Incremental Stream Considerations
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting. The connector is a Python CDK connector with stream classes extending `GithubStream`.
