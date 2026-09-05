@@ -1,9 +1,14 @@
 name: Finalize Progressive Rollout
 # Dispatched by the platform's Temporal connector-rollout worker
-# (PromoteOrRollbackActivityImpl) after a promote/rollback decision.
+# (PromoteOrRollbackActivityImpl) after a promote/rollback/cancel decision.
 # After promotion completes, verifyDefaultVersionActivity polls for up to
 # 3 hours for the GA version to become default, then finalizeRolloutActivity
 # unpins actors.
+#
+# `cancel` aborts the active progressive-rollout marker (same registry effect
+# as `rollback`) so a canceled rollout stops being served as a release
+# candidate; otherwise the platform re-creates the rollout on every
+# definitions refresh.
 #
 # See: airbyte-platform-internal/.../connector-rollout-worker/
 
@@ -19,7 +24,7 @@ on:
         description: "Action to perform"
         required: true
         type: choice
-        options: ["promote", "rollback"]
+        options: ["promote", "rollback", "cancel"]
       version:
         description: "Explicit version to finalize (optional; auto-resolved if omitted)"
         required: false
@@ -140,8 +145,8 @@ jobs:
           VERSION: ${{ steps.determine-version.outputs.version }}
         run: |
           # Validate action
-          if [[ "${ACTION}" != "promote" && "${ACTION}" != "rollback" ]]; then
-            echo "::error::Invalid action: '${ACTION}'. Must be 'promote' or 'rollback'."
+          if [[ "${ACTION}" != "promote" && "${ACTION}" != "rollback" && "${ACTION}" != "cancel" ]]; then
+            echo "::error::Invalid action: '${ACTION}'. Must be 'promote', 'rollback', or 'cancel'."
             exit 1
           fi
 
@@ -180,7 +185,7 @@ jobs:
           --version "${{ steps.resolve-vars.outputs.version }}"
 
       - name: Mark progressive rollout aborted
-        if: steps.resolve-vars.outputs.action == 'rollback'
+        if: steps.resolve-vars.outputs.action == 'rollback' || steps.resolve-vars.outputs.action == 'cancel'
         shell: bash
         env:
           GCS_CREDENTIALS: ${{ secrets.METADATA_SERVICE_PROD_GCS_CREDENTIALS }}
@@ -327,6 +332,19 @@ jobs:
               "channel": "#connector-publish-failures",
               "username": "Connectors CI/CD Bot",
               "text": "↩️ Successfully rolled back RC for `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            }
+
+      - name: Notify Slack on cancel success
+        if: success() && steps.resolve-vars.outputs.action == 'cancel'
+        uses: slackapi/slack-github-action@45a88b9581bfab2566dc881e2cd66d334e621e2c # v3.0.3
+        with:
+          webhook: ${{ secrets.PUBLISH_ON_MERGE_SLACK_WEBHOOK }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "channel": "#connector-publish-updates",
+              "username": "Connectors CI/CD Bot",
+              "text": "🚫 Canceled RC rollout for `${{ steps.resolve-vars.outputs.connector_name }}` v${{ steps.resolve-vars.outputs.version }} — progressive-rollout marker aborted, registry recompiled:\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             }
 
       - name: Notify Slack on promote success (no PR needed)
