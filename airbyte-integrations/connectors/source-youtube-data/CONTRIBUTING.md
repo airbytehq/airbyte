@@ -2,60 +2,73 @@
 
 For general guidance on contributing to Airbyte connectors, see the [Connector Development documentation](https://docs.airbyte.com/connector-development/).
 
-This connector is manifest-only, so all behavior lives in `manifest.yaml`. `README.md` is a symlink to the shared declarative-source README; connector-specific notes go in [AGENTS.md](./AGENTS.md), which is the canonical, detailed version of everything summarized below.
+## Incremental Stream Considerations
 
-## 1. Every stream is full refresh
-
-None of the five streams (`channels`, `videos`, `video`, `comments`, `channel_comments`) is incremental, so every sync re-reads everything. The `cursor_field: channel_id` in the manifest is a partition field on `channels`, not sync state.
+All five streams are currently full-refresh-only. The YouTube Data API v3 exposes usable cursors on only part of the surface, and where they exist the stream's current record shape does not yet carry the cursor field. The table records the per-stream reasoning.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
-| channels | small | top-level parent | none | none | deferred_no_api_support | `channels.list` has no date filter; one record per configured channel ID |
-| videos | large | top-level parent | none | created_at_only | deferred_no_api_support | `search.list` supports `publishedAfter`/`publishedBefore` (publish time only); records are ID objects, so there is no timestamp in the record to checkpoint on |
-| video | large | child | none | none | deferred_child | `videos.list` is an ID lookup; partitions come from `videos` |
-| comments | xlarge | child | none | none | deferred_child | `commentThreads.list` has no date filter; comments are mutable (edits, likes, deletions) |
-| channel_comments | xlarge | top-level parent | none | none | deferred_no_api_support | Same `commentThreads.list` limitation, keyed on the channel instead of a video |
+| channels | small | top-level parent (config `channel_ids`) | none | none | full_refresh_only | `channels.list` by ID has no date filter; channel records are mutable config-style lookups. |
+| videos | medium | top-level parent | none in record | `publishedAfter` on `search.list` | deferred_needs_record_reshape | The endpoint supports `publishedAfter`, but the extractor keeps only `items[].id` (`kind`, `videoId`) — the record carries no date to cursor on. Incremental requires first reshaping records to include `snippet.publishedAt` (tracked as the thin-record investigation), then a `DatetimeBasedCursor` on it. Note `publishedAt` is creation-time only: edits to a video do not move it, so a lookback or periodic full refresh is still needed for updated metadata. |
+| video | medium | substream of `videos` | none | none | full_refresh_only | `videos.list` by ID has no date-based filtering; it fetches whatever IDs the parent supplies. Statistics fields (view/like counts) change constantly, so even with a cursor the data is inherently mutable. |
+| comments | medium | substream of `videos` | none top-level | none server-side | deferred_client_side_candidate | `commentThreads.list` has no date filter. Records carry `topLevelComment.snippet.publishedAt` and `updatedAt` (comments are editable, so `updatedAt` is the correct cursor), but both are nested; client-side incremental requires hoisting the cursor to the top level first. |
+| channel_comments | medium | top-level parent (config `channel_ids`) | none top-level | none server-side | deferred_client_side_candidate | Same shape and reasoning as `comments`. |
 
-Incremental options are tracked in [airbyte-internal-issues#17103](https://github.com/airbytehq/airbyte-internal-issues/issues/17103).
+## Primary keys
 
-## 2. `videos` emits search result IDs, not video resources
+- `videos` records are `search.list` id objects; `videoId` is the key.
+- `comments` / `channel_comments` records are commentThread snippets, which do not include the thread id at the top level. The connector hoists `topLevelComment.id` (equal to the thread id in the YouTube API) into a top-level `id` via an `AddFields` transformation, and keys the streams as composites with their parent context: `[videoId, id]` and `[channelId, id]` respectively.
 
-The `videos` stream extracts only each search result's ID object, so records contain just `kind` and `videoId` instead of video metadata. This is an open defect tracked in [airbyte-internal-issues#17100](https://github.com/airbytehq/airbyte-internal-issues/issues/17100), not intended design — per-video metadata comes from the `video` stream.
+## Error handling
 
-## 3. `video` and `comments` partitions are silently dropped when the parent record has no `videoId`
+All five streams share the error handler defined on `definitions.base_requester` in `manifest.yaml`. YouTube reports its error taxonomy in two places, and the filters check both: legacy reasons in `error.errors[0].reason` and modern reasons in `error.details[0].reason`.
 
-Both streams partition over `videos` on `videoId`, and the CDK skips parent records that lack that key without logging. Because the `videos` request does not restrict `search.list` to videos, channel and playlist results produce no child requests at all.
+| Response | Action | Failure type | Rationale |
+|---|---|---|---|
+| `commentsDisabled`, `videoNotFound` | IGNORE | — | Per-video conditions on the comment streams: a video with comments disabled, or deleted between the parent fetch and the child request, is an empty partition, not an error. |
+| 401 | FAIL | `config_error` | Expired or revoked OAuth grant; re-authenticate. |
+| `keyInvalid` / `API_KEY_INVALID`, `accessNotConfigured` / `SERVICE_DISABLED`, `channelNotFound`, `ACCESS_TOKEN_SCOPE_INSUFFICIENT` | FAIL | `config_error` | User-correctable: invalid key, YouTube Data API v3 not enabled in the Google Cloud project, wrong Channel IDs, or missing OAuth scope. Surfaces Google's own message plus remediation steps. |
+| `quotaExceeded`, `dailyLimitExceeded`, `rateLimitExceeded`, `userRateLimitExceeded` / `RATE_LIMIT_EXCEEDED`, `QUOTA_EXCEEDED` (all arrive as 403, not 429) | RETRY | `transient_error` | Quota-metered API: per-minute limits recover within the retry budget; the daily quota does not, and the sync fails as transient after retries are exhausted (quota resets midnight Pacific). |
+| 429, 500, 502, 503, 504 | RETRY | `transient_error` | Standard transient classification with exponential backoff. |
+| Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all filter is deliberately omitted because `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s. |
 
-## 4. `video.datetime` is an extraction timestamp, not a YouTube timestamp
+## Quota model
 
-`video.datetime` is generated with `{{ now_utc() }}` when the record is processed and is typed as a plain string with no `date-time` format. Do not treat it as an event time or use it as a cursor.
+The YouTube Data API v3 grants a default quota of 10,000 units per day per Google Cloud project. Costs differ by endpoint: `search.list` costs 100 units per call (each pagination page is another call), while `channels.list`, `videos.list`, and `commentThreads.list` cost 1 unit. Exhausting the daily quota is the documented failure mode for this API: Google returns HTTP 403 with reason `quotaExceeded`, and the quota resets at midnight Pacific.
 
-## 5. Three of five streams declare no primary key
+The manifest declares an `api_budget` sized to this model: `search.list` is capped at 3 calls per hour (≤ 7,200 units/day) and the 1-unit endpoints at 90 calls per hour (≤ 2,160 units/day), bounding a connection at roughly 9,400 units/day. Hourly windows were chosen deliberately: the budget makes requests wait for a free slot, and a one-hour window keeps the worst-case wait below the 5400-second heartbeat (`maxSecondsBetweenMessages`). The trade-off is backfill speed — a channel with many videos pages `search.list` at 3 pages/hour.
 
-Only `video` and `channels` declare a primary key; `videos`, `comments`, and `channel_comments` have none, so destinations cannot deduplicate them. For the comment streams this is because extraction keeps only `snippet` and discards the thread `id`. Tracked in [airbyte-internal-issues#17091](https://github.com/airbytehq/airbyte-internal-issues/issues/17091).
+## Known record-shape quirks
 
-## 6. No error handler, so quota exhaustion surfaces unclassified
+- **`videos` records are thin**: the stream reads `search.list` and keeps only the id object (`kind`, `videoId`). It exists primarily as the parent for `video` and `comments`. The request pins `type=video`, since search otherwise also returns channel and playlist hits whose id objects carry no `videoId`.
+- **`video.datetime` is connector-synthesized**: an `AddFields` stamp of the sync time (`now_utc().isoformat()`, ISO-8601), not an API field. It changes on every sync by construction.
 
-The manifest defines no error handler, so YouTube's HTTP 403 `quotaExceeded` response is not classified as a rate limit and fails the sync with a message that never mentions quota. `search.list` costs 100 of the default [10,000 daily quota units](https://developers.google.com/youtube/v3/getting-started#quota) per page. Tracked in [airbyte-internal-issues#17094](https://github.com/airbytehq/airbyte-internal-issues/issues/17094).
+## Competitor parity (Fivetran)
 
-## 7. `channel_ids` is a list, but only `channels` fans out over it
+Fivetran's YouTube coverage is [YouTube Analytics](https://fivetran.com/docs/connectors/applications/youtube-analytics), built on the YouTube **Analytics** API. This connector reads the YouTube **Data** API v3 — a different API surface (content metadata and comments, not performance reporting). Row-by-row verdicts:
 
-Only `channels` issues one request per configured channel ID; `videos` and `channel_comments` interpolate the whole array into single-value request parameters, which matches the breakage reported in [airbytehq/airbyte#72638](https://github.com/airbytehq/airbyte/issues/72638). The connection check only exercises `channels`, so it can pass while the other streams are broken.
+| Fivetran table (YouTube Analytics) | Verdict | Reason |
+|---|---|---|
+| Channel performance reports (views, watch time, subscriber deltas) | out-of-scope | Analytics API report; not exposed by the Data API. `channels.statistics` carries only current totals (view/subscriber/video counts), not time-series. |
+| Video performance reports (views, watch time, retention) | out-of-scope | Analytics API report; `video.statistics` carries only current totals. |
+| Playlist performance reports | out-of-scope | Analytics API report; this connector has no playlist streams. |
+| Demographics / traffic-source / device reports | out-of-scope | Analytics API dimensions with no Data API counterpart. |
+| Channel metadata | covered | `channels` (snippet, statistics totals, branding, status, topics). |
+| Video metadata | covered | `video` (snippet, contentDetails, statistics totals, player, status), keyed per configured channel via `videos`. |
+| Comments | covered | `comments` (per video) and `channel_comments` (all threads for a channel) — no Fivetran counterpart; this connector exceeds parity here. |
 
-## Fivetran parity
+Users needing the Analytics report tables should use the separate [YouTube Analytics connector](https://docs.airbyte.com/integrations/sources/youtube-analytics), which reads the Analytics API.
 
-[Fivetran's YouTube Analytics connector](https://fivetran.com/docs/connectors/applications/youtube-analytics) syncs both YouTube Reporting API reports and YouTube Data API metadata. The report tables are out of scope here and belong to [source-youtube-analytics](https://docs.airbyte.com/integrations/sources/youtube-analytics); the Data API metadata tables overlap this connector and are assessed individually below.
+## Breaking-change assessment (0.1.0)
 
-| Fivetran table group | Fivetran source API | This connector | Verdict | Reason |
-|---|---|---|---|---|
-| Channel reports (for example `CHANNEL_BASIC_A2`) | Reporting API | none | Out of scope | Aggregated analytics reports; covered by `source-youtube-analytics` |
-| Content owner reports | Reporting API | none | Out of scope | Requires a content owner ID; belongs to `source-youtube-analytics` |
-| Audience retention reports | Reporting API (targeted queries) | none | Out of scope | Analytics report type, not a Data API resource |
-| `SYSTEM_MANAGED_*` revenue and asset tables | Reporting API (system-managed) | none | Out of scope | Content-owner-only revenue and asset snapshots; not exposed by the Data API |
-| Channels metadata | Data API `channels.list` | `channels` | Parity | Same endpoint, with a broader `part` list |
-| Videos metadata | Data API `videos.list` | `video` (+ `videos` for IDs) | Partial | Limited to IDs discovered via `search.list`, and full refresh only |
-| Comments metadata | Data API `commentThreads`/`comments` | `comments`, `channel_comments` | Partial | Extraction keeps only `snippet`, dropping the thread `id` and `replies` |
-| Captions metadata | Data API `captions.list` | none | Gap | No `captions` stream exists |
-| Playlists metadata | Data API `playlists.list` | none | Gap | No `playlists` stream exists |
+Three 0.1.0 changes trip the breaking-change checklist and are declared in `metadata.yaml` `releases.breakingChanges` with a [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations):
 
-See [AGENTS.md](./AGENTS.md) for the full reasoning behind each verdict.
+- **Primary keys added** on `comments`, `videos`, `channel_comments` (with a new hoisted `id` field on the comment streams) — changes dedup behavior in destinations.
+- **`format: date-time` added to nine timestamp fields** — destinations that map JSON-schema formats change column types; data-lake destinations may need table recreation.
+- **`videos` pins `type=video`** — the stream stops returning channel/playlist id records it previously emitted (those records carried a null `videoId` and broke the new primary key).
+
+The 0.0.65 → 0.1.0 minor bump is the breaking magnitude for a pre-1.0 connector.
+
+## CI credential strategy
+
+CI's live standard tests run only the OAuth credential (`SECRET_YOUTUBE-DATA_CREDS` → `config_oauth.json`). The API-key credential (`SECRET_YOUTUBE-DATA_API_KEY_CREDS` in GSM) is deliberately excluded from `connectorTestSuitesOptions`: Google rejects anonymous API-key requests from shared GitHub-runner IP ranges with HTTP 403, while the identical key succeeds from residential IPs and OAuth requests succeed from the same runners in the same run. API-key auth remains covered by local verification against the GSM secret; the credential itself stays in GSM for manual use.

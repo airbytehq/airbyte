@@ -65,7 +65,7 @@ definitions:
           fields:
             - path:
                 - datetime
-              value: "{{ now_utc() }}"
+              value: "{{ now_utc().isoformat() }}"
         - type: AddFields
           fields:
             - path:
@@ -120,6 +120,9 @@ definitions:
     comments:
       type: DeclarativeStream
       name: comments
+      primary_key:
+        - videoId
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -158,6 +161,12 @@ definitions:
               partition_field: id
               stream:
                 $ref: "#/definitions/streams/videos"
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record.get('topLevelComment', {}).get('id') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -165,6 +174,8 @@ definitions:
     videos:
       type: DeclarativeStream
       name: videos
+      primary_key:
+        - videoId
       retriever:
         type: SimpleRetriever
         requester:
@@ -172,7 +183,7 @@ definitions:
           path: search
           http_method: GET
           request_parameters:
-            channelId: "{{ config.channel_ids }}"
+            type: video
         record_selector:
           type: RecordSelector
           extractor:
@@ -196,6 +207,14 @@ definitions:
             page_size: 50
             cursor_value: "{{ response.nextPageToken }}"
             stop_condition: "{{ not response.get('nextPageToken') }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.channel_ids }}"
+          cursor_field: channel_id
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: channelId
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -203,6 +222,9 @@ definitions:
     channel_comments:
       type: DeclarativeStream
       name: channel_comments
+      primary_key:
+        - channelId
+        - id
       retriever:
         type: SimpleRetriever
         requester:
@@ -211,7 +233,6 @@ definitions:
           http_method: GET
           request_parameters:
             part: snippet,replies
-            allThreadsRelatedToChannelId: "{{ config.channel_ids }}"
         record_selector:
           type: RecordSelector
           extractor:
@@ -230,6 +251,20 @@ definitions:
             type: CursorPagination
             cursor_value: "{{ response.get('nextPageToken', '') }}"
             stop_condition: "{{ response.get('nextPageToken') is none }}"
+        partition_router:
+          type: ListPartitionRouter
+          values: "{{ config.channel_ids }}"
+          cursor_field: channel_id
+          request_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: allThreadsRelatedToChannelId
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - id
+              value: "{{ record.get('topLevelComment', {}).get('id') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -253,6 +288,49 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://www.googleapis.com/youtube/v3/
+    error_handler:
+      type: CompositeErrorHandler
+      error_handlers:
+        - type: DefaultErrorHandler
+          backoff_strategies:
+            - type: WaitTimeFromHeader
+              header: Retry-After
+            - type: ExponentialBackoffStrategy
+              factor: 5
+          response_filters:
+            - type: HttpResponseFilter
+              action: IGNORE
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['commentsDisabled', 'videoNotFound'] }}"
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              http_codes:
+                - 401
+              error_message: >-
+                Authentication failed. Re-authenticate with Google OAuth from
+                the source settings, or provide a valid API key.
+            - type: HttpResponseFilter
+              action: FAIL
+              failure_type: config_error
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['keyInvalid', 'accessNotConfigured', 'channelNotFound'] or response.get('error', {}).get('details', [{}])[0].get('reason') in ['API_KEY_INVALID', 'SERVICE_DISABLED', 'ACCESS_TOKEN_SCOPE_INSUFFICIENT'] }}"
+              error_message: >-
+                The YouTube API rejected the request: {{ response.get('error',
+                {}).get('message', 'unknown error') }} Check that the API key
+                is valid, the YouTube Data API v3 is enabled in your Google
+                Cloud project, and the configured Channel IDs exist.
+            - type: HttpResponseFilter
+              action: RETRY
+              failure_type: transient_error
+              predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['quotaExceeded', 'dailyLimitExceeded', 'rateLimitExceeded', 'userRateLimitExceeded'] or response.get('error', {}).get('details', [{}])[0].get('reason') in ['RATE_LIMIT_EXCEEDED', 'QUOTA_EXCEEDED'] }}"
+            - type: HttpResponseFilter
+              action: RETRY
+              failure_type: transient_error
+              http_codes:
+                - 429
+                - 500
+                - 502
+                - 503
+                - 504
     authenticator:
       type: SelectiveAuthenticator
       authenticator_selection_path: ["credentials", "auth_method"]
@@ -279,22 +357,12 @@ spec:
       credentials:
         type: object
         title: Authentication method
-        description: Authentication method
+        description: >-
+          Choose how to authenticate to the YouTube Data API: Google OAuth 2.0
+          (recommended, refreshes tokens automatically) or an API key created
+          in the Google Cloud console with the YouTube Data API v3 enabled.
         order: 0
         oneOf:
-          - type: object
-            title: API Key
-            required:
-              - api_key
-            properties:
-              auth_method:
-                type: string
-                const: api_key
-              api_key:
-                type: string
-                order: 0
-                title: API Key
-                airbyte_secret: true
           - type: object
             title: Google OAuth 2.0
             required:
@@ -312,20 +380,54 @@ spec:
                 type: string
                 order: 0
                 title: Client ID
+                description: >-
+                  The Client ID of your Google Cloud OAuth 2.0 application,
+                  from APIs & Services > Credentials in the Google Cloud
+                  console.
                 airbyte_secret: true
               client_secret:
                 type: string
                 order: 1
                 title: Client Secret
+                description: >-
+                  The Client Secret of your Google Cloud OAuth 2.0 application.
                 airbyte_secret: true
               refresh_token:
                 type: string
                 order: 2
                 title: Refresh Token
+                description: >-
+                  A Google OAuth refresh token granted for the YouTube Data API
+                  scope. The connector uses it to obtain access tokens
+                  automatically; on Airbyte Cloud it is filled in by the OAuth
+                  consent flow.
+                airbyte_secret: true
+          - type: object
+            title: API Key
+            required:
+              - api_key
+            properties:
+              auth_method:
+                type: string
+                const: api_key
+              api_key:
+                type: string
+                order: 0
+                title: API Key
+                description: >-
+                  A Google Cloud API key with the YouTube Data API v3 enabled.
+                  Create one in the Google Cloud console under APIs & Services
+                  > Credentials.
                 airbyte_secret: true
       channel_ids:
         type: array
         title: Channel IDs
+        description: >-
+          The YouTube channel IDs to replicate data for. A channel ID is the
+          24-character identifier starting with "UC" found in the channel URL
+          (youtube.com/channel/<ID>). For channels with a handle-based URL,
+          find the ID under YouTube Studio > Settings > Channel > Advanced
+          settings ("Channel ID").
         order: 1
     additionalProperties: true
   advanced_auth:
@@ -394,6 +496,33 @@ spec:
                 value: "api_key"
             condition: "{{ config.get('api_key', False) }}"
 
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: 2
+  max_concurrency: 10
+
+# The YouTube Data API v3 has a default quota of 10,000 units per day.
+# search.list costs 100 units per call; the other list endpoints cost 1 unit.
+# Hourly windows keep the worst-case wait for a free slot (one hour) under the
+# 5400-second heartbeat while capping a full day at roughly 9,400 units.
+api_budget:
+  type: HTTPAPIBudget
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 3
+          interval: PT1H
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: /search
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 90
+          interval: PT1H
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: /(channels|videos|commentThreads)
+
 metadata:
   autoImportSchema:
     video: true
@@ -450,6 +579,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       videoId:
         type: string
       kind:
@@ -468,6 +598,7 @@ schemas:
         type:
           - string
           - "null"
+        format: date-time
       channelId:
         type:
           - string
@@ -739,6 +870,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           license:
             type:
               - string
@@ -836,6 +968,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
           defaultLanguage:
             type:
               - string
@@ -1035,6 +1168,7 @@ schemas:
             type:
               - string
               - "null"
+            format: date-time
       localizations:
         type:
           - object
@@ -1052,6 +1186,10 @@ schemas:
           - boolean
           - "null"
       channelId:
+        type:
+          - string
+          - "null"
+      id:
         type:
           - string
           - "null"
@@ -1118,6 +1256,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               textDisplay:
                 type:
                   - string
@@ -1130,6 +1269,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               videoId:
                 type:
                   - string
@@ -1172,6 +1312,10 @@ schemas:
         type:
           - string
           - "null"
+      id:
+        type:
+          - string
+          - "null"
       isPublic:
         type:
           - boolean
@@ -1235,6 +1379,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               textDisplay:
                 type:
                   - string
@@ -1247,6 +1392,7 @@ schemas:
                 type:
                   - string
                   - "null"
+                format: date-time
               videoId:
                 type:
                   - string
