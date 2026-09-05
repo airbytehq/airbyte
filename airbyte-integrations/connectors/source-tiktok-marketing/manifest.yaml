@@ -713,6 +713,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -795,6 +797,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -854,6 +858,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -911,6 +917,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -966,6 +974,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1039,6 +1049,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1090,6 +1102,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -1144,6 +1158,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1198,6 +1214,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1247,6 +1265,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -1299,6 +1319,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1350,6 +1372,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["campaign_id"]
@@ -1399,6 +1423,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["adgroup_id"]
@@ -1451,6 +1477,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1528,6 +1556,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_day"]
             value: "{{ record.dimensions.stat_time_day }}"
           - path: ["ad_id"]
@@ -1622,6 +1652,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["ad_id"]
@@ -1704,6 +1736,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["ad_id"]
@@ -1758,6 +1792,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["campaign_id"]
@@ -1814,6 +1850,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["adgroup_id"]
@@ -1871,6 +1909,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["stat_time_hour"]
             value: "{{ record.dimensions.stat_time_hour }}"
           - path: ["adgroup_id"]
@@ -1957,6 +1997,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["ad_id"]
             value: "{{ record.dimensions.ad_id }}"
       - type: CustomTransformation
@@ -1994,6 +2036,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["campaign_id"]
             value: "{{ record.dimensions.campaign_id }}"
       - type: CustomTransformation
@@ -2039,6 +2083,8 @@ definitions:
     transformations:
       - type: AddFields
         fields:
+          - path: ["advertiser_id"]
+            value: "{{ stream_partition.advertiser_id }}"
           - path: ["adgroup_id"]
             value: "{{ record.dimensions.adgroup_id }}"
       - type: CustomTransformation
