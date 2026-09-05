@@ -22,6 +22,7 @@ import io.airbyte.cdk.read.JdbcPartition
 import io.airbyte.cdk.read.JdbcPartitionFactory
 import io.airbyte.cdk.read.JdbcPartitionsCreator
 import io.airbyte.cdk.read.JdbcPartitionsCreatorFactory
+import io.airbyte.cdk.read.JdbcResumablePartitionReader
 import io.airbyte.cdk.read.JdbcSharedState
 import io.airbyte.cdk.read.JdbcSplittablePartition
 import io.airbyte.cdk.read.JdbcStreamState
@@ -486,8 +487,7 @@ class MySqlJdbcConcurrentPartitionsCreator<
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be sampled."
             }
-            // TODO: adaptive fetchSize computation?
-            return listOf(JdbcNonResumablePartitionReader(partition))
+            return listOf(singlePartitionReader())
         }
         // Sample the table for partition split boundaries and for record byte sizes.
         val sample: Sample<Pair<OpaqueStateValue?, Long>> =
@@ -508,21 +508,21 @@ class MySqlJdbcConcurrentPartitionsCreator<
             log.warn {
                 "Table cannot be read by concurrent partition readers because it cannot be split."
             }
-            return listOf(JdbcNonResumablePartitionReader(partition))
+            return listOf(singlePartitionReader())
         }
         val tableByteSizeEstimate: Long =
             findTableSizeEstimate(stream, partitionFactory.sharedState)
 
         if (tableByteSizeEstimate == 0L) {
             log.info { "Unable to get table estimate size" }
-            return listOf(JdbcNonResumablePartitionReader(partition))
+            return listOf(singlePartitionReader())
         }
 
         log.info { "Table memory size estimated at ${tableByteSizeEstimate shr 20} MiB." }
         log.info { "Target partition size is ${sharedState.targetPartitionByteSize shr 20} MiB." }
         val secondarySamplingRate: Double =
             if (tableByteSizeEstimate <= sharedState.targetPartitionByteSize) {
-                return listOf(JdbcNonResumablePartitionReader(partition))
+                return listOf(singlePartitionReader())
             } else {
                 val expectedPartitionByteSize: Long =
                     tableByteSizeEstimate / sharedState.maxSampleSize
@@ -544,12 +544,21 @@ class MySqlJdbcConcurrentPartitionsCreator<
         // lead to division by zero the in the split() function. Fall back to single partition.
         if (splitBoundaries.isEmpty()) {
             log.warn { "No split boundaries found, using single partition" }
-            return listOf(JdbcNonResumablePartitionReader(partition))
+            return listOf(singlePartitionReader())
         }
 
         val partitions: List<JdbcPartition<*>> = partitionFactory.split(partition, splitBoundaries)
         log.info { "Table will be read by ${partitions.size} concurrent partition reader(s)." }
         return partitions.map { JdbcNonResumablePartitionReader(it) }
+    }
+
+    private fun singlePartitionReader(): PartitionReader {
+        val singlePartition = partition
+        return if (singlePartition is JdbcSplittablePartition<*>) {
+            JdbcResumablePartitionReader(singlePartition)
+        } else {
+            JdbcNonResumablePartitionReader(singlePartition)
+        }
     }
 
     private fun findTableSizeEstimate(stream: Stream, sharedState: JdbcSharedState): Long {
