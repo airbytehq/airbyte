@@ -8,7 +8,15 @@ ARG BASE_IMAGE
 
 # Base image - using Amazon Corretto (Amazon's distribution of OpenJDK)
 FROM ${BASE_IMAGE}
+ARG BASE_IMAGE
 ARG CONNECTOR_NAME
+
+# Fail the build here instead of at container start, where Docker only reports
+# `unable to find user airbyte` without naming the base image.
+RUN if ! id -u airbyte >/dev/null 2>&1; then \
+        echo "ERROR: base image ${BASE_IMAGE} does not contain the airbyte user. Bump connectorBuildOptions.baseImage in the connector's metadata.yaml." >&2; \
+        exit 1; \
+    fi
 
 # Set permissions for downloaded files
 RUN chmod +x /airbyte/base.sh /airbyte/javabase.sh && \
