@@ -91,6 +91,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                        |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 0.3.24 | 2026-09-01 | [78853](https://github.com/airbytehq/airbyte/pull/78853) | Update dependencies |
 | 0.3.23 | 2026-08-27 | [85169](https://github.com/airbytehq/airbyte/pull/85169) | Remove legacy main.py from poetry package includes to fix Docker image build |
 | 0.3.22 | 2026-08-26 | [85086](https://github.com/airbytehq/airbyte/pull/85086) | Support multiline input for private key |
 | 0.3.21 | 2025-02-24 | [54167](https://github.com/airbytehq/airbyte/pull/54167) | Remove stream_state interpolation |
@@ -142,7 +143,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.4 | 2021-11-02 | [7584](https://github.com/airbytehq/airbyte/pull/7584) | Fix incremental params for log stream |
 | 0.1.3 | 2021-09-08 | [5905](https://github.com/airbytehq/airbyte/pull/5905) | Fix incremental stream defect |
 | 0.1.2 | 2021-07-01 | [4456](https://github.com/airbytehq/airbyte/pull/4456) | Fix infinite pagination in logs stream |
-| 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support                   |
-| 0.1.0   | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563)   | Initial Release                                                                |
+| 0.1.1 | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973) | Add `AIRBYTE_ENTRYPOINT` env variable for kubernetes support |
+| 0.1.0 | 2021-05-30 | [3563](https://github.com/airbytehq/airbyte/pull/3563) | Initial Release |
 
 </details>
