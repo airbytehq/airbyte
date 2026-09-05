@@ -656,6 +656,11 @@ class TestIncremental:
                     "dataStartTime": "2023-01-15T00:00:00Z",
                     "dataEndTime": "2023-01-15T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {
+                        "distributorView": "MANUFACTURING",
+                        "sellingProgram": "RETAIL",
+                        "reportPeriod": "DAY",
+                    },
                 },
                 "GET_VENDOR_SALES_REPORT",
                 id="vendor_sales_date_only",
@@ -742,6 +747,11 @@ class TestIncremental:
                     "dataStartTime": "2023-01-29T00:00:00Z",
                     "dataEndTime": "2023-01-29T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {
+                        "distributorView": "MANUFACTURING",
+                        "sellingProgram": "RETAIL",
+                        "reportPeriod": "DAY",
+                    },
                 },
                 "GET_VENDOR_SALES_REPORT",
                 "Vendor",
@@ -1367,6 +1377,128 @@ class TestSalesAndTrafficReportRequestBody:
 
 
 @freezegun.freeze_time(NOW.isoformat())
+class TestVendorReportRequestBody:
+    """Tests that vendor retail analytics reports send Amazon-required reportOptions."""
+
+    data_format = "json"
+
+    @staticmethod
+    def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
+        return read_output(
+            config_builder=config_.with_account_type("Vendor"),
+            stream_name=stream_name,
+            sync_mode=SyncMode.full_refresh,
+        )
+
+    def _mock_report_flow(self, http_mocker: HttpMocker, stream_name: str, body: dict) -> None:
+        http_mocker.clear_all_matchers()
+        http_mocker.get(_get_reports_request().build(), _get_reports_response())
+        mock_auth(http_mocker)
+        http_mocker.post(
+            _create_report_request(stream_name).with_body(json.dumps(body)).build(),
+            _create_report_response(_REPORT_ID),
+        )
+        http_mocker.get(
+            _check_report_status_request(_REPORT_ID).build(),
+            _check_report_status_response(stream_name, report_document_id=_REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _get_document_download_url_request(_REPORT_DOCUMENT_ID).build(),
+            _get_document_download_url_response(_DOCUMENT_DOWNLOAD_URL, _REPORT_DOCUMENT_ID),
+        )
+        http_mocker.get(
+            _download_document_request(_DOCUMENT_DOWNLOAD_URL).build(),
+            _download_document_response(stream_name, data_format=self.data_format),
+        )
+
+    @HttpMocker()
+    def test_sales_report_default_config_sends_required_report_options(self, http_mocker: HttpMocker) -> None:
+        stream_name = "GET_VENDOR_SALES_REPORT"
+        body = {
+            "reportType": stream_name,
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-01T23:59:59Z",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "reportOptions": {
+                "distributorView": "MANUFACTURING",
+                "sellingProgram": "RETAIL",
+                "reportPeriod": "DAY",
+            },
+        }
+        self._mock_report_flow(http_mocker, stream_name, body)
+
+        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_sales_report_configured_options_override_defaults_except_report_period(self, http_mocker: HttpMocker) -> None:
+        stream_name = "GET_VENDOR_SALES_REPORT"
+        body = {
+            "reportType": stream_name,
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-01T23:59:59Z",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "reportOptions": {
+                "distributorView": "SOURCING",
+                "sellingProgram": "RETAIL",
+                "reportPeriod": "DAY",
+            },
+        }
+        self._mock_report_flow(http_mocker, stream_name, body)
+
+        report_options = [
+            {
+                "report_name": stream_name,
+                "stream_name": stream_name,
+                "options_list": [
+                    {"option_name": "distributorView", "option_value": "SOURCING"},
+                    {"option_name": "reportPeriod", "option_value": "WEEK"},
+                ],
+            }
+        ]
+        output = self._read(
+            stream_name,
+            config().with_report_options_list(report_options).with_end_date(pendulum.datetime(2023, 1, 2)),
+        )
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @pytest.mark.parametrize(
+        "stream_name",
+        ("GET_VENDOR_TRAFFIC_REPORT", "GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT"),
+    )
+    @HttpMocker()
+    def test_daily_vendor_reports_default_config_send_report_period(self, stream_name: str, http_mocker: HttpMocker) -> None:
+        body = {
+            "reportType": stream_name,
+            "dataStartTime": "2023-01-01T00:00:00Z",
+            "dataEndTime": "2023-01-01T23:59:59Z",
+            "marketplaceIds": [MARKETPLACE_ID],
+            "reportOptions": {"reportPeriod": "DAY"},
+        }
+        self._mock_report_flow(http_mocker, stream_name, body)
+
+        output = self._read(stream_name, config().with_end_date(pendulum.datetime(2023, 1, 2)))
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+    @HttpMocker()
+    def test_inventory_report_default_config_sends_required_report_options_without_window(self, http_mocker: HttpMocker) -> None:
+        stream_name = "GET_VENDOR_INVENTORY_REPORT"
+        body = {
+            "reportType": stream_name,
+            "marketplaceIds": [MARKETPLACE_ID],
+            "reportOptions": {
+                "distributorView": "MANUFACTURING",
+                "sellingProgram": "RETAIL",
+                "reportPeriod": "DAY",
+            },
+        }
+        self._mock_report_flow(http_mocker, stream_name, body)
+
+        output = self._read(stream_name, config())
+        assert len(output.records) == DEFAULT_EXPECTED_NUMBER_OF_RECORDS
+
+
+@freezegun.freeze_time(NOW.isoformat())
 class TestVendorJsonReportsFullRefresh:
     """Tests for vendor JSON report streams: Traffic, Net Pure Product Margin, and Real-Time Inventory."""
 
@@ -1391,6 +1523,7 @@ class TestVendorJsonReportsFullRefresh:
                     "dataStartTime": "2023-01-01T00:00:00Z",
                     "dataEndTime": "2023-01-01T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_traffic_report",
             ),
@@ -1401,6 +1534,7 @@ class TestVendorJsonReportsFullRefresh:
                     "dataStartTime": "2023-01-01T00:00:00Z",
                     "dataEndTime": "2023-01-01T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_net_pure_product_margin_report",
             ),
@@ -1455,6 +1589,7 @@ class TestVendorJsonReportsFullRefresh:
                     "dataStartTime": "2023-01-01T00:00:00Z",
                     "dataEndTime": "2023-01-01T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_traffic_report",
             ),
@@ -1465,6 +1600,7 @@ class TestVendorJsonReportsFullRefresh:
                     "dataStartTime": "2023-01-01T00:00:00Z",
                     "dataEndTime": "2023-01-01T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_net_pure_product_margin_report",
             ),
@@ -1528,6 +1664,7 @@ class TestVendorJsonReportsIncremental:
                     "dataStartTime": "2023-01-29T00:00:00Z",
                     "dataEndTime": "2023-01-29T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_traffic_report",
             ),
@@ -1539,6 +1676,7 @@ class TestVendorJsonReportsIncremental:
                     "dataStartTime": "2023-01-29T00:00:00Z",
                     "dataEndTime": "2023-01-29T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_net_pure_product_margin_report",
             ),
@@ -1596,6 +1734,7 @@ class TestVendorJsonReportsIncremental:
                     "dataStartTime": "2023-01-29T00:00:00Z",
                     "dataEndTime": "2023-01-29T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_traffic_report",
             ),
@@ -1607,6 +1746,7 @@ class TestVendorJsonReportsIncremental:
                     "dataStartTime": "2023-01-29T00:00:00Z",
                     "dataEndTime": "2023-01-29T23:59:59Z",
                     "marketplaceIds": [MARKETPLACE_ID],
+                    "reportOptions": {"reportPeriod": "DAY"},
                 },
                 id="vendor_net_pure_product_margin_report",
             ),
