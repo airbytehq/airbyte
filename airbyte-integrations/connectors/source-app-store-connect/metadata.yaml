@@ -1,0 +1,50 @@
+data:
+  allowedHosts:
+    hosts:
+      - api.appstoreconnect.apple.com
+      - "*.apple.com"
+  connectorSubtype: api
+  connectorType: source
+  definitionId: bd1aa651-876c-4ec3-9473-bb8f68c16a45
+  dockerImageTag: 0.1.0
+  dockerRepository: airbyte/source-app-store-connect
+  githubIssueLabel: source-app-store-connect
+  icon: icon.svg
+  license: ELv2
+  name: App Store Connect
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-app-store-connect
+  registryOverrides:
+    cloud:
+      enabled: true
+    oss:
+      enabled: true
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/app-store-connect
+  tags:
+    - cdk:low-code
+    - language:manifest-only
+  ab_internal:
+    sl: 100
+    ql: 100
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-APP-STORE-CONNECT__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.2@sha256:f30cf2745046c06dd1e903742d835d13faea085354690679d06cab083d5a63c7
+  externalDocumentationUrls:
+    - title: API reference
+      url: https://developer.apple.com/documentation/appstoreconnectapi
+      type: api_reference
+    - title: Authentication
+      url: https://developer.apple.com/documentation/appstoreconnectapi/generating-tokens-for-api-requests
+      type: authentication_guide
+metadataSpecVersion: "1.0"
