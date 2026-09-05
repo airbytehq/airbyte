@@ -115,6 +115,20 @@ jobs:
             rel_path="${file#$base_dir/}"
             module_path="${rel_path%.md}"
             module_title=$(echo "$module_path" | tr '/' '.')
+            case "$module_title" in
+              airbyte_agent_sdk.index)
+                module_title="airbyte_agent_sdk"
+                ;;
+              airbyte_agent_sdk.connectors.index)
+                module_title="connectors"
+                ;;
+              airbyte_agent_sdk.connectors.*)
+                module_title="${module_title#airbyte_agent_sdk.connectors.}"
+                ;;
+              airbyte_agent_sdk.*)
+                module_title="${module_title#airbyte_agent_sdk.}"
+                ;;
+            esac
             unique_id=$(echo "$module_path" | tr '/' '-')
             {
               echo "---"
@@ -277,36 +291,139 @@ jobs:
               out = re.sub(r'<(?![a-zA-Z/])', '&lt;', out)
               return out
 
+          EXAMPLE_LABEL = re.compile(
+              r'^(?:(?:examples?|usage)(?:\s+usage)?|.*\b(?:for example|equivalent to))\s*:$',
+              re.IGNORECASE,
+          )
+
+          def indentation(line):
+              return len(line) - len(line.lstrip(' '))
+
+          def is_fence(line):
+              return line.strip().startswith(('```', '~~~'))
+
+          def consume_indented_block(lines, start, threshold):
+              """Return one conservative pdoc example block and its end index."""
+              block = []
+              index = start
+              while index < len(lines):
+                  line = lines[index]
+                  if line.strip() and indentation(line) < threshold:
+                      break
+                  block.append(line)
+                  index += 1
+
+              nonblank_indents = [
+                  indentation(line) for line in block if line.strip()
+              ]
+              if not nonblank_indents:
+                  return None, start
+
+              common_indent = min(nonblank_indents)
+              first_content = next(
+                  line.strip() for line in block if line.strip()
+              )
+              if re.match(r'(?:[-*+]|\d+\.)\s+', first_content):
+                  return None, start
+              body = [
+                  '' if not line.strip() else line[common_indent:]
+                  for line in block
+              ]
+              body = [
+                  line.replace('&lt;', '<').replace('&gt;', '>').replace('&amp;', '&')
+                  for line in body
+              ]
+              while body and not body[-1]:
+                  body.pop()
+              return ['```python', *body, '```'], index
+
           def sanitize_for_mdx(content):
-              """Sanitize content for MDX compatibility, preserving code blocks and frontmatter."""
+              """Sanitize generated pdoc Markdown for MDX compatibility."""
               lines = content.split('\n')
               result = []
               in_code_block = False
               in_frontmatter = False
               frontmatter_count = 0
+              pending_example_label_indent = None
+              body_h1_seen = False
+              index = 0
 
-              for line in lines:
-                  if line.strip() == '---':
+              while index < len(lines):
+                  line = lines[index]
+                  stripped = line.strip()
+                  line_indent = indentation(line)
+
+                  if stripped == '---':
                       frontmatter_count += 1
                       if frontmatter_count == 1:
                           in_frontmatter = True
                       elif frontmatter_count == 2:
                           in_frontmatter = False
                       result.append(line)
+                      index += 1
                       continue
 
                   if in_frontmatter:
                       result.append(line)
+                      index += 1
                       continue
 
-                  if line.strip().startswith('```') or line.strip().startswith('~~~'):
+                  if is_fence(line):
                       in_code_block = not in_code_block
+                      pending_example_label_indent = None
                       result.append(line)
+                      index += 1
                       continue
 
                   if in_code_block:
                       result.append(line)
+                      index += 1
                       continue
+
+                  if (
+                      result
+                      and result[-1].strip()
+                      and re.fullmatch(r'=+', stripped)
+                  ):
+                      body_h1_seen = True
+
+                  if line.startswith('# '):
+                      if body_h1_seen:
+                          result.append(f'### {line[2:]}')
+                      else:
+                          body_h1_seen = True
+                          result.append(line)
+                      index += 1
+                      continue
+
+                  if pending_example_label_indent is not None:
+                      if not stripped:
+                          result.append(line)
+                          index += 1
+                          continue
+                      if (
+                          line_indent > pending_example_label_indent
+                          and line_indent >= 4
+                      ):
+                          block, end = consume_indented_block(
+                              lines, index, pending_example_label_indent + 1,
+                          )
+                          if block:
+                              result.extend(block)
+                              index = end
+                              pending_example_label_indent = None
+                              continue
+                      pending_example_label_indent = None
+
+                  if line_indent >= 4 and stripped.startswith('>>>'):
+                      block, end = consume_indented_block(lines, index, 4)
+                      if block:
+                          result.extend(block)
+                          index = end
+                          continue
+
+                  if EXAMPLE_LABEL.match(stripped):
+                      pending_example_label_indent = line_indent
 
                   parts = re.split(r'(`[^`]+`)', line)
                   escaped_parts = []
@@ -319,10 +436,12 @@ jobs:
                           part = escape_angle_brackets(part)
                           escaped_parts.append(part)
                   result.append(''.join(escaped_parts))
+                  index += 1
 
               return '\n'.join(result)
 
           base_dir = 'docs/ai-agents/reference/sdk'
+          touched_files = 0
           for root, dirs, files in os.walk(base_dir):
               for filename in files:
                   if filename.endswith('.md') and filename.lower() != 'readme.md':
@@ -330,11 +449,16 @@ jobs:
                       with open(filepath, 'r', encoding='utf-8') as f:
                           content = f.read()
                       sanitized_content = sanitize_for_mdx(content)
-                      with open(filepath, 'w', encoding='utf-8') as f:
-                          f.write(sanitized_content)
-                      print(f"Processed: {filepath}")
+                      if sanitized_content != content:
+                          with open(filepath, 'w', encoding='utf-8') as f:
+                              f.write(sanitized_content)
+                          touched_files += 1
+                          print(f"Processed: {filepath}")
 
-          print("Sanitized all generated markdown files for MDX compatibility")
+          print(
+              f"Sanitized generated markdown files for MDX compatibility; "
+              f"fenced examples in {touched_files} files"
+          )
           EOF
 
       - name: Cleanup sonar Source
