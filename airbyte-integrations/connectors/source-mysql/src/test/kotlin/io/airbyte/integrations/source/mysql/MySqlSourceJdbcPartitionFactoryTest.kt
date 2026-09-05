@@ -97,6 +97,35 @@ class MySqlSourceJdbcPartitionFactoryTest {
                 configuredCursor = binaryFieldId,
             )
 
+        val compositeIdField = EmittedField("id", IntFieldType)
+        val compositeSubField = EmittedField("sub", IntFieldType)
+
+        // CDC stream with a composite primary key (id, sub).
+        val compositePkStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("test").withName("composite")
+                    ),
+                schema = setOf(compositeIdField, compositeSubField),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(compositeIdField, compositeSubField),
+                configuredCursor = null,
+            )
+
+        // Cursor-based stream with a composite primary key (id, sub) and cursor `sub`.
+        val compositePkCursorStream =
+            Stream(
+                id =
+                    StreamIdentifier.from(
+                        StreamDescriptor().withNamespace("test").withName("composite_cursor")
+                    ),
+                schema = setOf(compositeIdField, compositeSubField),
+                configuredSyncMode = ConfiguredSyncMode.INCREMENTAL,
+                configuredPrimaryKey = listOf(compositeIdField, compositeSubField),
+                configuredCursor = compositeSubField,
+            )
+
         val datetimeFieldId = EmittedField("id4", LocalDateTimeFieldType)
 
         val datetimeStream =
@@ -484,6 +513,139 @@ class MySqlSourceJdbcPartitionFactoryTest {
             )
 
         assertEquals(1, result.size)
+    }
+
+    // Concurrent snapshot partitions bound only the FIRST primary key column, so the lower bound
+    // is a strict prefix of the checkpoint columns for composite keys. The first partition must
+    // still include its lower bound, otherwise every row sharing the minimum first-column value
+    // is silently skipped.
+    @Test
+    fun testCdcSplitPartitionCompositePkFirstPartitionIncludesLowerBound() {
+        val partition =
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                selectQueryGenerator,
+                mysqlCdcJdbcPartitionFactory.streamState(streamFeedBootstrap(compositePkStream)),
+                primaryKey = listOf(compositeIdField, compositeSubField),
+                lowerBound = listOf(Jsons.numberNode(1)),
+                upperBound = listOf(Jsons.numberNode(10)),
+                isLowerBoundIncluded = true,
+            )
+        assertEquals(
+            "SELECT `id`, `sub` FROM `test`.`composite` WHERE (`id` >= ?) AND (`id` <= ?)",
+            partition.nonResumableQuery.sql,
+        )
+    }
+
+    @Test
+    fun testCdcSplitPartitionCompositePkLaterPartitionExcludesLowerBound() {
+        val partition =
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                selectQueryGenerator,
+                mysqlCdcJdbcPartitionFactory.streamState(streamFeedBootstrap(compositePkStream)),
+                primaryKey = listOf(compositeIdField, compositeSubField),
+                lowerBound = listOf(Jsons.numberNode(10)),
+                upperBound = listOf(Jsons.numberNode(20)),
+                isLowerBoundIncluded = false,
+            )
+        assertEquals(
+            "SELECT `id`, `sub` FROM `test`.`composite` WHERE (`id` > ?) AND (`id` <= ?)",
+            partition.nonResumableQuery.sql,
+        )
+    }
+
+    @Test
+    fun testCdcSplitPartitionCompositePkLastPartitionHasNoUpperBound() {
+        val partition =
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                selectQueryGenerator,
+                mysqlCdcJdbcPartitionFactory.streamState(streamFeedBootstrap(compositePkStream)),
+                primaryKey = listOf(compositeIdField, compositeSubField),
+                lowerBound = listOf(Jsons.numberNode(1)),
+                upperBound = null,
+                isLowerBoundIncluded = true,
+            )
+        assertEquals(
+            "SELECT `id`, `sub` FROM `test`.`composite` WHERE `id` >= ?",
+            partition.nonResumableQuery.sql,
+        )
+    }
+
+    // Single-column primary keys were already correct; make sure they stay that way.
+    @Test
+    fun testCdcSplitPartitionSingleColumnPkFirstPartitionIncludesLowerBound() {
+        val partition =
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                selectQueryGenerator,
+                mysqlCdcJdbcPartitionFactory.streamState(streamFeedBootstrap(stream)),
+                primaryKey = listOf(fieldId),
+                lowerBound = listOf(Jsons.numberNode(1)),
+                upperBound = listOf(Jsons.numberNode(10)),
+                isLowerBoundIncluded = true,
+            )
+        assertEquals(
+            "SELECT `id` FROM `test`.`stream1` WHERE (`id` >= ?) AND (`id` <= ?)",
+            partition.nonResumableQuery.sql,
+        )
+    }
+
+    // The cursor-based (non-CDC) initial snapshot uses the same split machinery.
+    @Test
+    fun testCursorBasedSplitPartitionCompositePkFirstPartitionIncludesLowerBound() {
+        val partition =
+            MySqlSourceJdbcSplittableSnapshotWithCursorPartition(
+                selectQueryGenerator,
+                mySqlSourceJdbcPartitionFactory.streamState(
+                    streamFeedBootstrap(compositePkCursorStream)
+                ),
+                primaryKey = listOf(compositeIdField, compositeSubField),
+                lowerBound = listOf(Jsons.numberNode(1)),
+                upperBound = listOf(Jsons.numberNode(10)),
+                cursor = compositeSubField,
+                cursorUpperBound = Jsons.numberNode(100),
+                isLowerBoundIncluded = true,
+            )
+        assertEquals(
+            "SELECT `id`, `sub` FROM `test`.`composite_cursor` WHERE (`id` >= ?) AND (`id` <= ?)",
+            partition.nonResumableQuery.sql,
+        )
+    }
+
+    // When the lower bound covers every checkpoint column (resuming from a checkpoint), the
+    // inclusive comparison applies to the LAST column only, as before.
+    @Test
+    fun testFullCompositeLowerBoundIsInclusiveOnLastColumnOnly() {
+        val partition =
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                selectQueryGenerator,
+                mysqlCdcJdbcPartitionFactory.streamState(streamFeedBootstrap(compositePkStream)),
+                primaryKey = listOf(compositeIdField, compositeSubField),
+                lowerBound = listOf(Jsons.numberNode(1), Jsons.numberNode(5)),
+                upperBound = null,
+                isLowerBoundIncluded = true,
+            )
+        assertEquals(
+            "SELECT `id`, `sub` FROM `test`.`composite` " +
+                "WHERE (`id` > ?) OR ((`id` = ?) AND (`sub` >= ?))",
+            partition.nonResumableQuery.sql,
+        )
+    }
+
+    @Test
+    fun testFullCompositeLowerBoundExclusiveWhenNotIncluded() {
+        val partition =
+            MySqlSourceJdbcSplittableCdcRfrSnapshotPartition(
+                selectQueryGenerator,
+                mysqlCdcJdbcPartitionFactory.streamState(streamFeedBootstrap(compositePkStream)),
+                primaryKey = listOf(compositeIdField, compositeSubField),
+                lowerBound = listOf(Jsons.numberNode(1), Jsons.numberNode(5)),
+                upperBound = null,
+                isLowerBoundIncluded = false,
+            )
+        assertEquals(
+            "SELECT `id`, `sub` FROM `test`.`composite` " +
+                "WHERE (`id` > ?) OR ((`id` = ?) AND (`sub` > ?))",
+            partition.nonResumableQuery.sql,
+        )
     }
 
     // Simulates a table where both lower and upper bound are GUIDs
