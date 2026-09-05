@@ -2635,7 +2635,9 @@ definitions:
           $ref: "#/schemas/dynamic_content_variations"
   base_requester:
     type: HttpRequester
-    url_base: https://pi.pardot.com/api/
+    url_base: >-
+      https://{{ config.get('pardot_api_host') or ('pi.demo.pardot.com' if
+      config.get('is_sandbox') else 'pi.pardot.com') }}/api/
     authenticator:
       type: SessionTokenAuthenticator
       login_requester:
@@ -2759,11 +2761,26 @@ spec:
       is_sandbox:
         type: boolean
         description: >-
-          Whether or not the the app is in a Salesforce sandbox. If you do not
-          know what this, assume it is false.
+          Whether the Salesforce login host is a sandbox (`test.salesforce.com`).
+          Salesforce sandboxes also use Account Engagement host `pi.demo.pardot.com`
+          unless `pardot_api_host` is set. Developer Edition orgs use
+          `login.salesforce.com` (leave this false) but still need
+          `pardot_api_host: pi.demo.pardot.com`.
         order: 6
         title: Is Sandbox App?
         default: false
+      pardot_api_host:
+        type: string
+        description: >-
+          Account Engagement (Pardot) API hostname. Production is `pi.pardot.com`.
+          Sandbox and Developer Edition business units use `pi.demo.pardot.com`.
+          When omitted, sandbox connections default to `pi.demo.pardot.com` and
+          others to `pi.pardot.com`.
+        order: 7
+        title: Pardot API Host
+        examples:
+          - pi.pardot.com
+          - pi.demo.pardot.com
     additionalProperties: true
 
 metadata:
