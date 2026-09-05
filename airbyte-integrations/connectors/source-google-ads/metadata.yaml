@@ -24,6 +24,9 @@ data:
     - title: Developer blog
       url: https://ads-developers.googleblog.com/
       type: api_release_history
+    - title: Feature deprecations and unversioned changes
+      url: https://developers.google.com/google-ads/api/docs/deprecations
+      type: api_deprecations
   githubIssueLabel: source-google-ads
   icon: google-adwords.svg
   license: Elv2
