@@ -54,7 +54,7 @@ Whether the connector is a data connector or a file connector, a semantic search
 | `semantic.field` | `string` | Yes | The indexed field to search, as listed on the connector's reference page. |
 | `semantic.prompt` | `string` | Yes | The natural-language query. Airbyte embeds it and compares it against the field's stored passages. |
 | `semantic.filter` | `object` | No | A filter applied alongside the similarity match, using the same operators and dot notation as `query.filter`. |
-| `semantic.min_similarity` | `number` | No | Minimum similarity score a hit must reach, from -1.0 to 1.0. Set it to -1.0 to return every hit regardless of score. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score a hit must reach, from -1.0 to 1.0. Defaults to 0.25. Set it to -1.0 to return every hit regardless of score. |
 | `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, centered on the match and capped at the field's configured window. Omit it to return the full window. |
 | `semantic.dedup` | `string` | No | `max` (the default) returns the single best-scoring passage per source record or file. `none` returns multiple passages from the same source, still ranked by similarity and capped by `limit`. |
 | `fields` | `array` | No | Field paths to include in each hit's `entity`, using dot notation for nested fields. |
@@ -331,7 +331,7 @@ Use workspace-wide semantic search for discovery when you don't know which conne
 POST https://api.airbyte.ai/api/v1/integrations/connectors/search
 ```
 
-This endpoint requires an application (operator) bearer token. Workspace-scoped tokens are rejected with `401`.
+This endpoint requires an [application token](../interfaces/api/authentication). Scoped tokens are rejected with `401`.
 
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
