@@ -350,6 +350,16 @@ const config: Config = {
   ],
 
   themeConfig: {
+    // Default social card for og:image/twitter:image on every page. Per-page
+    // front matter `image` still takes precedence.
+    image: "img/airbyte-docs-social-card.png",
+    metadata: [
+      // Docs pages override this with "article" in src/theme/DocItem/Metadata.
+      { property: "og:type", content: "website" },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Airbyte Documentation" },
+    ],
     colorMode: {
       disableSwitch: false,
     },
