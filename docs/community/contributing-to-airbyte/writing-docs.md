@@ -175,7 +175,7 @@ The documentation pipeline involves three repositories and two GitHub Apps:
 
 2. **Generated repository (airbyte-agent-sdk)**: The [airbyte-agent-sdk](https://github.com/airbytehq/airbyte-agent-sdk) repository receives the SDK source and generated documentation. Each connector has its own directory under `connectors/` containing its documentation files. The sonar workflow tags each published version and creates a GitHub release in this repository.
 
-3. **Documentation repository (airbyte)**: The [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) workflow runs every two hours (or on manual trigger). It checks out the airbyte-agent-sdk repository, copies all markdown files from `connectors/*/` to `docs/ai-agents/connectors/`, and creates an auto-merge pull request using the `octavia-bot` GitHub App. When the PR merges, Vercel deploys the updated docs automatically.
+3. **Documentation repository (airbyte)**: The [sync-ai-connector-docs.yml](https://github.com/airbytehq/airbyte/blob/master/.github/workflows/sync-ai-connector-docs.yml) workflow runs every two hours (or on manual trigger). It checks out the airbyte-agent-sdk repository, copies the markdown files (except `CHANGELOG.md`) from `connectors/*/` to `docs/ai-agents/connectors/`, and creates an auto-merge pull request using the `octavia-bot` GitHub App. When the PR merges, Vercel deploys the updated docs automatically.
 
 #### Key characteristics
 
