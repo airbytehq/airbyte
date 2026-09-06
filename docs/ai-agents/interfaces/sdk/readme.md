@@ -4,7 +4,6 @@ sidebar_position: 2
 ---
 
 import DocCardList from '@theme/DocCardList';
-import SdkVsApi from '@site/static/\_ai-agents-sdk-vs-api.md';
 
 # SDK
 
@@ -19,10 +18,6 @@ This section walks through authenticate, add a connector, and execute operations
 - You prefer in-process library calls over shelling out to a binary or making raw HTTP requests.
 
 If your agent already supports the Model Context Protocol, the [MCP server](../mcp/readme.md) gives you zero-install access. If you prefer a shell binary, see the [CLI](../cli/readme.md). For non-Python backends, use the [API](../api/readme.md) directly.
-
-## Choose your interface
-
-<SdkVsApi />
 
 ## Log in and sign up
 
