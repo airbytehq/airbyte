@@ -364,7 +364,7 @@ This endpoint returns a flat `{data, meta}` body. Unlike connector `execute` cal
 {
   "data": [
     {
-      "connector_instance_id": "gong-connector-id",
+      "connector_instance_id": "9f1c2e7a-4b3d-4a10-8f21-5c6d7e8a9b01",
       "connector_instance_name": "Gong",
       "connector_type": "gong",
       "entity": "call_transcripts",
@@ -382,7 +382,7 @@ This endpoint returns a flat `{data, meta}` body. Unlike connector `execute` cal
       "entity_data": null
     },
     {
-      "connector_instance_id": "linear-connector-id",
+      "connector_instance_id": "3a7b5c11-9d02-4e64-b8f3-1c2d3e4f5a67",
       "connector_instance_name": "Linear",
       "connector_type": "linear",
       "entity": "issues",
