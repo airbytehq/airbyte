@@ -30,7 +30,7 @@ Log in or sign up at [app.airbyte.ai](https://app.airbyte.ai/).
 
 ## Install
 
-Add the SDK to a [uv](https://docs.astral.sh/uv/)-managed project:
+The SDK requires Python 3.11 or later. Add the SDK to a [uv](https://docs.astral.sh/uv/)-managed project:
 
 ```bash
 uv add airbyte-agent-sdk
