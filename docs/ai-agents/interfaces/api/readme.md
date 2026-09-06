@@ -22,7 +22,7 @@ If you're writing Python, the [SDK](../sdk/readme.md) wraps the same endpoints w
 
 All API requests use the base URL `https://api.airbyte.ai`.
 
-If your account belongs to a single organization, the API resolves the target organization from your credentials and you don't need to pass an extra header. If your account belongs to multiple organizations, you must add an `X-Organization-Id: <organization_id>` header when you request an application token, or the API returns a `400` asking you to specify the organization. The value appears as `organization_id` on every workspace returned by [List workspaces](./workspaces.md#list-workspaces).
+If your account belongs to a single organization, the API resolves the target organization from your credentials and you don't need to pass an extra header. If your account belongs to multiple organizations, you must add an `X-Organization-Id: <organization_id>` header when you request an application token, or the API returns a `400` asking you to specify the organization. To find the ID, run `airbyte-agent organizations list` with the [CLI](../cli/workspaces.md#list-organizations), or copy it from the `/organizations/<organization_id>` URL after you select the organization in [app.airbyte.ai](https://app.airbyte.ai).
 
 ## How the pieces fit together
 
