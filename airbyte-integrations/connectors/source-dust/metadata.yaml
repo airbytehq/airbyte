@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 897ba953-4c86-4e5e-a7a6-e7a006087233
-  dockerImageTag: 0.0.5
+  dockerImageTag: 0.0.6
   dockerRepository: airbyte/source-dust
   githubIssueLabel: source-dust
   icon: icon.svg
@@ -33,3 +33,11 @@ data:
   ab_internal:
     ql: 100
     sl: 100
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-DUST__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store

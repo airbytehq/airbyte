@@ -218,8 +218,11 @@ const deployAirbyte = {
 const understandingAirbyte = {
   type: "category",
   label: "Understand Airbyte",
+  link: {
+    type: "doc",
+    id: "understanding-airbyte/high-level-view",
+  },
   items: [
-    "understanding-airbyte/high-level-view",
     "understanding-airbyte/airbyte-protocol",
     "understanding-airbyte/airbyte-protocol-docker",
     "understanding-airbyte/airbyte-protocol-versioning",
@@ -447,6 +450,10 @@ module.exports = {
                       id: "access-management/role-mapping",
                     },
                   ],
+                },
+                {
+                  type: "doc",
+                  id: "access-management/audit-logs",
                 },
               ],
             },

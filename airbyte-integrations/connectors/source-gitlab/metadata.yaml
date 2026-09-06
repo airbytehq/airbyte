@@ -23,6 +23,9 @@ data:
     - title: GitLab API OpenAPI specification
       url: https://docs.gitlab.com/ee/api/openapi/openapi.yaml
       type: openapi_spec
+    - title: GitLab server source code (data/deprecations)
+      url: https://gitlab.com/gitlab-org/gitlab
+      type: code_repository
   githubIssueLabel: source-gitlab
   icon: gitlab.svg
   license: ELv2

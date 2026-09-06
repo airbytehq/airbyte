@@ -7,9 +7,13 @@ The Load CDK provides functionality for destination connectors including stream-
 <details>
   <summary>Expand to review</summary>
 
-### 1.0.25 — 2026-08-21
+### 1.0.26 — 2026-09-06
 
 [#84930](https://github.com/airbytehq/airbyte/pull/84930) — Fail with a clear config error when a stream is configured to deduplicate without a primary key.
+
+### 1.0.25 — 2026-08-20
+
+Fix: truncate-refresh dedup syncs no longer replace an already-committed real table with an empty or partial result on a later job attempt.
 
 ### 1.0.24 — 2026-08-10
 

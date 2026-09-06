@@ -38,11 +38,11 @@ This connector supports the following entities and actions. For more details, se
 | Entity | Actions |
 |--------|---------|
 | Users | [List](./REFERENCE.md#users-list), [Get](./REFERENCE.md#users-get), [Context Store Search](./REFERENCE.md#users-context-store-search) |
-| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Context Store Search](./REFERENCE.md#boards-context-store-search) |
-| Items | [List](./REFERENCE.md#items-list), [Get](./REFERENCE.md#items-get), [Context Store Search](./REFERENCE.md#items-context-store-search) |
+| Boards | [List](./REFERENCE.md#boards-list), [Get](./REFERENCE.md#boards-get), [Context Store Search](./REFERENCE.md#boards-context-store-search), [Semantic Search](./REFERENCE.md#boards-semantic-search) |
+| Items | [List](./REFERENCE.md#items-list), [Get](./REFERENCE.md#items-get), [Context Store Search](./REFERENCE.md#items-context-store-search), [Semantic Search](./REFERENCE.md#items-semantic-search) |
 | Teams | [List](./REFERENCE.md#teams-list), [Get](./REFERENCE.md#teams-get), [Context Store Search](./REFERENCE.md#teams-context-store-search) |
 | Tags | [List](./REFERENCE.md#tags-list), [Context Store Search](./REFERENCE.md#tags-context-store-search) |
-| Updates | [List](./REFERENCE.md#updates-list), [Get](./REFERENCE.md#updates-get), [Context Store Search](./REFERENCE.md#updates-context-store-search) |
+| Updates | [List](./REFERENCE.md#updates-list), [Get](./REFERENCE.md#updates-get), [Context Store Search](./REFERENCE.md#updates-context-store-search), [Semantic Search](./REFERENCE.md#updates-semantic-search) |
 | Workspaces | [List](./REFERENCE.md#workspaces-list), [Get](./REFERENCE.md#workspaces-get), [Context Store Search](./REFERENCE.md#workspaces-context-store-search) |
 | Activity Logs | [List](./REFERENCE.md#activity-logs-list), [Context Store Search](./REFERENCE.md#activity-logs-context-store-search) |
 
