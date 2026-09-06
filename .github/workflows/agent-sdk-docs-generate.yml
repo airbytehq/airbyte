@@ -253,6 +253,8 @@ jobs:
 
           linked = 0
           for md_path in base_dir.rglob("*.md"):
+              if md_path.name.lower() == "readme.md":
+                  continue
               lines = md_path.read_text(encoding="utf-8").splitlines(keepends=True)
               changed = False
               in_section = False
@@ -263,9 +265,11 @@ jobs:
                       continue
                   if not in_section or text == "" or set(text) == {"-"}:
                       continue
-                  m = re.fullmatch(r"\* (\w+(?:\.\w+)+)", text)
-                  if m is None:
+                  if not text.startswith("* "):
                       in_section = False
+                      continue
+                  m = re.fullmatch(r"\* (\w+(?:\.\w+)+)\s*", text)
+                  if m is None:
                       continue
                   url = _module_url(m.group(1))
                   if url is None:
