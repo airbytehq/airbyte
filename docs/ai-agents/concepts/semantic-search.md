@@ -54,6 +54,7 @@ Whether the connector is a data connector or a file connector, a semantic search
 | `semantic.field` | `string` | Yes | The indexed field to search, as listed on the connector's reference page. |
 | `semantic.prompt` | `string` | Yes | The natural-language query. Airbyte embeds it and compares it against the field's stored passages. |
 | `semantic.filter` | `object` | No | A filter applied alongside the similarity match, using the same operators and dot notation as `query.filter`. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score a hit must reach, from -1.0 to 1.0. Set it to -1.0 to return every hit regardless of score. |
 | `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, centered on the match and capped at the field's configured window. Omit it to return the full window. |
 | `semantic.dedup` | `string` | No | `max` (the default) returns the single best-scoring passage per source record or file. `none` returns multiple passages from the same source, still ranked by similarity and capped by `limit`. |
 | `fields` | `array` | No | Field paths to include in each hit's `entity`, using dot notation for nested fields. |
@@ -311,6 +312,132 @@ A hit looks like this. The source file's attribution fields are under `entity`; 
   "meta": { "has_more": false, "cursor": null, "took_ms": 63 }
 }
 ```
+
+## Search across your whole workspace
+
+The connector-local searches above target one connector, entity, and field. Workspace-wide semantic search takes a prompt and a workspace, searches every connector in that workspace whose Context Store data supports semantic search, ranks all hits together by similarity, and returns one merged list. It searches only the workspace you name, not every workspace in your organization.
+
+Use workspace-wide semantic search for discovery when you don't know which connector holds the answer, such as "where did anyone mention the ACME renewal?" Use connector-local search when you already know the connector, entity, and field and want filters, field selection, or pagination.
+
+### Availability
+
+- Available today through the **REST API** endpoint below and in the **web app agent chat**. The agent searches your whole workspace when your question isn't scoped to one connector.
+- Not available in the **CLI**, the **Python SDK**, or the **Agent MCP**. For those interfaces, call `context_store_search` per connector as shown above.
+- Workspace-wide semantic search is alpha. The request and response shapes can change.
+
+### Request
+
+```text
+POST https://api.airbyte.ai/api/v1/integrations/connectors/search
+```
+
+This endpoint requires an application (operator) bearer token. Workspace-scoped tokens are rejected with `401`.
+
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| `workspace_id` | `string (uuid)` | Required (one of) | The workspace to search, resolved within your organization. Pass either this or `workspace_name`, not both. |
+| `workspace_name` | `string` | Required (one of) | The workspace name, as an alternative to `workspace_id`. |
+| `prompt` | `string` | Yes | The natural-language query. It can't be empty. |
+| `limit` | `integer` | No | Maximum merged hits to return. Defaults to 10, with a maximum of 100. |
+| `min_similarity` | `number` | No | Minimum similarity score a hit must reach, from `-1.0` to `1.0`. Defaults to `0.25`. Set it to `-1.0` to turn off the cutoff. |
+| `include_entity_data` | `boolean` | No | When `true`, each hit carries the source record's own fields as `entity_data`. Defaults to `false`. |
+| `select_fields` | `array` | No | A list of allowed dot-notation field paths to include in `entity_data`. Passing it opts into `entity_data` and takes precedence over `include_entity_data`. |
+
+Unknown fields are rejected.
+
+```bash title="Request"
+curl -X POST 'https://api.airbyte.ai/api/v1/integrations/connectors/search' \
+  --header 'Authorization: Bearer <your_application_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "workspace_name": "default",
+    "prompt": "customers unhappy about pricing",
+    "limit": 10
+  }'
+```
+
+### Response
+
+This endpoint returns a flat `{data, meta}` body. Unlike connector `execute` calls, it is not wrapped in the [execute envelope](../interfaces/api/execute#response-format), and it does not use cursor pagination.
+
+```json title="Search result"
+{
+  "data": [
+    {
+      "connector_instance_id": "gong-connector-id",
+      "connector_instance_name": "Gong",
+      "connector_type": "gong",
+      "entity": "call_transcripts",
+      "field": "transcript",
+      "record_key": {
+        "name": "call_id",
+        "value": "7830000000000000000"
+      },
+      "score": 0.91,
+      "context": "...the renewal price is higher than we expected...",
+      "metadata": {
+        "speaker_name": "Jordan Lee",
+        "speaker_role": "VP Finance"
+      },
+      "entity_data": null
+    },
+    {
+      "connector_instance_id": "linear-connector-id",
+      "connector_instance_name": "Linear",
+      "connector_type": "linear",
+      "entity": "issues",
+      "field": "description",
+      "record_key": {
+        "name": "issue_id",
+        "value": "ENG-142"
+      },
+      "score": 0.84,
+      "context": "...the customer is unhappy with the new pricing...",
+      "metadata": {
+        "team": "Engineering",
+        "status": "In Progress"
+      },
+      "entity_data": null
+    }
+  ],
+  "meta": {
+    "elapsed_ms": 248,
+    "searched_connectors": 2,
+    "searched_targets": 2,
+    "partial": false,
+    "failures": []
+  }
+}
+```
+
+Each hit can include these fields:
+
+- `connector_instance_id` identifies the connector instance.
+- `connector_instance_name` is the name you gave the connector in Airbyte.
+- `connector_type` is the connector's technical type, such as `gong`.
+- `entity` is the source entity, such as `call_transcripts` or `issues`.
+- `field` is the semantically indexed source field.
+- `record_key` is an object with `name` and `value` that identifies the source record.
+- `score` is the similarity score. Hits are returned in descending score order.
+- `context` is the passage that matched the prompt.
+- `metadata` contains per-passage attribution and enrichment.
+- `entity_data` contains the source record's fields, or `null` unless you ask for them with `include_entity_data` or `select_fields`.
+
+The `meta` object contains:
+
+- `elapsed_ms`, the search time in milliseconds.
+- `searched_connectors`, the number of connector instances searched.
+- `searched_targets`, the number of searchable connector targets.
+- `partial`, whether some connectors failed or timed out.
+- `failures`, an array of failures. Each failure includes `connector_instance_id`, `connector_instance_name`, and a `reason`.
+
+### Partial results and errors
+
+- Connectors whose Context Store data isn't ready or that have no semantically indexed fields are skipped. An empty `data` with `searched_connectors: 0` means nothing in the workspace was searchable yet.
+- When some connectors fail or time out, `meta.partial` is `true` and each skipped connector appears in `meta.failures` with a reason. The hits that succeeded are still returned and ranked.
+- `404` means the workspace wasn't found.
+- `409` means the workspace's searchable connectors don't share one embedding model, so their scores aren't comparable. Search those connectors individually instead.
+- `503` means the search couldn't complete for any connector.
 
 ## Related
 
