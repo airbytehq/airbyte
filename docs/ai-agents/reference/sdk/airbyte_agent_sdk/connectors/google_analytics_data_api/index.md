@@ -440,36 +440,6 @@ Classes
     `start_date: str | None`
     :   Start date of the reporting period
 
-<a id="GoogleAnalyticsDataApiAuthConfig"></a>
-
-`GoogleAnalyticsDataApiAuthConfig(**data: Any)`
-:   OAuth 2.0 Authentication
-    
-    Create a new model by parsing and validating input data from keyword arguments.
-    
-    Raises [`ValidationError`][pydantic_core.ValidationError] if the input data cannot be
-    validated to form a valid model.
-    
-    `self` is explicitly positional-only to allow `self` as a field name.
-
-    ### Ancestors (in MRO)
-
-    * pydantic.main.BaseModel
-
-    ### Class variables
-
-    `client_id: str`
-    :   OAuth 2.0 Client ID from Google Cloud Console
-
-    `client_secret: str`
-    :   OAuth 2.0 Client Secret from Google Cloud Console
-
-    `model_config`
-    :   The type of the None singleton.
-
-    `refresh_token: str`
-    :   OAuth 2.0 Refresh Token for obtaining new access tokens
-
 <a id="GoogleAnalyticsDataApiConnector"></a>
 
 `GoogleAnalyticsDataApiConnector(auth_config: GoogleAnalyticsDataApiAuthConfig | AirbyteAuthConfig | BaseModel | None = None, on_token_refresh: Any | None = None)`
@@ -699,7 +669,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

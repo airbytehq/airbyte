@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.util.Jsons
 
 internal val RAW_META_COLUMNS =

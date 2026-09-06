@@ -1,0 +1,24 @@
+{
+  "ads": [
+    {
+      "adId": "string",
+      "adGroupId": "string",
+      "campaignId": "string",
+      "name": "string",
+      "state": "ENABLED",
+      "creative": {
+        "type": "VIDEO",
+        "brandName": "string",
+        "headline": "string",
+        "videoAssetIds": ["string"],
+        "asins": ["string"]
+      },
+      "landingPage": {
+        "pageType": "STORE",
+        "url": "string"
+      },
+      "extendedData": {}
+    }
+  ],
+  "totalResults": 100
+}

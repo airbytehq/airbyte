@@ -104,7 +104,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventGroupsAnyCondition"></a>
@@ -173,10 +173,24 @@ Classes
     `trace_id: Any`
     :   Unique identifier for tracing
 
+<a id="ListFinancialEventGroupsArrayContainsCondition"></a>
+
+`ListFinancialEventGroupsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ListFinancialEventGroupsContainsCondition"></a>
 
 `ListFinancialEventGroupsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -185,6 +199,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ListFinancialEventGroupsEndswithCondition"></a>
+
+`ListFinancialEventGroupsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStringFilter`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventGroupsEqCondition"></a>
@@ -323,20 +351,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStringFilter`
     :   The type of the None singleton.
 
-<a id="ListFinancialEventGroupsLikeCondition"></a>
-
-`ListFinancialEventGroupsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ListFinancialEventGroupsListParams"></a>
 
 `ListFinancialEventGroupsListParams(*args, **kwargs)`
@@ -421,7 +435,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventGroupsOrCondition"></a>
@@ -443,7 +457,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventGroupsSearchFilter"></a>
@@ -501,7 +515,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsSortFilter]`
@@ -551,10 +565,24 @@ Classes
     `trace_id: Literal['asc', 'desc']`
     :   Unique identifier for tracing
 
+<a id="ListFinancialEventGroupsStartswithCondition"></a>
+
+`ListFinancialEventGroupsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventGroupsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ListFinancialEventGroupsStringFilter"></a>
 
 `ListFinancialEventGroupsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -614,7 +642,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventsAnyCondition"></a>
@@ -755,10 +783,24 @@ Classes
     `value_added_service_charge_event_list: Any`
     :   List of value-added service charge events
 
+<a id="ListFinancialEventsArrayContainsCondition"></a>
+
+`ListFinancialEventsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ListFinancialEventsContainsCondition"></a>
 
 `ListFinancialEventsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -767,6 +809,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="ListFinancialEventsEndswithCondition"></a>
+
+`ListFinancialEventsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStringFilter`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventsEqCondition"></a>
@@ -977,20 +1033,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStringFilter`
     :   The type of the None singleton.
 
-<a id="ListFinancialEventsLikeCondition"></a>
-
-`ListFinancialEventsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStringFilter`
-    :   The type of the None singleton.
-
 <a id="ListFinancialEventsListParams"></a>
 
 `ListFinancialEventsListParams(*args, **kwargs)`
@@ -1075,7 +1117,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventsOrCondition"></a>
@@ -1097,7 +1139,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ListFinancialEventsSearchFilter"></a>
@@ -1227,7 +1269,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsSortFilter]`
@@ -1349,10 +1391,24 @@ Classes
     `value_added_service_charge_event_list: Literal['asc', 'desc']`
     :   List of value-added service charge events
 
+<a id="ListFinancialEventsStartswithCondition"></a>
+
+`ListFinancialEventsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.ListFinancialEventsStringFilter`
+    :   The type of the None singleton.
+
 <a id="ListFinancialEventsStringFilter"></a>
 
 `ListFinancialEventsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1484,7 +1540,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderItemsAnyCondition"></a>
@@ -1631,10 +1687,24 @@ Classes
     `title: Any`
     :   Title of the product
 
+<a id="OrderItemsArrayContainsCondition"></a>
+
+`OrderItemsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OrderItemsContainsCondition"></a>
 
 `OrderItemsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1643,6 +1713,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrderItemsEndswithCondition"></a>
+
+`OrderItemsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStringFilter`
     :   The type of the None singleton.
 
 <a id="OrderItemsEqCondition"></a>
@@ -1859,20 +1943,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStringFilter`
     :   The type of the None singleton.
 
-<a id="OrderItemsLikeCondition"></a>
-
-`OrderItemsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrderItemsListParams"></a>
 
 `OrderItemsListParams(*args, **kwargs)`
@@ -1951,7 +2021,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrderItemsOrCondition"></a>
@@ -1973,7 +2043,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrderItemsSearchFilter"></a>
@@ -2109,7 +2179,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsSortFilter]`
@@ -2237,10 +2307,24 @@ Classes
     `title: Literal['asc', 'desc']`
     :   Title of the product
 
+<a id="OrderItemsStartswithCondition"></a>
+
+`OrderItemsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrderItemsStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrderItemsStringFilter"></a>
 
 `OrderItemsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -2378,7 +2462,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrdersAnyCondition"></a>
@@ -2516,10 +2600,24 @@ Classes
     `shipping_address: Any`
     :   The address to which the order will be shipped
 
+<a id="OrdersArrayContainsCondition"></a>
+
+`OrdersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OrdersContainsCondition"></a>
 
 `OrdersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2528,6 +2626,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="OrdersEndswithCondition"></a>
+
+`OrdersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStringFilter`
     :   The type of the None singleton.
 
 <a id="OrdersEqCondition"></a>
@@ -2749,20 +2861,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStringFilter`
     :   The type of the None singleton.
 
-<a id="OrdersLikeCondition"></a>
-
-`OrdersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStringFilter`
-    :   The type of the None singleton.
-
 <a id="OrdersListParams"></a>
 
 `OrdersListParams(*args, **kwargs)`
@@ -2859,7 +2957,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition`
     :   The type of the None singleton.
 
 <a id="OrdersOrCondition"></a>
@@ -2881,7 +2979,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OrdersSearchFilter"></a>
@@ -3008,7 +3106,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLikeCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNeqCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersGteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLtCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersLteCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersInCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStartswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersEndswithCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersFuzzyCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersKeywordCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersArrayContainsCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersNotCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAndCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersOrCondition | airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersSortFilter]`
@@ -3127,10 +3225,24 @@ Classes
     `shipping_address: Literal['asc', 'desc']`
     :   The address to which the order will be shipped
 
+<a id="OrdersStartswithCondition"></a>
+
+`OrdersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.amazon_seller_partner.types.OrdersStringFilter`
+    :   The type of the None singleton.
+
 <a id="OrdersStringFilter"></a>
 
 `OrdersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 

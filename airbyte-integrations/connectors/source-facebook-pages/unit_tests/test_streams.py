@@ -130,3 +130,19 @@ def test_facebook_app_approval_error_is_config_error():
     assert response_filter["error_message"].startswith(
         "The application used to create the Facebook access token has not been approved to use this API."
     )
+
+
+def test_invalid_insights_metric_error_is_not_retried():
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text())
+    response_filters = manifest["definitions"]["requester"]["error_handler"]["response_filters"]
+
+    invalid_metric_filters = [f for f in response_filters if f.get("error_message_contains") == "must be a valid insights metric"]
+    assert len(invalid_metric_filters) == 1, "Expected exactly one response filter for Meta's invalid-metric error"
+
+    invalid_metric_filter = invalid_metric_filters[0]
+    assert invalid_metric_filter["action"] == "FAIL"
+    assert invalid_metric_filter["failure_type"] == FailureType.system_error.value
+
+    # An invalid metric is permanent, so the filter must be evaluated before the blanket 400 retry.
+    blanket_400_index = next(i for i, f in enumerate(response_filters) if f.get("http_codes") == [400])
+    assert response_filters.index(invalid_metric_filter) < blanket_400_index

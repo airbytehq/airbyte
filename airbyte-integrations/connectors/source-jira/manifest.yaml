@@ -14357,6 +14357,14 @@ definitions:
     primary_key: "id"
     retriever:
       $ref: "#/definitions/retriever"
+      paginator:
+        $ref: "#/definitions/paginator"
+        pagination_strategy:
+          $ref: "#/definitions/paginator/pagination_strategy"
+          # 5000 is Atlassian's documented default maxResults for
+          # GET /rest/api/3/issue/{issueIdOrKey}/worklog, so sending it is equivalent to omitting the parameter.
+          # https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
+          page_size: 5000
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:

@@ -569,10 +569,10 @@ Classes
     :   Timestamp until the conversation is snoozed
 
     `source: dict[str, typing.Any] | None`
-    :   Source details of the conversation.
+    :   Source details of the conversation, including the opening message body.
 
     `state: str | None`
-    :   The state of the conversation (e.g., new, in progress)
+    :   The state of the conversation: open, closed, or snoozed
 
     `statistics: dict[str, typing.Any] | None`
     :   Statistics related to the conversation.
@@ -857,7 +857,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

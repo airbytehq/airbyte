@@ -991,7 +991,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['get', 'list', 'api_search', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['get', 'list', 'api_search', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1098,6 +1098,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `body: str | None`
+    :   Markdown body (description) of the issue
 
     `closed_at: str | None`
     :   ISO 8601 timestamp when the issue was closed, if applicable
@@ -1395,6 +1398,9 @@ Classes
     * pydantic.main.BaseModel
 
     ### Class variables
+
+    `body: str | None`
+    :   Markdown body (description) of the pull request
 
     `closed_at: str | None`
     :   ISO 8601 timestamp when the pull request was closed, if applicable

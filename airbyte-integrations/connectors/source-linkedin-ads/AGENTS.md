@@ -36,14 +36,49 @@ Records from multiple chunks are stitched back together using `GroupByKeyMergeSt
 `["end_date", "string_of_pivot_values"]`.
 
 **Why this matters:** With ~90 analytics fields defined, each analytics record requires approximately 5
-separate HTTP requests to assemble. Every analytics stream is also partitioned by parent entity (one
-campaign or creative per partition), so the total API call count is roughly
-`num_entities * num_date_slices * 5`. Adding new analytics fields increases the chunk count and
-silently multiplies API usage across every partition.
+separate HTTP requests to assemble. For the three batched streams, the total API call count is roughly
+`ceil(num_entities / 50) * num_date_slices * 5`; unbatched member-demographic and custom report streams
+still issue requests per campaign. Adding analytics fields increases the chunk count and silently
+multiplies API usage across every partition.
 
 ---
 
-## 3. DNS Resolution Errors Treated as Transient
+## 3. Analytics Request Batching and Stream Constraints
+
+Only these analytics streams batch parent entities with the CDK `GroupingPartitionRouter` at
+`group_size: 50`:
+
+- `ad_campaign_analytics` batches campaign URNs with the single `CAMPAIGN` pivot.
+- `ad_creative_analytics` batches creative URNs with the single `CREATIVE` pivot.
+- `ad_impression_device_analytics` batches campaign URNs with
+  `q=statistics&pivots=List(CAMPAIGN,IMPRESSION_DEVICE_TYPE)`.
+
+A full group reduces entity-partition requests from 50 to 1. The group size leaves headroom under
+LinkedIn's approximately 4 KB query-string limit; larger defaults can exceed the limit when URNs contain
+long IDs.
+
+The three streams use `global_substream_cursor: true` because grouping changes partition membership. Do
+not add a custom minimum-cursor state migration: regression testing showed that rows present only in the
+legacy control reads were previously synced records at or before stale per-entity cursors. Replaying from
+the minimum cursor would create unnecessary duplicate reads.
+
+The eight `ad_member_*` demographic streams must remain unbatched on the single-pivot `q=analytics`
+finder. Batching would require adding a `CAMPAIGN` pivot for attribution, but LinkedIn's multi-pivot
+`q=statistics` finder rejects all `MEMBER_*` pivots with `FIELD_INVALID`.
+
+Impression-device records require special pivot handling. The extractor removes the leading campaign URN
+from `pivotValues`, writes it to `sponsoredCampaign`, and leaves the device value as the stream pivot. Its
+primary key is `["string_of_pivot_values", "end_date", "sponsoredCampaign"]`; omitting the campaign field
+causes deduplicating destinations to collapse rows from different campaigns that share a device type and
+date.
+
+**Why this matters:** Do not generalize batching to unsupported member pivots, remove the global cursors,
+reintroduce a minimum-cursor migration, or remove `sponsoredCampaign` from the impression-device primary
+key.
+
+---
+
+## 4. DNS Resolution Errors Treated as Transient
 
 The `LinkedInAdsErrorHandler` catches Python `InvalidURL` exceptions and classifies them as transient
 (retryable) errors rather than failing the sync. This is a workaround for intermittent DNS resolution
@@ -56,7 +91,7 @@ intermittently.
 
 ---
 
-## 4. Millisecond Timestamps and Multiple Datetime Formats
+## 5. Millisecond Timestamps and Multiple Datetime Formats
 
 LinkedIn's API returns timestamps in inconsistent formats across different endpoints. Entity streams
 (accounts, campaigns, creatives) return `lastModified` and `created` as millisecond Unix timestamps
@@ -73,7 +108,7 @@ or skipping records entirely.
 
 ---
 
-## 5. Reserved Keyword Renaming for Destination Compatibility
+## 6. Reserved Keyword Renaming for Destination Compatibility
 
 The `transform_data` function renames the `pivot` field to `_pivot` in every analytics record. This is
 because `PIVOT` is a reserved keyword in Amazon Redshift, and using it as a column name causes
@@ -86,7 +121,7 @@ conflicts with reserved keywords in common destinations (Redshift, BigQuery, Sno
 
 ---
 
-## 6. Unpublished Rate Limits with Per-Endpoint Daily Caps
+## 7. Analytics Rate Limits and Backoff
 
 LinkedIn does not publish standard API rate limits. The connector's comments document that each endpoint
 has its own individually tracked rate limit that resets daily, with tiers that vary by account. The
@@ -96,14 +131,22 @@ The `api_budget` is configured conservatively at 6 requests per 10 seconds for a
 the default concurrency is set to 6 workers (configurable via `num_workers` up to 50). This was reduced
 from a higher default after customers experienced rate limiting issues.
 
-**Why this matters:** Because rate limits are per-endpoint and unpublished, there is no reliable way to
-predict when a customer will hit limits. If customers report rate limiting, the `num_workers` config
-value is the primary lever to reduce pressure. The analytics property chunking (5 requests per record
-page) means the effective request rate is much higher than the visible concurrency level suggests.
+LinkedIn separately documents a limit of 45 million Ad Analytics metric values across a rolling
+five-minute window. `LinkedInAdsDataVolumeBackoffStrategy` identifies only the HTTP 429 response whose
+body mentions both the data-request limit and 45 million metric values, then waits 330 seconds before
+retrying. Analytics requesters allow five retries and up to 30 minutes so each retry can begin after the
+rolling window clears. Other retryable responses, including unrecognized 429 bodies, use exponential
+fallback.
+
+**Why this matters:** Because most endpoint limits are unpublished, there is no reliable way to predict
+when a customer will hit them. If customers report count-based throttling, `num_workers` is the primary
+lever to reduce pressure. Batching reduces request count and latency, but it does not reduce equivalent
+metric-value workload or avoid the 45-million-value limit. Do not apply the 330-second delay to every 429
+or replace the body-aware strategy with a faster generic backoff.
 
 ## Incremental Stream Considerations
 
-The LinkedIn Marketing API supports date-based filtering on analytics and campaign/creative endpoints, which the connector already uses for 17 incremental streams. The single remaining FR parent stream (`accounts`) is a config-style endpoint listing ad accounts, which does not support date-based filtering on its list endpoint.
+The LinkedIn Marketing API supports date-based filtering on analytics and campaign/creative endpoints, which the connector already uses for 18 incremental streams. The single remaining FR parent stream (`accounts`) is a config-style endpoint listing ad accounts, which does not support date-based filtering on its list endpoint.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
 |---|---|---|---|---|---|---|
@@ -125,6 +168,7 @@ The LinkedIn Marketing API supports date-based filtering on analytics and campai
 | conversions | medium | child | lastModified | lastModified | incremental |  |
 | creatives | medium | child | lastModifiedAt | lastModifiedAt | incremental |  |
 | custom_analytics_report | medium | child | end_date | end_date | incremental |  |
+| custom_statistics_report | medium | child | end_date | end_date | incremental |  |
 | lead_form_responses | medium | child | none | none | deferred_child |  |
 | lead_forms | medium | child | none | none | deferred_child |  |
 

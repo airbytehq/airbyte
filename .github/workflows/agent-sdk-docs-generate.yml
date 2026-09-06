@@ -77,7 +77,7 @@ jobs:
           # connector modules into airbyte_agent_sdk/ before running pdoc3
           # so the reference includes per-connector typed APIs.
           uv sync --project connector-sdk --extra dev --dev
-          ./scripts/connectors/generate-sdk.sh
+          ./scripts/connectors/generate-sdk.sh --public-only
 
       - name: Install airbyte-agent-sdk and pdoc3
         run: |

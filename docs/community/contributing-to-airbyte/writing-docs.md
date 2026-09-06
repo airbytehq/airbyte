@@ -242,13 +242,12 @@ Certain Airbyte products reserve some platform features. To avoid confusion and 
 
 To enable badges, include `products` in the Markdown metadata. The following values are possible, and you can combine them as needed.
 
-**Badge display:** all 6 badges always appear in order - Core, Standard, Plus, Pro, Enterprise Flex, Self-Managed Enterprise. Available badges appear highlighted, unavailable badges appear grayed out.
+**Badge display:** all 5 badges always appear in order - Core, Standard, Plus, Pro, Enterprise Flex. Available badges appear highlighted, unavailable badges appear grayed out.
 
 **Metadata keys:**
 
-- `all`: Core, Self-Managed Enterprise, Standard, and Plus - doesn't include Pro, Enterprise Flex, or Embedded
+- `all`: everything except Embedded - Core, Standard, Plus, Pro, and Enterprise Flex
 - `oss-community`: Core only
-- `oss-enterprise`: Self-Managed Enterprise only
 - `cloud`: Standard and Plus (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-plus`: Plus only (also enables Pro and Enterprise Flex due to Cloud tier inheritance)
 - `cloud-teams`: Pro only (also enables Enterprise Flex due to Cloud tier inheritance)
@@ -262,8 +261,6 @@ To enable badges, include `products` in the Markdown metadata. The following val
 - If you specify `cloud-teams`: Pro and Enterprise Flex badges become enabled - Standard and Plus turn off
 - If you specify `enterprise-flex`: Only Enterprise Flex badge becomes enabled
 
-**Self-managed plans** Core and Self-Managed Enterprise don't inherit from each other.
-
 In this example, the Core badge appears highlighted, and all other badges appear grayed out.
 
 ```markdown
@@ -276,14 +273,14 @@ products: oss-community
 Some text.
 ```
 
-In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, Plus, and Self-Managed Enterprise badges appear grayed out.
+In this example, Pro, and Enterprise Flex badges appear highlighted due to Cloud tier inheritance, while Core, Standard, and Plus badges appear grayed out.
 
 ```markdown
 ---
-products: cloud-teams, enterprise-flex, oss-enterprise
+products: cloud-teams, enterprise-flex
 ---
 
-# This topic is for Pro, Enterprise Flex, and Self-Managed Enterprise
+# This topic is for Pro and Enterprise Flex
 
 Some text.
 ```
