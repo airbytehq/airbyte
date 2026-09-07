@@ -375,12 +375,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
-        # Not returned below: `pull_requests`, `projects` and `teams` are manifest streams (Steps 5
-        # and 4). The instances survive only because `PullRequestCommits`, `ProjectColumns` (and
-        # through it `ProjectCards`) and `TeamMembers` (and through it `TeamMemberships`) read
-        # their slices and records as parents, and all of those stay Python until Step 7.
-        # `CommitCommentReactions` builds its `CommitComments` parent internally for the same
-        # reason.
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
