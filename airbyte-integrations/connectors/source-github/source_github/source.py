@@ -30,7 +30,6 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from . import constants
 from .streams import (
-    Comments,
     CommitCommentReactions,
     CommitComments,
     Commits,
@@ -41,7 +40,6 @@ from .streams import (
     IssueEvents,
     IssueMilestones,
     IssueReactions,
-    Issues,
     IssueTimelineEvents,
     ProjectCards,
     ProjectColumns,
@@ -52,7 +50,6 @@ from .streams import (
     PullRequests,
     PullRequestStats,
     Releases,
-    ReviewComments,
     Reviews,
     Stargazers,
     TeamMembers,
@@ -387,7 +384,10 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
         # Not returned below: `teams` is a manifest stream as of Step 4. The instance survives
         # only because `TeamMembers` — and through it `TeamMemberships` — reads its slices and
-        # records as a parent, and both stay Python until Step 7.
+        # records as a parent, and both stay Python until Step 7. `Comments` and `Issues` are in
+        # the same position as of Step 6: they are manifest streams, but `IssueCommentReactions`
+        # and `IssueTimelineEvents` construct them internally as parents, so the classes stay in
+        # `streams.py` while the names leave this list.
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
@@ -396,7 +396,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
         python_streams = [
             IssueTimelineEvents(**repository_args),
-            Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
             CommitComments(**repository_args_with_start_date),
             Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
@@ -407,7 +406,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             IssueEvents(**repository_args_with_start_date),
             IssueMilestones(**repository_args_with_start_date),
             IssueReactions(**repository_args_with_start_date),
-            Issues(**repository_args_with_start_date),
             ProjectCards(project_columns_stream, **repository_args_with_start_date),
             project_columns_stream,
             projects_stream,
@@ -417,7 +415,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             ProjectsV2(**repository_args_with_start_date),
             pull_requests_stream,
             Releases(**repository_args_with_start_date),
-            ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             Stargazers(**repository_args_with_start_date),
             team_members_stream,

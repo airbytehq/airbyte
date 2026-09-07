@@ -17,7 +17,6 @@ from source_github import SourceGithub, constants
 from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
-    Comments,
     CommitCommentReactions,
     CommitComments,
     Commits,
@@ -26,7 +25,6 @@ from source_github.streams import (
     GithubStreamABCBackoffStrategy,
     IssueEvents,
     IssueMilestones,
-    Issues,
     IssueTimelineEvents,
     ProjectCards,
     ProjectColumns,
@@ -635,18 +633,25 @@ def test_stream_projects_disabled(requests_mock):
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
 
 
-def test_stream_issues_disabled(requests_mock):
+def test_stream_feature_disabled(requests_mock):
+    """A 410 naming a disabled feature is swallowed and the stream yields nothing.
+
+    This pins `GithubStreamABCErrorHandler`/`is_gone_with_feature_disabled` on the Python side,
+    which used to be exercised through `Issues`. That stream is declarative as of Step 6 — its
+    equivalent lives in `test_manifest_repo_scoped_streams.py` — so this uses `Projects`, the
+    other stream GitHub answers this 410 for, which stays Python until Step 5.
+    """
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 30,
         "repositories": ["test_repo"],
     }
 
-    stream = Issues(**repository_args_with_start_date)
+    stream = Projects(**repository_args_with_start_date)
     requests_mock.get(
-        "https://api.github.com/repos/test_repo/issues",
+        "https://api.github.com/repos/test_repo/projects",
         status_code=requests.codes.GONE,
-        json={"message": "Issues are disabled for this repo"},
+        json={"message": "Projects are disabled for this repo"},
     )
 
     assert list(read_full_refresh(stream)) == []
@@ -1056,111 +1061,6 @@ def test_stream_project_cards(requests_mock):
             "updated_at": "2022-05-01T00:00:00Z",
         },
     ]
-
-
-def test_stream_comments(requests_mock):
-    repository_args_with_start_date = {
-        "repositories": ["organization/repository", "airbytehq/airbyte"],
-        "page_size_for_large_streams": 2,
-        "start_date": "2022-02-02T10:10:01Z",
-    }
-
-    stream = Comments(**repository_args_with_start_date)
-
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:12:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/organization/repository/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:10:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:10:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(f"{api_url}?per_page=2&page=3&since=2022-02-02T10:10:04Z", json=data[5:])
-
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:11:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/airbytehq/airbyte/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:11:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:11:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=3&since=2022-02-02T10:11:04Z",
-        json=data[5:],
-    )
-
-    stream_state = {}
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 1, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 1, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:04Z"},
-    ]
-
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:11:04Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:10:04Z"},
-    }
-
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:12Z"},
-        {"id": 3, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:13:12Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:12:12Z"},
-    }
 
 
 def test_branches_technical_stream_still_answers_get_json_schema():
