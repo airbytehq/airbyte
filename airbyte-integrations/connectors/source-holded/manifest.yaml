@@ -1,0 +1,1193 @@
+version: 7.17.1
+
+type: DeclarativeSource
+
+description: >-
+  Holded is an ERP and business management platform covering invoicing,
+  accounting, CRM, inventory, projects, and team management. This connector
+  syncs contacts, products, sales documents (invoices, orders, estimates, credit
+  notes), purchases, and projects from the Holded API.
+
+check:
+  type: CheckStream
+  stream_names:
+    - contacts
+
+definitions:
+  linked:
+    SimpleRetriever:
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          field_name: page
+          inject_into: request_parameter
+        pagination_strategy:
+          type: PageIncrement
+          start_from_page: 1
+          inject_on_first_request: false
+    HttpRequester:
+      authenticator:
+        type: ApiKeyAuthenticator
+        header: key
+        api_token: "{{ config['api_key'] }}"
+
+streams:
+  - type: DeclarativeStream
+    name: contacts
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/contacts
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          type:
+            type:
+              - "null"
+              - string
+          id:
+            type: string
+          code:
+            type:
+              - "null"
+              - string
+          iban:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+            items:
+              type: string
+          email:
+            type:
+              - "null"
+              - string
+          notes:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          phone:
+            type:
+              - "null"
+              - string
+          swift:
+            type:
+              - "null"
+              - string
+          mobile:
+            type:
+              - "null"
+              - string
+          customId:
+            type:
+              - "null"
+              - string
+          defaults:
+            type:
+              - "null"
+              - object
+            properties:
+              tax:
+                type:
+                  - "null"
+                  - string
+              dueDays:
+                type:
+                  - "null"
+                  - integer
+              currency:
+                type:
+                  - "null"
+                  - string
+              discount:
+                type:
+                  - "null"
+                  - integer
+              language:
+                type:
+                  - "null"
+                  - string
+              retention:
+                type:
+                  - "null"
+                  - string
+              salesChannel:
+                type:
+                  - "null"
+                  - integer
+              paymentMethod:
+                type:
+                  - "null"
+                  - integer
+              expensesAccount:
+                type:
+                  - "null"
+                  - integer
+          tradeName:
+            type:
+              - "null"
+              - string
+          billAddress:
+            type:
+              - "null"
+              - object
+            properties:
+              city:
+                type:
+                  - "null"
+                  - string
+              info:
+                type:
+                  - "null"
+                  - string
+              address:
+                type:
+                  - "null"
+                  - string
+              country:
+                type:
+                  - "null"
+                  - string
+              province:
+                type:
+                  - "null"
+                  - string
+              postalCode:
+                type:
+                  - "null"
+                  - integer
+                  - string
+              countryCode:
+                type:
+                  - "null"
+                  - string
+          clientRecord:
+            type:
+              - "null"
+              - integer
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          contactPersons:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          socialNetworks:
+            type:
+              - "null"
+              - object
+            properties:
+              website:
+                type:
+                  - "null"
+                  - string
+          supplierRecord:
+            type:
+              - "null"
+              - integer
+          shippingAddresses:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: products
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/products
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          sku:
+            type:
+              - "null"
+              - string
+          tax:
+            type:
+              - "null"
+              - number
+          cost:
+            type:
+              - "null"
+              - number
+          desc:
+            type:
+              - "null"
+              - string
+          kind:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          price:
+            type:
+              - "null"
+              - number
+          rates:
+            type:
+              - "null"
+              - array
+          stock:
+            type:
+              - "null"
+              - integer
+          total:
+            type:
+              - "null"
+              - number
+          typeId:
+            type:
+              - "null"
+              - string
+          weight:
+            type:
+              - "null"
+              - number
+          barcode:
+            type:
+              - "null"
+              - string
+          forSale:
+            type:
+              - "null"
+              - integer
+          hasStock:
+            type:
+              - "null"
+              - integer
+          variants:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          contactId:
+            type:
+              - "null"
+              - string
+          attributes:
+            type:
+              - "null"
+              - array
+          categoryId:
+            type:
+              - "null"
+              - string
+          contactName:
+            type:
+              - "null"
+              - string
+          factoryCode:
+            type:
+              - "null"
+              - string
+          forPurchase:
+            type:
+              - "null"
+              - integer
+          warehouseId:
+            type:
+              - "null"
+              - string
+          expAccountId:
+            type:
+              - "null"
+              - string
+          purchasePrice:
+            type:
+              - "null"
+              - number
+          salesChannelId:
+            type:
+              - "null"
+              - string
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: invoices
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/documents/invoice
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          tax:
+            type:
+              - "null"
+              - number
+          date:
+            type:
+              - "null"
+              - integer
+          desc:
+            type:
+              - "null"
+              - string
+          notes:
+            type:
+              - "null"
+              - string
+          total:
+            type:
+              - "null"
+              - number
+          status:
+            type:
+              - "null"
+              - integer
+          contact:
+            type:
+              - "null"
+              - string
+          dueDate:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          discount:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          products:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          subtotal:
+            type:
+              - "null"
+              - number
+          docNumber:
+            type:
+              - "null"
+              - string
+          contactName:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          paymentsTotal:
+            type:
+              - "null"
+              - integer
+          currencyChange:
+            type:
+              - "null"
+              - integer
+          salesChannelId:
+            type:
+              - "null"
+              - string
+          paymentsPending:
+            type:
+              - "null"
+              - number
+          paymentsRefunds:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: purchases
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/documents/purchase
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          tax:
+            type:
+              - "null"
+              - number
+          date:
+            type:
+              - "null"
+              - integer
+          desc:
+            type:
+              - "null"
+              - string
+          notes:
+            type:
+              - "null"
+              - string
+          total:
+            type:
+              - "null"
+              - number
+          status:
+            type:
+              - "null"
+              - integer
+          contact:
+            type:
+              - "null"
+              - string
+          dueDate:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          discount:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          products:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          subtotal:
+            type:
+              - "null"
+              - number
+          docNumber:
+            type:
+              - "null"
+              - string
+          contactName:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          paymentsTotal:
+            type:
+              - "null"
+              - integer
+          currencyChange:
+            type:
+              - "null"
+              - integer
+          salesChannelId:
+            type:
+              - "null"
+              - string
+          paymentsPending:
+            type:
+              - "null"
+              - number
+          paymentsRefunds:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: salesorders
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/documents/salesorder
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          tax:
+            type:
+              - "null"
+              - number
+          date:
+            type:
+              - "null"
+              - integer
+          desc:
+            type:
+              - "null"
+              - string
+          notes:
+            type:
+              - "null"
+              - string
+          total:
+            type:
+              - "null"
+              - number
+          status:
+            type:
+              - "null"
+              - integer
+          contact:
+            type:
+              - "null"
+              - string
+          dueDate:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          discount:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          products:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          subtotal:
+            type:
+              - "null"
+              - number
+          docNumber:
+            type:
+              - "null"
+              - string
+          contactName:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          paymentsTotal:
+            type:
+              - "null"
+              - integer
+          currencyChange:
+            type:
+              - "null"
+              - integer
+          salesChannelId:
+            type:
+              - "null"
+              - string
+          paymentsPending:
+            type:
+              - "null"
+              - number
+          paymentsRefunds:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: estimates
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/documents/estimate
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          tax:
+            type:
+              - "null"
+              - number
+          date:
+            type:
+              - "null"
+              - integer
+          desc:
+            type:
+              - "null"
+              - string
+          notes:
+            type:
+              - "null"
+              - string
+          total:
+            type:
+              - "null"
+              - number
+          status:
+            type:
+              - "null"
+              - integer
+          contact:
+            type:
+              - "null"
+              - string
+          dueDate:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          discount:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          products:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          subtotal:
+            type:
+              - "null"
+              - number
+          docNumber:
+            type:
+              - "null"
+              - string
+          contactName:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          paymentsTotal:
+            type:
+              - "null"
+              - integer
+          currencyChange:
+            type:
+              - "null"
+              - integer
+          salesChannelId:
+            type:
+              - "null"
+              - string
+          paymentsPending:
+            type:
+              - "null"
+              - number
+          paymentsRefunds:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: creditnotes
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/documents/creditnote
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          tax:
+            type:
+              - "null"
+              - number
+          date:
+            type:
+              - "null"
+              - integer
+          desc:
+            type:
+              - "null"
+              - string
+          notes:
+            type:
+              - "null"
+              - string
+          total:
+            type:
+              - "null"
+              - number
+          status:
+            type:
+              - "null"
+              - integer
+          contact:
+            type:
+              - "null"
+              - string
+          dueDate:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          discount:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          products:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          subtotal:
+            type:
+              - "null"
+              - number
+          docNumber:
+            type:
+              - "null"
+              - string
+          contactName:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          paymentsTotal:
+            type:
+              - "null"
+              - integer
+          currencyChange:
+            type:
+              - "null"
+              - integer
+          salesChannelId:
+            type:
+              - "null"
+              - string
+          paymentsPending:
+            type:
+              - "null"
+              - number
+          paymentsRefunds:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: purchaseorders
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/invoicing/v1/documents/purchaseorder
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          tax:
+            type:
+              - "null"
+              - number
+          date:
+            type:
+              - "null"
+              - integer
+          desc:
+            type:
+              - "null"
+              - string
+          notes:
+            type:
+              - "null"
+              - string
+          total:
+            type:
+              - "null"
+              - number
+          status:
+            type:
+              - "null"
+              - integer
+          contact:
+            type:
+              - "null"
+              - string
+          dueDate:
+            type:
+              - "null"
+              - integer
+          currency:
+            type:
+              - "null"
+              - string
+          discount:
+            type:
+              - "null"
+              - integer
+          language:
+            type:
+              - "null"
+              - string
+          products:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          subtotal:
+            type:
+              - "null"
+              - number
+          docNumber:
+            type:
+              - "null"
+              - string
+          contactName:
+            type:
+              - "null"
+              - string
+          customFields:
+            type:
+              - "null"
+              - array
+            items:
+              type: object
+          paymentsTotal:
+            type:
+              - "null"
+              - integer
+          currencyChange:
+            type:
+              - "null"
+              - integer
+          salesChannelId:
+            type:
+              - "null"
+              - string
+          paymentsPending:
+            type:
+              - "null"
+              - number
+          paymentsRefunds:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+  - type: DeclarativeStream
+    name: projects
+    retriever:
+      type: SimpleRetriever
+      paginator:
+        $ref: "#/definitions/linked/SimpleRetriever/paginator"
+      requester:
+        type: HttpRequester
+        http_method: GET
+        authenticator:
+          $ref: "#/definitions/linked/HttpRequester/authenticator"
+        url: https://api.holded.com/api/projects/v1/projects
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: []
+    primary_key: id
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        properties:
+          id:
+            type: string
+          date:
+            type:
+              - "null"
+              - integer
+          desc:
+            type:
+              - "null"
+              - string
+          name:
+            type:
+              - "null"
+              - string
+          tags:
+            type:
+              - "null"
+              - array
+          lists:
+            type:
+              - "null"
+              - array
+          price:
+            type:
+              - "null"
+              - integer
+          sales:
+            type:
+              - "null"
+              - object
+          labels:
+            type:
+              - "null"
+              - array
+          status:
+            type:
+              - "null"
+              - integer
+          dueDate:
+            type:
+              - "null"
+              - integer
+          billable:
+            type:
+              - "null"
+              - integer
+          category:
+            type:
+              - "null"
+              - integer
+          expenses:
+            type:
+              - "null"
+              - object
+          contactId:
+            type:
+              - "null"
+              - string
+          estimates:
+            type:
+              - "null"
+              - object
+          contactName:
+            type:
+              - "null"
+              - string
+          timeTracking:
+            type:
+              - "null"
+              - object
+          numberOfTasks:
+            type:
+              - "null"
+              - integer
+          completedTasks:
+            type:
+              - "null"
+              - integer
+        additionalProperties: true
+
+spec:
+  type: Spec
+  documentation_url: https://developers.holded.com/reference/api-key
+  connection_specification:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    required:
+      - api_key
+    properties:
+      api_key:
+        type: string
+        description: |
+          Your Holded API key. Generate one at https://app.holded.com/api
+        order: 0
+        title: API Key
+        airbyte_secret: true
+    additionalProperties: true
+
+metadata:
+  testedStreams:
+    contacts:
+      streamHash: cee74920aa5c45e541710745d4304778dfd78ed8
+    products:
+      streamHash: 80182bde21c6d04cb1b27332d403162e0d772224
+    invoices:
+      streamHash: 3e951e4cdd4eeb51ae1291d0009da3b02fd7e627
+    purchases:
+      streamHash: 767a5cea57a3371c4b03b0556356727a35d2cdcb
+    salesorders:
+      streamHash: 46854fd4f9c8237789be14a4da607c5b27144fbb
+    estimates:
+      streamHash: aed0793ca0734b9bedf8ccbbd3e65054399d2523
+    creditnotes:
+      streamHash: 23ede9d062624bdb3ca8b1ecdf248778b6011cfd
+    purchaseorders:
+      streamHash: 26fff8a8820d40d4e731c2533e3b3a16961c7d52
+    projects:
+      streamHash: a72eea62f466058ff02a5f130332b7ef5b06948f
