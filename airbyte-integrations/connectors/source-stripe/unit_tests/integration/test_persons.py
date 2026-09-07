@@ -2,6 +2,7 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 
+import json
 from datetime import datetime, timedelta, timezone
 from typing import List
 from unittest import TestCase
@@ -14,7 +15,7 @@ from airbyte_cdk.models import AirbyteStreamStatus, FailureType, StreamDescripto
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -351,6 +352,43 @@ class PersonsTest(TestCase):
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert int(most_recent_state.stream_state.updated) == int(start_datetime.timestamp())
         assert len(actual_messages.records) == 1
+
+    @HttpMocker()
+    def test_incremental_hydrated_mode_rereads_person_from_its_connected_account(self, http_mocker: HttpMocker):
+        state_datetime = _NOW - timedelta(days=5)
+        # The person belongs to a connected account, which is not the account configured on the source.
+        person = _create_record("persons").with_id("person_hydrated").with_field(FieldPath("account"), "acct_connected").build()
+
+        http_mocker.get(
+            _create_events_request()
+            .with_created_gte(state_datetime)
+            .with_created_lte(_NOW)
+            .with_limit(100)
+            .with_types(["person.created", "person.updated", "person.deleted"])
+            .build(),
+            _create_response()
+            .with_record(
+                record=_create_persons_event_record(event_type="person.updated").with_field(NestedPath(["data", "object"]), person)
+            )
+            .build(),
+        )
+        http_mocker.get(
+            StripeRequestBuilder._for_endpoint("accounts/acct_connected/persons/person_hydrated", _ACCOUNT_ID, _CLIENT_SECRET).build(),
+            HttpResponse(json.dumps({**person, "first_name": "fresh-from-endpoint"}), 200),
+        )
+
+        config = _create_config().with_event_based_incremental_sync_mode("hydrated_events").build()
+        state = StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build()
+        actual_messages = read(
+            get_source(config=config, state=state),
+            config=config,
+            catalog=_create_catalog(sync_mode=SyncMode.incremental),
+            state=state,
+        )
+
+        assert len(actual_messages.records) == 1
+        assert actual_messages.records[0].record.data["id"] == "person_hydrated"
+        assert actual_messages.records[0].record.data["first_name"] == "fresh-from-endpoint"
 
     @HttpMocker()
     def test_rate_limited_parent_stream_accounts(self, http_mocker: HttpMocker) -> None:

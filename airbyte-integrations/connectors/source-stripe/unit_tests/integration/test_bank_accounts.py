@@ -16,7 +16,7 @@ from airbyte_cdk.sources.source import TState
 from airbyte_cdk.sources.streams.http.error_handlers.http_status_error_handler import HttpStatusErrorHandler
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 from airbyte_cdk.test.mock_http.response_builder import (
     FieldPath,
     HttpResponseBuilder,
@@ -414,6 +414,67 @@ class IncrementalTest(TestCase):
         most_recent_state = output.most_recent_state
         assert most_recent_state.stream_descriptor == StreamDescriptor(name=_STREAM_NAME)
         assert most_recent_state.stream_state.updated == str(cursor_value)
+
+    @HttpMocker()
+    def test_given_hydrated_mode_when_read_then_refresh_record_from_customer_bank_account_endpoint(self, http_mocker: HttpMocker) -> None:
+        state_datetime = _NOW - timedelta(days=5)
+        cursor_value = int(state_datetime.timestamp()) + 1
+        bank_account = _a_bank_account().with_id("ba_hydrated").build()
+        # Only the detail endpoint returns this marker, so the assertions below fail if hydration never happens.
+        hydrated_bank_account = {**bank_account, "metadata": {"hydration_source": "detail-endpoint"}}
+
+        http_mocker.get(
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_response().with_record(_an_event().with_cursor(cursor_value).with_field(_DATA_FIELD, bank_account)).build(),
+        )
+        http_mocker.get(
+            StripeRequestBuilder._for_endpoint(
+                f"customers/{bank_account['customer']}/bank_accounts/ba_hydrated", _ACCOUNT_ID, _CLIENT_SECRET
+            ).build(),
+            HttpResponse(json.dumps(hydrated_bank_account), 200),
+        )
+
+        output = self._read(
+            _config().with_event_based_incremental_sync_mode("hydrated_events"),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+        )
+
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "ba_hydrated"
+        assert output.records[0].record.data["updated"] == cursor_value
+        assert output.records[0].record.data["metadata"] == {"hydration_source": "detail-endpoint"}
+
+    @HttpMocker()
+    def test_given_hydrated_mode_and_deleted_object_when_read_then_skip_record(self, http_mocker: HttpMocker) -> None:
+        state_datetime = _NOW - timedelta(days=5)
+        cursor_value = int(state_datetime.timestamp()) + 1
+        bank_account = _a_bank_account().with_id("ba_deleted").build()
+
+        http_mocker.get(
+            _events_request().with_created_gte(state_datetime).with_created_lte(_NOW).with_limit(100).with_types(_EVENT_TYPES).build(),
+            _events_response()
+            .with_record(
+                _an_event()
+                .with_cursor(cursor_value)
+                .with_field(FieldPath("type"), "customer.source.deleted")
+                .with_field(_DATA_FIELD, bank_account)
+            )
+            .build(),
+        )
+        http_mocker.get(
+            StripeRequestBuilder._for_endpoint(
+                f"customers/{bank_account['customer']}/bank_accounts/ba_deleted", _ACCOUNT_ID, _CLIENT_SECRET
+            ).build(),
+            HttpResponse(json.dumps({"error": {"type": "invalid_request_error", "message": "No such source: 'ba_deleted'"}}), 404),
+        )
+
+        output = self._read(
+            _config().with_event_based_incremental_sync_mode("hydrated_events"),
+            StateBuilder().with_stream_state(_STREAM_NAME, {"updated": int(state_datetime.timestamp())}).build(),
+        )
+
+        assert output.records == []
+        assert output.errors == []
 
     @HttpMocker()
     def test_given_state_and_pagination_when_read_then_return_records(self, http_mocker: HttpMocker) -> None:
