@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.jira.connector
-* airbyte_agent_sdk.connectors.jira.connector_model
-* airbyte_agent_sdk.connectors.jira.models
-* airbyte_agent_sdk.connectors.jira.types
+* [airbyte_agent_sdk.connectors.jira.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-connector)
+* [airbyte_agent_sdk.connectors.jira.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-connector_model)
+* [airbyte_agent_sdk.connectors.jira.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-models)
+* [airbyte_agent_sdk.connectors.jira.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-types)
 
 Classes
 -------
@@ -742,7 +742,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['api_search', 'create', 'get', 'update', 'delete', 'list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['api_search', 'create', 'get', 'update', 'delete', 'list', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
