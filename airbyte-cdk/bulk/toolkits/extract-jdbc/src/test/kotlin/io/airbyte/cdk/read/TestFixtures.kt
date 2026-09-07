@@ -219,14 +219,17 @@ object TestFixtures {
         ) {}
     }
 
-    fun Stream.bootstrap(opaqueStateValue: OpaqueStateValue?): StreamFeedBootstrap =
+    fun Stream.bootstrap(
+        opaqueStateValue: OpaqueStateValue?,
+        medium: DataChannelMedium = DataChannelMedium.STDIO,
+    ): StreamFeedBootstrap =
         StreamFeedBootstrap(
             outputConsumer = BufferingOutputConsumer(ClockFactory().fixed()),
             metaFieldDecorator = MockMetaFieldDecorator,
             stateManager = StateManager(initialStreamStates = mapOf(this to opaqueStateValue)),
             stream = this,
             DataChannelFormat.JSONL,
-            DataChannelMedium.STDIO,
+            medium,
             8192,
             ClockFactory().fixed()
         )
