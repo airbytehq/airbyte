@@ -1,5 +1,15 @@
 # Airbyte Agents release notes
 
+## September 7, 2026
+
+SDK
+
+- Connectors with a Context Store now offer a `context_store_sql_query` method, so your agents can run read-only SQL against your synced data from the SDK instead of building filter objects. Each connector's reference documentation now lists the tables and columns you can query. This method runs through Airbyte's hosted service and isn't available when you run connectors locally with your own credentials.
+
+Other
+
+- Your agents now read Context Store data with SQL queries by default across chat, the MCP server, and connector documentation. Filter-based Context Store searches still work when your agents call them directly, but the guidance your agents receive now steers them to SQL, which handles counting, grouping, and joining across entities more reliably.
+
 ## September 4, 2026
 
 Connectors
