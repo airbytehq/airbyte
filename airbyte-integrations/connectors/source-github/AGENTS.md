@@ -34,11 +34,12 @@ Things worth knowing before touching either half:
   `PullRequestCommits`), `Projects` (parent of `ProjectColumns`, itself the parent of
   `ProjectCards`) and `CommitComments` (built internally by `CommitCommentReactions` through
   `ReactionStream.parent_entity`). Do not delete them even though the user-facing `branches`,
-  `teams`, `pull_requests`, `projects` and `commit_comments` streams are declarative now. None
-  has a file under `source_github/schemas/` any more, so each overrides `get_json_schema()` —
-  returning only the fields their children actually read, rather than a second copy of the
-  inline schema that could drift from it. A technical stream you keep behind after a migration
-  needs the same treatment. `Teams`, `Projects` and `CommitComments` additionally keep
+  `teams`, `pull_requests`, `projects` and `commit_comments` streams are declarative now.
+  `Branches` and `Teams` have no file under `source_github/schemas/` any more and override
+  `get_json_schema()` with just the fields their children read. `PullRequests`, `Projects` and
+  `CommitComments` keep their `schemas/*.json` files instead (a second copy of the inline
+  manifest schema, but the parent reads never validate against it); both forms are fine for a
+  technical stream, pick whichever is less code. `Teams`, `Projects` and `CommitComments` keep
   `use_cache = True`, matched by `use_cache: true` on their manifest requesters, so the parent
   read shares `teams.sqlite`/`projects.sqlite`/`commit_comments.sqlite` with the declarative
   stream instead of paying for the listing twice — that only works while both sides send the

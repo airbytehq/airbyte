@@ -558,15 +558,8 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
     API docs: https://docs.github.com/en/rest/pulls/pulls?apiVersion=2022-11-28#list-pull-requests
 
     Retained only as the parent of `PullRequestCommits`, which stays Python until Step 7 migrates
-    the parent-child group. The catalog's `pull_requests` stream comes from `manifest.yaml` — this
-    class is not returned by `SourceGithub.streams()` and must stay in step with the manifest
-    definition until it can be deleted. Its parent read is always a first read (no state), so it
-    lists ascending where the manifest stream lists descending; the two never share a cache entry,
-    which is why the manifest requester does not set `use_cache`.
-
-    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
-    `schemas/pull_requests.json`; `get_json_schema` is overridden below so the class stays usable
-    (the base implementation would raise `FileNotFoundError`), following what `Branches` does.
+    the parent-child group. The catalog's `pull_requests` stream comes from `manifest.yaml`; this
+    class is not returned by `SourceGithub.streams()`.
 
     TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
@@ -614,20 +607,6 @@ class PullRequests(SemiIncrementalMixin, GithubStream):
             return "asc"
         return "desc"
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        # `PullRequestCommits` only reads `repository` and `number` off these records, and the
-        # mixin reads the cursor. The user-facing schema is the inline one in `manifest.yaml`;
-        # duplicating it here would only give it a chance to drift.
-        return {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {
-                "repository": {"type": "string"},
-                "number": {"type": ["null", "integer"]},
-                "updated_at": {"type": ["null", "string"], "format": "date-time"},
-            },
-        }
-
 
 class CommitComments(SemiIncrementalMixin, GithubStream):
     """
@@ -635,16 +614,8 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
 
     Retained only as the parent of `CommitCommentReactions`, which builds it internally
     (`ReactionStream.parent_entity`) and stays Python until Step 7 migrates the parent-child
-    group. The catalog's `commit_comments` stream comes from `manifest.yaml` — this class is not
-    returned by `SourceGithub.streams()` and must stay in step with the manifest definition until
-    it can be deleted. `use_cache` here and `use_cache: true` on the manifest requester make both
-    sides name their cache `commit_comments.sqlite`, so the parent read reuses the pages the
-    declarative stream already fetched.
-
-    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
-    `schemas/commit_comments.json`; `get_json_schema` is overridden below so the class stays
-    usable (the base implementation would raise `FileNotFoundError`), following what `Branches`
-    does.
+    group. The catalog's `commit_comments` stream comes from `manifest.yaml`; this class is not
+    returned by `SourceGithub.streams()`.
 
     TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
@@ -654,19 +625,6 @@ class CommitComments(SemiIncrementalMixin, GithubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/comments"
 
-    def get_json_schema(self) -> Mapping[str, Any]:
-        # `CommitCommentReactions` only reads `id` (its `parent_key`) and `repository` off these
-        # records, and the mixin reads the cursor.
-        return {
-            "$schema": "https://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {
-                "repository": {"type": "string"},
-                "id": {"type": ["null", "integer"]},
-                "updated_at": {"type": ["null", "string"], "format": "date-time"},
-            },
-        }
-
 
 class Projects(SemiIncrementalMixin, GithubStream):
     """
@@ -674,14 +632,7 @@ class Projects(SemiIncrementalMixin, GithubStream):
 
     Retained only as the parent of `ProjectColumns`, itself the parent of `ProjectCards`; both
     stay Python until Step 7 migrates the parent-child group. The catalog's `projects` stream
-    comes from `manifest.yaml` — this class is not returned by `SourceGithub.streams()` and must
-    stay in step with the manifest definition until it can be deleted. `use_cache` here and
-    `use_cache: true` on the manifest requester make both sides name their cache
-    `projects.sqlite`, so the parent read reuses the pages the declarative stream already fetched.
-
-    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
-    `schemas/projects.json`; `get_json_schema` is overridden below so the class stays usable (the
-    base implementation would raise `FileNotFoundError`), following what `Branches` does.
+    comes from `manifest.yaml`; this class is not returned by `SourceGithub.streams()`.
 
     TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
