@@ -9,8 +9,11 @@ and typos in stream definitions.
 
 from pathlib import Path
 
+import jsonschema
 import pytest
 import yaml
+
+from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
 
 
 MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
@@ -24,6 +27,19 @@ def manifest():
 
 def _get_stream_def(manifest, stream_name):
     return manifest["definitions"]["streams"][stream_name]
+
+
+def _collect_component_fields(node, component_type, field_name):
+    fields = []
+    if isinstance(node, dict):
+        if node.get("type") == component_type and field_name in node:
+            fields.append(node[field_name])
+        for value in node.values():
+            fields.extend(_collect_component_fields(value, component_type, field_name))
+    elif isinstance(node, list):
+        for value in node:
+            fields.extend(_collect_component_fields(value, component_type, field_name))
+    return fields
 
 
 def _get_date_field_values(stream):
@@ -144,3 +160,67 @@ def test_num_workers_spec_field(manifest):
     assert num_workers["default"] == 2
     assert num_workers.get("minimum", 0) >= 1
     assert num_workers.get("maximum", 999) <= 20
+
+
+def test_defaulted_spec_fields_are_not_required(manifest):
+    required = manifest["spec"]["connection_specification"]["required"]
+
+    assert "timezone" not in required
+    assert "token_refresh_endpoint" not in required
+    for field in ("org_id", "client_id", "client_secret", "start_date"):
+        assert field in required
+
+
+def test_minimal_config_validates_without_defaulted_fields(manifest):
+    specification = manifest["spec"]["connection_specification"]
+    config = {
+        "org_id": 123,
+        "client_id": "client-id",
+        "client_secret": "client-secret",
+        "start_date": "2024-01-01",
+    }
+
+    jsonschema.validate(config, specification)
+
+
+def test_token_refresh_endpoint_requires_https(manifest):
+    specification = manifest["spec"]["connection_specification"]
+    endpoint_property = specification["properties"]["token_refresh_endpoint"]
+    assert endpoint_property["pattern"].startswith("^https://")
+
+    base_config = {
+        "org_id": 123,
+        "client_id": "client-id",
+        "client_secret": "client-secret",
+        "start_date": "2024-01-01",
+    }
+    with pytest.raises(jsonschema.ValidationError):
+        jsonschema.validate(
+            {**base_config, "token_refresh_endpoint": "http://proxy.example.com/token"},
+            specification,
+        )
+    jsonschema.validate(
+        {**base_config, "token_refresh_endpoint": "https://proxy.example.com/token"},
+        specification,
+    )
+
+
+def test_connector_internal_spec_fields_are_hidden(manifest):
+    properties = manifest["spec"]["connection_specification"]["properties"]
+
+    assert properties["token_refresh_endpoint"]["airbyte_hidden"] is True
+    assert properties["backoff_factor"]["airbyte_hidden"] is True
+
+
+def test_default_interpolations_are_safe_with_empty_config(manifest):
+    backoff_factors = _collect_component_fields(manifest, "ExponentialBackoffStrategy", "factor")
+    lookback_windows = _collect_component_fields(manifest, "DatetimeBasedCursor", "lookback_window")
+
+    assert len(backoff_factors) >= 4
+    assert len(lookback_windows) >= 4
+    interpolation = JinjaInterpolation()
+
+    for expression in backoff_factors:
+        assert float(interpolation.eval(expression, config={})) == 5.0
+    for expression in lookback_windows:
+        assert interpolation.eval(expression, config={}) == "P30D"
