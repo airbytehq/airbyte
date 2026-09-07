@@ -132,6 +132,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request | Subject                                                                                                                                                                |
 |---------|------------|--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.0.66 | 2026-08-30 | [85202](https://github.com/airbytehq/airbyte/pull/85202) | Fix `videos` stream returning channel and playlist results without a video ID, and fix syncs configured with more than one channel ID |
 | 0.0.65 | 2026-08-18 | [84813](https://github.com/airbytehq/airbyte/pull/84813) | Update dependencies |
 | 0.0.64 | 2026-08-11 | [84181](https://github.com/airbytehq/airbyte/pull/84181) | Update dependencies |
 | 0.0.63 | 2026-08-04 | [83693](https://github.com/airbytehq/airbyte/pull/83693) | Update dependencies |
