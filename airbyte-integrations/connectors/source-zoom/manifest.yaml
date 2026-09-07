@@ -7068,11 +7068,10 @@ definitions:
               grant_type: "account_credentials"
               type: CustomAuthenticator
             type: CustomRequester
-            class_name: source_declarative_manifest.components.ZoomPhoneCachedRequester
+            class_name: source_declarative_manifest.components.ZoomPhoneRecordingsRequester
             rate_limit_category: MEDIUM
             requester_role: transcript_parent
-            cache_name: phone_recordings
-            use_cache: true
+            cache_page_size: 300
             path: "/phone/recordings"
           paginator:
             type: DefaultPaginator
@@ -14842,11 +14841,10 @@ streams:
         grant_type: "account_credentials"
         type: CustomAuthenticator
       type: CustomRequester
-      class_name: source_declarative_manifest.components.ZoomPhoneCachedRequester
+      class_name: source_declarative_manifest.components.ZoomPhoneRecordingsRequester
       rate_limit_category: MEDIUM
       requester_role: selected_stream
-      cache_name: phone_recordings
-      use_cache: true
+      cache_page_size: 300
       path: "/phone/recordings"
     paginator:
       type: DefaultPaginator

@@ -13,9 +13,9 @@ from datetime import date, datetime, timedelta, timezone
 from http import HTTPStatus
 from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
-from threading import Lock, RLock, Thread
+from threading import Lock, Thread
 from typing import Any, Callable, ClassVar, Iterable, Mapping, Optional, Union
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlencode, urlsplit
 
 import requests
 from requests import HTTPError
@@ -400,7 +400,9 @@ class ZoomPhoneLoggingRequester(HttpRequester):
     def _get_custom_cached_response(
         self,
         stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
         path: Optional[str],
+        request_params: Optional[Mapping[str, Any]],
     ) -> Optional[requests.Response]:
         return None
 
@@ -408,7 +410,9 @@ class ZoomPhoneLoggingRequester(HttpRequester):
         self,
         response: requests.Response,
         stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
         path: Optional[str],
+        request_params: Optional[Mapping[str, Any]],
     ) -> None:
         return None
 
@@ -437,7 +441,12 @@ class ZoomPhoneLoggingRequester(HttpRequester):
 
         started_at = time.monotonic()
         try:
-            response = self._get_custom_cached_response(stream_slice=stream_slice, path=path)
+            response = self._get_custom_cached_response(
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_params=request_params,
+            )
             if response is None:
                 response = super().send_request(
                     stream_state=stream_state,
@@ -452,7 +461,11 @@ class ZoomPhoneLoggingRequester(HttpRequester):
                 )
                 if response is not None:
                     self._store_custom_cached_response(
-                        response=response, stream_slice=stream_slice, path=path
+                        response=response,
+                        stream_slice=stream_slice,
+                        next_page_token=next_page_token,
+                        path=path,
+                        request_params=request_params,
                     )
         except Exception as exc:
             duration_ms = round((time.monotonic() - started_at) * 1000)
@@ -527,19 +540,13 @@ class ZoomPhoneLoggingRequester(HttpRequester):
                 cdk_version = package_version("airbyte-cdk")
             except PackageNotFoundError:
                 cdk_version = "unknown"
-            try:
-                requests_cache_version = package_version("requests-cache")
-            except PackageNotFoundError:
-                requests_cache_version = "unknown"
-
             configured_workers = self.config.get("num_workers", 20)
             light_rps = self.config.get("phone_light_requests_per_second", 20)
             medium_rps = self.config.get("phone_medium_requests_per_second", 10)
             heavy_rps = self.config.get("phone_heavy_requests_per_second", 5)
             heavy_per_day = self.config.get("phone_heavy_requests_per_day", 15000)
             self.logger.info(
-                f"Runtime cdk={cdk_version} requests_cache={requests_cache_version} "
-                f"workers={configured_workers}"
+                f"Runtime cdk={cdk_version} workers={configured_workers}"
             )
             self.logger.info(
                 "API budget "
@@ -584,134 +591,340 @@ class ZoomPhoneLoggingRequester(HttpRequester):
 
 
 @dataclass
-class ZoomPhoneCachedRequester(ZoomPhoneLoggingRequester):
-    """Zoom Phone requester using Airbyte's native SQLite HTTP cache on disk.
+class ZoomPhoneRecordingsRequester(ZoomPhoneLoggingRequester):
+    """Disk-cache ``/phone/recordings`` pages for reuse by child traversals.
 
-    Airbyte's HttpClient currently hardcodes requests-cache's SQLite backend when
-    ``use_cache`` is enabled. The same ``phone_recordings`` cache file is shared
-    by the normal phone_recordings stream and the embedded parent traversal used
-    by the transcript streams so identical parent requests can be reused.
+    Airbyte instantiates the selected ``phone_recordings`` stream and the
+    embedded ``phone_recordings`` parent used by transcript streams separately.
+    Without an explicit shared cache, those retrievers can call Zoom for the
+    same date/page more than once.
 
-    With concurrent CDK workers, however, Airbyte can create multiple requester
-    instances that each open the same SQLite cache file with their own lock. On
-    requests-cache versions that use the older three-write retry loop, this can
-    surface as ``database is locked`` / ``retrying (1/3)`` warnings even though
-    the API requests themselves are healthy.
+    Cache each final HTTP 200 page in a process-local on-disk SQLite database.
+    The key is the actual pagination identity: ``from``, ``to``, ``page_size``
+    and the *current* ``next_page_token``. The first page uses an empty token.
+    Cached responses include Zoom's returned ``next_page_token``, so a later
+    traversal follows the exact original pagination chain and does not depend on
+    Zoom generating deterministic cursor tokens across separate requests.
 
-    Keep HTTP requests fully concurrent, but make all requester instances that
-    point at the same SQLite file share one process-wide RLock for cache access.
-    Also give SQLite a 30-second busy timeout so a rare lock from another
-    connection waits instead of immediately entering requests-cache's retry loop.
-    This affects only the tiny local cache read/write section; it does not reduce
-    ``num_workers`` or serialize calls to Zoom.
+    A per-page single-flight lock means that if the selected stream and an
+    embedded parent happen to request the same page concurrently, only one of
+    them calls Zoom; the other waits briefly and then reads the stored response.
+    Different pages/date windows remain fully concurrent, so ``num_workers`` is
+    not reduced.
     """
 
-    use_cache: bool = True
+    use_cache: bool = False
+    cache_page_size: int = 300
 
-    _default_cache_dir: ClassVar[str] = "/tmp/airbyte-request-cache"
-    _sqlite_busy_timeout_ms: ClassVar[int] = 30_000
-    _cache_configs_logged: ClassVar[set[tuple[str, str]]] = set()
-    _cache_config_lock: ClassVar[Lock] = Lock()
-    _sqlite_cache_locks: ClassVar[dict[str, Any]] = {}
-    _sqlite_cache_locks_lock: ClassVar[Lock] = Lock()
+    _cache_lock: ClassVar[Lock] = Lock()
+    _cache_connection: ClassVar[Optional[sqlite3.Connection]] = None
+    _cache_path: ClassVar[Optional[str]] = None
+    _cache_config_logged: ClassVar[bool] = False
+    _cache_error_logged: ClassVar[bool] = False
+    _first_hit_logged_for_roles: ClassVar[set[tuple[str, str]]] = set()
+    _page_locks: ClassVar[dict[tuple[str, str, int, str], Lock]] = {}
+    _page_locks_lock: ClassVar[Lock] = Lock()
 
     def __post_init__(self, parameters: Mapping[str, Any]) -> None:
-        cache_dir = os.environ.get("REQUEST_CACHE_PATH") or self._default_cache_dir
-        os.environ.setdefault("REQUEST_CACHE_PATH", cache_dir)
-        Path(cache_dir).mkdir(parents=True, exist_ok=True)
-
-        self.use_cache = True
+        # Do not stack Airbyte's generic requests-cache SQLite backend on top of
+        # this cache. This explicit cache is shared by the selected stream and
+        # embedded parents and avoids the native cache's concurrent-write
+        # ``database is locked`` behaviour seen with many CDK workers.
+        self.use_cache = False
         super().__post_init__(parameters)
-
-        db_path = self._configure_native_sqlite_cache()
-        cache_key = self.cache_name or self.name
-        log_key = (cache_key, db_path or cache_dir)
-        with self._cache_config_lock:
-            if log_key not in self._cache_configs_logged:
-                fields = [
-                    f"Cache [{self.name}]",
-                    f"namespace={cache_key}",
-                    "backend=sqlite",
-                    f"path={db_path or cache_dir}",
-                    f"busy_timeout_ms={self._sqlite_busy_timeout_ms}",
-                    "shared_process_lock=true",
-                ]
-                self.logger.info(" ".join(fields))
-                self._cache_configs_logged.add(log_key)
+        self._ensure_recordings_cache()
 
     @classmethod
-    def _shared_sqlite_lock(cls, db_path: str) -> Any:
-        """Return one RLock for every requester instance using the same DB file."""
-        with cls._sqlite_cache_locks_lock:
-            lock = cls._sqlite_cache_locks.get(db_path)
+    def _recordings_cache_file(cls) -> str:
+        if cls._cache_path is None:
+            cls._cache_path = os.environ.get(
+                "AIRBYTE_ZOOM_PHONE_RECORDINGS_CACHE_PATH",
+                f"/tmp/airbyte-zoom-phone-recordings-cache-{os.getpid()}.sqlite",
+            )
+        return cls._cache_path
+
+    def _ensure_recordings_cache(self) -> None:
+        with self._cache_lock:
+            if self.__class__._cache_connection is None:
+                cache_path = self._recordings_cache_file()
+                Path(cache_path).parent.mkdir(parents=True, exist_ok=True)
+                connection = sqlite3.connect(cache_path, timeout=30, check_same_thread=False)
+                connection.execute("PRAGMA journal_mode=WAL")
+                connection.execute("PRAGMA synchronous=NORMAL")
+                connection.execute("PRAGMA busy_timeout=30000")
+                connection.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS phone_recordings_page_cache (
+                        request_from TEXT NOT NULL,
+                        request_to TEXT NOT NULL,
+                        page_size INTEGER NOT NULL,
+                        page_token TEXT NOT NULL,
+                        status_code INTEGER NOT NULL,
+                        content BLOB NOT NULL,
+                        content_type TEXT,
+                        encoding TEXT,
+                        PRIMARY KEY (request_from, request_to, page_size, page_token)
+                    )
+                    """
+                )
+                connection.commit()
+                self.__class__._cache_connection = connection
+
+            if not self.__class__._cache_config_logged:
+                self.logger.info(
+                    f"Cache [{self.name}] namespace=phone_recordings_pages "
+                    f"backend=sqlite key=from,to,page_size,next_page_token "
+                    f"path={self._recordings_cache_file()} single_flight=true"
+                )
+                self.__class__._cache_config_logged = True
+
+    @staticmethod
+    def _slice_mapping(stream_slice: Optional[StreamSlice]) -> list[Mapping[str, Any]]:
+        mappings: list[Mapping[str, Any]] = []
+        if stream_slice is None:
+            return mappings
+
+        cursor_slice = getattr(stream_slice, "cursor_slice", None)
+        if isinstance(cursor_slice, Mapping):
+            mappings.append(cursor_slice)
+
+        partition = getattr(stream_slice, "partition", None)
+        if isinstance(partition, Mapping):
+            mappings.append(partition)
+
+        if isinstance(stream_slice, Mapping):
+            mappings.append(stream_slice)
+
+        return mappings
+
+    @classmethod
+    def _window_from_slice(
+        cls,
+        stream_slice: Optional[StreamSlice],
+        request_params: Optional[Mapping[str, Any]],
+    ) -> tuple[Optional[str], Optional[str]]:
+        if isinstance(request_params, Mapping):
+            request_from = request_params.get("from")
+            request_to = request_params.get("to")
+            if request_from not in (None, "") and request_to not in (None, ""):
+                return str(request_from), str(request_to)
+
+        for mapping in cls._slice_mapping(stream_slice):
+            request_from = mapping.get("from", mapping.get("start_time"))
+            request_to = mapping.get("to", mapping.get("end_time"))
+            if request_from not in (None, "") and request_to not in (None, ""):
+                return str(request_from), str(request_to)
+
+        return None, None
+
+    @staticmethod
+    def _page_token_value(
+        next_page_token: Optional[Mapping[str, Any]],
+        request_params: Optional[Mapping[str, Any]],
+    ) -> str:
+        if isinstance(request_params, Mapping):
+            value = request_params.get("next_page_token")
+            if value not in (None, ""):
+                return str(value)
+
+        if isinstance(next_page_token, Mapping):
+            value = next_page_token.get("next_page_token")
+            if value not in (None, ""):
+                return str(value)
+            if len(next_page_token) == 1:
+                value = next(iter(next_page_token.values()))
+                if value not in (None, ""):
+                    return str(value)
+
+        return ""
+
+    def _cache_key(
+        self,
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
+        request_params: Optional[Mapping[str, Any]],
+    ) -> Optional[tuple[str, str, int, str]]:
+        request_from, request_to = self._window_from_slice(stream_slice, request_params)
+        if request_from is None or request_to is None:
+            return None
+        page_token = self._page_token_value(next_page_token, request_params)
+        return request_from, request_to, int(self.cache_page_size), page_token
+
+    @classmethod
+    def _single_flight_lock(cls, key: tuple[str, str, int, str]) -> Lock:
+        with cls._page_locks_lock:
+            lock = cls._page_locks.get(key)
             if lock is None:
-                lock = RLock()
-                cls._sqlite_cache_locks[db_path] = lock
+                lock = Lock()
+                cls._page_locks[key] = lock
             return lock
 
-    def _configure_native_sqlite_cache(self) -> Optional[str]:
-        """Harden Airbyte's native requests-cache SQLite backend for concurrency.
-
-        Airbyte's HttpClient constructs ``requests_cache.SQLiteCache`` internally,
-        so the declarative manifest cannot pass ``busy_timeout`` or a shared lock
-        into the backend constructor. Configure the already-created backend here.
-
-        The responses and redirects stores are both pointed at the same DB file.
-        Every Zoom Phone requester instance using that file receives the same
-        process-wide RLock. Existing connections get ``PRAGMA busy_timeout``
-        immediately; future connections also receive a 30-second sqlite3 timeout.
-        """
-        http_client = getattr(self, "_http_client", None)
-        session = getattr(http_client, "_session", None)
-        cache = getattr(session, "cache", None)
-        responses = getattr(cache, "responses", None)
-        redirects = getattr(cache, "redirects", None)
-
-        if responses is None:
-            self.logger.warning(
-                f"Cache [{self.name}] could not configure SQLite contention settings; "
-                "native cache backend was not found"
+    @classmethod
+    def _log_cache_error_once(cls, logger: logging.Logger, operation: str, exc: Exception) -> None:
+        with cls._cache_lock:
+            if cls._cache_error_logged:
+                return
+            logger.warning(
+                f"Phone recordings page cache {operation} failed; falling back to Zoom HTTP. "
+                f"error={type(exc).__name__}"
             )
+            cls._cache_error_logged = True
+
+    def send_request(
+        self,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+        path: Optional[str] = None,
+        request_headers: Optional[Mapping[str, Any]] = None,
+        request_params: Optional[Mapping[str, Any]] = None,
+        request_body_data: Optional[Union[Mapping[str, Any], str]] = None,
+        request_body_json: Optional[Mapping[str, Any]] = None,
+        log_formatter: Optional[Callable[[requests.Response], Any]] = None,
+    ) -> Optional[requests.Response]:
+        key = self._cache_key(stream_slice, next_page_token, request_params)
+        if key is None:
+            return super().send_request(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_headers=request_headers,
+                request_params=request_params,
+                request_body_data=request_body_data,
+                request_body_json=request_body_json,
+                log_formatter=log_formatter,
+            )
+
+        # Hold only the lock for this exact page. Other date windows/pages keep
+        # running concurrently. On a concurrent miss, the waiting requester will
+        # re-enter the base method after the first requester stores the response
+        # and will therefore get a cache hit instead of calling Zoom again.
+        with self._single_flight_lock(key):
+            return super().send_request(
+                stream_state=stream_state,
+                stream_slice=stream_slice,
+                next_page_token=next_page_token,
+                path=path,
+                request_headers=request_headers,
+                request_params=request_params,
+                request_body_data=request_body_data,
+                request_body_json=request_body_json,
+                log_formatter=log_formatter,
+            )
+
+    def _get_custom_cached_response(
+        self,
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
+        path: Optional[str],
+        request_params: Optional[Mapping[str, Any]],
+    ) -> Optional[requests.Response]:
+        key = self._cache_key(stream_slice, next_page_token, request_params)
+        if key is None:
             return None
 
-        db_path = str(getattr(responses, "db_path", self.cache_name or self.name))
-        shared_lock = self._shared_sqlite_lock(db_path)
+        try:
+            self._ensure_recordings_cache()
+            with self._cache_lock:
+                connection = self.__class__._cache_connection
+                if connection is None:
+                    return None
+                row = connection.execute(
+                    """
+                    SELECT status_code, content, content_type, encoding
+                    FROM phone_recordings_page_cache
+                    WHERE request_from = ?
+                      AND request_to = ?
+                      AND page_size = ?
+                      AND page_token = ?
+                    """,
+                    key,
+                ).fetchone()
+        except sqlite3.Error as exc:
+            self._log_cache_error_once(self.logger, "read", exc)
+            return None
 
-        # requests-cache keeps separate response and redirect stores. Airbyte may
-        # also create multiple requester/cache objects for the same stream. Give
-        # every store using this DB the exact same process-wide lock.
-        for store in (responses, redirects):
-            if store is None:
-                continue
+        if row is None:
+            return None
 
-            if hasattr(store, "_lock"):
-                store._lock = shared_lock
+        request_from, request_to, page_size, page_token = key
+        status_code, content, content_type, encoding = row
+        query = {
+            "from": request_from,
+            "to": request_to,
+            "page_size": page_size,
+        }
+        if page_token:
+            query["next_page_token"] = page_token
+        request_url = f"https://api.zoom.us/v2/phone/recordings?{urlencode(query)}"
 
-            if hasattr(store, "busy_timeout"):
-                store.busy_timeout = self._sqlite_busy_timeout_ms
+        response = requests.Response()
+        response.status_code = int(status_code)
+        response._content = bytes(content)
+        response.encoding = encoding
+        response.url = request_url
+        if content_type:
+            response.headers["Content-Type"] = content_type
+        prepared_request = requests.PreparedRequest()
+        prepared_request.prepare(method="GET", url=request_url)
+        response.request = prepared_request
+        response.from_cache = True
 
-            connection_kwargs = getattr(store, "connection_kwargs", None)
-            if isinstance(connection_kwargs, dict):
-                connection_kwargs["timeout"] = self._sqlite_busy_timeout_ms / 1000
+        role_key = (self.name, self.requester_role)
+        with self._cache_lock:
+            if role_key not in self.__class__._first_hit_logged_for_roles:
+                self.logger.info(
+                    f"Cache [{self.name}] role={self.requester_role} "
+                    "namespace=phone_recordings_pages first_hit=true"
+                )
+                self.__class__._first_hit_logged_for_roles.add(role_key)
 
-            # requests-cache initializes SQLite during backend construction, so
-            # a connection may already be open before we can change its settings.
-            # Apply the busy timeout to that connection now as well as to future
-            # connections configured above.
-            connection = getattr(store, "_connection", None)
-            if connection is not None:
-                try:
-                    with shared_lock:
-                        connection.execute(
-                            f"PRAGMA busy_timeout={self._sqlite_busy_timeout_ms}"
-                        )
-                except sqlite3.Error as exc:
-                    self.logger.warning(
-                        f"Cache [{self.name}] failed to apply SQLite busy timeout "
-                        f"error={type(exc).__name__}"
-                    )
+        return response
 
-        return db_path
+    def _store_custom_cached_response(
+        self,
+        response: requests.Response,
+        stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
+        path: Optional[str],
+        request_params: Optional[Mapping[str, Any]],
+    ) -> None:
+        key = self._cache_key(stream_slice, next_page_token, request_params)
+        if key is None or response.status_code != HTTPStatus.OK:
+            return
+
+        content = response.content
+        if not content:
+            return
+
+        try:
+            self._ensure_recordings_cache()
+            with self._cache_lock:
+                connection = self.__class__._cache_connection
+                if connection is None:
+                    return
+                connection.execute(
+                    """
+                    INSERT OR REPLACE INTO phone_recordings_page_cache (
+                        request_from, request_to, page_size, page_token,
+                        status_code, content, content_type, encoding
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        key[0],
+                        key[1],
+                        key[2],
+                        key[3],
+                        int(response.status_code),
+                        sqlite3.Binary(content),
+                        response.headers.get("Content-Type"),
+                        response.encoding,
+                    ),
+                )
+                connection.commit()
+        except sqlite3.Error as exc:
+            self._log_cache_error_once(self.logger, "write", exc)
 
 
 @dataclass
@@ -823,7 +1036,9 @@ class ZoomPhoneTranscriptRequester(ZoomPhoneLoggingRequester):
     def _get_custom_cached_response(
         self,
         stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
         path: Optional[str],
+        request_params: Optional[Mapping[str, Any]],
     ) -> Optional[requests.Response]:
         recording_id = self._recording_id_from_slice(stream_slice, path)
         if not recording_id:
@@ -876,7 +1091,9 @@ class ZoomPhoneTranscriptRequester(ZoomPhoneLoggingRequester):
         self,
         response: requests.Response,
         stream_slice: Optional[StreamSlice],
+        next_page_token: Optional[Mapping[str, Any]],
         path: Optional[str],
+        request_params: Optional[Mapping[str, Any]],
     ) -> None:
         recording_id = self._recording_id_from_slice(stream_slice, path)
         if not recording_id or response.status_code != HTTPStatus.OK:
