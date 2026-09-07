@@ -118,6 +118,7 @@ definitions:
     $parameters:
       name: "updates"
       path: ""
+      items_per_page: 100
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -136,6 +137,7 @@ definitions:
     $parameters:
       name: "workspaces"
       path: ""
+      items_per_page: 100
     schema_loader:
       type: InlineSchemaLoader
       schema:
