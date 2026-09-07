@@ -190,6 +190,10 @@ class ThreadsStateMigration(StateMigration):
         # for old-stype state
         if stream_state.get("float_ts"):
             start_date_state = max(start_date_state, float(stream_state["float_ts"]))
+        # for global cursor state (the concurrent cursor switches to a single global cursor once
+        # the number of partitions exceeds the limit and serializes it under the "state" key)
+        if stream_state.get("state", {}).get("float_ts"):
+            start_date_state = max(start_date_state, float(stream_state["state"]["float_ts"]))
 
         lookback_window = timedelta(days=self._config.get("lookback_window", 0))  # lookback window in days
         final_state = {"float_ts": (ab_datetime_parse(int(start_date_state)) - lookback_window).timestamp()}
