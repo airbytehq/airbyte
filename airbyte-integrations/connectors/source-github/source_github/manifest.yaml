@@ -23,13 +23,6 @@ definitions:
     {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
 
-  # `page_size_for_large_streams` applies to the streams Python marked `large_stream = True`
-  # (`pull_requests` here) and is hoisted so the shared requester and a stream that has to
-  # restate `request_parameters` cannot drift apart. `or` rather than
-  # `.get('page_size_for_large_streams', 10)`, the same guard as `max_wait_time` and
-  # `num_workers` below: a default in `.get` only applies when the key is *absent*, so a
-  # present-but-null value (reachable via the API, Terraform or embedded use) would reach
-  # GitHub as `per_page=None` and be rejected. 10 is `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM`.
   large_stream_page_size: "{{ config.get('page_size_for_large_streams') or 10 }}"
 
   requester_base:
@@ -127,13 +120,6 @@ definitions:
     error_handler:
       $ref: "#/definitions/skip_inaccessible_error_handler"
 
-  # Requester for the repo-scoped streams Python marked `large_stream = True` (`pull_requests`
-  # here). Same transport and skip semantics as `repository_scoped_requester`; what differs is
-  # `per_page`: `GithubStream.__init__` took their page size from the deprecated
-  # `page_size_for_large_streams` setting (default `constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM`,
-  # 10) rather than the 100 the other groups use. Keeping the smaller default is parity, not an
-  # endorsement — the setting exists because these endpoints used to answer 502 on large pages,
-  # and raising it is tracked separately (airbytehq/airbyte-internal-issues#17070).
   large_stream_repository_scoped_requester:
     $ref: "#/definitions/requester_base"
     http_method: GET
@@ -2474,41 +2460,6 @@ definitions:
               - boolean
 
   # --- Group C: semi-incremental REST streams ---------------------------------------
-  #
-  # None of these endpoints takes a cursor parameter, so legacy read every page and filtered in
-  # Python: `SemiIncrementalMixin.read_records` kept records with `cursor_value > start_point`,
-  # where `start_point = max(start_date, per-repository state)`. Two of them — `pull_requests`
-  # and `issue_milestones` — are requested `sort=updated&direction=desc`, and there legacy also
-  # stopped paginating at the first record older than `start_point` (`is_sorted = "desc"`).
-  #
-  # Declaratively that is one `DatetimeBasedCursor` shape with two switches, and every stream
-  # gets exactly one of them:
-  #   - `is_data_feed: true` for the two sorted streams. The CDK wraps the paginator in a stop
-  #     condition that ends pagination at the first page whose last record is at or below the
-  #     cursor, and drops that page's stale records. Only valid when GitHub serves the listing
-  #     most-recent-first — on an ascending endpoint it would stop after the first page and
-  #     silently lose every newer record.
-  #   - `is_client_side_incremental: true` for the other seven. Every page is read, as before,
-  #     and the record selector drops what falls outside the cursor window. GitHub documents
-  #     commit comments and stargazers as ascending and gives no ordering guarantee for the
-  #     rest, which is why legacy never broke early on any of them and this does not either.
-  #   Setting both is pointless: with `is_data_feed` the CDK logs a warning and ignores
-  #   `is_client_side_incremental`. The migration issue's table marks all of these "desc"; that
-  #   column is wrong for the seven — trust `is_sorted` on the legacy class, not the issue.
-  #
-  # Two differences from the Python filter, both already accepted on `repositories`:
-  #   - The boundary is inclusive. `ConcurrentCursor.should_be_synced` keeps
-  #     `start <= cursor <= now`, where legacy kept `cursor > start_point`, so the newest record
-  #     of each repository is re-emitted once per sync. At-least-once delivery of an unchanged
-  #     record; destinations dedupe it on the primary key.
-  #   - `pull_requests` always reads descending. Legacy read *ascending* on a first sync so a
-  #     page-level checkpoint could survive a mid-repository failure, and descending afterwards.
-  #     Concurrent cursors checkpoint at partition close, so a failed attempt restarts the
-  #     repository either way and the ascending pass would only have cost the early stop.
-  #
-  # State is per repository, migrated from the legacy `{repository: {cursor_field: value}}`
-  # shape by `LegacyToPerPartitionStateMigration`. A repository added to the config after the
-  # first sync is seeded from the global cursor, as on `repositories`.
   semi_incremental_cursor_base:
     type: DatetimeBasedCursor
     cursor_field: "updated_at"
@@ -2517,14 +2468,8 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_datetime:
       type: MinMaxDatetime
-      # `or` rather than `config.get('start_date', default)`, as on `repositories`: a
-      # present-but-null `start_date` would otherwise reach MinMaxDatetime as the literal string
-      # "None". Legacy treated an unset `start_date` as "no lower bound" (`get_starting_point`
-      # returned ""), which the epoch reproduces.
       datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-    # No `step`/`cursor_granularity`: each repository is one open-ended window, walked page by
-    # page on the `rel="next"` link exactly as before.
 
   client_side_filtered_cursor:
     $ref: "#/definitions/semi_incremental_cursor_base"
@@ -2534,28 +2479,12 @@ definitions:
     $ref: "#/definitions/semi_incremental_cursor_base"
     is_data_feed: true
 
-  # Replaces the legacy `GithubStream.transform` in full. The full-refresh group's
-  # `add_repository_transformation` only needed the `repository` stamp; `commit_comments` also
-  # carries `reactions`, whose `+1`/`-1` keys legacy renamed to `plus_one`/`minus_one`.
-  # `schemas/shared/reactions.json` (still used by the Python streams) declares only the
-  # renamed keys, so skipping the rename would drop both counts on the floor.
   add_repository_and_rename_reactions_transformation:
     - type: AddFields
       fields:
         - path: ["repository"]
           value: "{{ stream_partition.repository }}"
     - type: AddFields
-      # `AddFields.transform` evaluates `condition` once per field with the rendered `value` in
-      # scope, which is what keeps a record that has no `reactions` from gaining one: `dpath.new`
-      # creates the missing parent object, so an unconditional `["reactions", "plus_one"]` would
-      # invent `{"reactions": {"plus_one": null}}` on every reaction-less record.
-      #
-      # `record.get('reactions', {}).get('+1')` rather than `record['reactions']['+1']`: Jinja
-      # raises UndefinedError when subscripting a missing key, and `InterpolatedString` defaults
-      # `default` to the template itself, so the guard would re-evaluate the same failing
-      # expression instead of degrading to blank. A rendered "None" reaches `value` as None
-      # (`JinjaInterpolation._literal_eval`), which is what the condition tests; a count of 0
-      # renders "0" and is kept, matching legacy's `if "+1" in reactions` membership test.
       condition: "{{ value is not none }}"
       fields:
         - path: ["reactions", "plus_one"]
@@ -2563,18 +2492,12 @@ definitions:
         - path: ["reactions", "minus_one"]
           value: "{{ record.get('reactions', {}).get('-1') }}"
     - type: RemoveFields
-      # Legacy `pop`ped these, so the renamed keys must not be shipped alongside the originals:
-      # `+1`/`-1` are absent from `reactions.json`, and a destination that enforces the schema
-      # would reject the record.
       field_pointers:
         - ["reactions", "+1"]
         - ["reactions", "-1"]
 
   events_stream:
     # API docs: https://docs.github.com/en/rest/activity/events?apiVersion=2022-11-28#list-repository-events
-    # GitHub only serves a repository's last 90 days (at most 300 events), which is why the
-    # acceptance tests list this stream under `empty_streams`. The listing happens to arrive
-    # newest-first, but that is not documented and legacy did not break early on it.
     type: DeclarativeStream
     name: events
     primary_key: "id"
@@ -2764,30 +2687,17 @@ definitions:
       requester:
         $ref: "#/definitions/large_stream_repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/pulls"
-        # `request_parameters` replaces the requester's map wholesale, so `per_page` has to be
-        # restated. `PullRequests.request_params` added the other three; `direction` is always
-        # `desc` here — see the group comment on why the ascending first pass is gone.
         request_parameters:
           per_page:
             $ref: "#/definitions/large_stream_page_size"
           state: "all"
           sort: "updated"
           direction: "desc"
-        # Deliberately not cached, although `PullRequests.use_cache` was. The Python class stays
-        # as the parent of `pull_request_commits` (Step 7), but it lists a repository ascending
-        # on its full-refresh parent read where this stream lists it descending, so the two
-        # never share a cache entry and caching here would only cost disk.
     transformations:
       - type: AddFields
         fields:
           - path: ["repository"]
             value: "{{ stream_partition.repository }}"
-      # `PullRequests.transform` flattened the head and base repositories to their ids and
-      # dropped `head.repo`. Legacy read *both* ids off `head.repo`, and having already popped it
-      # for `head`, always wrote `base.repo_id: null` — `base.repo_id` is declared an integer in
-      # the schema, so this reads it from `base.repo`, which stays on the record as before.
-      # `or {}` at every level: a fork that was deleted has `head.repo: null`, and Jinja raises
-      # on `.get` of None where legacy's `(... or {}).get("id")` yielded null.
       - type: AddFields
         fields:
           - path: ["head", "repo_id"]
@@ -3908,13 +3818,7 @@ definitions:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
         $ref: "#/definitions/repository_scoped_requester"
-        # The endpoint is `comments`, not `commit_comments` — `issues/comments` is `comments`.
         path: "repos/{{ stream_partition.repository }}/comments"
-        # `use_cache = True` on the Python class, kept for the same reason: `CommitCommentReactions`
-        # builds a `CommitComments` parent internally and stays Python until Step 7. Both sides
-        # name the cache `commit_comments.sqlite` and request the same URL, so the parent read is
-        # served from the pages this stream already fetched.
-        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
         use_cache: true
     transformations:
       $ref: "#/definitions/add_repository_and_rename_reactions_transformation"
@@ -4122,8 +4026,6 @@ definitions:
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/milestones"
-        # `IssueMilestones.stream_base_params`; `per_page` restated for the same reason as on
-        # `pull_requests`. The descending sort is what makes the data-feed stop condition safe.
         request_parameters:
           per_page: "100"
           state: "all"
@@ -4301,17 +4203,12 @@ definitions:
     # API docs: https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers
     type: DeclarativeStream
     name: stargazers
-    # The payload is `{"starred_at": ..., "user": {...}}` with no id of its own, so legacy
-    # promoted `user.id` to a top-level `user_id` and keyed on that.
     primary_key: "user_id"
     retriever:
       $ref: "#/definitions/repository_scoped_retriever"
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/stargazers"
-        # `request_headers` replaces the requester's map wholesale, so `User-Agent` has to be
-        # restated (legacy merged it the same way in `Stargazers.request_headers`). The `Accept`
-        # is what makes GitHub include `starred_at` — the cursor — in each record.
         request_headers:
           User-Agent: "PostmanRuntime/7.28.0"
           Accept: "application/vnd.github.v3.star+json"
@@ -4320,8 +4217,6 @@ definitions:
         fields:
           - path: ["repository"]
             value: "{{ stream_partition.repository }}"
-          # `or {}`: legacy's `record.get("user").get("id")` raised on a null `user`; a null
-          # `user_id` on a record with no `user` is the more useful outcome.
           - path: ["user_id"]
             value: "{{ (record.get('user') or {}).get('id') }}"
     incremental_sync:
@@ -4427,8 +4322,6 @@ definitions:
 
   projects_stream:
     # API docs: https://docs.github.com/en/rest/projects/projects?apiVersion=2022-11-28#list-repository-projects
-    # Classic projects. A repository with Projects turned off answers 410 "Projects are disabled
-    # for this repository", which `disabled_feature_skip_filter` skips.
     type: DeclarativeStream
     name: projects
     primary_key: "id"
@@ -4437,19 +4330,12 @@ definitions:
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/projects"
-        # `Projects.stream_base_params`; `per_page` restated for the same reason as on
-        # `pull_requests`.
         request_parameters:
           per_page: "100"
           state: "all"
-        # Without the preview `Accept` the endpoint answers 415 Unsupported Media Type.
         request_headers:
           User-Agent: "PostmanRuntime/7.28.0"
           Accept: "application/vnd.github.inertia-preview+json"
-        # `use_cache = True` on the Python class, kept for the same reason as on `commit_comments`:
-        # `ProjectColumns` reads a `Projects` parent (and `ProjectCards` chains off it) until
-        # Step 7, and the parent read sends the same URL, so it is served from `projects.sqlite`.
-        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
         use_cache: true
     transformations:
       $ref: "#/definitions/add_repository_transformation"
@@ -4604,9 +4490,6 @@ definitions:
 
   issue_events_stream:
     # API docs: https://docs.github.com/en/rest/issues/events?apiVersion=2022-11-28#list-issue-events-for-a-repository
-    # The nested `issue.reactions` keeps GitHub's `+1`/`-1` keys: legacy's rename only looked at
-    # a top-level `reactions`, which these records do not have, so the transformation here is
-    # the plain `repository` stamp.
     type: DeclarativeStream
     name: issue_events
     primary_key: "id"
@@ -6122,32 +6005,14 @@ definitions:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          # Unlike the other listings this one is an envelope,
-          # `{"total_count": N, "workflows": [...]}` (`Workflows.parse_response`). A body without
-          # the key — an error envelope, or the HTML page a proxy returns on 502 — yields no
-          # records rather than failing, which is what `_safe_json_list` did.
           field_path: ["workflows"]
     transformations:
       $ref: "#/definitions/add_repository_transformation"
     incremental_sync:
       $ref: "#/definitions/client_side_filtered_cursor"
-      # The Actions API is the one place GitHub timestamps carry an offset instead of `Z`:
-      # `"updated_at": "2020-01-08T23:50:21.000-08:00"`. Legacy handled this in
-      # `Workflows.convert_cursor_value`, which parsed the value and re-formatted it in UTC
-      # before comparing or storing it. The CDK parses each format below into an aware datetime,
-      # so comparisons are correct as they stand; `%z` accepts both `-08:00` and a bare `Z`
-      # (Python 3.7+), which is what lets the second entry also read the `Z` values a migrated
-      # legacy state carries.
       cursor_datetime_formats:
         - "%Y-%m-%dT%H:%M:%S.%f%z"
         - "%Y-%m-%dT%H:%M:%S%z"
-      # `%z` on output too, deliberately. The state is written with `datetime.strftime`, which
-      # keeps the record's own offset and never converts to UTC, so the group's `...%SZ` format
-      # would stamp a `Z` onto a `-08:00` wall-clock time — a state eight hours off, and on a
-      # positive offset one that skips every record updated inside that window on the next sync.
-      # With `%z` the stored value carries its offset (`2020-01-08T23:50:21-0800`) and parses
-      # back to the same instant. The one cost is cosmetic: a migrated `...Z` state is rewritten
-      # as `...+0000` after the first sync.
       datetime_format: "%Y-%m-%dT%H:%M:%S%z"
     state_migrations:
       - type: LegacyToPerPartitionStateMigration
@@ -6209,13 +6074,6 @@ definitions:
             description: Repository information associated with the workflow
             type: string
 
-# Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
-# is per token, so this is conservative — a multi-token config could spend more than this
-# allows. Left global on purpose, because the CDK budget has no notion of which credential a
-# request will be signed with, and under-spending a secondary limit is much cheaper than
-# tripping one. It also only covers declarative requesters: the Python streams, and the
-# authenticator's own /rate_limit probes (RateLimitedMultipleTokenAuthenticator builds its
-# quota client without an api_budget), spend the same GitHub budget outside it.
 api_budget:
   type: HTTPAPIBudget
   policies:
