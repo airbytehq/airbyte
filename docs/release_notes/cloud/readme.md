@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 7, 2026
+
+Connections
+
+- Selecting the Stripe source no longer freezes your browser tab. The Setup Guide panel that shows connector documentation stalled while rendering the Stripe docs, which also kept the setup form from loading. It now renders normally.
+
+Platform
+
+- On Cloud Pro and Enterprise Flex plans, the Audit Logs page in Organization settings no longer records entries for automated, system-initiated actions that have no associated user, such as internal updates that happen while a sync runs. Previously, these appeared with an unknown actor alongside the actions your team members took.
+
 ## September 4, 2026
 
 Platform
