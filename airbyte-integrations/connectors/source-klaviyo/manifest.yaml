@@ -1084,6 +1084,7 @@ definitions:
             Accept: application/json
             Revision: "2024-10-15"
             Content-Type: application/json
+            Connection: close
           request_body_json:
             data:
               type: "flow-series-report"
@@ -1125,6 +1126,7 @@ definitions:
             type: CustomErrorHandler
             class_name: >-
               source_declarative_manifest.components.KlaviyoErrorHandler
+            max_time: 1800
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -1240,6 +1242,7 @@ definitions:
             Accept: application/json
             Revision: "2024-10-15"
             Content-Type: application/json
+            Connection: close
           request_body_json:
             data:
               type: "campaign-values-report"
@@ -1284,6 +1287,7 @@ definitions:
             type: CustomErrorHandler
             class_name: >-
               source_declarative_manifest.components.KlaviyoErrorHandler
+            max_time: 1800
             backoff_strategies:
               - type: WaitTimeFromHeader
                 header: Retry-After
@@ -1466,9 +1470,10 @@ spec:
       num_workers:
         type: integer
         description: >-
-          The number of worker threads to use for the sync. The performance
-          upper boundary is based on the limit of your Klaviyo plan. More info
-          about the rate limit plan tiers can be found on Klaviyo's API <a
+          The number of worker threads to use for the sync. Klaviyo applies fixed
+          per-endpoint rate limits, including burst, steady-state, and reporting
+          daily quotas; increasing this value does not increase the available
+          quota. More info about the rate limits can be found on Klaviyo's API <a
           href="https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling">docs</a>.
         title: Number of concurrent threads
         minimum: 1
@@ -4600,6 +4605,8 @@ api_budget:
           interval: PT1S
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
+        - limit: 1
+          interval: PT6M24S
       matchers:
         - method: POST
           url_path_pattern: "^/api/flow-series-reports($|\\?)"
@@ -4610,6 +4617,8 @@ api_budget:
           interval: PT1S
         - limit: 2 # steady: 2 calls per minute
           interval: PT1M
+        - limit: 1
+          interval: PT6M24S
       matchers:
         - method: POST
           url_path_pattern: "^/api/campaign-values-reports($|\\?)"
