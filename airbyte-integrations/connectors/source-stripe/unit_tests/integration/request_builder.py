@@ -43,6 +43,10 @@ class StripeRequestBuilder:
         return cls(f"accounts/{account_id}/external_accounts", account_id, client_secret)
 
     @classmethod
+    def invoice_lines_endpoint(cls, invoice_id: str, account_id: str, client_secret: str) -> "StripeRequestBuilder":
+        return cls(f"invoices/{invoice_id}/lines", account_id, client_secret)
+
+    @classmethod
     def issuing_authorizations_endpoint(cls, account_id: str, client_secret: str) -> "StripeRequestBuilder":
         return cls("issuing/authorizations", account_id, client_secret)
 
