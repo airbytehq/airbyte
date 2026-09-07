@@ -321,6 +321,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                                                                                     | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.0.9 | 2026-09-02 | [85305](https://github.com/airbytehq/airbyte/pull/85305) | DO NOT MERGE: test pin to prerelease `source-declarative-manifest` 7.28.2.post2.dev33676771546 to validate CDK [#1138](https://github.com/airbytehq/airbyte-python-cdk/pull/1138) |
 | 3.0.8 | 2026-08-18 | [84507](https://github.com/airbytehq/airbyte/pull/84507) | Update dependencies |
 | 3.0.7 | 2026-08-11 | [83859](https://github.com/airbytehq/airbyte/pull/83859) | Update dependencies |
 | 3.0.6 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
