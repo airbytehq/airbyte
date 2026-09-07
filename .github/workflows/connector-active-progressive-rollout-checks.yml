@@ -1,7 +1,7 @@
 name: Connector Active Progressive Rollout Checks
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - synchronize
@@ -40,29 +40,13 @@ jobs:
           INPUT_REPO: ${{ inputs.repo }}
           INPUT_PR: ${{ inputs.pr }}
           EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
-          PR_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-          GITHUB_HEAD_REF: ${{ github.head_ref }}
-          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: |
           pr_number="${INPUT_PR:-${EVENT_PR_NUMBER}}"
-          checkout_repository="${INPUT_REPO:-${PR_HEAD_REPO:-${GITHUB_REPOSITORY}}}"
           pr_repository="${INPUT_REPO:-${GITHUB_REPOSITORY}}"
-          if [[ -n "${INPUT_PR}" ]]; then
-            ref="refs/pull/${INPUT_PR}/head"
-          else
-            ref="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
-          fi
-          is_fork="true"
-          if [[ "${checkout_repository}" == airbytehq/* ]]; then
-            is_fork="false"
-          fi
 
           echo "pr-number=${pr_number}" | tee -a "${GITHUB_OUTPUT}"
           echo "pr-repository=${pr_repository}" | tee -a "${GITHUB_OUTPUT}"
-          echo "checkout-repository=${checkout_repository}" | tee -a "${GITHUB_OUTPUT}"
-          echo "ref=${ref}" | tee -a "${GITHUB_OUTPUT}"
-          echo "is-fork=${is_fork}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Install uv
         if: steps.vars.outputs.pr-number != ''
@@ -101,8 +85,8 @@ jobs:
 
     outputs:
       connectors-matrix: ${{ steps.connector-matrix.outputs.connectors_matrix }}
-      checkout-repository: ${{ steps.vars.outputs.checkout-repository }}
-      checkout-ref: ${{ steps.vars.outputs.ref }}
+      pr-number: ${{ steps.vars.outputs.pr-number }}
+      pr-repository: ${{ steps.vars.outputs.pr-repository }}
 
   progressive-rollout-gate:
     needs: [generate-matrix]
@@ -114,18 +98,16 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       ROLLOUT_ACK_CHECKBOX_TEXT: "(Click to Approve:) Bypass the active progressive rollout warning for ${{ matrix.connector }} in the PR comment"
-      GCP_PROD_DB_ACCESS_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS_FOR_TESTING_TOOL }}
       GITHUB_TOKEN: ${{ github.token }}
       PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr }}
     steps:
-      - name: Checkout Airbyte
+      - name: Checkout comment template
         if: matrix.connector
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          repository: ${{ needs.generate-matrix.outputs.checkout-repository }}
-          ref: ${{ needs.generate-matrix.outputs.checkout-ref }}
-          submodules: true # Needed for airbyte-enterprise connectors (no-op otherwise)
           fetch-depth: 1
+          sparse-checkout: .github/progressive-rollout-gate-comment.md
+          sparse-checkout-cone-mode: false
 
       - name: Install uv
         if: matrix.connector
@@ -133,42 +115,17 @@ jobs:
 
       - name: Install Ops CLI
         if: matrix.connector
-        run: uv tool install airbyte-internal-ops
-
-      - name: Install Cloud SQL Proxy
-        if: matrix.connector
-        env:
-          CLOUD_SQL_PROXY_VERSION: v2.15.0
-          CLOUD_SQL_PROXY_SHA256: cf3e9d069ea0d09cdfddce77daa36811bb0b963b1169e9c3f1586433ca7325fa
-        run: |
-          set -euo pipefail
-          BINARY_NAME="cloud-sql-proxy.linux.amd64"
-          BASE_URL="https://storage.googleapis.com/cloud-sql-connectors/cloud-sql-proxy/${CLOUD_SQL_PROXY_VERSION}"
-
-          curl -fsSLO "${BASE_URL}/${BINARY_NAME}"
-          echo "${CLOUD_SQL_PROXY_SHA256}  ${BINARY_NAME}" | sha256sum -c -
-          chmod +x "${BINARY_NAME}"
-          sudo mv "${BINARY_NAME}" /usr/local/bin/cloud-sql-proxy
-          cloud-sql-proxy --version
-
-      - name: Start Cloud SQL Proxy
-        if: matrix.connector
-        env:
-          # Local Cloud SQL Proxy port for prod DB queries.
-          DB_PORT: "15432"
-        run: airbyte-ops cloud db start-proxy --port "${DB_PORT}"
+        run: uv tool install 'airbyte-internal-ops>=0.106.0'
 
       - name: Get rollout status
         if: matrix.connector
         id: rollout-status
         env:
           CONNECTOR_NAME: ${{ matrix.connector }}
-          # Local Cloud SQL Proxy port for prod DB queries.
-          DB_PORT: "15432"
         run: |
           {
             echo "json<<EOF"
-            airbyte-ops registry progressive-rollout status "${CONNECTOR_NAME}" --repo-path .
+            airbyte-ops registry progressive-rollout status "${CONNECTOR_NAME}"
             echo "EOF"
           } | tee -a "${GITHUB_OUTPUT}"
 
@@ -198,18 +155,9 @@ jobs:
           if [[ -n "${actor_definition_id}" ]]; then
             retool_url="${retool_base_url}?actorDefinitionId=${actor_definition_id}"
           fi
-          active_rollout='[.rollouts[]? | select(.state | IN("initialized", "workflow_started", "in_progress", "paused", "finalizing", "errored"))][0] // {}'
-          updated_by_name="$(jq -r "(${active_rollout}).updated_by_user_name // empty" <<< "${ROLLOUT_STATUS_JSON}")"
-          updated_by_email="$(jq -r "(${active_rollout}).updated_by_user_email // empty" <<< "${ROLLOUT_STATUS_JSON}")"
-          updated_by_display="unknown"
-          if [[ -n "${updated_by_name}" && -n "${updated_by_email}" ]]; then
-            updated_by_display="${updated_by_name} <${updated_by_email}>"
-          elif [[ -n "${updated_by_email}" ]]; then
-            updated_by_display="${updated_by_email}"
-          elif [[ -n "${updated_by_name}" ]]; then
-            updated_by_display="${updated_by_name}"
-          fi
           has_active_rollout="$(jq -r '.has_active_rollout' <<< "${ROLLOUT_STATUS_JSON}")"
+          active_rc_version="$(jq -r '.active_release_candidate_version // "none"' <<< "${ROLLOUT_STATUS_JSON}")"
+          rollout_mode="$(jq -r '.release_candidates[0].default_rollout_mode // "none"' <<< "${ROLLOUT_STATUS_JSON}")"
           has_master_rc_marker="false"
           if [[ "${MASTER_VERSION}" == *"-rc."* ]]; then
             has_master_rc_marker="true"
@@ -219,16 +167,17 @@ jobs:
             requires_ack="true"
           fi
           echo "has-active-rollout=${has_active_rollout}" | tee -a "${GITHUB_OUTPUT}"
+          echo "active-rc-version=${active_rc_version}" | tee -a "${GITHUB_OUTPUT}"
+          echo "rollout-mode=${rollout_mode}" | tee -a "${GITHUB_OUTPUT}"
           echo "has-master-rc-marker=${has_master_rc_marker}" | tee -a "${GITHUB_OUTPUT}"
           echo "requires-ack=${requires_ack}" | tee -a "${GITHUB_OUTPUT}"
-          echo "rollout-updated-by=${updated_by_display}" | tee -a "${GITHUB_OUTPUT}"
           echo "retool-url=${retool_url}" | tee -a "${GITHUB_OUTPUT}"
 
       - name: Detect rollout bypass checkbox
         if: >
           matrix.connector &&
           steps.rollout-gate-state.outputs.requires-ack == 'true' &&
-          github.event_name == 'pull_request'
+          github.event_name == 'pull_request_target'
         id: rollout-bypass
         uses: AhmedBaset/checklist@ecbf0bacb0d5d1fe41131db29a44984fec266017 # v3
         with:
@@ -323,7 +272,7 @@ jobs:
         if: >
           matrix.connector &&
           steps.rollout-gate-state.outputs.requires-ack == 'true' &&
-          github.event_name == 'pull_request' &&
+          github.event_name == 'pull_request_target' &&
           steps.bypass-state.outputs.exists != 'true'
         uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
         with:
@@ -391,11 +340,10 @@ jobs:
           vars: |
             connector: ${{ matrix.connector }}
             active_rollout: ${{ fromJSON(steps.rollout-status.outputs.json).has_active_rollout }}
-            rollout_docker_image_tag: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].rollout_docker_image_tag || 'none' }}
-            rollout_state: ${{ fromJSON(steps.rollout-status.outputs.json).rollouts[0].state || 'none' }}
+            rollout_docker_image_tag: ${{ steps.rollout-gate-state.outputs.active-rc-version }}
+            rollout_mode: ${{ steps.rollout-gate-state.outputs.rollout-mode }}
             master_version: ${{ steps.master-version.outputs.version }}
             master_rc_marker: ${{ contains(steps.master-version.outputs.version, '-rc.') }}
-            rollout_updated_by: ${{ steps.rollout-gate-state.outputs.rollout-updated-by }}
             retool_url: ${{ steps.rollout-gate-state.outputs.retool-url }}
             bypass_ack_checked: ${{ steps.bypass-state.outputs.approved }}
             ack_checkbox_text: ${{ env.ROLLOUT_ACK_CHECKBOX_TEXT }}
