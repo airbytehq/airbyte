@@ -233,5 +233,14 @@
       },
       "stream_descriptor": { "name": "workflow_jobs" }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "airbytehq/integration-test": { "updated_at": "2121-12-31T23:59:59Z" }
+      },
+      "stream_descriptor": { "name": "workflow_run_attempts" }
+    }
   }
 ]

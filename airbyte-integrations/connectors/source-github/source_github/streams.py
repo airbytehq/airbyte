@@ -1710,6 +1710,88 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
         self.state = new_state
 
 
+class WorkflowRunAttempts(SemiIncrementalMixin, GithubStream):
+    """
+    Get every attempt of every workflow run for a GitHub repository.
+
+    The endpoint behind `workflow_runs` returns one record per run - the latest attempt - so when a workflow is
+    re-run the earlier attempts are never emitted by that stream. They are only reachable one at a time through
+    the per-attempt endpoint, which this stream reads.
+    API documentation: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt
+    """
+
+    # All attempts of a run share the same `id`, so `run_attempt` is what makes a record unique.
+    primary_key = ["id", "run_attempt"]
+
+    # key for accessing slice value from record
+    record_slice_key = ["repository", "full_name"]
+
+    def __init__(self, parent: WorkflowRuns, **kwargs):
+        super().__init__(**kwargs)
+        self.parent = parent
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return f"repos/{stream_slice['repository']}/actions/runs/{stream_slice['run_id']}/attempts/{stream_slice['attempt_number']}"
+
+    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
+        # Unlike the list endpoint, the attempt endpoint returns a single workflow run object rather than an array.
+        yield response.json()
+
+    @staticmethod
+    def _attempt_from_run(record: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        """
+        Build the attempt record for a run that was never re-run, without spending a request on it.
+
+        The list payload the parent already fetched is identical to what the attempt endpoint returns for such a
+        run, except that `logs_url` and `jobs_url` are run-scoped there and attempt-scoped here.
+        """
+        attempt = dict(record)
+        attempt["logs_url"] = f"{record['url']}/attempts/{record['run_attempt']}/logs"
+        attempt["jobs_url"] = f"{record['url']}/attempts/{record['run_attempt']}/jobs"
+        return attempt
+
+    def _read_attempts(
+        self,
+        run: Mapping[str, Any],
+        stream_slice: Mapping[str, Any],
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        # `previous_attempt_url` is null unless the run was re-run, so runs that never were - the vast majority -
+        # cost no extra request at all.
+        if not run.get("previous_attempt_url"):
+            yield self._attempt_from_run(run)
+            return
+
+        for attempt_number in range(1, (run.get("run_attempt") or 1) + 1):
+            attempt_slice = {**stream_slice, "run_id": run["id"], "attempt_number": attempt_number}
+            # Skipping SemiIncrementalMixin.read_records on purpose: it filters on each record's own `updated_at`,
+            # which would drop the earlier attempts this stream exists to emit. The parent read below is what
+            # applies the incremental cursor.
+            yield from super(SemiIncrementalMixin, self).read_records(
+                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=attempt_slice, stream_state=stream_state
+            )
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        parent_stream_state = None
+        if stream_state is not None:
+            parent_stream_state = {repository: {self.parent.cursor_field: v[self.cursor_field]} for repository, v in stream_state.items()}
+        # The parent decides which runs are new: it filters on the run's own cursor and stops paginating once it is
+        # past the re-run window. Every attempt of a run it yields is emitted, whatever the attempt's `updated_at`.
+        for run in self.parent.read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=parent_stream_state
+        ):
+            yield from self._read_attempts(run, stream_slice, sync_mode, cursor_field, stream_state)
+            self.state = self._get_updated_state(self.state, run)
+
+
 class WorkflowJobs(SemiIncrementalMixin, GithubStream):
     """
     Get all workflow jobs for a workflow run

@@ -67,7 +67,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_run_attempts`, `workflow_runs`, `workflows`.
 
    - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
@@ -140,6 +140,7 @@ This connector outputs the following incremental streams:
 - [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
 - [WorkflowJobs](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
+- [WorkflowRunAttempts](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
 ### Entity-Relationship Diagram (ERD)
@@ -157,6 +158,12 @@ This connector outputs the following incremental streams:
    - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
+
+   `workflow_runs` holds the latest attempt of each run and nothing else: the GitHub endpoint it reads returns a single
+   record per run, so when a workflow is re-run the earlier attempts never reach your destination, and the record you do
+   get mixes the latest attempt's status with the original attempt's `created_at`. Sync `workflow_run_attempts` if you
+   need the full re-run history. It emits one record per attempt, keyed on `[id, run_attempt]`, and only spends extra API
+   calls on runs that actually were re-run.
 
 3. Other 19 incremental streams are also incremental but with one difference, they:
 

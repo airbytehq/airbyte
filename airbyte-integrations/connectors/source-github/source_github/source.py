@@ -66,6 +66,7 @@ from .streams import (
     Teams,
     Users,
     WorkflowJobs,
+    WorkflowRunAttempts,
     WorkflowRuns,
     Workflows,
 )
@@ -436,6 +437,7 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             Workflows(**repository_args_with_start_date),
             workflow_runs_stream,
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
+            WorkflowRunAttempts(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]
 
