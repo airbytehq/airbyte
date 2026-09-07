@@ -18,7 +18,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 **For Airbyte Cloud:**
 
 - AWS Environment
-- AWS Region
+- Marketplace
 - AWS Seller Partner Account Type
 - Granted OAuth access
 
@@ -29,7 +29,7 @@ This page contains the setup guide and reference information for the [Amazon Sel
 **For Airbyte Open Source:**
 
 - AWS Environment
-- AWS Region
+- Marketplace
 - AWS Seller Partner Account Type
 - LWA Client Id
 - LWA Client Secret
@@ -37,9 +37,11 @@ This page contains the setup guide and reference information for the [Amazon Sel
 
 <!-- /env:oss -->
 
-## Supported regions
+## Supported marketplaces
 
-The connector supports the following Amazon marketplace regions: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
+Each source replicates a single Amazon marketplace, selected with the **Marketplace** setting. To sync several marketplaces, create one source per marketplace.
+
+The connector supports the following Amazon marketplaces: AE (United Arab Emirates), AU (Australia), BE (Belgium), BR (Brazil), CA (Canada), DE (Germany), EG (Egypt), ES (Spain), FR (France), GB (United Kingdom), IE (Ireland), IN (India), IT (Italy), JP (Japan), MX (Mexico), NL (Netherlands), PL (Poland), SA (Saudi Arabia), SE (Sweden), SG (Singapore), TR (Turkey), UK (United Kingdom), and US (United States).
 
 Both GB and UK refer to the United Kingdom marketplace and can be used interchangeably. For the complete list of Amazon marketplace IDs, see the [Amazon SP-API documentation](https://developer-docs.amazon.com/sp-api/docs/marketplace-ids).
 
@@ -483,6 +485,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.10.2 | 2026-09-01 | [85252](https://github.com/airbytehq/airbyte/pull/85252) | Rename the `region` config field label from "AWS Region" to "Marketplace" and clarify that each source syncs a single marketplace (label/description only, no config change) |
 | 5.10.1 | 2026-08-25 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
 | 5.10.0 | 2026-08-24 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
 | 5.9.5 | 2026-08-18 | [84482](https://github.com/airbytehq/airbyte/pull/84482) | Update dependencies |
