@@ -85,8 +85,6 @@ jobs:
 
     outputs:
       connectors-matrix: ${{ steps.connector-matrix.outputs.connectors_matrix }}
-      pr-number: ${{ steps.vars.outputs.pr-number }}
-      pr-repository: ${{ steps.vars.outputs.pr-repository }}
 
   progressive-rollout-gate:
     needs: [generate-matrix]
