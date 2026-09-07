@@ -71,6 +71,7 @@ Classes
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[NotesSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[TicketsSearchData]
+    * airbyte_agent_sdk.connectors.hubspot.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

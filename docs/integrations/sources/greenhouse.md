@@ -4,7 +4,14 @@ This page contains the setup guide and reference information for the Greenhouse 
 
 ## Prerequisites
 
-Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Greenhouse issues these credentials to partners on request: email partner-support@greenhouse.io to request a client ID and client secret and register your redirect URI. For Airbyte Cloud, use `https://cloud.airbyte.com/auth_flow`; for self-managed Airbyte, use `<your-airbyte-url>/auth_flow`. The authorization consent must grant these scopes:
+The connector authenticates to Greenhouse Harvest v3 with OAuth 2.0 Authorization Code through Airbyte's registered Greenhouse partner application. You don't create, request, or register a Greenhouse OAuth application of your own: Greenhouse issues Harvest v3 partner credentials only to integration partners, not to Greenhouse customers, and doesn't permit customers to connect through their own applications. Airbyte supplies the client ID and client secret during the consent flow.
+
+To set up the source, you need:
+
+- An Airbyte Cloud workspace. The consent flow relies on Airbyte's partner credentials, which are only available in Airbyte Cloud.
+- A Greenhouse user who is a Site Admin to approve the consent flow.
+
+The consent flow requests these scopes; approve all of them:
 
 - `harvest:applications:list`
 - `harvest:approval_flows:list`
@@ -36,30 +43,21 @@ Use OAuth 2.0 Authorization Code credentials for a Greenhouse Harvest v3 app. Gr
 - `harvest:user_roles:list`
 - `harvest:users:list`
 
-The Greenhouse user who approves the consent flow must be a Site Admin. Harvest v3 rejects requests to its list endpoints from any other user, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
+Harvest v3 rejects requests to its list endpoints from any user who isn't a Site Admin, and the connector fails the sync with a configuration error. A missing scope produces the same failure for the streams that depend on it, so grant every scope in the list unless you plan to leave the corresponding streams disabled. Grant `harvest:users:list` in every case: the connection check reads the `users` stream, so the source fails to set up without it even if you never sync that stream.
 
 ## Set up the Greenhouse connector in Airbyte
 
-1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account or navigate to the Airbyte Open Source dashboard.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.com/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Greenhouse** from the Source type dropdown.
 4. Enter the name for the Greenhouse connector.
-5. Select **OAuth**, enter the **OAuth client ID** and **OAuth client secret**, then click **Authenticate** and complete the Greenhouse consent flow. Airbyte stores the resulting refresh token.
+5. Click **Authenticate**, sign in to Greenhouse as a Site Admin, and approve the requested scopes. Airbyte fills in its partner application's client ID and client secret and stores the resulting refresh token. You don't enter any Greenhouse credentials yourself.
 6. Optionally enter a **Start date** in UTC using the format `YYYY-MM-DDTHH:MM:SSZ`. Records updated before this date will not be replicated. If omitted, the connector replicates all history.
 7. Optionally change **Number of concurrent threads**. The connector syncs with 2 threads by default and accepts 1 to 8. All threads share one Greenhouse rate limit, so raise this only if your Greenhouse account can absorb more API traffic, and lower it to 1 if syncs fail with rate-limit errors.
-8. If your deployment does not surface **Authenticate**, open the Greenhouse authorization URL with your client ID, registered redirect URI, and the scopes above, then exchange the returned code within one minute:
-   1. Open `https://auth.greenhouse.io/authorize?client_id=<client_id>&redirect_uri=<registered_redirect_uri>&response_type=code&state=<random>&scope=harvest%3Aapplications%3Alist%20harvest%3Aapproval_flows%3Alist%20harvest%3Acandidate_tags%3Alist%20harvest%3Acandidates%3Alist%20harvest%3Aclose_reasons%3Alist%20harvest%3Acustom_field_options%3Alist%20harvest%3Acustom_fields%3Alist%20harvest%3Ademographic_answer_options%3Alist%20harvest%3Ademographic_answers%3Alist%20harvest%3Ademographic_question_sets%3Alist%20harvest%3Ademographic_questions%3Alist%20harvest%3Adepartments%3Alist%20harvest%3Aeeoc%3Alist%20harvest%3Aemail_templates%3Alist%20harvest%3Ainterviews%3Alist%20harvest%3Ajob_interview_stages%3Alist%20harvest%3Ajob_posts%3Alist%20harvest%3Ajobs%3Alist%20harvest%3Anotes%3Alist%20harvest%3Aoffers%3Alist%20harvest%3Aoffices%3Alist%20harvest%3Aopenings%3Alist%20harvest%3Aprospect_pools%3Alist%20harvest%3Arejection_reasons%3Alist%20harvest%3Ascorecards%3Alist%20harvest%3Asources%3Alist%20harvest%3Auser_job_permissions%3Alist%20harvest%3Auser_roles%3Alist%20harvest%3Ausers%3Alist` in a browser and approve the request.
-   2. Exchange the `code` query parameter:
-
-      ```bash
-      curl -X POST 'https://auth.greenhouse.io/token?grant_type=authorization_code&code=<code>&redirect_uri=<registered_redirect_uri>' -u '<client_id>:<client_secret>' --data ''
-      ```
-
-   3. Copy `refresh_token` from the response into the **Refresh token** field.
-9. Click **Set up source**.
+8. Click **Set up source**.
 
 :::warning
-Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings.
+Greenhouse refresh tokens expire after approximately 24 hours of non-use and rotate on every refresh. Set connections to sync more often than once a day. A connection left paused, turned off, or failing for more than 24 hours requires re-running the consent flow from the source settings. See [Troubleshooting](#troubleshooting) for the error this produces.
 :::
 
 ## Supported sync modes
@@ -126,6 +124,19 @@ The connector requests 500 records per page, the Harvest v3 maximum, and then fo
 - **`users`** includes integration service users, which Greenhouse hides by default. Service accounts have no email address, so `primary_email` is empty for those records.
 - **`rejection_reasons`** includes the default reasons Greenhouse ships with, not only the ones your organization added.
 
+## Troubleshooting
+
+### Sync fails with a configuration error asking you to re-authenticate
+
+The connector can't renew its access token because Greenhouse rejected the refresh token. Starting with version 1.0.1, the connector reports this as a configuration error instead of a system error. The Greenhouse error code in the sync log tells you what to fix:
+
+- `invalid_grant`: the refresh token expired or was invalidated. This happens when the connection hasn't synced for more than about 24 hours, or when another tool used the same refresh token, which causes Greenhouse to issue a new one that Airbyte never receives. Open the source settings, click **Authenticate**, and complete the consent flow again to store a new refresh token. Run the consent flow separately for each Airbyte source; don't reuse one refresh token across sources or other tools.
+- `invalid_client` or `unauthorized_client`: Greenhouse rejected the partner application credentials Airbyte used for the refresh, or that application isn't allowed to use the refresh token grant. Open the source settings, click **Authenticate**, and complete the consent flow again. If the error persists, contact Airbyte support; there are no credentials for you to correct on your side.
+
+### Sync fails with a `403` configuration error on a stream
+
+The authorizing user isn't a Site Admin, or the consent flow didn't include the scope for that stream. Compare the scopes in [Prerequisites](#prerequisites) with the ones you approved, then re-run the consent flow as a Site Admin.
+
 ## Migration from Harvest v1 before the v1/v2 sunset
 
 Version 1.0.0 migrates the 33 streams carried over from 0.8.1 from Harvest v1 to Harvest v3 and adds the new `custom_field_options` stream, for 34 streams in total, because Greenhouse has scheduled the end of support for Harvest v1 and v2 together on 2026-08-31. It also replaces API-key authentication with OAuth Authorization Code authentication for every deployment and introduces an optional **Start date** that preserves the previous full-history behavior when omitted. We recommend creating a new connection on 1.0.0 rather than refreshing the existing one; see the [upgrade paths](./greenhouse-migrations.md#upgrade-paths) before upgrading.
@@ -141,6 +152,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.2 | 2026-09-02 | [85306](https://github.com/airbytehq/airbyte/pull/85306) | Clarify in the spec that OAuth credentials come from Airbyte's Greenhouse partner application and must not be requested from Greenhouse |
+| 1.0.1 | 2026-09-02 | [85300](https://github.com/airbytehq/airbyte/pull/85300) | Surface expired or rotated refresh tokens (`invalid_grant`) as a re-authenticate config error instead of a system error |
 | 1.0.0 | 2026-08-28 | [84846](https://github.com/airbytehq/airbyte/pull/84846) | Breaking migration from Harvest v1 to Harvest v3 with OAuth. See the [migration guide](https://docs.airbyte.com/integrations/sources/greenhouse-migrations). |
 | 0.8.1 | 2026-08-18 | [84641](https://github.com/airbytehq/airbyte/pull/84641) | Update dependencies |
 | 0.8.0 | 2026-08-12 | [83811](https://github.com/airbytehq/airbyte/pull/83811) | Send pagination page-size parameters only on first-page requests and use fully-qualified per-stream URLs in preparation for the Harvest v3 migration. |
