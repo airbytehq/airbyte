@@ -642,8 +642,7 @@ schemas:
           - "null"
           - array
         items:
-          type: object
-          additionalProperties: true
+          type: string
 
   contacts:
     type: object
@@ -820,8 +819,7 @@ schemas:
           - "null"
           - array
         items:
-          type: object
-          additionalProperties: true
+          type: string
       custom_fields:
         type:
           - "null"
