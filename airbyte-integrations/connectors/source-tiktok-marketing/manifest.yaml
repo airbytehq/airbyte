@@ -2387,7 +2387,497 @@ definitions:
       schema:
         $ref: "#/definitions/schemas/pixel_events_statistics"
 
+  gmv_max_stores_stream:
+    type: DeclarativeStream
+    name: gmv_max_stores
+    $parameters:
+      path: "gmv_max/store/list/"
+    primary_key:
+      - store_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "store_list"]
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_stores"
+
+  gmv_max_stores_filtered_stream:
+    type: DeclarativeStream
+    name: gmv_max_stores_filtered
+    $parameters:
+      path: "gmv_max/store/list/"
+    primary_key:
+      - store_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+      record_selector:
+        type: RecordSelector
+        schema_normalization: Default
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "store_list"]
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('is_gmv_max_available') == true }}"
+      paginator:
+        type: NoPagination
+      partition_router:
+        $ref: "#/definitions/single_id_partition_router"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_stores"
+
+  gmv_max_campaigns_stream:
+    type: DeclarativeStream
+    name: gmv_max_campaigns
+    $parameters:
+      path: "gmv_max/campaign/get/"
+    primary_key:
+      - campaign_id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        request_parameters:
+          filtering: '{{ {"gmv_max_promotion_types": [stream_partition.gmv_max_promotion_type]}|string }}'
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 100
+          start_from_page: 1
+      partition_router:
+        - type: ListPartitionRouter
+          values:
+            - PRODUCT_GMV_MAX
+            - LIVE_GMV_MAX
+          cursor_field: gmv_max_promotion_type
+        - class_name: "source_declarative_manifest.components.SingleAdvertiserIdPerPartition"
+          $parameters:
+            path_in_config:
+              - ["credentials", "advertiser_id"]
+              - ["environment", "advertiser_id"]
+            partition_field: advertiser_id
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: advertiser_id
+              request_option:
+                inject_into: request_parameter
+                type: RequestOption
+                field_name: advertiser_id
+              partition_field: advertiser_id
+              stream:
+                $ref: "#/definitions/advertiser_ids_stream"
+    incremental_sync:
+      $ref: "#/definitions/semi_incremental_sync"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_campaigns"
+
+  gmv_max_product_campaign_reports_daily_stream:
+    type: DeclarativeStream
+    name: gmv_max_product_campaign_reports_daily
+    $parameters:
+      path: "gmv_max/report/get/"
+    primary_key:
+      - store_id
+      - campaign_id
+      - stat_time_day
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          $ref: "#/definitions/report_daily_error_handler"
+        request_parameters:
+          advertiser_id: "{{ stream_slice.parent_slice['advertiser_id'] }}"
+          store_ids: '{{ [stream_slice["store_id"]] | string }}'
+          dimensions: '{{ ["campaign_id", "stat_time_day"] | string }}'
+          metrics: '{{ ["cost","net_cost","orders","cost_per_order","gross_revenue","roi","product_impressions","product_clicks","product_click_rate","ad_click_rate","ad_conversion_rate"] | string }}'
+          filtering: '{{ {"gmv_max_promotion_types": ["PRODUCT"]} | string }}'
+          start_date: "{{ stream_interval['start_time'] }}"
+          end_date: "{{ stream_interval['end_time'] }}"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: store_id
+            partition_field: store_id
+            stream:
+              $ref: "#/definitions/gmv_max_stores_filtered_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+          - path: ["store_id"]
+            value: "{{ stream_slice['store_id'] }}"
+      - type: CustomTransformation
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
+    incremental_sync:
+      $ref: "#/definitions/report_daily_incremental_sync"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_product_campaign_reports_daily"
+
+  gmv_max_live_campaign_reports_daily_stream:
+    type: DeclarativeStream
+    name: gmv_max_live_campaign_reports_daily
+    $parameters:
+      path: "gmv_max/report/get/"
+    primary_key:
+      - store_id
+      - campaign_id
+      - stat_time_day
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester"
+        error_handler:
+          $ref: "#/definitions/report_daily_error_handler"
+        request_parameters:
+          advertiser_id: "{{ stream_slice.parent_slice['advertiser_id'] }}"
+          store_ids: '{{ [stream_slice["store_id"]] | string }}'
+          dimensions: '{{ ["campaign_id", "stat_time_day"] | string }}'
+          metrics: '{{ ["cost","net_cost","orders","cost_per_order","gross_revenue","roi","product_impressions","product_clicks","product_click_rate","ad_click_rate","ad_conversion_rate","live_views","cost_per_live_view","10_second_live_views","cost_per_10_second_live_view","live_follows"] | string }}'
+          filtering: '{{ {"gmv_max_promotion_types": ["LIVE"]} | string }}'
+          start_date: "{{ stream_interval['start_time'] }}"
+          end_date: "{{ stream_interval['end_time'] }}"
+      record_selector:
+        $ref: "#/definitions/record_selector"
+      paginator:
+        $ref: "#/definitions/paginator_page_increment"
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+          start_from_page: 1
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            parent_key: store_id
+            partition_field: store_id
+            stream:
+              $ref: "#/definitions/gmv_max_stores_filtered_stream"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["stat_time_day"]
+            value: "{{ record.dimensions.stat_time_day }}"
+          - path: ["campaign_id"]
+            value: "{{ record.dimensions.campaign_id }}"
+          - path: ["store_id"]
+            value: "{{ stream_slice['store_id'] }}"
+      - type: CustomTransformation
+        class_name: "source_declarative_manifest.components.TransformEmptyMetrics"
+    incremental_sync:
+      $ref: "#/definitions/report_daily_incremental_sync"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $ref: "#/definitions/schemas/gmv_max_live_campaign_reports_daily"
+
   schemas:
+    gmv_max_stores:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        store_id:
+          type: string
+        is_gmv_max_available:
+          type: boolean
+        store_authorized_bc_id:
+          type:
+            - "null"
+            - string
+        is_owner_bc:
+          type:
+            - "null"
+            - boolean
+        store_authorized_bc_info:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+        thumbnail_url:
+          type:
+            - "null"
+            - string
+        store_name:
+          type:
+            - "null"
+            - string
+        store_code:
+          type:
+            - "null"
+            - string
+        targeting_region_codes:
+          type:
+            - "null"
+            - array
+          items:
+            type: string
+        store_status:
+          type:
+            - "null"
+            - string
+        store_role:
+          type:
+            - "null"
+            - string
+        exclusive_authorized_advertiser_info:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+
+    gmv_max_campaigns:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        advertiser_id:
+          type: string
+        campaign_id:
+          type: string
+        campaign_name:
+          type:
+            - "null"
+            - string
+        operation_status:
+          type:
+            - "null"
+            - string
+        secondary_status:
+          type:
+            - "null"
+            - string
+        objective_type:
+          type:
+            - "null"
+            - string
+        roi_protection_compensation_status:
+          type:
+            - "null"
+            - string
+        create_time:
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        modify_time:
+          type:
+            - "null"
+            - string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+
+    gmv_max_product_campaign_reports_daily:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        store_id:
+          type: string
+        campaign_id:
+          type: string
+        stat_time_day:
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        dimensions:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            campaign_id:
+              type:
+                - "null"
+                - string
+            stat_time_day:
+              type:
+                - "null"
+                - string
+        metrics:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            cost:
+              type:
+                - "null"
+                - string
+            net_cost:
+              type:
+                - "null"
+                - string
+            orders:
+              type:
+                - "null"
+                - string
+            cost_per_order:
+              type:
+                - "null"
+                - string
+            gross_revenue:
+              type:
+                - "null"
+                - string
+            roi:
+              type:
+                - "null"
+                - string
+            product_impressions:
+              type:
+                - "null"
+                - string
+            product_clicks:
+              type:
+                - "null"
+                - string
+            product_click_rate:
+              type:
+                - "null"
+                - string
+            ad_click_rate:
+              type:
+                - "null"
+                - string
+            ad_conversion_rate:
+              type:
+                - "null"
+                - string
+
+    gmv_max_live_campaign_reports_daily:
+      $schema: http://json-schema.org/draft-07/schema#
+      additionalProperties: true
+      type: object
+      properties:
+        store_id:
+          type: string
+        campaign_id:
+          type: string
+        stat_time_day:
+          type: string
+          format: date-time
+          airbyte_type: timestamp_without_timezone
+        dimensions:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            campaign_id:
+              type:
+                - "null"
+                - string
+            stat_time_day:
+              type:
+                - "null"
+                - string
+        metrics:
+          type:
+            - "null"
+            - object
+          additionalProperties: true
+          properties:
+            cost:
+              type:
+                - "null"
+                - string
+            net_cost:
+              type:
+                - "null"
+                - string
+            orders:
+              type:
+                - "null"
+                - string
+            cost_per_order:
+              type:
+                - "null"
+                - string
+            gross_revenue:
+              type:
+                - "null"
+                - string
+            roi:
+              type:
+                - "null"
+                - string
+            product_impressions:
+              type:
+                - "null"
+                - string
+            product_clicks:
+              type:
+                - "null"
+                - string
+            product_click_rate:
+              type:
+                - "null"
+                - string
+            ad_click_rate:
+              type:
+                - "null"
+                - string
+            ad_conversion_rate:
+              type:
+                - "null"
+                - string
+            live_views:
+              type:
+                - "null"
+                - string
+            cost_per_live_view:
+              type:
+                - "null"
+                - string
+            10_second_live_views:
+              type:
+                - "null"
+                - string
+            cost_per_10_second_live_view:
+              type:
+                - "null"
+                - string
+            live_follows:
+              type:
+                - "null"
+                - string
     advertiser_ids:
       $schema: http://json-schema.org/draft-07/schema#
       additionalProperties: true
@@ -5981,6 +6471,10 @@ streams:
     - $ref: "#/definitions/pixels"
     - $ref: "#/definitions/pixel_instant_page_events"
     - $ref: "#/definitions/pixel_events_statistics"
+    - $ref: "#/definitions/gmv_max_stores_stream"
+    - $ref: "#/definitions/gmv_max_campaigns_stream"
+    - $ref: "#/definitions/gmv_max_product_campaign_reports_daily_stream"
+    - $ref: "#/definitions/gmv_max_live_campaign_reports_daily_stream"
 
 spec:
   type: Spec
