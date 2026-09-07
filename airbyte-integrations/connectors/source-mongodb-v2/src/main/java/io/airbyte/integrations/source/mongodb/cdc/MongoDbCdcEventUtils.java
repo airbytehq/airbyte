@@ -203,6 +203,14 @@ public class MongoDbCdcEventUtils {
    * @return true if the schema expects an array, false otherwise
    */
   private static boolean schemaExpectsArray(final Map<String, JsonNode> fieldSchemas, final String fieldName) {
+    return schemaExpectsType(fieldSchemas, fieldName, "array");
+  }
+
+  private static boolean schemaExpectsString(final Map<String, JsonNode> fieldSchemas, final String fieldName) {
+    return schemaExpectsType(fieldSchemas, fieldName, "string");
+  }
+
+  private static boolean schemaExpectsType(final Map<String, JsonNode> fieldSchemas, final String fieldName, final String expectedType) {
     if (fieldSchemas == null || !fieldSchemas.containsKey(fieldName)) {
       return false;
     }
@@ -211,8 +219,40 @@ public class MongoDbCdcEventUtils {
     if (typeNode == null) {
       return false;
     }
+    return expectedType.equals(typeNode.asText());
+  }
 
-    return "array".equals(typeNode.asText());
+  /**
+   * Detects a structural type mismatch between the actual BSON type and the schema-expected type.
+   * Returns true when the BSON value has a complex structure (DOCUMENT or ARRAY) but the schema
+   * expects a scalar type (e.g., string), or vice versa. This does NOT fire for the array-wrapping
+   * case (non-array value where schema expects array), which is handled separately.
+   */
+  private static boolean hasStructuralTypeMismatch(final BsonType fieldType,
+                                                   final Map<String, JsonNode> fieldSchemas,
+                                                   final String fieldName) {
+    if (fieldSchemas == null || !fieldSchemas.containsKey(fieldName)) {
+      return false;
+    }
+    final JsonNode schema = fieldSchemas.get(fieldName);
+    final JsonNode typeNode = schema.get("type");
+    if (typeNode == null) {
+      return false;
+    }
+    final String expectedType = typeNode.asText();
+
+    if (DOCUMENT.equals(fieldType) && !"object".equals(expectedType) && !"array".equals(expectedType)) {
+      return true;
+    }
+    if (ARRAY.equals(fieldType) && !"array".equals(expectedType)) {
+      return true;
+    }
+    if (!DOCUMENT.equals(fieldType) && !ARRAY.equals(fieldType)
+        && !BsonType.NULL.equals(fieldType)
+        && "object".equals(expectedType)) {
+      return true;
+    }
+    return false;
   }
 
   private static ObjectNode readDocument(final BsonReader reader,
@@ -242,6 +282,14 @@ public class MongoDbCdcEventUtils {
             JsonNode valueNode = readField(reader, emptyTempNode, fieldName, fieldType).get(fieldName);
             jsonNodes.set(fieldName, Jsons.jsonNode(List.of(valueNode)));
           }
+        } else if (hasStructuralTypeMismatch(fieldType, includedFields, fieldName)) {
+          /*
+           * Handle polymorphic fields where the BSON type differs structurally from the schema-expected type.
+           * Coerce the value to its string representation to prevent silent data loss at the destination.
+           */
+          LOGGER.warn("Field '{}' has BSON type {} but schema expects a different structural type. Coercing to string.",
+              fieldName, fieldType);
+          coerceToString(reader, jsonNodes, fieldName, fieldType, includedFields);
         } else if (DOCUMENT.equals(fieldType)) {
           /*
            * Recursion in used to parse inner documents. Pass the allow all column name so all nested fields
@@ -261,6 +309,31 @@ public class MongoDbCdcEventUtils {
     reader.readEndDocument();
 
     return jsonNodes;
+  }
+
+  /**
+   * Coerces a BSON value to its JSON string representation when a structural type mismatch is
+   * detected between the actual BSON type and the schema-expected type.
+   */
+  private static void coerceToString(final BsonReader reader,
+                                     final ObjectNode jsonNodes,
+                                     final String fieldName,
+                                     final BsonType fieldType,
+                                     final Map<String, JsonNode> includedFields) {
+    if (DOCUMENT.equals(fieldType)) {
+      final var tempNode = readDocument(reader, (ObjectNode) Jsons.jsonNode(Collections.emptyMap()), Map.of(), true);
+      jsonNodes.put(fieldName, Jsons.serialize(tempNode));
+    } else if (ARRAY.equals(fieldType)) {
+      final var arrayNode = readArray(reader, includedFields, fieldName);
+      jsonNodes.put(fieldName, Jsons.serialize(arrayNode));
+    } else {
+      final var tempNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
+      readField(reader, tempNode, fieldName, fieldType);
+      final JsonNode value = tempNode.get(fieldName);
+      if (value != null) {
+        jsonNodes.put(fieldName, value.isTextual() ? value.asText() : Jsons.serialize(value));
+      }
+    }
   }
 
   private static JsonNode readArray(final BsonReader reader, final Map<String, JsonNode> columnNamesAndTypes, final String fieldName) {
