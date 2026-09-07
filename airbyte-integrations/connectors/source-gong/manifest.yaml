@@ -1348,6 +1348,9 @@ schemas:
                     - string
                     - "null"
       media:
+        type:
+            - "null"
+            - object
         description: The media urls of the call.
         properties:
           audioUrl:
@@ -1491,7 +1494,7 @@ schemas:
                 Internal, External, Unknown
             context:
               type:
-                - object
+                - array
                 - "null"
               description: >-
                 A list of links to external systems such as CRM, Dialer, Case
