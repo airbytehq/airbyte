@@ -366,6 +366,89 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/users"
+    rum:
+      type: DeclarativeStream
+      name: rum
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v2/rum/events
+          http_method: GET
+          request_parameters:
+            filter[query]: "{{ config['query'] }}"
+          request_headers:
+            DD-APPLICATION-KEY: "{{ config['application_key'] }}"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                max_retries: 3
+                backoff_strategies:
+                  - type: ExponentialBackoffStrategy
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: RETRY
+                    http_codes:
+                      - 429
+                    error_message: Too many requests, retrying...
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestPath
+          pagination_strategy:
+            type: CursorPagination
+            page_size: 1000
+            cursor_value: "{{ response.get(\"links\", {}).get(\"next\", {}) }}"
+            stop_condition: "{{ not response.get(\"links\", {}).get(\"next\", {}) }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: sync_date
+        lookback_window: P31D
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['start_date'] or day_delta(-30,
+            format='%Y-%m-%dT%H:%M:%SZ') }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: filter[from]
+          inject_into: request_parameter
+        end_time_option:
+          type: RequestOption
+          field_name: filter[to]
+          inject_into: request_parameter
+        end_datetime:
+          type: MinMaxDatetime
+          datetime: >-
+            {{ config['end_date'] or day_delta(-1, format='%Y-%m-%dT%H:%M:%SZ')
+            }}
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        step: P1M
+        cursor_granularity: PT0.000001S
+      transformations:
+        - type: AddFields
+          fields:
+            - path:
+                - sync_date
+              value: "{{ record['attributes']['timestamp'] }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/rum"
   base_requester:
     type: HttpRequester
     url_base: https://api.{{ config['site'] }}/api/
@@ -389,6 +472,7 @@ streams:
   - $ref: "#/definitions/streams/service_level_objectives"
   - $ref: "#/definitions/streams/synthetic_tests"
   - $ref: "#/definitions/streams/users"
+  - $ref: "#/definitions/streams/rum"
 
 spec:
   type: Spec
@@ -510,6 +594,7 @@ metadata:
     service_level_objectives: false
     synthetic_tests: false
     users: false
+    rum: false
   testedStreams:
     audit_logs:
       hasRecords: true
@@ -2061,3 +2146,59 @@ schemas:
           - "null"
         description: Relationships of the user object returned by the API.
         readOnly: true
+  rum:
+    type: object
+    $schema: http://json-schema.org/draft-07/schema#
+    additionalProperties: true
+    properties:
+      type:
+        type:
+          - string
+          - "null"
+        description: "Type of the event. Allowed enum values: rum"
+        enum:
+          - rum
+        readOnly: true
+      attributes:
+        type:
+          - object
+          - "null"
+        description: >-
+          JSON object containing all event attributes and their associated
+          values.
+        additionalProperties: true
+        properties:
+          attributes:
+            type:
+              - object
+              - "null"
+            description: JSON object of attributes from RUM events.
+            additionalProperties: true
+          service:
+            type:
+              - string
+              - "null"
+            description: The name of the application or service generating RUM events.
+          tags:
+            type:
+              - array
+              - "null"
+            description: Array of tags associated with your event.
+            items:
+              type: string
+          timestamp:
+            type:
+              - string
+              - "null"
+            description: Timestamp of your event.
+            format: date-time
+      id:
+        type:
+          - string
+          - "null"
+        description: Unique ID of the event.
+        readOnly: true
+      sync_date:
+        type:
+          - "null"
+          - string
