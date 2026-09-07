@@ -259,6 +259,42 @@ definitions:
       authenticators:
         api_key: "#/definitions/api_key_authenticator"
         oauth2.0: "#/definitions/oauth2_authenticator"
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+  base_error_handler:
+    type: DefaultErrorHandler
+    response_filters:
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['badRequest', 'invalidChannelId'] }}"
+        error_message: >-
+          Configured "Channel IDs" contains a value that is not a YouTube channel ID. Channel IDs start with "UC" and are
+          not channel handles, custom URLs, or usernames.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') == 'channelNotFound' }}"
+        error_message: >-
+          Configured "Channel IDs" contains a channel ID that does not exist on YouTube.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: transient_error
+        predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['quotaExceeded', 'rateLimitExceeded', 'userRateLimitExceeded'] }}"
+        error_message: >-
+          YouTube Data API quota is exhausted for the configured Google Cloud project.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['authError', 'keyInvalid', 'keyExpired', 'ipRefererBlocked', 'unauthorized'] }}"
+        error_message: >-
+          Configured authentication credentials are rejected by the YouTube Data API.
+      - type: HttpResponseFilter
+        action: FAIL
+        failure_type: config_error
+        predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['forbidden', 'commentsDisabled'] }}"
+        error_message: >-
+          Comment threads are not accessible for the configured YouTube channel with the configured credentials.
 
 streams:
   - $ref: "#/definitions/streams/video"
@@ -326,6 +362,14 @@ spec:
       channel_ids:
         type: array
         title: Channel IDs
+        description: >-
+          The YouTube channel IDs to sync. A channel ID starts with "UC" and can be found in the channel URL
+          (https://www.youtube.com/channel/<channel_id>) or in YouTube Studio under Settings > Channel > Advanced
+          settings. Channel handles, custom URLs, and usernames are not accepted.
+        examples:
+          - - UC_x5XG1OV2P6uZZ5FSM9Ttw
+        items:
+          type: string
         order: 1
     additionalProperties: true
   advanced_auth:
