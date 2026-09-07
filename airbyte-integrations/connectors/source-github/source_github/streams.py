@@ -1766,11 +1766,11 @@ class WorkflowRunAttempts(SemiIncrementalMixin, GithubStream):
 
         for attempt_number in range(1, (run.get("run_attempt") or 1) + 1):
             attempt_slice = {**stream_slice, "run_id": run["id"], "attempt_number": attempt_number}
-            # Skipping SemiIncrementalMixin.read_records on purpose: it filters on each record's own `updated_at`,
-            # which would drop the earlier attempts this stream exists to emit. The parent read below is what
-            # applies the incremental cursor.
-            yield from super(SemiIncrementalMixin, self).read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=attempt_slice, stream_state=stream_state
+            # Calling GithubStream directly to skip SemiIncrementalMixin.read_records: it filters on each record's
+            # own `updated_at`, which would drop the earlier attempts this stream exists to emit. The parent read in
+            # `read_records` is what applies the incremental cursor.
+            yield from GithubStream.read_records(
+                self, sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=attempt_slice, stream_state=stream_state
             )
 
     def read_records(
