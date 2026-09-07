@@ -97,6 +97,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against call_transcripts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, filter: CallTranscriptsListParamsFilter, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gong.models.GongExecuteResultWithMeta[list[CallTranscript], CallTranscriptsListResultMeta]`
     :   Returns transcripts for calls in a specified date range or specific call IDs
         
@@ -201,6 +216,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against calls_extensive records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, filter: CallsExtensiveListParamsFilter, content_selector: CallsExtensiveListParamsContentselector | None = None, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gong.models.GongExecuteResultWithMeta[list[ExtensiveCall], CallsExtensiveListResultMeta]`
     :   Retrieve detailed call data including participants, interaction stats, and content
         
@@ -264,6 +294,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against calls records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gong.models.Call`
     :   Get specific call data by ID
@@ -538,7 +583,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -680,6 +725,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against settings_scorecards records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, workspace_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gong.models.GongExecuteResult[list[Scorecard]]`
     :   Retrieve all scorecard configurations in the company
         
@@ -789,6 +849,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against stats_activity_scorecards records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, filter: StatsActivityScorecardsListParamsFilter, cursor: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gong.models.GongExecuteResultWithMeta[list[AnsweredScorecard], StatsActivityScorecardsListResultMeta]`
     :   Retrieve answered scorecards for applicable reviewed users or scorecards for a date range
         
@@ -866,6 +941,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gong.models.User`
     :   Get a single user by ID

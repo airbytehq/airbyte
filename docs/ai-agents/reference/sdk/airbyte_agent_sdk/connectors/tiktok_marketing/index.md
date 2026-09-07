@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.tiktok_marketing.connector
-* airbyte_agent_sdk.connectors.tiktok_marketing.connector_model
-* airbyte_agent_sdk.connectors.tiktok_marketing.models
-* airbyte_agent_sdk.connectors.tiktok_marketing.types
+* [airbyte_agent_sdk.connectors.tiktok_marketing.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/tiktok_marketing/airbyte_agent_sdk-connectors-tiktok_marketing-connector)
+* [airbyte_agent_sdk.connectors.tiktok_marketing.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/tiktok_marketing/airbyte_agent_sdk-connectors-tiktok_marketing-connector_model)
+* [airbyte_agent_sdk.connectors.tiktok_marketing.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/tiktok_marketing/airbyte_agent_sdk-connectors-tiktok_marketing-models)
+* [airbyte_agent_sdk.connectors.tiktok_marketing.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/tiktok_marketing/airbyte_agent_sdk-connectors-tiktok_marketing-types)
 
 Classes
 -------
@@ -2076,7 +2076,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
