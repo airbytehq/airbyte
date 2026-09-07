@@ -61,11 +61,17 @@ Currently, these are the source and destination connectors that support faster s
 
 ### Sources
 
+- [MSSQL (SQL Server)](sources/mssql)
 - [MySQL](sources/mysql)
+- [PostgreSQL](sources/postgres)
+- [Snowflake](sources/snowflake)
 
 ### Destinations
 
-- [S3](destinations/s3)
 - [Azure Blob Storage](destinations/azure-blob-storage)
 - [BigQuery](destinations/bigquery)
 - [ClickHouse](destinations/clickhouse)
+- [GCS Data Lake](destinations/gcs-data-lake)
+- [PostgreSQL](destinations/postgres)
+- [S3](destinations/s3)
+- [S3 Data Lake](destinations/s3-data-lake)
