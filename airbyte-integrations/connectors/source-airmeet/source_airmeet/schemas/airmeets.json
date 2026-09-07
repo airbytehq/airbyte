@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "uid": {
+      "type": ["string", "null"],
+      "description": "Unique identifier for the Airmeet"
+    },
+    "name": {
+      "type": ["string", "null"],
+      "description": "Name of the Airmeet"
+    },
+    "description": {
+      "type": ["string", "null"],
+      "description": "Description of the Airmeet"
+    },
+    "status": {
+      "type": ["string", "null"],
+      "description": "Current status of the Airmeet"
+    },
+    "start_time": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Start time of the Airmeet"
+    },
+    "end_time": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "End time of the Airmeet"
+    },
+    "created_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Creation timestamp"
+    },
+    "updated_at": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "Last update timestamp"
+    },
+    "timezone": {
+      "type": ["string", "null"],
+      "description": "Timezone for the event"
+    },
+    "registration_link": {
+      "type": ["string", "null"],
+      "description": "Registration URL"
+    },
+    "join_link": {
+      "type": ["string", "null"],
+      "description": "Join URL for attendees"
+    },
+    "host_email": {
+      "type": ["string", "null"],
+      "description": "Primary host email"
+    }
+  }
+}
