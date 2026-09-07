@@ -3,11 +3,13 @@
 #
 
 import pytest
-from conftest import find_stream
+from conftest import find_stream, get_source
 from freezegun import freeze_time
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.declarative.types import StreamSlice
+from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.state_builder import StateBuilder
 
 
@@ -124,3 +126,21 @@ def test_bulk_stream_start_date(
             {"account_id": "2", "start_time": f"{config_start_date}T00:00:00.000+0000", "end_time": "2023-11-01T12:00:00.000+0000"},
             {"account_id": "3", "start_time": f"{config_start_date}T00:00:00.000+0000", "end_time": "2023-11-01T12:00:00.000+0000"},
         ]
+
+
+@freeze_time("2025-01-01")
+def test_bulk_creation_403_classified_as_config_error(mock_auth_token, mock_user_query, mock_account_query, config, requests_mock):
+    stream_name = "app_install_ads"
+    requests_mock.post(
+        "https://bulk.api.bingads.microsoft.com/Bulk/v13/Campaigns/DownloadByAccountIds",
+        status_code=403,
+        json={"error": "UserIsNotAuthorized"},
+    )
+
+    catalog = CatalogBuilder().with_stream(stream_name, SyncMode.full_refresh).build()
+    source = get_source(config)
+    output = read(source, config, catalog)
+
+    assert output.errors, "Expected error trace messages but got none"
+    error_trace = output.errors[0].trace.error
+    assert error_trace.failure_type == FailureType.config_error
