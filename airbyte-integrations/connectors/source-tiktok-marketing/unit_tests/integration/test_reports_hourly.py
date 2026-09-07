@@ -179,6 +179,19 @@ class TestAdsReportHourly(TestCase):
         assert output.records[0].record.data.get("stat_time_hour") is not None
 
     @HttpMocker()
+    def test_basic_read_injects_advertiser_id_from_partition(self, http_mocker: HttpMocker):
+        # The report API returns advertiser_id as the request/partition parameter, not in the record body,
+        # so the connector injects it via AddFields. The mocked response intentionally omits advertiser_id;
+        # this asserts every emitted record carries the advertiser_id of its partition.
+        mock_advertisers_slices(http_mocker, self.config())
+        self.mock_response(http_mocker)
+
+        output = read(get_source(config=self.config(), state=None), self.config(), self.catalog())
+
+        assert len(output.records) == 2
+        assert {record.record.data.get("advertiser_id") for record in output.records} == {int(self.advertiser_id)}
+
+    @HttpMocker()
     def test_read_with_state(self, http_mocker: HttpMocker):
         mock_advertisers_slices(http_mocker, self.config())
         self.mock_response(http_mocker)

@@ -96,8 +96,7 @@
           "engaged_view_15s": 22,
           "paid_engaged_view_15s": 5,
           "paid_engagement_engaged_view_15s": 2
-        },
-        "advertiser_id": 872746382648
+        }
       },
       {
         "dimensions": {
@@ -192,8 +191,7 @@
           "engaged_view_15s": 22,
           "paid_engaged_view_15s": 5,
           "paid_engagement_engaged_view_15s": 2
-        },
-        "advertiser_id": 872746382648
+        }
       }
     ]
   }
