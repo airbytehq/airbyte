@@ -32,14 +32,9 @@ from . import constants
 from .streams import (
     Comments,
     CommitCommentReactions,
-    CommitComments,
     Commits,
     ContributorActivity,
-    Deployments,
-    Events,
     IssueCommentReactions,
-    IssueEvents,
-    IssueMilestones,
     IssueReactions,
     Issues,
     IssueTimelineEvents,
@@ -54,13 +49,11 @@ from .streams import (
     Releases,
     ReviewComments,
     Reviews,
-    Stargazers,
     TeamMembers,
     TeamMemberships,
     Teams,
     WorkflowJobs,
     WorkflowRuns,
-    Workflows,
 )
 
 
@@ -382,12 +375,15 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
         }
         repository_args_with_start_date = {**repository_args, "start_date": start_date}
 
+        # Not returned below: `pull_requests`, `projects` and `teams` are manifest streams (Steps 5
+        # and 4). The instances survive only because `PullRequestCommits`, `ProjectColumns` (and
+        # through it `ProjectCards`) and `TeamMembers` (and through it `TeamMemberships`) read
+        # their slices and records as parents, and all of those stay Python until Step 7.
+        # `CommitCommentReactions` builds its `CommitComments` parent internally for the same
+        # reason.
         pull_requests_stream = PullRequests(**repository_args_with_start_date)
         projects_stream = Projects(**repository_args_with_start_date)
         project_columns_stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
-        # Not returned below: `teams` is a manifest stream as of Step 4. The instance survives
-        # only because `TeamMembers` — and through it `TeamMemberships` — reads its slices and
-        # records as a parent, and both stay Python until Step 7.
         teams_stream = Teams(**organization_args)
         team_members_stream = TeamMembers(parent=teams_stream, **repository_args)
         workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
@@ -398,30 +394,21 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             IssueTimelineEvents(**repository_args),
             Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
-            CommitComments(**repository_args_with_start_date),
             Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
             ContributorActivity(**repository_args),
-            Deployments(**repository_args_with_start_date),
-            Events(**repository_args_with_start_date),
             IssueCommentReactions(**repository_args_with_start_date),
-            IssueEvents(**repository_args_with_start_date),
-            IssueMilestones(**repository_args_with_start_date),
             IssueReactions(**repository_args_with_start_date),
             Issues(**repository_args_with_start_date),
             ProjectCards(project_columns_stream, **repository_args_with_start_date),
             project_columns_stream,
-            projects_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
             PullRequestCommits(parent=pull_requests_stream, **repository_args),
             PullRequestStats(**repository_args_with_start_date),
             ProjectsV2(**repository_args_with_start_date),
-            pull_requests_stream,
             Releases(**repository_args_with_start_date),
             ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
-            Stargazers(**repository_args_with_start_date),
             team_members_stream,
-            Workflows(**repository_args_with_start_date),
             workflow_runs_stream,
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
