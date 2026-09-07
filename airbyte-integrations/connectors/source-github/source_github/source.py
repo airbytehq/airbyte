@@ -30,13 +30,11 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 from . import constants
 from .streams import (
-    Comments,
     CommitCommentReactions,
     Commits,
     ContributorActivity,
     IssueCommentReactions,
     IssueReactions,
-    Issues,
     IssueTimelineEvents,
     ProjectCards,
     ProjectColumns,
@@ -47,7 +45,6 @@ from .streams import (
     PullRequests,
     PullRequestStats,
     Releases,
-    ReviewComments,
     Reviews,
     TeamMembers,
     TeamMemberships,
@@ -386,13 +383,11 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
 
         python_streams = [
             IssueTimelineEvents(**repository_args),
-            Comments(**repository_args_with_start_date),
             CommitCommentReactions(**repository_args_with_start_date),
             Commits(**repository_args_with_start_date, branches_to_pull=config.get("branches", [])),
             ContributorActivity(**repository_args),
             IssueCommentReactions(**repository_args_with_start_date),
             IssueReactions(**repository_args_with_start_date),
-            Issues(**repository_args_with_start_date),
             ProjectCards(project_columns_stream, **repository_args_with_start_date),
             project_columns_stream,
             PullRequestCommentReactions(**repository_args_with_start_date),
@@ -400,7 +395,6 @@ class SourceGithub(YamlDeclarativeSource, AbstractSource):
             PullRequestStats(**repository_args_with_start_date),
             ProjectsV2(**repository_args_with_start_date),
             Releases(**repository_args_with_start_date),
-            ReviewComments(**repository_args_with_start_date),
             Reviews(**repository_args_with_start_date),
             team_members_stream,
             workflow_runs_stream,

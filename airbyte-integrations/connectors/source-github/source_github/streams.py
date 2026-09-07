@@ -670,6 +670,20 @@ class Projects(SemiIncrementalMixin, GithubStream):
 class Comments(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository
+
+    Retained only as the parent of `IssueCommentReactions`, which stays Python until Step 7
+    migrates the parent-child group. The catalog's `comments` stream comes from
+    `manifest.yaml` — this class is not returned by `SourceGithub.streams()` and must stay in
+    step with the manifest definition until it can be deleted. `use_cache` here and
+    `use_cache: true` on the manifest requester make both sides name their cache
+    `comments.sqlite`, so the parent read reuses the pages the declarative stream already
+    fetched (while the `since` values match, which is what legacy did too).
+
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is
+    no `schemas/comments.json`; `get_json_schema` is overridden below so the class stays usable
+    (the base implementation would raise `FileNotFoundError`), following what `Branches` does.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
     use_cache = True
@@ -678,6 +692,19 @@ class Comments(IncrementalMixin, GithubStream):
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/issues/comments"
+
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `IssueCommentReactions` only reads `id` (its `parent_key`) and `repository` off these
+        # records. The user-facing schema is the inline one in `manifest.yaml`; duplicating it
+        # here would only give it a chance to drift.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "repository": {"type": "string"},
+                "id": {"type": ["null", "integer"]},
+            },
+        }
 
 
 class Commits(IncrementalMixin, GithubStream):
@@ -765,6 +792,18 @@ class Commits(IncrementalMixin, GithubStream):
 class Issues(IncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
+
+    Retained only as the parent of `IssueTimelineEvents`, which stays Python until Step 7
+    migrates the parent-child group. The catalog's `issues` stream comes from `manifest.yaml`
+    — this class is not returned by `SourceGithub.streams()` and must stay in step with the
+    manifest definition until it can be deleted; `use_cache` shares `issues.sqlite` with the
+    declarative stream the same way `Comments` above does.
+
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is
+    no `schemas/issues.json`; `get_json_schema` is overridden below so the class stays usable
+    (the base implementation would raise `FileNotFoundError`), following what `Branches` does.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
 
     use_cache = True
@@ -777,17 +816,17 @@ class Issues(IncrementalMixin, GithubStream):
         "direction": "asc",
     }
 
-
-class ReviewComments(IncrementalMixin, GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository
-    """
-
-    use_cache = True
-    large_stream = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/pulls/comments"
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `IssueTimelineEvents` only reads `repository` and `number` off these records; see
+        # the note on `Comments.get_json_schema` above.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "repository": {"type": "string"},
+                "number": {"type": ["null", "integer"]},
+            },
+        }
 
 
 class GitHubGraphQLStream(GithubStream, ABC):

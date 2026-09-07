@@ -478,6 +478,15 @@ definitions:
       - $ref: "#/definitions/empty_repository_skip_filter"
       - $ref: "#/definitions/gone_fail_filter"
 
+  # `comments` alone raised its retry budget to 7 in Python (`Comments.max_retries`); every
+  # other repo-scoped stream used the base 5. It is the highest-volume REST stream in the
+  # connector and so meets transient 5xx most often. `DefaultErrorHandler.max_retries`
+  # defaults to 5, so without this override the stream would give up two attempts earlier
+  # than it does today.
+  comments_error_handler:
+    $ref: "#/definitions/skip_inaccessible_error_handler"
+    max_retries: 7
+
   # `repository_stats` resolves the explicit `org/repo` entries the user typed, and a 403 there
   # is one repository the token cannot see — a SAML-protected org is the common case. It must not
   # take the other repositories down with it: a 403 raised while partitions are being generated
@@ -6073,6 +6082,1594 @@ definitions:
             description: Repository information associated with the workflow
             type: string
 
+  # --- Group D: server-side incremental REST streams -------------------------------
+  #
+  # `comments`, `issues` and `review_comments` are the REST streams whose endpoint filters by
+  # cursor server-side: GitHub's `since` returns records with `updated_at >= since`. Legacy
+  # expressed this as `IncrementalMixin`, which added `since` from
+  # `SemiIncrementalMixin.get_starting_point` — `max(start_date, per-repository state)`.
+  #
+  # Deliberately no `is_client_side_incremental`. Legacy filtered in Python as well
+  # (`SemiIncrementalMixin.read_records` kept records with `cursor_value > start_point`,
+  # strictly greater), but that filter could only ever drop the boundary records `since` had
+  # already narrowed the response down to. The CDK's equivalent compares
+  # `start <= cursor <= end` (`ConcurrentCursor.should_be_synced`) — inclusive at the start —
+  # so enabling it would not drop them either. The observable difference is that a record
+  # whose `updated_at` is exactly the stored cursor is re-emitted once per sync where legacy
+  # suppressed it. That is at-least-once delivery of an unchanged record, which is what every
+  # declarative incremental stream does, and destinations dedupe it on the primary key.
+  server_side_since_cursor:
+    type: DatetimeBasedCursor
+    cursor_field: "updated_at"
+    cursor_datetime_formats:
+      - "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_datetime:
+      type: MinMaxDatetime
+      # `or` rather than `config.get('start_date', default)`, as on `repositories`: the default
+      # is only substituted when the key is *absent*, so a present-but-null `start_date` would
+      # reach MinMaxDatetime as the literal string "None" and abort the stream. Legacy sent no
+      # `since` at all when `start_date` was unset (`get_starting_point` returned ""), so the
+      # epoch is the faithful stand-in — `since=1970-01-01T00:00:00Z` selects the same records,
+      # the request just carries one more parameter.
+      datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    start_time_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: "since"
+    # No `end_time_option`: these endpoints take no upper bound and legacy sent none. No
+    # `step`/`cursor_granularity` either, so each repository is one open-ended window and
+    # pagination walks the `rel="next"` links exactly as before, rather than being sliced into
+    # date windows the legacy implementation never used.
+
+  comments_stream:
+    # API docs: https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#list-issue-comments-for-a-repository
+    type: DeclarativeStream
+    name: comments
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/large_stream_repository_scoped_requester"
+        # The endpoint is `issues/comments`, not `comments` — `comments` is
+        # `commit_comments`. Legacy spelled this out by overriding `Comments.path`.
+        path: "repos/{{ stream_partition.repository }}/issues/comments"
+        # `use_cache = True` on the Python class, kept for the same reason: `IssueCommentReactions`
+        # reads this listing as its parent and stays Python until Step 7. Both sides name the
+        # cache `comments.sqlite`, so a page this stream already fetched is free for that parent
+        # read. The two only share entries while the URLs match — the parent read sends
+        # `since=start_date` where this stream sends `since=<cursor>` — which is exactly the
+        # legacy behavior, since `ReactionStream` passed `start_date` there too.
+        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
+        use_cache: true
+        error_handler:
+          $ref: "#/definitions/comments_error_handler"
+    transformations:
+      $ref: "#/definitions/add_repository_and_rename_reactions_transformation"
+    incremental_sync:
+      $ref: "#/definitions/server_side_since_cursor"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Details about the repository to which the comment belongs
+            type: string
+          id:
+            description: The unique identifier of the comment
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: The unique identifier of the node
+            type:
+              - "null"
+              - string
+          user:
+            description: Details about the user who created the comment
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          url:
+            description: The URL of the comment
+            type:
+              - "null"
+              - string
+          html_url:
+            description: The URL of the comment on GitHub
+            type:
+              - "null"
+              - string
+          body:
+            description: The content of the comment
+            type:
+              - "null"
+              - string
+          user_id:
+            description: The unique identifier of the user
+            type:
+              - "null"
+              - integer
+          created_at:
+            description: The date and time the comment was created
+            type: string
+            format: date-time
+          updated_at:
+            description: The date and time the comment was last updated
+            type: string
+            format: date-time
+          issue_url:
+            description: The URL of the issue to which the comment belongs
+            type:
+              - "null"
+              - string
+          author_association:
+            description: The association of the comment author to the repository (e.g., owner, member, collaborator, contributor, etc.)
+            type:
+              - "null"
+              - string
+          reactions:
+            description: Reactions (e.g., like, heart, etc.) received on the comment
+            type:
+              - "null"
+              - object
+            properties:
+              url:
+                type:
+                  - "null"
+                  - string
+              total_count:
+                type:
+                  - "null"
+                  - integer
+              plus_one:
+                type:
+                  - "null"
+                  - integer
+              minus_one:
+                type:
+                  - "null"
+                  - integer
+              laugh:
+                type:
+                  - "null"
+                  - integer
+              hooray:
+                type:
+                  - "null"
+                  - integer
+              confused:
+                type:
+                  - "null"
+                  - integer
+              heart:
+                type:
+                  - "null"
+                  - integer
+              rocket:
+                type:
+                  - "null"
+                  - integer
+              eyes:
+                type:
+                  - "null"
+                  - integer
+          performed_via_github_app:
+            description: Details about the GitHub App that performed the action
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: The unique identifier of the GitHub App
+                type:
+                  - "null"
+                  - integer
+              slug:
+                description: The slug associated with the GitHub App
+                type:
+                  - "null"
+                  - string
+              node_id:
+                description: The unique identifier of the node for the GitHub App
+                type:
+                  - "null"
+                  - string
+              owner:
+                description: Details about the owner of the GitHub App
+                type:
+                  - "null"
+                  - object
+                properties:
+                  login:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  node_id:
+                    type:
+                      - "null"
+                      - string
+                  avatar_url:
+                    type:
+                      - "null"
+                      - string
+                  gravatar_id:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+                  html_url:
+                    type:
+                      - "null"
+                      - string
+                  followers_url:
+                    type:
+                      - "null"
+                      - string
+                  following_url:
+                    type:
+                      - "null"
+                      - string
+                  gists_url:
+                    type:
+                      - "null"
+                      - string
+                  starred_url:
+                    type:
+                      - "null"
+                      - string
+                  subscriptions_url:
+                    type:
+                      - "null"
+                      - string
+                  organizations_url:
+                    type:
+                      - "null"
+                      - string
+                  repos_url:
+                    type:
+                      - "null"
+                      - string
+                  events_url:
+                    type:
+                      - "null"
+                      - string
+                  received_events_url:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  site_admin:
+                    type:
+                      - "null"
+                      - boolean
+              name:
+                description: The name of the GitHub App
+                type:
+                  - "null"
+                  - string
+              description:
+                description: A description of the GitHub App
+                type:
+                  - "null"
+                  - string
+              external_url:
+                description: The external URL of the GitHub App
+                type:
+                  - "null"
+                  - string
+              html_url:
+                description: The HTML URL of the GitHub App
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: The date and time the GitHub App was created
+                type: string
+                format: date-time
+              updated_at:
+                description: The date and time the GitHub App was last updated
+                type: string
+                format: date-time
+              permissions:
+                description: Permissions granted to the GitHub App
+                type: object
+                properties:
+                  issues:
+                    description: Permission for accessing issues
+                    type:
+                      - "null"
+                      - string
+                  metadata:
+                    description: Permission for accessing metadata
+                    type:
+                      - "null"
+                      - string
+                  pull_requests:
+                    description: Permission for accessing pull requests
+                    type:
+                      - "null"
+                      - string
+              events:
+                description: Events associated with the GitHub App
+                type: array
+                items:
+                  type:
+                    - "null"
+                    - string
+
+  issues_stream:
+    # API docs: https://docs.github.com/en/rest/issues/issues?apiVersion=2022-11-28#list-repository-issues
+    type: DeclarativeStream
+    name: issues
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/large_stream_repository_scoped_requester"
+        path: "repos/{{ stream_partition.repository }}/issues"
+        # `use_cache = True` on the Python class, kept because `IssueTimelineEvents` reads this
+        # listing as its parent and stays Python until Step 7 — see `comments_stream` above.
+        # TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): drop with Step 7.
+        use_cache: true
+        # `request_parameters` replaces the shared dict rather than merging into it, so
+        # `per_page` is restated from the same hoisted expression the requester uses.
+        # `state`/`sort`/`direction` are `Issues.stream_base_params`: without `state=all` GitHub
+        # returns open issues only, which would silently drop every closed issue.
+        request_parameters:
+          per_page:
+            $ref: "#/definitions/large_stream_page_size"
+          state: "all"
+          sort: "updated"
+          direction: "asc"
+    transformations:
+      $ref: "#/definitions/add_repository_and_rename_reactions_transformation"
+    incremental_sync:
+      # Legacy also set `Issues.is_sorted = "asc"`, which did not filter or stop pagination —
+      # `SemiIncrementalMixin` only breaks early on `"desc"`. Its single effect was
+      # `state_checkpoint_interval = page_size`, i.e. a STATE message every page. The concurrent
+      # declarative cursor checkpoints per partition instead, so an interrupted sync now restarts
+      # the repository it was reading rather than resuming mid-listing. Same trade Step 4 made for
+      # the organization-scoped streams; the `asc` ordering above is kept so the request shape and
+      # the order records reach the destination are unchanged.
+      $ref: "#/definitions/server_side_since_cursor"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Repository where the issue is located.
+            type: string
+          id:
+            description: Unique identifier for the issue.
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: Unique identifier for the issue node.
+            type:
+              - "null"
+              - string
+          url:
+            description: URL to retrieve more details about the issue.
+            type:
+              - "null"
+              - string
+          repository_url:
+            description: URL to retrieve more details about the repository.
+            type:
+              - "null"
+              - string
+          labels_url:
+            description: URL to retrieve labels associated with the issue.
+            type:
+              - "null"
+              - string
+          comments_url:
+            description: URL to retrieve comments on the issue.
+            type:
+              - "null"
+              - string
+          events_url:
+            description: URL to retrieve events related to the issue.
+            type:
+              - "null"
+              - string
+          html_url:
+            description: URL to view the issue on GitHub.
+            type:
+              - "null"
+              - string
+          number:
+            description: Number of the issue.
+            type:
+              - "null"
+              - integer
+          state:
+            description: State of the issue (open/closed).
+            type:
+              - "null"
+              - string
+          title:
+            description: Title of the issue.
+            type:
+              - "null"
+              - string
+          user:
+            description: User who opened the issue.
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          body:
+            description: The content of the issue.
+            type:
+              - "null"
+              - string
+          user_id:
+            description: Identifier of the user who opened the issue.
+            type:
+              - "null"
+              - integer
+          labels:
+            description: List of labels attached to the issue.
+            type:
+              - "null"
+              - array
+            items:
+              type:
+                - "null"
+                - object
+              properties:
+                id:
+                  description: Unique identifier for the label.
+                  type:
+                    - "null"
+                    - integer
+                node_id:
+                  description: Unique identifier for the label node.
+                  type:
+                    - "null"
+                    - string
+                url:
+                  description: URL to retrieve more details about the label.
+                  type:
+                    - "null"
+                    - string
+                name:
+                  description: Name of the label.
+                  type:
+                    - "null"
+                    - string
+                description:
+                  description: Description of the label.
+                  type:
+                    - "null"
+                    - string
+                color:
+                  description: Color of the label.
+                  type:
+                    - "null"
+                    - string
+                default:
+                  description: Flag indicating if the label is a default label.
+                  type:
+                    - "null"
+                    - boolean
+          assignee:
+            description: User assigned to the issue.
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          assignees:
+            description: List of users assigned to the issue.
+            type:
+              - "null"
+              - array
+            items:
+              description: List of users assigned to the issue.
+              type:
+                - "null"
+                - object
+              properties:
+                login:
+                  type:
+                    - "null"
+                    - string
+                id:
+                  type:
+                    - "null"
+                    - integer
+                node_id:
+                  type:
+                    - "null"
+                    - string
+                avatar_url:
+                  type:
+                    - "null"
+                    - string
+                gravatar_id:
+                  type:
+                    - "null"
+                    - string
+                url:
+                  type:
+                    - "null"
+                    - string
+                html_url:
+                  type:
+                    - "null"
+                    - string
+                followers_url:
+                  type:
+                    - "null"
+                    - string
+                following_url:
+                  type:
+                    - "null"
+                    - string
+                gists_url:
+                  type:
+                    - "null"
+                    - string
+                starred_url:
+                  type:
+                    - "null"
+                    - string
+                subscriptions_url:
+                  type:
+                    - "null"
+                    - string
+                organizations_url:
+                  type:
+                    - "null"
+                    - string
+                repos_url:
+                  type:
+                    - "null"
+                    - string
+                events_url:
+                  type:
+                    - "null"
+                    - string
+                received_events_url:
+                  type:
+                    - "null"
+                    - string
+                type:
+                  type:
+                    - "null"
+                    - string
+                site_admin:
+                  type:
+                    - "null"
+                    - boolean
+          milestone:
+            description: Details of the milestone associated with the issue.
+            type:
+              - "null"
+              - object
+            properties:
+              url:
+                description: URL to retrieve more details about the milestone.
+                type:
+                  - "null"
+                  - string
+              html_url:
+                description: URL to view the milestone on GitHub.
+                type:
+                  - "null"
+                  - string
+              labels_url:
+                description: URL to retrieve labels associated with the milestone.
+                type:
+                  - "null"
+                  - string
+              id:
+                description: Unique identifier for the milestone.
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                description: Unique identifier for the milestone node.
+                type:
+                  - "null"
+                  - string
+              number:
+                description: Number of the milestone.
+                type:
+                  - "null"
+                  - integer
+              state:
+                description: State of the milestone (open/closed).
+                type:
+                  - "null"
+                  - string
+              title:
+                description: Title of the milestone.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the milestone.
+                type:
+                  - "null"
+                  - string
+              creator:
+                description: User who created the milestone.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  login:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  node_id:
+                    type:
+                      - "null"
+                      - string
+                  avatar_url:
+                    type:
+                      - "null"
+                      - string
+                  gravatar_id:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+                  html_url:
+                    type:
+                      - "null"
+                      - string
+                  followers_url:
+                    type:
+                      - "null"
+                      - string
+                  following_url:
+                    type:
+                      - "null"
+                      - string
+                  gists_url:
+                    type:
+                      - "null"
+                      - string
+                  starred_url:
+                    type:
+                      - "null"
+                      - string
+                  subscriptions_url:
+                    type:
+                      - "null"
+                      - string
+                  organizations_url:
+                    type:
+                      - "null"
+                      - string
+                  repos_url:
+                    type:
+                      - "null"
+                      - string
+                  events_url:
+                    type:
+                      - "null"
+                      - string
+                  received_events_url:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  site_admin:
+                    type:
+                      - "null"
+                      - boolean
+              open_issues:
+                description: Number of open issues in the milestone.
+                type:
+                  - "null"
+                  - integer
+              closed_issues:
+                description: Number of closed issues in the milestone.
+                type:
+                  - "null"
+                  - integer
+              created_at:
+                description: Date and time when the milestone was created.
+                type: string
+                format: date-time
+              updated_at:
+                description: Date and time when the milestone was last updated.
+                type: string
+                format: date-time
+              closed_at:
+                description: Date and time when the milestone was closed.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+              due_on:
+                description: Date and time when the milestone is due.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          locked:
+            description: Flag indicating if the issue is locked.
+            type:
+              - "null"
+              - boolean
+          active_lock_reason:
+            description: Reason for the active lock on the issue, if any.
+            type:
+              - "null"
+              - string
+          comments:
+            description: Number of comments on the issue.
+            type:
+              - "null"
+              - integer
+          pull_request:
+            description: Details of a linked pull request, if the issue is a pull request.
+            type:
+              - "null"
+              - object
+            properties:
+              url:
+                description: URL to retrieve more details about the pull request.
+                type:
+                  - "null"
+                  - string
+              html_url:
+                description: URL to view the pull request on GitHub.
+                type:
+                  - "null"
+                  - string
+              diff_url:
+                description: URL to view the diff of the pull request.
+                type:
+                  - "null"
+                  - string
+              patch_url:
+                description: URL to view the patch of the pull request.
+                type:
+                  - "null"
+                  - string
+              merged_at:
+                description: Date and time when the pull request was merged.
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          closed_at:
+            description: Date and time when the issue was closed.
+            type:
+              - "null"
+              - string
+            format: date-time
+          created_at:
+            description: Date and time when the issue was created.
+            type: string
+            format: date-time
+          updated_at:
+            description: Date and time when the issue was last updated.
+            type: string
+            format: date-time
+          author_association:
+            description: The association of the author with the issue.
+            type:
+              - "null"
+              - string
+          draft:
+            description: Flag indicating if the issue is a draft.
+            type:
+              - "null"
+              - boolean
+          reactions:
+            description: Reactions to the issue.
+            type:
+              - "null"
+              - object
+            properties:
+              url:
+                type:
+                  - "null"
+                  - string
+              total_count:
+                type:
+                  - "null"
+                  - integer
+              plus_one:
+                type:
+                  - "null"
+                  - integer
+              minus_one:
+                type:
+                  - "null"
+                  - integer
+              laugh:
+                type:
+                  - "null"
+                  - integer
+              hooray:
+                type:
+                  - "null"
+                  - integer
+              confused:
+                type:
+                  - "null"
+                  - integer
+              heart:
+                type:
+                  - "null"
+                  - integer
+              rocket:
+                type:
+                  - "null"
+                  - integer
+              eyes:
+                type:
+                  - "null"
+                  - integer
+          timeline_url:
+            description: URL to retrieve the timeline of the issue.
+            type:
+              - "null"
+              - string
+          performed_via_github_app:
+            description: Information related to the GitHub App that performed actions on the issue.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: Unique identifier for the GitHub app.
+                type:
+                  - "null"
+                  - integer
+              slug:
+                description: Slug of the GitHub app.
+                type:
+                  - "null"
+                  - string
+              node_id:
+                description: Unique identifier for the GitHub app node.
+                type:
+                  - "null"
+                  - string
+              owner:
+                description: User who owns the GitHub app.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  login:
+                    type:
+                      - "null"
+                      - string
+                  id:
+                    type:
+                      - "null"
+                      - integer
+                  node_id:
+                    type:
+                      - "null"
+                      - string
+                  avatar_url:
+                    type:
+                      - "null"
+                      - string
+                  gravatar_id:
+                    type:
+                      - "null"
+                      - string
+                  url:
+                    type:
+                      - "null"
+                      - string
+                  html_url:
+                    type:
+                      - "null"
+                      - string
+                  followers_url:
+                    type:
+                      - "null"
+                      - string
+                  following_url:
+                    type:
+                      - "null"
+                      - string
+                  gists_url:
+                    type:
+                      - "null"
+                      - string
+                  starred_url:
+                    type:
+                      - "null"
+                      - string
+                  subscriptions_url:
+                    type:
+                      - "null"
+                      - string
+                  organizations_url:
+                    type:
+                      - "null"
+                      - string
+                  repos_url:
+                    type:
+                      - "null"
+                      - string
+                  events_url:
+                    type:
+                      - "null"
+                      - string
+                  received_events_url:
+                    type:
+                      - "null"
+                      - string
+                  type:
+                    type:
+                      - "null"
+                      - string
+                  site_admin:
+                    type:
+                      - "null"
+                      - boolean
+              name:
+                description: Name of the GitHub app.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the GitHub app.
+                type:
+                  - "null"
+                  - string
+              external_url:
+                description: External URL associated with the GitHub app.
+                type:
+                  - "null"
+                  - string
+              html_url:
+                description: URL to view the GitHub app on GitHub.
+                type:
+                  - "null"
+                  - string
+              created_at:
+                description: Date and time when the GitHub app was created.
+                type: string
+                format: date-time
+              updated_at:
+                description: Date and time when the GitHub app was last updated.
+                type: string
+                format: date-time
+              permissions:
+                description: Permissions granted to the GitHub App on the issue.
+                type:
+                  - "null"
+                  - object
+                properties:
+                  issues:
+                    description: Permissions related to issues for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  metadata:
+                    description: Permissions related to metadata for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  pull_requests:
+                    description: Permissions related to pull requests for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  actions:
+                    description: Permissions related to actions for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  checks:
+                    description: Permissions related to checks for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  contents:
+                    description: Permissions related to contents for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  deployments:
+                    description: Permissions related to deployments for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  discussions:
+                    description: Permissions related to discussions for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  repository_projects:
+                    description: Permissions related to repository projects for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+                  statuses:
+                    description: Permissions related to statuses for the GitHub app.
+                    type:
+                      - "null"
+                      - string
+              events:
+                description: List of events performed by the GitHub App on the issue.
+                type: array
+                items:
+                  description: List of events performed by the GitHub app.
+                  type:
+                    - "null"
+                    - string
+          state_reason:
+            description: Reason for the state of the issue.
+            type:
+              - "null"
+              - string
+
+  review_comments_stream:
+    # API docs: https://docs.github.com/en/rest/pulls/comments?apiVersion=2022-11-28#list-review-comments-in-a-repository
+    type: DeclarativeStream
+    name: review_comments
+    primary_key: "id"
+    retriever:
+      $ref: "#/definitions/repository_scoped_retriever"
+      requester:
+        $ref: "#/definitions/large_stream_repository_scoped_requester"
+        # `pulls/comments`, not `review_comments`; legacy overrode `ReviewComments.path` for it.
+        path: "repos/{{ stream_partition.repository }}/pulls/comments"
+        # No `use_cache` here, unlike `comments` and `issues`. `ReviewComments.use_cache = True`
+        # in Python was inert — no stream reads this one as a parent — and caching the pages of
+        # a large stream costs sqlite writes for nothing.
+    transformations:
+      $ref: "#/definitions/add_repository_and_rename_reactions_transformation"
+    incremental_sync:
+      $ref: "#/definitions/server_side_since_cursor"
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: Information about the repository where the comment was made
+            type: string
+          url:
+            description: The URL of the API resource for the comment
+            type:
+              - "null"
+              - string
+          pull_request_review_id:
+            description: The ID of the pull request review to which the comment belongs
+            type:
+              - "null"
+              - integer
+          id:
+            description: The unique identifier of the comment
+            type:
+              - "null"
+              - integer
+          node_id:
+            description: The unique identifier for the comment node
+            type:
+              - "null"
+              - string
+          diff_hunk:
+            description: A snippet of the diff where the comment was made
+            type:
+              - "null"
+              - string
+          path:
+            description: The file path where the comment was made
+            type:
+              - "null"
+              - string
+          position:
+            description: The position of the comment relative to the diff
+            type:
+              - "null"
+              - integer
+          original_position:
+            description: The original position of the comment relative to the diff
+            type:
+              - "null"
+              - integer
+          commit_id:
+            description: The ID of the commit the comment is associated with
+            type:
+              - "null"
+              - string
+          original_commit_id:
+            description: The original commit ID associated with the comment
+            type:
+              - "null"
+              - string
+          in_reply_to_id:
+            description: The ID of the comment being replied to
+            type:
+              - "null"
+              - integer
+          user:
+            description: Information about the user who made the comment
+            type:
+              - "null"
+              - object
+            properties:
+              login:
+                type:
+                  - "null"
+                  - string
+              id:
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                type:
+                  - "null"
+                  - string
+              avatar_url:
+                type:
+                  - "null"
+                  - string
+              gravatar_id:
+                type:
+                  - "null"
+                  - string
+              url:
+                type:
+                  - "null"
+                  - string
+              html_url:
+                type:
+                  - "null"
+                  - string
+              followers_url:
+                type:
+                  - "null"
+                  - string
+              following_url:
+                type:
+                  - "null"
+                  - string
+              gists_url:
+                type:
+                  - "null"
+                  - string
+              starred_url:
+                type:
+                  - "null"
+                  - string
+              subscriptions_url:
+                type:
+                  - "null"
+                  - string
+              organizations_url:
+                type:
+                  - "null"
+                  - string
+              repos_url:
+                type:
+                  - "null"
+                  - string
+              events_url:
+                type:
+                  - "null"
+                  - string
+              received_events_url:
+                type:
+                  - "null"
+                  - string
+              type:
+                type:
+                  - "null"
+                  - string
+              site_admin:
+                type:
+                  - "null"
+                  - boolean
+          body:
+            description: The content of the comment
+            type:
+              - "null"
+              - string
+          created_at:
+            description: The timestamp when the comment was created
+            type: string
+            format: date-time
+          updated_at:
+            description: The timestamp when the comment was last updated
+            type: string
+            format: date-time
+          html_url:
+            description: The URL for viewing the comment on GitHub
+            type:
+              - "null"
+              - string
+          pull_request_url:
+            description: The URL of the pull request to which the comment belongs
+            type:
+              - "null"
+              - string
+          author_association:
+            description: The association of the author of the comment with the repository
+            type:
+              - "null"
+              - string
+          _links:
+            description: Contains links to related resources for the review comment
+            type:
+              - "null"
+              - object
+            properties:
+              self:
+                description: URL for the review comment itself
+                type:
+                  - "null"
+                  - object
+                properties:
+                  href:
+                    description: The URL of the comment itself
+                    type:
+                      - "null"
+                      - string
+              html:
+                description: URL for the HTML representation of the review comment
+                type:
+                  - "null"
+                  - object
+                properties:
+                  href:
+                    description: The URL for viewing the comment in a browser
+                    type:
+                      - "null"
+                      - string
+              pull_request:
+                description: URL for the pull request associated with the review comment
+                type:
+                  - "null"
+                  - object
+                properties:
+                  href:
+                    description: The URL for the associated pull request
+                    type:
+                      - "null"
+                      - string
+          start_line:
+            description: The starting line of the comment reference
+            type:
+              - "null"
+              - integer
+          original_start_line:
+            description: The original starting line of the comment reference
+            type:
+              - "null"
+              - integer
+          start_side:
+            description: The side in the diff where the comment reference started
+            type:
+              - "null"
+              - string
+          line:
+            description: The line in the diff where the comment was made
+            type:
+              - "null"
+              - integer
+          original_line:
+            description: The original line for the comment reference
+            type:
+              - "null"
+              - integer
+          side:
+            description: The side of the diff where the comment was made (e.g., left or right)
+            type:
+              - "null"
+              - string
+          subject_type:
+            description: The type of subject the comment is associated with
+            type:
+              - "null"
+              - string
+          reactions:
+            description: Reactions to the comment (e.g., thumbs up, thumbs down)
+            type:
+              - "null"
+              - object
+            properties:
+              url:
+                type:
+                  - "null"
+                  - string
+              total_count:
+                type:
+                  - "null"
+                  - integer
+              plus_one:
+                type:
+                  - "null"
+                  - integer
+              minus_one:
+                type:
+                  - "null"
+                  - integer
+              laugh:
+                type:
+                  - "null"
+                  - integer
+              hooray:
+                type:
+                  - "null"
+                  - integer
+              confused:
+                type:
+                  - "null"
+                  - integer
+              heart:
+                type:
+                  - "null"
+                  - integer
+              rocket:
+                type:
+                  - "null"
+                  - integer
+              eyes:
+                type:
+                  - "null"
+                  - integer
+
 api_budget:
   type: HTTPAPIBudget
   policies:
@@ -6114,6 +7711,9 @@ streams:
   - $ref: "#/definitions/issue_events_stream"
   - $ref: "#/definitions/deployments_stream"
   - $ref: "#/definitions/workflows_stream"
+  - $ref: "#/definitions/comments_stream"
+  - $ref: "#/definitions/issues_stream"
+  - $ref: "#/definitions/review_comments_stream"
 
 check:
   type: CheckStream
