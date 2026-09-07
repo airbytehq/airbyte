@@ -1,6 +1,6 @@
 <!-- progressive-rollout-gate:{{ .connector }} -->
 
-## Detected `{{ .connector }}` Active Rollout: `{{ .active_rollout }}`
+## Detected `{{ .connector }}` Advertised Rollout Candidate: `{{ .active_rollout }}`
 
 > [!IMPORTANT]
 > Active progressive rollout warning for `{{ .connector }}`.
@@ -13,7 +13,7 @@
 - Rollout mode: `{{ .rollout_mode }}`
 - [Open Connector Rollout Manager in Retool]({{ .retool_url }}) to clean up or close out this rollout if appropriate.
 
-Status is derived from the public connector registry (advertised release candidates), not from live rollout state.
+This status comes from the public connector registry, which advertises a release candidate while a progressive rollout is pending or in progress. Live rollout state (paused, errored, percentage) is only visible in Connector Rollout Manager.
 
 ### Version on `master` Branch: `{{ .master_version }}`
 
