@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.snapchat_marketing.connector
-* airbyte_agent_sdk.connectors.snapchat_marketing.connector_model
-* airbyte_agent_sdk.connectors.snapchat_marketing.models
-* airbyte_agent_sdk.connectors.snapchat_marketing.types
+* [airbyte_agent_sdk.connectors.snapchat_marketing.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/snapchat_marketing/airbyte_agent_sdk-connectors-snapchat_marketing-connector)
+* [airbyte_agent_sdk.connectors.snapchat_marketing.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/snapchat_marketing/airbyte_agent_sdk-connectors-snapchat_marketing-connector_model)
+* [airbyte_agent_sdk.connectors.snapchat_marketing.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/snapchat_marketing/airbyte_agent_sdk-connectors-snapchat_marketing-models)
+* [airbyte_agent_sdk.connectors.snapchat_marketing.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/snapchat_marketing/airbyte_agent_sdk-connectors-snapchat_marketing-types)
 
 Classes
 -------

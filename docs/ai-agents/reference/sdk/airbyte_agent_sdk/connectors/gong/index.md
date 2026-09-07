@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.gong.connector
-* airbyte_agent_sdk.connectors.gong.connector_model
-* airbyte_agent_sdk.connectors.gong.models
-* airbyte_agent_sdk.connectors.gong.types
+* [airbyte_agent_sdk.connectors.gong.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-connector)
+* [airbyte_agent_sdk.connectors.gong.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-connector_model)
+* [airbyte_agent_sdk.connectors.gong.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-models)
+* [airbyte_agent_sdk.connectors.gong.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gong/airbyte_agent_sdk-connectors-gong-types)
 
 Classes
 -------

@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.zendesk_chat.connector
-* airbyte_agent_sdk.connectors.zendesk_chat.connector_model
-* airbyte_agent_sdk.connectors.zendesk_chat.models
-* airbyte_agent_sdk.connectors.zendesk_chat.types
+* [airbyte_agent_sdk.connectors.zendesk_chat.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_chat/airbyte_agent_sdk-connectors-zendesk_chat-connector)
+* [airbyte_agent_sdk.connectors.zendesk_chat.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_chat/airbyte_agent_sdk-connectors-zendesk_chat-connector_model)
+* [airbyte_agent_sdk.connectors.zendesk_chat.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_chat/airbyte_agent_sdk-connectors-zendesk_chat-models)
+* [airbyte_agent_sdk.connectors.zendesk_chat.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_chat/airbyte_agent_sdk-connectors-zendesk_chat-types)
 
 Classes
 -------

@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.gitlab.connector
-* airbyte_agent_sdk.connectors.gitlab.connector_model
-* airbyte_agent_sdk.connectors.gitlab.models
-* airbyte_agent_sdk.connectors.gitlab.types
+* [airbyte_agent_sdk.connectors.gitlab.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gitlab/airbyte_agent_sdk-connectors-gitlab-connector)
+* [airbyte_agent_sdk.connectors.gitlab.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gitlab/airbyte_agent_sdk-connectors-gitlab-connector_model)
+* [airbyte_agent_sdk.connectors.gitlab.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gitlab/airbyte_agent_sdk-connectors-gitlab-models)
+* [airbyte_agent_sdk.connectors.gitlab.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/gitlab/airbyte_agent_sdk-connectors-gitlab-types)
 
 Classes
 -------

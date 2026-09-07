@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.shopify.connector
-* airbyte_agent_sdk.connectors.shopify.connector_model
-* airbyte_agent_sdk.connectors.shopify.models
-* airbyte_agent_sdk.connectors.shopify.types
+* [airbyte_agent_sdk.connectors.shopify.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/shopify/airbyte_agent_sdk-connectors-shopify-connector)
+* [airbyte_agent_sdk.connectors.shopify.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/shopify/airbyte_agent_sdk-connectors-shopify-connector_model)
+* [airbyte_agent_sdk.connectors.shopify.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/shopify/airbyte_agent_sdk-connectors-shopify-models)
+* [airbyte_agent_sdk.connectors.shopify.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/shopify/airbyte_agent_sdk-connectors-shopify-types)
 
 Classes
 -------

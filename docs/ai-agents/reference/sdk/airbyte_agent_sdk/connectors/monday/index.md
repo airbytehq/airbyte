@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.monday.connector
-* airbyte_agent_sdk.connectors.monday.connector_model
-* airbyte_agent_sdk.connectors.monday.models
-* airbyte_agent_sdk.connectors.monday.types
+* [airbyte_agent_sdk.connectors.monday.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/monday/airbyte_agent_sdk-connectors-monday-connector)
+* [airbyte_agent_sdk.connectors.monday.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/monday/airbyte_agent_sdk-connectors-monday-connector_model)
+* [airbyte_agent_sdk.connectors.monday.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/monday/airbyte_agent_sdk-connectors-monday-models)
+* [airbyte_agent_sdk.connectors.monday.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/monday/airbyte_agent_sdk-connectors-monday-types)
 
 Classes
 -------

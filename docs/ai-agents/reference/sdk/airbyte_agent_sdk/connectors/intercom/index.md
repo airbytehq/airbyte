@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.intercom.connector
-* airbyte_agent_sdk.connectors.intercom.connector_model
-* airbyte_agent_sdk.connectors.intercom.models
-* airbyte_agent_sdk.connectors.intercom.types
+* [airbyte_agent_sdk.connectors.intercom.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/intercom/airbyte_agent_sdk-connectors-intercom-connector)
+* [airbyte_agent_sdk.connectors.intercom.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/intercom/airbyte_agent_sdk-connectors-intercom-connector_model)
+* [airbyte_agent_sdk.connectors.intercom.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/intercom/airbyte_agent_sdk-connectors-intercom-models)
+* [airbyte_agent_sdk.connectors.intercom.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/intercom/airbyte_agent_sdk-connectors-intercom-types)
 
 Classes
 -------

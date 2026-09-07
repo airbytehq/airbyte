@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.stripe.connector
-* airbyte_agent_sdk.connectors.stripe.connector_model
-* airbyte_agent_sdk.connectors.stripe.models
-* airbyte_agent_sdk.connectors.stripe.types
+* [airbyte_agent_sdk.connectors.stripe.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/stripe/airbyte_agent_sdk-connectors-stripe-connector)
+* [airbyte_agent_sdk.connectors.stripe.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/stripe/airbyte_agent_sdk-connectors-stripe-connector_model)
+* [airbyte_agent_sdk.connectors.stripe.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/stripe/airbyte_agent_sdk-connectors-stripe-models)
+* [airbyte_agent_sdk.connectors.stripe.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/stripe/airbyte_agent_sdk-connectors-stripe-types)
 
 Classes
 -------

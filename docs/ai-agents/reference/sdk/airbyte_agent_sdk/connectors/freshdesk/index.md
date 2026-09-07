@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.freshdesk.connector
-* airbyte_agent_sdk.connectors.freshdesk.connector_model
-* airbyte_agent_sdk.connectors.freshdesk.models
-* airbyte_agent_sdk.connectors.freshdesk.types
+* [airbyte_agent_sdk.connectors.freshdesk.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/freshdesk/airbyte_agent_sdk-connectors-freshdesk-connector)
+* [airbyte_agent_sdk.connectors.freshdesk.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/freshdesk/airbyte_agent_sdk-connectors-freshdesk-connector_model)
+* [airbyte_agent_sdk.connectors.freshdesk.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/freshdesk/airbyte_agent_sdk-connectors-freshdesk-models)
+* [airbyte_agent_sdk.connectors.freshdesk.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/freshdesk/airbyte_agent_sdk-connectors-freshdesk-types)
 
 Classes
 -------

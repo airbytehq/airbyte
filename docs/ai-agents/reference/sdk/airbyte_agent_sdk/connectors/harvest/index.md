@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.harvest.connector
-* airbyte_agent_sdk.connectors.harvest.connector_model
-* airbyte_agent_sdk.connectors.harvest.models
-* airbyte_agent_sdk.connectors.harvest.types
+* [airbyte_agent_sdk.connectors.harvest.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/harvest/airbyte_agent_sdk-connectors-harvest-connector)
+* [airbyte_agent_sdk.connectors.harvest.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/harvest/airbyte_agent_sdk-connectors-harvest-connector_model)
+* [airbyte_agent_sdk.connectors.harvest.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/harvest/airbyte_agent_sdk-connectors-harvest-models)
+* [airbyte_agent_sdk.connectors.harvest.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/harvest/airbyte_agent_sdk-connectors-harvest-types)
 
 Classes
 -------

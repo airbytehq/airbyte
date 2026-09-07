@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.notion.connector
-* airbyte_agent_sdk.connectors.notion.connector_model
-* airbyte_agent_sdk.connectors.notion.models
-* airbyte_agent_sdk.connectors.notion.types
+* [airbyte_agent_sdk.connectors.notion.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-connector)
+* [airbyte_agent_sdk.connectors.notion.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-connector_model)
+* [airbyte_agent_sdk.connectors.notion.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-models)
+* [airbyte_agent_sdk.connectors.notion.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-types)
 
 Classes
 -------

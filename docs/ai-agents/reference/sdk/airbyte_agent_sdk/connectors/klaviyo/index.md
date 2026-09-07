@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.klaviyo.connector
-* airbyte_agent_sdk.connectors.klaviyo.connector_model
-* airbyte_agent_sdk.connectors.klaviyo.models
-* airbyte_agent_sdk.connectors.klaviyo.types
+* [airbyte_agent_sdk.connectors.klaviyo.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/klaviyo/airbyte_agent_sdk-connectors-klaviyo-connector)
+* [airbyte_agent_sdk.connectors.klaviyo.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/klaviyo/airbyte_agent_sdk-connectors-klaviyo-connector_model)
+* [airbyte_agent_sdk.connectors.klaviyo.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/klaviyo/airbyte_agent_sdk-connectors-klaviyo-models)
+* [airbyte_agent_sdk.connectors.klaviyo.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/klaviyo/airbyte_agent_sdk-connectors-klaviyo-types)
 
 Classes
 -------

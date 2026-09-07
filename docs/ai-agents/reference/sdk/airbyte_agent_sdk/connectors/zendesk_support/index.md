@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.zendesk_support.connector
-* airbyte_agent_sdk.connectors.zendesk_support.connector_model
-* airbyte_agent_sdk.connectors.zendesk_support.models
-* airbyte_agent_sdk.connectors.zendesk_support.types
+* [airbyte_agent_sdk.connectors.zendesk_support.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-connector)
+* [airbyte_agent_sdk.connectors.zendesk_support.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-connector_model)
+* [airbyte_agent_sdk.connectors.zendesk_support.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-models)
+* [airbyte_agent_sdk.connectors.zendesk_support.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-types)
 
 Classes
 -------

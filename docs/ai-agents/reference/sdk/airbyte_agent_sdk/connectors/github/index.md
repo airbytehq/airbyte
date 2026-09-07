@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.github.connector
-* airbyte_agent_sdk.connectors.github.connector_model
-* airbyte_agent_sdk.connectors.github.models
-* airbyte_agent_sdk.connectors.github.types
+* [airbyte_agent_sdk.connectors.github.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/github/airbyte_agent_sdk-connectors-github-connector)
+* [airbyte_agent_sdk.connectors.github.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/github/airbyte_agent_sdk-connectors-github-connector_model)
+* [airbyte_agent_sdk.connectors.github.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/github/airbyte_agent_sdk-connectors-github-models)
+* [airbyte_agent_sdk.connectors.github.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/github/airbyte_agent_sdk-connectors-github-types)
 
 Classes
 -------

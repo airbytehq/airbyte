@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.mailchimp.connector
-* airbyte_agent_sdk.connectors.mailchimp.connector_model
-* airbyte_agent_sdk.connectors.mailchimp.models
-* airbyte_agent_sdk.connectors.mailchimp.types
+* [airbyte_agent_sdk.connectors.mailchimp.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-connector)
+* [airbyte_agent_sdk.connectors.mailchimp.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-connector_model)
+* [airbyte_agent_sdk.connectors.mailchimp.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-models)
+* [airbyte_agent_sdk.connectors.mailchimp.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-types)
 
 Classes
 -------

@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.amazon_seller_partner.connector
-* airbyte_agent_sdk.connectors.amazon_seller_partner.connector_model
-* airbyte_agent_sdk.connectors.amazon_seller_partner.models
-* airbyte_agent_sdk.connectors.amazon_seller_partner.types
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-connector)
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-connector_model)
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-models)
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-types)
 
 Classes
 -------

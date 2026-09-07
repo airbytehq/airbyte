@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.google_drive.connector
-* airbyte_agent_sdk.connectors.google_drive.connector_model
-* airbyte_agent_sdk.connectors.google_drive.models
-* airbyte_agent_sdk.connectors.google_drive.types
+* [airbyte_agent_sdk.connectors.google_drive.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_drive/airbyte_agent_sdk-connectors-google_drive-connector)
+* [airbyte_agent_sdk.connectors.google_drive.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_drive/airbyte_agent_sdk-connectors-google_drive-connector_model)
+* [airbyte_agent_sdk.connectors.google_drive.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_drive/airbyte_agent_sdk-connectors-google_drive-models)
+* [airbyte_agent_sdk.connectors.google_drive.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_drive/airbyte_agent_sdk-connectors-google_drive-types)
 
 Classes
 -------

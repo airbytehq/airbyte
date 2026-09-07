@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.hubspot.connector
-* airbyte_agent_sdk.connectors.hubspot.connector_model
-* airbyte_agent_sdk.connectors.hubspot.models
-* airbyte_agent_sdk.connectors.hubspot.types
+* [airbyte_agent_sdk.connectors.hubspot.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/hubspot/airbyte_agent_sdk-connectors-hubspot-connector)
+* [airbyte_agent_sdk.connectors.hubspot.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/hubspot/airbyte_agent_sdk-connectors-hubspot-connector_model)
+* [airbyte_agent_sdk.connectors.hubspot.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/hubspot/airbyte_agent_sdk-connectors-hubspot-models)
+* [airbyte_agent_sdk.connectors.hubspot.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/hubspot/airbyte_agent_sdk-connectors-hubspot-types)
 
 Classes
 -------

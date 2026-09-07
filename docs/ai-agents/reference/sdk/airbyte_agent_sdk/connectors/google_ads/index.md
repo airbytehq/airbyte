@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.google_ads.connector
-* airbyte_agent_sdk.connectors.google_ads.connector_model
-* airbyte_agent_sdk.connectors.google_ads.models
-* airbyte_agent_sdk.connectors.google_ads.types
+* [airbyte_agent_sdk.connectors.google_ads.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_ads/airbyte_agent_sdk-connectors-google_ads-connector)
+* [airbyte_agent_sdk.connectors.google_ads.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_ads/airbyte_agent_sdk-connectors-google_ads-connector_model)
+* [airbyte_agent_sdk.connectors.google_ads.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_ads/airbyte_agent_sdk-connectors-google_ads-models)
+* [airbyte_agent_sdk.connectors.google_ads.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/google_ads/airbyte_agent_sdk-connectors-google_ads-types)
 
 Classes
 -------

@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.twilio.connector
-* airbyte_agent_sdk.connectors.twilio.connector_model
-* airbyte_agent_sdk.connectors.twilio.models
-* airbyte_agent_sdk.connectors.twilio.types
+* [airbyte_agent_sdk.connectors.twilio.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/twilio/airbyte_agent_sdk-connectors-twilio-connector)
+* [airbyte_agent_sdk.connectors.twilio.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/twilio/airbyte_agent_sdk-connectors-twilio-connector_model)
+* [airbyte_agent_sdk.connectors.twilio.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/twilio/airbyte_agent_sdk-connectors-twilio-models)
+* [airbyte_agent_sdk.connectors.twilio.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/twilio/airbyte_agent_sdk-connectors-twilio-types)
 
 Classes
 -------

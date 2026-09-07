@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.woocommerce.connector
-* airbyte_agent_sdk.connectors.woocommerce.connector_model
-* airbyte_agent_sdk.connectors.woocommerce.models
-* airbyte_agent_sdk.connectors.woocommerce.types
+* [airbyte_agent_sdk.connectors.woocommerce.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-connector)
+* [airbyte_agent_sdk.connectors.woocommerce.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-connector_model)
+* [airbyte_agent_sdk.connectors.woocommerce.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-models)
+* [airbyte_agent_sdk.connectors.woocommerce.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-types)
 
 Classes
 -------

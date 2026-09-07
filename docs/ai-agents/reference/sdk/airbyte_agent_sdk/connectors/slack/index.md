@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.slack.connector
-* airbyte_agent_sdk.connectors.slack.connector_model
-* airbyte_agent_sdk.connectors.slack.models
-* airbyte_agent_sdk.connectors.slack.types
+* [airbyte_agent_sdk.connectors.slack.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/slack/airbyte_agent_sdk-connectors-slack-connector)
+* [airbyte_agent_sdk.connectors.slack.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/slack/airbyte_agent_sdk-connectors-slack-connector_model)
+* [airbyte_agent_sdk.connectors.slack.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/slack/airbyte_agent_sdk-connectors-slack-models)
+* [airbyte_agent_sdk.connectors.slack.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/slack/airbyte_agent_sdk-connectors-slack-types)
 
 Classes
 -------

@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.pinterest.connector
-* airbyte_agent_sdk.connectors.pinterest.connector_model
-* airbyte_agent_sdk.connectors.pinterest.models
-* airbyte_agent_sdk.connectors.pinterest.types
+* [airbyte_agent_sdk.connectors.pinterest.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pinterest/airbyte_agent_sdk-connectors-pinterest-connector)
+* [airbyte_agent_sdk.connectors.pinterest.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pinterest/airbyte_agent_sdk-connectors-pinterest-connector_model)
+* [airbyte_agent_sdk.connectors.pinterest.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pinterest/airbyte_agent_sdk-connectors-pinterest-models)
+* [airbyte_agent_sdk.connectors.pinterest.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/pinterest/airbyte_agent_sdk-connectors-pinterest-types)
 
 Classes
 -------

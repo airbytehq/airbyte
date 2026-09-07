@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.sendgrid.connector
-* airbyte_agent_sdk.connectors.sendgrid.connector_model
-* airbyte_agent_sdk.connectors.sendgrid.models
-* airbyte_agent_sdk.connectors.sendgrid.types
+* [airbyte_agent_sdk.connectors.sendgrid.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/sendgrid/airbyte_agent_sdk-connectors-sendgrid-connector)
+* [airbyte_agent_sdk.connectors.sendgrid.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/sendgrid/airbyte_agent_sdk-connectors-sendgrid-connector_model)
+* [airbyte_agent_sdk.connectors.sendgrid.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/sendgrid/airbyte_agent_sdk-connectors-sendgrid-models)
+* [airbyte_agent_sdk.connectors.sendgrid.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/sendgrid/airbyte_agent_sdk-connectors-sendgrid-types)
 
 Classes
 -------

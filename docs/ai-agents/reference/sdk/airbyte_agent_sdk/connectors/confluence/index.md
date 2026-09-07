@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.confluence.connector
-* airbyte_agent_sdk.connectors.confluence.connector_model
-* airbyte_agent_sdk.connectors.confluence.models
-* airbyte_agent_sdk.connectors.confluence.types
+* [airbyte_agent_sdk.connectors.confluence.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-connector)
+* [airbyte_agent_sdk.connectors.confluence.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-connector_model)
+* [airbyte_agent_sdk.connectors.confluence.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-models)
+* [airbyte_agent_sdk.connectors.confluence.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-types)
 
 Classes
 -------

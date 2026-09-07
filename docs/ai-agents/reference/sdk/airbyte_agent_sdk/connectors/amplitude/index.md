@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.amplitude.connector
-* airbyte_agent_sdk.connectors.amplitude.connector_model
-* airbyte_agent_sdk.connectors.amplitude.models
-* airbyte_agent_sdk.connectors.amplitude.types
+* [airbyte_agent_sdk.connectors.amplitude.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amplitude/airbyte_agent_sdk-connectors-amplitude-connector)
+* [airbyte_agent_sdk.connectors.amplitude.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amplitude/airbyte_agent_sdk-connectors-amplitude-connector_model)
+* [airbyte_agent_sdk.connectors.amplitude.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amplitude/airbyte_agent_sdk-connectors-amplitude-models)
+* [airbyte_agent_sdk.connectors.amplitude.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amplitude/airbyte_agent_sdk-connectors-amplitude-types)
 
 Classes
 -------

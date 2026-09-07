@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.chargebee.connector
-* airbyte_agent_sdk.connectors.chargebee.connector_model
-* airbyte_agent_sdk.connectors.chargebee.models
-* airbyte_agent_sdk.connectors.chargebee.types
+* [airbyte_agent_sdk.connectors.chargebee.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-connector)
+* [airbyte_agent_sdk.connectors.chargebee.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-connector_model)
+* [airbyte_agent_sdk.connectors.chargebee.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-models)
+* [airbyte_agent_sdk.connectors.chargebee.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/chargebee/airbyte_agent_sdk-connectors-chargebee-types)
 
 Classes
 -------

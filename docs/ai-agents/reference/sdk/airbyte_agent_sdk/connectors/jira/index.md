@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.jira.connector
-* airbyte_agent_sdk.connectors.jira.connector_model
-* airbyte_agent_sdk.connectors.jira.models
-* airbyte_agent_sdk.connectors.jira.types
+* [airbyte_agent_sdk.connectors.jira.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-connector)
+* [airbyte_agent_sdk.connectors.jira.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-connector_model)
+* [airbyte_agent_sdk.connectors.jira.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-models)
+* [airbyte_agent_sdk.connectors.jira.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/jira/airbyte_agent_sdk-connectors-jira-types)
 
 Classes
 -------

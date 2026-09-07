@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.granola.connector
-* airbyte_agent_sdk.connectors.granola.connector_model
-* airbyte_agent_sdk.connectors.granola.models
-* airbyte_agent_sdk.connectors.granola.types
+* [airbyte_agent_sdk.connectors.granola.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/granola/airbyte_agent_sdk-connectors-granola-connector)
+* [airbyte_agent_sdk.connectors.granola.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/granola/airbyte_agent_sdk-connectors-granola-connector_model)
+* [airbyte_agent_sdk.connectors.granola.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/granola/airbyte_agent_sdk-connectors-granola-models)
+* [airbyte_agent_sdk.connectors.granola.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/granola/airbyte_agent_sdk-connectors-granola-types)
 
 Classes
 -------

@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.salesforce.connector
-* airbyte_agent_sdk.connectors.salesforce.connector_model
-* airbyte_agent_sdk.connectors.salesforce.models
-* airbyte_agent_sdk.connectors.salesforce.types
+* [airbyte_agent_sdk.connectors.salesforce.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-connector)
+* [airbyte_agent_sdk.connectors.salesforce.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-connector_model)
+* [airbyte_agent_sdk.connectors.salesforce.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-models)
+* [airbyte_agent_sdk.connectors.salesforce.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-types)
 
 Classes
 -------

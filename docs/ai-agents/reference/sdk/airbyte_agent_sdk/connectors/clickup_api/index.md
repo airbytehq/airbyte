@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.clickup_api.connector
-* airbyte_agent_sdk.connectors.clickup_api.connector_model
-* airbyte_agent_sdk.connectors.clickup_api.models
-* airbyte_agent_sdk.connectors.clickup_api.types
+* [airbyte_agent_sdk.connectors.clickup_api.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/clickup_api/airbyte_agent_sdk-connectors-clickup_api-connector)
+* [airbyte_agent_sdk.connectors.clickup_api.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/clickup_api/airbyte_agent_sdk-connectors-clickup_api-connector_model)
+* [airbyte_agent_sdk.connectors.clickup_api.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/clickup_api/airbyte_agent_sdk-connectors-clickup_api-models)
+* [airbyte_agent_sdk.connectors.clickup_api.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/clickup_api/airbyte_agent_sdk-connectors-clickup_api-types)
 
 Classes
 -------
