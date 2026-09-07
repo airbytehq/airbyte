@@ -2459,7 +2459,6 @@ definitions:
               - "null"
               - boolean
 
-  # --- Group C: semi-incremental REST streams ---------------------------------------
   semi_incremental_cursor_base:
     type: DatetimeBasedCursor
     cursor_field: "updated_at"
