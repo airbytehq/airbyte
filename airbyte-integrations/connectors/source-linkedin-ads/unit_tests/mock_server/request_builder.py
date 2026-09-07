@@ -21,6 +21,10 @@ class LinkedInAdsRequestBuilder:
         return cls("/adAccounts")
 
     @classmethod
+    def organizations_endpoint(cls) -> "LinkedInAdsRequestBuilder":
+        return cls("/organizationAcls")
+
+    @classmethod
     def account_users_endpoint(cls, account_id: int) -> "LinkedInAdsRequestBuilder":
         builder = cls("/adAccountUsers")
         builder._query_params["q"] = "accounts"
