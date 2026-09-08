@@ -164,7 +164,7 @@ directly.
   catalog defaulted to `full_refresh`, so the connector configured no
   CDC streams and rejected its own cold-start offset. Pass
   `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=<tables>`
-  (or `--catalog=PATH`); `run.sh` now detects this
+  (or `--catalog=PATH`); `run.sh` detects this
   combination and exits 2 before running `read`.
 
 ## Comparison-mode regression testing
@@ -201,7 +201,7 @@ streams, so pass `--sync-mode=incremental --cursor-field=_ab_cdc_cursor`
 `--catalog=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/catalogs/users-cdc.json`).
 `--streams` is required because `discover` also lists the CDC system
 table `dbo.systranschemas`, which has no capture instance and fails
-the CDC availability check. `run.sh` now refuses to run `read` when a
+the CDC availability check. `run.sh` refuses to run `read` when a
 CDC config (`replication_method.method == "CDC"`) would get a
 full-refresh derived catalog, exiting 2 with the flags to pass.
 
