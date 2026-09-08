@@ -148,10 +148,7 @@ The Infor Nexus Datasets source connector supports the following [sync modes](ht
 |-------------|-------------|------------|---------------------|----------------------|
 | datasets | None | Yes | Yes | Yes |
 
-The `datasets` stream returns records from the configured Infor Nexus export dataset. Each record contains the following fields:
-
-- `raw_data`: The record payload as a JSON object.
-- `raw_data_string`: The record payload as a JSON string.
+The `datasets` stream returns records from the configured Infor Nexus export dataset. The schema is dynamically discovered from the Infor Nexus Analytics model API at discover time, so each record contains the actual fields defined in your dataset model. An additional `zzz_ChangeCode` field is injected to support incremental sync detection.
 
 ## Limitations and troubleshooting
 
@@ -176,8 +173,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date | Pull Request | Subject |
 |---------|------|--------------|---------|
-| 0.1.14 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
-| 0.1.13 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 0.1.11 — 0.1.12 is built on SDM 7.23.7, which breaks bundled custom components |
+| 0.2.0 | 2026-07-08 | [76091](https://github.com/airbytehq/airbyte/pull/76091) | Add dynamic schema discovery via Analytics model API |
 | 0.1.12 | 2026-07-28 | [83015](https://github.com/airbytehq/airbyte/pull/83015) | Update dependencies |
 | 0.1.11 | 2026-07-21 | [82494](https://github.com/airbytehq/airbyte/pull/82494) | Update dependencies |
 | 0.1.10 | 2026-07-14 | [81139](https://github.com/airbytehq/airbyte/pull/81139) | Update dependencies |
