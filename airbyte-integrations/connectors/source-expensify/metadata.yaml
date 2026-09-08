@@ -16,8 +16,8 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: fe2f04d2-ba0b-4ff7-b8ea-e5954b5c84cc
-  dockerImageTag: 0.1.2
-  canonicalImageTag: 0.1.2
+  dockerImageTag: 0.1.3
+  canonicalImageTag: 0.1.3
   dockerRepository: airbyte/source-expensify
   githubIssueLabel: source-expensify
   icon: expensify.svg

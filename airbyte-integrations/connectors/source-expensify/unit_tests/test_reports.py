@@ -6,12 +6,14 @@ from unittest.mock import Mock, patch
 import pytest
 import requests
 from source_expensify.source import (
+    EXPENSIFY_URL,
     CredentialsInvalidError,
     ExpensifyReports,
     PolicyNotFoundError,
     RateLimitExceededError,
     SourceExpensify,
     _post_job_description,
+    _send_request,
 )
 
 from airbyte_cdk.models import SyncMode
@@ -209,3 +211,54 @@ class TestCheckConnection:
             assert result[1] is None
         else:
             assert isinstance(result[1], expected[1])
+
+
+class TestSendRequestRetries:
+    @patch("time.sleep", return_value=None)
+    def test_retries_on_rate_limit_with_fixed_backoff(self, mock_sleep, requests_mock):
+        requests_mock.post(
+            EXPENSIFY_URL,
+            [
+                {"status_code": 429, "json": {"responseMessage": "Too many requests. Please try again later", "responseCode": 429}},
+                {"status_code": 200, "text": "ok"},
+            ],
+        )
+
+        response = _send_request({"requestJobDescription": "{}"})
+
+        assert response.text == "ok"
+        assert requests_mock.call_count == 2
+        mock_sleep.assert_any_call(11)  # fixed rate-limit backoff (10) + 1 extra second
+
+    @patch("time.sleep", return_value=None)
+    def test_retries_on_transient_server_error(self, mock_sleep, requests_mock):
+        requests_mock.post(
+            EXPENSIFY_URL,
+            [
+                {"status_code": 503, "text": "unavailable"},
+                {"status_code": 200, "text": "ok"},
+            ],
+        )
+
+        response = _send_request({"requestJobDescription": "{}"})
+
+        assert response.text == "ok"
+        assert requests_mock.call_count == 2
+
+    @patch("time.sleep", return_value=None)
+    def test_gives_up_immediately_on_permanent_client_error(self, mock_sleep, requests_mock):
+        requests_mock.post(EXPENSIFY_URL, status_code=401, text="unauthorized")
+
+        with pytest.raises(requests.exceptions.HTTPError):
+            _send_request({"requestJobDescription": "{}"})
+
+        assert requests_mock.call_count == 1
+
+    @patch("time.sleep", return_value=None)
+    def test_gives_up_after_max_retries_on_persistent_server_error(self, mock_sleep, requests_mock):
+        requests_mock.post(EXPENSIFY_URL, status_code=500, text="server error")
+
+        with pytest.raises(requests.exceptions.HTTPError):
+            _send_request({"requestJobDescription": "{}"})
+
+        assert requests_mock.call_count > 1

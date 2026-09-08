@@ -11,14 +11,21 @@ from typing import Any, Iterable, List, Mapping, Optional, Tuple
 
 import requests
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException, UserDefinedBackoffException
+from airbyte_cdk.sources.streams.http.rate_limiting import default_backoff_handler, user_defined_backoff_handler
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
 
 EXPENSIFY_URL = "https://integrations.expensify.com/Integration-Server/ExpensifyIntegrations"
 RAW_CSV_DEBUG_DIR = Path("/tmp/source_expensify_debug")
 REPORTS_EXPORT_TEMPLATE_PATH = "templates/reports_export_template.ftl"
+
+MAX_RETRIES = 5
+RETRY_FACTOR = 5
+RATE_LIMIT_BACKOFF_SECONDS = 10.0
 
 
 class PolicyNotFoundError(Exception):
@@ -42,36 +49,64 @@ def _load_reports_export_template() -> str:
     return template_bytes.decode("utf-8")
 
 
-def _map_response_code_to_exception(response_code: int) -> Optional[Exception]:
+def _map_response_code_to_exception(response_code: int) -> None:
     """Map an Expensify response code to an exception."""
-    if response_code == 410:
+    if response_code == requests.codes.gone:
         # Expensify returns 410 if the policy doesn't exist
         raise PolicyNotFoundError(f"Expensify policy not found.")
-    elif response_code == 401:
+    elif response_code == requests.codes.unauthorized:
         # Expensify returns 401 if the credentials are invalid
         raise CredentialsInvalidError(f"Expensify credentials are invalid.")
-    elif response_code == 429:
+    elif response_code == requests.codes.too_many_requests:
         # Expensify returns 429 if the API rate limit is exceeded
         raise RateLimitExceededError(f"Expensify API rate limit exceeded.")
+    elif response_code >= 500:
+        # 5xx codes indicate a problem on Expensify's side that may be transient.
+        raise AirbyteTracedException(
+            internal_message=f"Expensify returned server error response code {response_code}.",
+            message=f"Expensify API request failed with a server error (code {response_code}). This is likely transient, please try again later.",
+            failure_type=FailureType.transient_error,
+        )
+    elif response_code >= requests.codes.bad_request:
+        # Other 4xx codes typically won't succeed on retry, so surface them to Airbyte as a config error.
+        raise AirbyteTracedException(
+            internal_message=f"Expensify returned client error response code {response_code}.",
+            message=f"Expensify API request failed with client error (code {response_code}). Please verify your configuration.",
+            failure_type=FailureType.config_error,
+        )
+
+
+@user_defined_backoff_handler(max_tries=MAX_RETRIES)
+@default_backoff_handler(max_tries=MAX_RETRIES, factor=RETRY_FACTOR)
+def _send_request(payload: Mapping[str, Any]) -> requests.Response:
+    """
+    Send the actual HTTP request to the Expensify Integration Server, retrying it using the
+    Airbyte CDK's standard backoff handlers: HTTP 429 responses back off for a fixed duration,
+    transient 5xx/connection errors are retried with exponential backoff, and all other 4xx
+    errors are treated as permanent failures and raised immediately without retrying.
+    """
+    response = requests.post(EXPENSIFY_URL, data=payload, timeout=60)
+    if response.status_code == requests.codes.too_many_requests:
+        raise UserDefinedBackoffException(backoff=RATE_LIMIT_BACKOFF_SECONDS, request=response.request, response=response)
+    if response.status_code >= 500:
+        raise DefaultBackoffException(request=response.request, response=response)
+    response.raise_for_status()
+    return response
 
 
 def _post_job_description(job_description: Mapping[str, Any], template: Optional[str] = None) -> requests.Response:
     """
     Send a requestJobDescription to the Expensify Integration Server.
 
-    Expensify requires the `requestJobDescription` form field to be a JSON-encoded
-    string, not a native Python dict - requests would otherwise form-encode it using
-    Python's repr() (single quotes, True/False), which Expensify rejects as invalid JSON.
+    Expensify requires the `requestJobDescription` form field to be a JSON-encoded string.
 
     `template` (when provided) must be sent as its own top-level form field, sibling to
-    `requestJobDescription`, not nested inside it - Expensify rejects nested templates
-    with "No Template Submitted".
+    `requestJobDescription`.
     """
     payload = {"requestJobDescription": json.dumps(job_description)}
     if template is not None:
         payload["template"] = template
-    response = requests.post(EXPENSIFY_URL, data=payload, timeout=60)
-    response.raise_for_status()
+    response = _send_request(payload)
 
     # Expensify returns HTTP 200 even for some error conditions, with a JSON error body
     # like {"responseMessage": "...", "responseCode": 500}. Detect and surface those.
@@ -125,7 +160,7 @@ class ExpensifyReports(Stream):
         record_count = 0
         for row in reader:
             # Airbyte takes these yielded dicts, validates them against your schema,
-            # and streams them to Postgres
+            # and streams them to the destination connector
             record_count += 1
             yield row
         self.logger.info(f"Parsed {record_count} record(s) from Expensify export.")
@@ -148,12 +183,10 @@ class ExpensifyReports(Stream):
             },
             "outputSettings": {"fileExtension": "csv"},
         }
-        # Tell Expensify exactly what columns to output
         response = _post_job_description(job_description, template=_load_reports_export_template())
         return response.text.strip()
 
     def _download_file(self, file_name: str) -> str:
-        # Re-request the download now that we know it's ready
         job_description = {
             "type": "download",
             "credentials": {"partnerUserID": self.partner_user_id, "partnerUserSecret": self.partner_user_secret},
