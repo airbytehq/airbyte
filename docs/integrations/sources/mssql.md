@@ -535,11 +535,16 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Changelog
 
+:::warning
+Starting with version 5.1.0, the connector runs on an updated Java runtime that, in line with current security standards, no longer allows TLS connections using RSA key exchange (`TLS_RSA_*` cipher suites) or SHA-1 handshake signatures (see the [JDK 21.0.10 release notes](https://www.oracle.com/java/technologies/javase/21-0-10-relnotes.html)). Older SQL Server deployments that support only these legacy TLS features — typically SQL Server 2014 and earlier without recent TLS updates, or instances running on legacy Windows Server versions — will no longer be able to establish encrypted connections. To continue syncing from these servers, update them to support TLS 1.2 with modern cipher suites, as described in Microsoft's [TLS 1.2 support for Microsoft SQL Server](https://learn.microsoft.com/en-us/troubleshoot/sql/database-engine/connect/tls-1-2-support-microsoft-sql-server).
+:::
+
 <details>
   <summary>Expand to review</summary>
 
 | Version     | Date       | Pull Request                                                                                                      | Subject                                                                                                                                         |
 |:------------|:-----------|:------------------------------------------------------------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.0       | 2026-08-31 | [85246](https://github.com/airbytehq/airbyte/pull/85246)                                                          | Re-apply the Java connector base image upgrade to `java-connector-base:2.0.4`, correcting the revert released in 4.4.6/4.4.7.       |
 | 5.0.0       | 2026-05-01 | [10595](https://github.com/airbytehq/oncall/issues/10595)                                                         | Map `DECIMAL`/`NUMERIC` columns with scale 0 to Airbyte `integer` instead of `number` so destinations preserve integral semantics. |
 | 4.4.12      | 2026-06-16 | [80156](https://github.com/airbytehq/airbyte/pull/80156)                                                          | Log a message when a `DECIMAL`/`NUMERIC` column with scale 0 is discovered, ahead of an upcoming `number` -> `integer` remapping. No functional change. |
 | 4.4.11      | 2026-06-11 | [79128](https://github.com/airbytehq/airbyte/pull/79128)                                                          | Fix incremental sync failure when the saved state has a null cursor (table was empty on prior CDK version).                                     |
