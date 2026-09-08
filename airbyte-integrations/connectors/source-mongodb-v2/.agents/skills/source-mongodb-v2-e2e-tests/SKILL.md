@@ -115,8 +115,9 @@ pre-release with the Airbyte Ops MCP tool
 `publish_connector_to_airbyte_registry` and pass the resulting
 `<version>-preview.<7-char-sha>` tag as `--test-version`). See
 [Getting a target image](../../../../../db-harness-lib/README.md#getting-a-target-image).
-All other `run.sh` options (`--command`, `--fixture`, `--config-template`,
-`--reset`, `--expect-*`, `--min-records`, …) are documented in the
+All other `run.sh` options (`--command`, `--fixture`, `--skip-fixtures`,
+`--config-template`, `--catalog`, `--state=PATH`, `--reset`, `--expect-*`,
+`--min-records`, …) are documented in the
 [db-harness-lib README](../../../../../db-harness-lib/README.md) and
 `poe e2e-local --help`.
 
@@ -135,8 +136,15 @@ All other `run.sh` options (`--command`, `--fixture`, `--config-template`,
   in the catalog.
 - **Reset drops databases, not the replica set.** `--reset=fixture` removes
   all non-system databases and reapplies fixtures; the oplog and resume
-  tokens survive. Use `--reset=backend` when a run must start from a fresh
-  oplog.
+  tokens survive. This only matters once change-stream (CDC) coverage
+  lands (HYD-147 phase 2); non-CDC sweeps do not read the oplog. Use
+  `--reset=backend` when a run must start from a fresh oplog.
+- **Databases are created on first write.** MongoDB has no `CREATE
+  DATABASE`; `test_db` exists only once a fixture inserts into it, so a
+  fixture that only calls `db.createCollection(...)` or writes to a
+  `getSiblingDB(...)` database leaves `test_db` absent and `discover` empty.
+  `00-init-base.js` inserts into `test_db`; keep that in any fixture set you
+  pass with `--fixture`.
 - **Do not use customer connections.** This harness is for local testing
   only and must never be used against customer connections, Atlas clusters
   holding customer data, or Airbyte Cloud.

@@ -1,7 +1,7 @@
 {
   "database_config": {
     "cluster_type": "SELF_MANAGED_REPLICA_SET",
-    "connection_string": "mongodb://source-mongodb-v2-db-backend:27017/?replicaSet=rs0",
+    "connection_string": "REPLACED_BY_RENDER_CONFIG",
     "databases": ["test_db"],
     "schema_enforced": true
   },
