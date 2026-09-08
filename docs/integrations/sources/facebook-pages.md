@@ -67,7 +67,7 @@ The Facebook Pages source connector supports the following [sync modes](https://
 | `page` | [`/{page-id}`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/#overview) | One record describing the Page. Airbyte requests only the fields you select in the connection's **Schema** tab. |
 | `post` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) | One record per post. Paginated, so **Page Size** applies. Airbyte requests only the fields you select. |
 | `page_insights` | [`/{page-id}/insights`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/insights) | One record per metric and period, not per day. Requests a fixed set of metrics. |
-| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights) | Post-level insights, one record per metric and period. Requests a fixed set of metrics. |
+| `post_insights` | [`/{page-id}/feed`](https://developers.facebook.com/docs/graph-api/reference/v24.0/page/feed) with an `insights.metric(...)` field selection | Post-level [insights](https://developers.facebook.com/docs/graph-api/reference/v24.0/insights), one record per metric and period. Paginated, so **Page Size** applies. Requests a fixed set of metrics. |
 
 You can't choose which insights metrics to sync. The connector requests these:
 
@@ -158,7 +158,7 @@ Starting from version 2.0.4, the `product_catalogs` field is no longer synced in
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
-The Graph API reports rate limits with HTTP 400 and an error code such as `4`, `17`, `32`, `613`, or `80001`, rather than with HTTP 429. Starting from version 2.1.3, the connector recognizes these codes, and any error Meta marks as transient, and retries the request with backoff instead of failing the sync. If your Page is heavily throttled, syncs slow down but don't fail on these errors.
+The Graph API can report rate limits with HTTP 400 and an error code such as `4`, `17`, `32`, `613`, or `80001`. Starting from version 2.1.3, the connector recognizes these codes, and any error Meta marks as transient, and retries the request with backoff instead of failing immediately. Retries are limited, so if your Page stays throttled long enough to exhaust them, the sync still fails with a transient error and succeeds on a later attempt once the quota resets.
 
 See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for the full list of codes and for information on requesting a quota upgrade.
 
