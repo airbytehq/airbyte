@@ -163,7 +163,7 @@ definitions:
           - type: AddedFieldDefinition
             path:
               - projectTeamIds
-            value: "{{ record.project.teams.nodes | map(attribute='id') | list }}"
+            value: "{{ (record.project.teams.nodes | map(attribute='id') | list) if (record.project and record.project.teams) else [] }}"
       - type: RemoveFields
         field_pointers:
           - - project

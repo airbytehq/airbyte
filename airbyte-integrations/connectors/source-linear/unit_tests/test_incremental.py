@@ -371,6 +371,44 @@ def test_initiative_to_projects_flattens_join_keys_and_paginates() -> None:
 
 
 @pytest.mark.parametrize(
+    ("project", "expected_project_team_ids"),
+    [
+        pytest.param(
+            {"id": "issue-1-project", "teams": {"nodes": [{"id": "team-1"}, {"id": "team-2"}]}},
+            ["team-1", "team-2"],
+            id="project-with-teams",
+        ),
+        pytest.param({"id": "issue-1-project"}, [], id="project-without-teams"),
+        pytest.param(None, [], id="project-null"),
+    ],
+)
+def test_issues_extract_project_team_ids(
+    project: Mapping[str, Any] | None,
+    expected_project_team_ids: list[str],
+) -> None:
+    """`projectTeamIds` collects the ids under `project.teams.nodes`, defaulting to [] when absent or null."""
+    source = YamlDeclarativeSource(path_to_yaml=MANIFEST_PATH, config=CONFIG)
+    streams_by_name = {stream.name: stream for stream in source.streams(config=CONFIG)}
+    record = {**_issue("issue-1", "2024-05-01T00:00:00.000Z"), "project": project}
+    request = _request(_build_full_request_body(streams_by_name["issues"], next_page_token=None))
+
+    with HttpMocker() as http_mocker:
+        http_mocker.post(request, _connection_response("issues", [record]))
+
+        output = read(
+            source=source,
+            config=CONFIG,
+            catalog=CatalogBuilder().with_stream("issues", SyncMode.full_refresh).build(),
+        )
+
+    assert len(output.records) == 1
+    data = output.records[0].record.data
+    assert data["projectTeamIds"] == expected_project_team_ids
+    # The nested `project.teams` connection is dropped after the ids are lifted out.
+    assert "teams" not in data.get("project", {})
+
+
+@pytest.mark.parametrize(
     ("response", "expected"),
     [
         pytest.param(
