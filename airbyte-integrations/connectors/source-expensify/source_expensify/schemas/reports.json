@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "accountEmail": {
+      "type": ["string", "null"]
+    },
+    "accountID": {
+      "type": ["string", "null"]
+    },
+    "actionList": {
+      "type": ["string", "null"]
+    },
+    "approved": {
+      "type": ["string", "null"]
+    },
+    "approvers": {
+      "type": ["string", "null"]
+    },
+    "created": {
+      "type": ["string", "null"]
+    },
+    "currency": {
+      "type": ["string", "null"]
+    },
+    "entryID": {
+      "type": ["string", "null"]
+    },
+    "isACHReimbursed": {
+      "type": ["string", "null"]
+    },
+    "managerEmail": {
+      "type": ["string", "null"]
+    },
+    "managerUserID": {
+      "type": ["string", "null"]
+    },
+    "managerPayrollID": {
+      "type": ["string", "null"]
+    },
+    "managerFirstName": {
+      "type": ["string", "null"]
+    },
+    "managerLastName": {
+      "type": ["string", "null"]
+    },
+    "managerFullName": {
+      "type": ["string", "null"]
+    },
+    "policyName": {
+      "type": ["string", "null"]
+    },
+    "policyID": {
+      "type": ["string", "null"]
+    },
+    "reimbursed": {
+      "type": ["string", "null"]
+    },
+    "reportID": {
+      "type": ["string", "null"]
+    },
+    "oldReportID": {
+      "type": ["string", "null"]
+    },
+    "reportName": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "displayStatus": {
+      "type": ["string", "null"]
+    },
+    "submitted": {
+      "type": ["string", "null"]
+    },
+    "employeeCustomField1": {
+      "type": ["string", "null"]
+    },
+    "employeeCustomField2": {
+      "type": ["string", "null"]
+    },
+    "submitterFirstName": {
+      "type": ["string", "null"]
+    },
+    "submitterLastName": {
+      "type": ["string", "null"]
+    },
+    "submitterFullName": {
+      "type": ["string", "null"]
+    },
+    "total": {
+      "type": ["string", "null"]
+    }
+  }
+}

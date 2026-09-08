@@ -1,0 +1,47 @@
+data:
+  allowedHosts:
+    hosts:
+      - "integrations.expensify.com"
+  registryOverrides:
+    oss:
+      enabled: true
+    cloud:
+      enabled: true
+  remoteRegistries:
+    pypi:
+      enabled: false
+      packageName: airbyte-source-expensify
+  connectorBuildOptions:
+    baseImage: docker.io/airbyte/python-connector-base:4.1.1@sha256:a268b44c733ae699a60f5fbc06a324945dba98945c6e2ab7f8609f2f895b0d28
+  connectorSubtype: api
+  connectorType: source
+  definitionId: fe2f04d2-ba0b-4ff7-b8ea-e5954b5c84cc
+  dockerImageTag: 0.1.2
+  canonicalImageTag: 0.1.2
+  dockerRepository: airbyte/source-expensify
+  githubIssueLabel: source-expensify
+  icon: expensify.svg
+  license: ELv2
+  name: Expensify
+  releaseDate: 2026-09-01
+  releaseStage: alpha
+  supportLevel: community
+  documentationUrl: https://docs.airbyte.com/integrations/sources/expensify
+  tags:
+    - language:python
+  ab_internal:
+    ql: 100
+    sl: 100
+  connectorTestSuitesOptions:
+    - suite: acceptanceTests
+      testSecrets:
+        - name: SECRET_SOURCE-EXPENSIFY__CREDS
+          fileName: config.json
+          secretStore:
+            type: GSM
+            alias: airbyte-connector-testing-secret-store
+  externalDocumentationUrls:
+    - title: Expensify API reference
+      url: https://integrations.expensify.com/Integration-Server/doc/
+      type: api_reference
+metadataSpecVersion: "1.0"
