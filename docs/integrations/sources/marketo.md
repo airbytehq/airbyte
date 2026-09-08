@@ -171,6 +171,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                          |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 2.1.4 | 2026-09-08 | [69031](https://github.com/airbytehq/airbyte/pull/69031) | Update dependencies |
 | 2.1.3 | 2026-09-02 | [79644](https://github.com/airbytehq/airbyte/pull/79644) | Raise structured `AirbyteTracedException` with context when Marketo bulk export jobs fail or are cancelled. |
 | 2.1.2 | 2026-08-28 | [85097](https://github.com/airbytehq/airbyte/pull/85097) | Handle numeric and other non-string values for boolean-typed fields in activity streams instead of failing the sync. |
 | 2.1.1 | 2026-07-27 | [80926](https://github.com/airbytehq/airbyte/pull/80926) | Configure HTTP streaming and read timeouts for Marketo requests to detect stalled connections. |
