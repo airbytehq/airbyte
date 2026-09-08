@@ -671,7 +671,9 @@ def test_issue_timeline_events_expand_every_issue_regardless_of_start_date(rate_
 
     assert error is None
     assert records == [{"closed": {"event": "closed"}, "repository": _REPO, "issue_number": 3}]
-    assert [request.qs["since"] for request in _requested(requests_mock, "/issues") if request.path.endswith("/issues")] == [["1970-01-01t00:00:00z"]]
+    assert [request.qs["since"] for request in _requested(requests_mock, "/issues") if request.path.endswith("/issues")] == [
+        ["1970-01-01t00:00:00z"]
+    ]
 
 
 def test_issue_timeline_events_collapse_a_page_into_one_record(rate_limit_mock_response, requests_mock):
