@@ -119,19 +119,19 @@ releases without notice.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.auth_strategies
-* airbyte_agent_sdk.config
-* airbyte_agent_sdk.connectors
-* airbyte_agent_sdk.constants
-* airbyte_agent_sdk.executor
-* airbyte_agent_sdk.http_client
-* airbyte_agent_sdk.secrets_aws
-* airbyte_agent_sdk.secrets_gcp
-* airbyte_agent_sdk.tools
-* airbyte_agent_sdk.translation
-* airbyte_agent_sdk.types
-* airbyte_agent_sdk.utils
-* airbyte_agent_sdk.workspace
+* [airbyte_agent_sdk.auth_strategies](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-auth_strategies)
+* [airbyte_agent_sdk.config](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-config)
+* [airbyte_agent_sdk.connectors](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors)
+* [airbyte_agent_sdk.constants](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-constants)
+* [airbyte_agent_sdk.executor](/ai-agents/reference/sdk/airbyte_agent_sdk/executor)
+* [airbyte_agent_sdk.http_client](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-http_client)
+* [airbyte_agent_sdk.secrets_aws](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-secrets_aws)
+* [airbyte_agent_sdk.secrets_gcp](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-secrets_gcp)
+* [airbyte_agent_sdk.tools](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-tools)
+* [airbyte_agent_sdk.translation](/ai-agents/reference/sdk/airbyte_agent_sdk/translation)
+* [airbyte_agent_sdk.types](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-types)
+* [airbyte_agent_sdk.utils](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-utils)
+* [airbyte_agent_sdk.workspace](/ai-agents/reference/sdk/airbyte_agent_sdk/airbyte_agent_sdk-workspace)
 
 Functions
 ---------

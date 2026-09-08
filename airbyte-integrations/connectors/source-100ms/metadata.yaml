@@ -13,11 +13,11 @@ data:
       enabled: false
       packageName: airbyte-source-100ms
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.24.0@sha256:e34fb609bccdeb77474763c77e3621ea9d5adf9f65f2d9851102cc14a1caa281
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.3@sha256:6c926ab34644e3fb6f5422aea148599eef8a8d877cd8b8b28b3e7af914d93bbf
   connectorSubtype: api
   connectorType: source
   definitionId: 41bf83df-e5e4-44e3-b9c0-6933a26a4410
-  dockerImageTag: 0.0.34
+  dockerImageTag: 0.0.35
   dockerRepository: airbyte/source-100ms
   githubIssueLabel: source-100ms
   icon: icon.svg

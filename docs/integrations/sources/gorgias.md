@@ -106,6 +106,7 @@ The incremental sync `end_datetime` is evaluated when the sync starts. Records c
 
 | Version | Date | Pull Request | Subject |
 | ------------------ | ------------ | --- | ---------------- |
+| 0.1.52 | 2026-09-08 | [85503](https://github.com/airbytehq/airbyte/pull/85503) | Update dependencies |
 | 0.1.51 | 2026-08-25 | [84910](https://github.com/airbytehq/airbyte/pull/84910) | Incremental syncs now avoid re-reading previously-synced data across the applicable Gorgias streams using cursor-aware pagination, server-side date filtering, or client-side filtering. See [Incremental syncs](#incremental-syncs) for what an incremental sync no longer picks up. |
 | 0.1.50 | 2026-08-18 | [84643](https://github.com/airbytehq/airbyte/pull/84643) | Update dependencies |
 | 0.1.49 | 2026-08-11 | [83969](https://github.com/airbytehq/airbyte/pull/83969) | Update dependencies |
