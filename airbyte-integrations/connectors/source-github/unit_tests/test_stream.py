@@ -2431,3 +2431,60 @@ def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock)
         "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
         for msg in caplog.messages
     )
+
+
+class _RequestLoopDetected(Exception):
+    """Raised by a mock instead of letting an unterminated read spin forever."""
+
+
+@patch("time.sleep")
+def test_read_records_404_closes_resumable_full_refresh_slice(time_mock, requests_mock):
+    """A swallowed 404 must terminate the partition instead of being retried forever.
+
+    `Organizations` is full refresh, so it carries a `SubstreamResumableFullRefreshCursor`.
+    Before the fix the swallowed error left the partition's cursor state empty, the
+    checkpoint reader handed the same partition back on every iteration, and the sync
+    emitted no records until the platform's source heartbeat killed the attempt.
+    """
+    calls = 0
+
+    def request_callback(request, context):
+        nonlocal calls
+        calls += 1
+        # 1 initial attempt + GithubStreamABC.max_retries (5); anything beyond that means the
+        # partition was handed back for another pass.
+        if calls > 6:
+            raise _RequestLoopDetected(f"organizations partition re-read after {calls} requests")
+        context.status_code = HTTPStatus.NOT_FOUND
+        return {"message": "Not Found"}
+
+    requests_mock.get("https://api.github.com/orgs/octocat", json=request_callback)
+
+    stream = Organizations(organizations=["octocat"])
+    records = list(stream.read_only_records())
+
+    assert records == []
+    assert calls == 6
+    assert stream.get_cursor().get_stream_state() == {
+        "states": [{"partition": {"organization": "octocat"}, "cursor": {"__ab_full_refresh_sync_complete": True}}]
+    }
+
+
+@patch("time.sleep")
+def test_read_records_404_on_a_parent_read_leaves_shared_cursor_untouched(time_mock, requests_mock):
+    """A swallowed error on a slice with no `partition` key must not close an empty partition.
+
+    Substreams such as `TeamMembers` read their parent by calling `Teams.read_records` straight
+    from `stream_slices()`, passing a bare `{"organization": ...}` mapping. `Teams` is a shared
+    instance that is also in the catalog and emits its own STATE, so closing
+    `_extract_slice_fields`' `{}` fallback would publish a `{"partition": {}}` entry that means
+    nothing.
+    """
+    requests_mock.get("https://api.github.com/orgs/octo-org/teams", status_code=HTTPStatus.NOT_FOUND, json={"message": "Not Found"})
+
+    stream = Teams(organizations=["octo-org"])
+    records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"organization": "octo-org"}))
+
+    assert records == []
+    # No `{"partition": {}}` entry: the empty partition was never closed.
+    assert stream.get_cursor().get_stream_state() == {"states": []}

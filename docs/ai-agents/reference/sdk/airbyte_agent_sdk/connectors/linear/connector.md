@@ -57,6 +57,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against comments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `create(self, issue_id: str, body: str, **kwargs) ‑> airbyte_agent_sdk.connectors.linear.models.CommentMutationPayload`
     :   Create a new comment on an issue via GraphQL mutation
         
@@ -185,6 +200,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against issues records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, team_id: str, title: str, description: str | None = None, state_id: str | None = None, priority: int | None = None, project_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linear.models.IssueMutationPayload`
     :   Create a new issue via GraphQL mutation
@@ -470,7 +500,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -605,6 +635,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against projects records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `create(self, name: str, team_ids: list[str], description: str | None = None, state: str | None = None, start_date: str | None = None, target_date: str | None = None, lead_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linear.models.ProjectMutationPayload`
     :   Create a new project via GraphQL mutation
         
@@ -729,6 +774,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against teams records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linear.models.Team`
     :   Get a single team by ID via GraphQL
         
@@ -801,6 +861,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linear.models.User`
     :   Get a single user by ID via GraphQL
         
@@ -864,6 +939,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.linear.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against workflow_states records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, first: int | None = None, after: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.linear.models.LinearExecuteResultWithMeta[list[WorkflowState], WorkflowStatesListResultMeta]`
     :   Returns workflow states for a team via GraphQL, including name and UUID for status transitions

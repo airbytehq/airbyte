@@ -51,6 +51,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against activity_logs records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, board_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[ActivityLog]]`
     :   Returns activity logs from boards. Requires a board_id parameter.
         
@@ -113,6 +128,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against boards records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single board by ID
         
@@ -174,6 +204,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against items records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single item by ID
@@ -424,7 +469,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -522,6 +567,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tags records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.monday.models.MondayExecuteResult[list[Tag]]`
     :   Returns all tags in the Monday.com account
         
@@ -563,6 +623,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against teams records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single team by ID
@@ -620,6 +695,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against updates records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single update by ID
@@ -687,6 +777,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single user by ID
         
@@ -751,6 +856,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against workspaces records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns a single workspace by ID
