@@ -1132,6 +1132,859 @@ definitions:
                       - "null"
                       - string
 
+  # `workflow_runs_for_attempts` is the parent listing behind `workflow_run_attempts`, not a catalog
+  # stream: the exposed `workflow_runs` stream is still Python (streams.py::WorkflowRuns) and stays
+  # there until the workflow family is migrated. Both read the same endpoint, so this definition
+  # deliberately mirrors WorkflowRuns' incremental contract instead of inventing a second one.
+  #
+  # The two differences from WorkflowRuns, both forced by what the declarative components can
+  # express, are called out on the fields below: the 32-day re-run window is applied server-side
+  # through `created` rather than as a pagination break, and the run listing is fetched a second
+  # time when both streams are selected because a manifest stream and a Python stream cannot share
+  # a read.
+  workflow_runs_for_attempts_stream:
+    type: DeclarativeStream
+    name: workflow_runs_for_attempts
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        path: "repos/{{ stream_partition.repository }}/actions/runs"
+        http_method: GET
+        request_parameters:
+          # WorkflowRuns is not a `large_stream`, so it pages at constants.DEFAULT_PAGE_SIZE.
+          per_page: "100"
+          # Server-side form of the legacy 32-day pagination break (streams.py::WorkflowRuns.
+          # read_records). The listing is ordered by `created_at` descending and GitHub does not
+          # allow a run to be re-run more than 32 days after it was created
+          # (https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs),
+          # so no run created before `cursor - 32 days` can still be updated after the cursor.
+          # The legacy code walked pages until it saw such a run and then broke; asking GitHub to
+          # exclude them is the same window with fewer pages transferred, and it is the only form
+          # available here - a paginator `stop_condition` is evaluated with `response`, `headers`,
+          # `last_record` and `last_page_size` only, so it cannot see the cursor.
+          # `stream_interval.start_time` is the partition's cursor value (the config `start_date`
+          # on the first sync); the day-granularity format rounds the window outwards, never in.
+          created: ">={{ format_datetime(str_to_datetime(stream_interval.start_time) - duration('P32D'), '%Y-%m-%d') }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["workflow_runs"]
+      paginator:
+        $ref: "#/definitions/page_link_paginator"
+      partition_router:
+        $ref: "#/definitions/repository_partition_router"
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        # Same `or` guard as the `repositories` stream: a present-but-null `start_date` would
+        # otherwise reach MinMaxDatetime as the literal string "None" and abort the stream.
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # The `created` window above is wider than the cursor window on purpose, so the runs it lets
+      # through still have to be filtered on `updated_at` - exactly what the legacy
+      # SemiIncrementalMixin did. Not `is_data_feed`: that stops paginating on the cursor field,
+      # and this listing is sorted by `created_at`, not by `updated_at`.
+      is_client_side_incremental: true
+    schema_loader:
+      type: InlineSchemaLoader
+      # Only the fields this stream is read for: the cursor, the run URL and attempt count the
+      # child slices on. The records are never emitted to a destination.
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            type:
+              - "null"
+              - integer
+          url:
+            type:
+              - "null"
+              - string
+          run_attempt:
+            type:
+              - "null"
+              - integer
+          updated_at:
+            type:
+              - "null"
+              - string
+
+  # The stream oncall#8827 asked for. `GET /repos/{owner}/{repo}/actions/runs` returns one record
+  # per run - the latest attempt - so when a workflow is re-run every earlier attempt disappears
+  # from `workflow_runs`, and no amount of primary-key surgery on that stream brings them back
+  # because they were never emitted. They are only reachable through the per-attempt endpoint, one
+  # attempt per request, which is what this stream reads.
+  # https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt
+  workflow_run_attempts_stream:
+    type: DeclarativeStream
+    name: workflow_run_attempts
+    # Every attempt of a run carries the same `id`, so `run_attempt` is what makes a record unique.
+    primary_key:
+      - id
+      - run_attempt
+    retriever:
+      type: SimpleRetriever
+      requester:
+        $ref: "#/definitions/requester_base"
+        # `run_url` is the parent record's `url`, an absolute URL. HttpRequester._join_url urljoins
+        # the path onto `url_base` and an absolute path wins, so this stays on whatever host the
+        # config names - GitHub Enterprise Server included - without repeating `url_base` here.
+        # The first request of each partition targets the latest attempt; the paginator below walks
+        # back from there, so this stream costs `run_attempt` requests per run.
+        path: "{{ stream_partition.run_url }}/attempts/{{ stream_slice.extra_fields.run_attempt }}"
+        http_method: GET
+      record_selector:
+        type: RecordSelector
+        extractor:
+          # Unlike the listing, the attempt endpoint returns a single workflow run object.
+          type: DpathExtractor
+          field_path: []
+      paginator:
+        # `previous_attempt_url` is the documented back-link from an attempt to the one before it,
+        # and null on the first attempt - so the attempt chain is literally a cursor pagination and
+        # needs no attempt arithmetic. There is no "list attempts" endpoint to page instead.
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestPath
+        pagination_strategy:
+          type: CursorPagination
+          cursor_value: "{{ response['previous_attempt_url'] }}"
+          stop_condition: "{{ not response['previous_attempt_url'] }}"
+      partition_router:
+        type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/workflow_runs_for_attempts_stream"
+            parent_key: "url"
+            partition_field: "run_url"
+            # The latest attempt number, needed to address the first request of the chain. The
+            # listing already carries it, so it costs no extra call.
+            extra_fields:
+              - - run_attempt
+            # This is what makes the stream incremental. The parent decides which runs are new by
+            # filtering on the run's own `updated_at`; every attempt of a run it yields is emitted
+            # whatever that attempt's `updated_at` says. Filtering the attempts themselves would
+            # drop precisely the records this stream exists for - a sync landing between the first
+            # attempt finishing and the re-run starting leaves the cursor above attempt 1's
+            # `updated_at`, and attempt 1 would then never be emitted by any sync.
+            incremental_dependency: true
+    incremental_sync:
+      # Required for `incremental_dependency` to take effect: the CDK only persists parent state
+      # inside the child's state, and only for a child that declares a cursor of its own
+      # (model_to_component_factory::_warn_on_ineffective_incremental_dependency). This cursor
+      # deliberately does no filtering - no `is_client_side_incremental`, no request options - so
+      # it tracks the high-water mark and nothing else, and the parent state next to it is what
+      # actually narrows the next sync.
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      # One partition per workflow run, so per-partition state would grow by an entry per run and
+      # be dropped again at ConcurrentPerPartitionCursor.DEFAULT_MAX_PARTITIONS_NUMBER. A run is
+      # never revisited once its attempts are read, so there is nothing per-partition worth
+      # keeping; the parent's per-repository state carries the resumption point.
+      global_substream_cursor: true
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          id:
+            description: ID of the workflow run. Shared by every attempt of the same run.
+            type:
+              - "null"
+              - integer
+          name:
+            description: Name of the workflow.
+            type:
+              - "null"
+              - string
+          node_id:
+            description: Node ID of the workflow run.
+            type:
+              - "null"
+              - string
+          head_branch:
+            description: The branch associated with the head commit.
+            type:
+              - "null"
+              - string
+          head_sha:
+            description: SHA of the head commit.
+            type:
+              - "null"
+              - string
+          path:
+            description: The path where the workflow file is located.
+            type:
+              - "null"
+              - string
+          display_title:
+            description: Title to display for the workflow run.
+            type:
+              - "null"
+              - string
+          run_number:
+            description: The unique number assigned to the workflow run.
+            type:
+              - "null"
+              - integer
+          event:
+            description: The event that triggered the workflow run.
+            type:
+              - "null"
+              - string
+          status:
+            description: The current status of the workflow run.
+            type:
+              - "null"
+              - string
+          conclusion:
+            description: The outcome or result of the workflow run.
+            type:
+              - "null"
+              - string
+          workflow_id:
+            description: ID of the workflow associated with the run.
+            type:
+              - "null"
+              - integer
+          check_suite_id:
+            description: ID of the associated GitHub check suite.
+            type:
+              - "null"
+              - integer
+          check_suite_node_id:
+            description: Node ID of the associated GitHub check suite.
+            type:
+              - "null"
+              - string
+          url:
+            description: URL to access details of the workflow run.
+            type:
+              - "null"
+              - string
+          html_url:
+            description: URL to view the workflow run on GitHub.
+            type:
+              - "null"
+              - string
+          pull_requests:
+            description: List of all pull requests associated with the workflow run.
+            type: array
+            items:
+              type:
+                - "null"
+                - object
+              properties: {}
+              additionalProperties: true
+          created_at:
+            description: The timestamp when this attempt was created.
+            type: string
+            format: date-time
+          updated_at:
+            description: The timestamp when the workflow run was last updated.
+            type: string
+            format: date-time
+          run_attempt:
+            description: Attempt number of this workflow run attempt.
+            type:
+              - "null"
+              - integer
+          referenced_workflows:
+            description: List of workflows referenced by the workflow runs
+            type: array
+            items:
+              type: object
+              properties:
+                path:
+                  description: Path of the referenced workflow file
+                  type: string
+                sha:
+                  description: SHA hash of the referenced workflow
+                  type: string
+                ref:
+                  description: Type of reference to the workflow
+                  type: string
+          run_started_at:
+            description: The timestamp when the workflow run started.
+            type: string
+            format: date-time
+          jobs_url:
+            description: URL to access jobs associated with this workflow run attempt.
+            type:
+              - "null"
+              - string
+          logs_url:
+            description: URL to access logs generated by this workflow run attempt.
+            type:
+              - "null"
+              - string
+          check_suite_url:
+            description: URL to access the check suite details.
+            type:
+              - "null"
+              - string
+          artifacts_url:
+            description: URL to access artifacts generated by the workflow run.
+            type:
+              - "null"
+              - string
+          cancel_url:
+            description: URL to cancel the workflow run if supported.
+            type:
+              - "null"
+              - string
+          rerun_url:
+            description: URL to rerun the workflow.
+            type:
+              - "null"
+              - string
+          previous_attempt_url:
+            description: URL to access the previous attempt of the workflow run, null for the first attempt.
+            type:
+              - "null"
+              - string
+          workflow_url:
+            description: URL to access details of the workflow.
+            type:
+              - "null"
+              - string
+          head_commit:
+            description: Details about the commit associated with the workflow run.
+            type: object
+            properties:
+              id:
+                description: ID of the head commit.
+                type:
+                  - "null"
+                  - string
+              tree_id:
+                description: ID of the tree associated with the head commit.
+                type:
+                  - "null"
+                  - string
+              message:
+                description: The commit message of the head commit.
+                type:
+                  - "null"
+                  - string
+              timestamp:
+                description: Timestamp of the head commit.
+                type:
+                  - "null"
+                  - string
+              author:
+                description: The author details of the head commit.
+                type: object
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    type:
+                      - "null"
+                      - string
+              committer:
+                description: The committer details of the head commit.
+                type: object
+                properties:
+                  name:
+                    type:
+                      - "null"
+                      - string
+                  email:
+                    type:
+                      - "null"
+                      - string
+          repository:
+            description: Details about the repository where the workflow run is executed.
+            type: object
+            properties:
+              id:
+                description: ID of the repository.
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                description: Node ID of the repository.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the repository.
+                type:
+                  - "null"
+                  - string
+              full_name:
+                description: Full name of the repository.
+                type: string
+              private:
+                description: Indicates if the repository is private.
+                type:
+                  - "null"
+                  - boolean
+              owner:
+                description: The owner of the repository.
+                $ref: user.json
+              html_url:
+                description: HTML URL of the repository.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the repository.
+                type:
+                  - "null"
+                  - string
+              fork:
+                description: Indicates if the repository is a fork.
+                type:
+                  - "null"
+                  - boolean
+              url:
+                description: URL of the repository.
+                type:
+                  - "null"
+                  - string
+              forks_url:
+                description: URL to access forks of the repository.
+                type:
+                  - "null"
+                  - string
+              keys_url:
+                description: URL to access keys of the repository.
+                type:
+                  - "null"
+                  - string
+              collaborators_url:
+                description: URL to access collaborators of the repository.
+                type:
+                  - "null"
+                  - string
+              teams_url:
+                description: URL to access teams in the repository.
+                type:
+                  - "null"
+                  - string
+              hooks_url:
+                description: URL to access hooks in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_events_url:
+                description: URL to access issue events in the repository.
+                type:
+                  - "null"
+                  - string
+              events_url:
+                description: URL to access events associated with the repository.
+                type:
+                  - "null"
+                  - string
+              assignees_url:
+                description: URL to access assignees of the repository.
+                type:
+                  - "null"
+                  - string
+              branches_url:
+                description: URL to access branches of the repository.
+                type:
+                  - "null"
+                  - string
+              tags_url:
+                description: URL to access tags in the repository.
+                type:
+                  - "null"
+                  - string
+              blobs_url:
+                description: URL to access blobs in the repository.
+                type:
+                  - "null"
+                  - string
+              git_tags_url:
+                description: URL to access git tags in the repository.
+                type:
+                  - "null"
+                  - string
+              git_refs_url:
+                description: URL to access git refs in the repository.
+                type:
+                  - "null"
+                  - string
+              trees_url:
+                description: URL to access trees in the repository.
+                type:
+                  - "null"
+                  - string
+              statuses_url:
+                description: URL to access commit statuses in the repository.
+                type:
+                  - "null"
+                  - string
+              languages_url:
+                description: URL to access languages used in the repository.
+                type:
+                  - "null"
+                  - string
+              stargazers_url:
+                description: URL to access stargazers of the repository.
+                type:
+                  - "null"
+                  - string
+              contributors_url:
+                description: URL to access contributors of the repository.
+                type:
+                  - "null"
+                  - string
+              subscribers_url:
+                description: URL to access subscribers of the repository.
+                type:
+                  - "null"
+                  - string
+              subscription_url:
+                description: URL for subscription to the repository.
+                type:
+                  - "null"
+                  - string
+              commits_url:
+                description: URL to access commits in the repository.
+                type:
+                  - "null"
+                  - string
+              git_commits_url:
+                description: URL to access git commits in the repository.
+                type:
+                  - "null"
+                  - string
+              comments_url:
+                description: URL to access comments in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_comment_url:
+                description: URL to access issue comments in the repository.
+                type:
+                  - "null"
+                  - string
+              contents_url:
+                description: URL to access contents of the repository.
+                type:
+                  - "null"
+                  - string
+              compare_url:
+                description: URL to compare the repository with another ref/commit.
+                type:
+                  - "null"
+                  - string
+              merges_url:
+                description: URL to access merges in the repository.
+                type:
+                  - "null"
+                  - string
+              archive_url:
+                description: URL to access the repository's archive.
+                type:
+                  - "null"
+                  - string
+              downloads_url:
+                description: URL to access downloads in the repository.
+                type:
+                  - "null"
+                  - string
+              issues_url:
+                description: URL to access issues in the repository.
+                type:
+                  - "null"
+                  - string
+              pulls_url:
+                description: URL to access pulls in the repository.
+                type:
+                  - "null"
+                  - string
+              milestones_url:
+                description: URL to access milestones in the repository.
+                type:
+                  - "null"
+                  - string
+              notifications_url:
+                description: URL to access notifications in the repository.
+                type:
+                  - "null"
+                  - string
+              labels_url:
+                description: URL to access labels in the repository.
+                type:
+                  - "null"
+                  - string
+              releases_url:
+                description: URL to access releases in the repository.
+                type:
+                  - "null"
+                  - string
+              deployments_url:
+                description: URL to access deployments of the repository.
+                type:
+                  - "null"
+                  - string
+          head_repository:
+            description: Information about the repository where the workflow was triggered.
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                description: ID of the repository.
+                type:
+                  - "null"
+                  - integer
+              node_id:
+                description: Node ID of the repository.
+                type:
+                  - "null"
+                  - string
+              name:
+                description: Name of the repository.
+                type:
+                  - "null"
+                  - string
+              full_name:
+                description: Full name of the repository.
+                type:
+                  - "null"
+                  - string
+              private:
+                description: Indicates if the repository is private.
+                type:
+                  - "null"
+                  - boolean
+              owner:
+                description: The owner of the repository.
+                $ref: user.json
+              html_url:
+                description: HTML URL of the repository.
+                type:
+                  - "null"
+                  - string
+              description:
+                description: Description of the repository.
+                type:
+                  - "null"
+                  - string
+              fork:
+                description: Indicates if the repository is a fork.
+                type:
+                  - "null"
+                  - boolean
+              url:
+                description: URL of the repository.
+                type:
+                  - "null"
+                  - string
+              forks_url:
+                description: URL to access forks of the repository.
+                type:
+                  - "null"
+                  - string
+              keys_url:
+                description: URL to access keys of the repository.
+                type:
+                  - "null"
+                  - string
+              collaborators_url:
+                description: URL to access collaborators of the repository.
+                type:
+                  - "null"
+                  - string
+              teams_url:
+                description: URL to access teams in the repository.
+                type:
+                  - "null"
+                  - string
+              hooks_url:
+                description: URL to access hooks in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_events_url:
+                description: URL to access issue events in the repository.
+                type:
+                  - "null"
+                  - string
+              events_url:
+                description: URL to access events associated with the repository.
+                type:
+                  - "null"
+                  - string
+              assignees_url:
+                description: URL to access assignees of the repository.
+                type:
+                  - "null"
+                  - string
+              branches_url:
+                description: URL to access branches of the repository.
+                type:
+                  - "null"
+                  - string
+              tags_url:
+                description: URL to access tags in the repository.
+                type:
+                  - "null"
+                  - string
+              blobs_url:
+                description: URL to access blobs in the repository.
+                type:
+                  - "null"
+                  - string
+              git_tags_url:
+                description: URL to access git tags in the repository.
+                type:
+                  - "null"
+                  - string
+              git_refs_url:
+                description: URL to access git refs in the repository.
+                type:
+                  - "null"
+                  - string
+              trees_url:
+                description: URL to access trees in the repository.
+                type:
+                  - "null"
+                  - string
+              statuses_url:
+                description: URL to access commit statuses in the repository.
+                type:
+                  - "null"
+                  - string
+              languages_url:
+                description: URL to access languages used in the repository.
+                type:
+                  - "null"
+                  - string
+              stargazers_url:
+                description: URL to access stargazers of the repository.
+                type:
+                  - "null"
+                  - string
+              contributors_url:
+                description: URL to access contributors of the repository.
+                type:
+                  - "null"
+                  - string
+              subscribers_url:
+                description: URL to access subscribers of the repository.
+                type:
+                  - "null"
+                  - string
+              subscription_url:
+                description: URL for subscription to the repository.
+                type:
+                  - "null"
+                  - string
+              commits_url:
+                description: URL to access commits in the repository.
+                type:
+                  - "null"
+                  - string
+              git_commits_url:
+                description: URL to access git commits in the repository.
+                type:
+                  - "null"
+                  - string
+              comments_url:
+                description: URL to access comments in the repository.
+                type:
+                  - "null"
+                  - string
+              issue_comment_url:
+                description: URL to access issue comments in the repository.
+                type:
+                  - "null"
+                  - string
+              contents_url:
+                description: URL to access contents of the repository.
+                type:
+                  - "null"
+                  - string
+              compare_url:
+                description: URL to compare the repository with another ref/commit.
+                type:
+                  - "null"
+                  - string
+              merges_url:
+                description: URL to access merges in the repository.
+                type:
+                  - "null"
+                  - string
+              archive_url:
+                description: URL to access the repository's archive.
+                type:
+                  - "null"
+                  - string
+              downloads_url:
+                description: URL to access downloads in the repository.
+                type:
+                  - "null"
+                  - string
+              issues_url:
+                description: URL to access issues in the repository.
+                type:
+                  - "null"
+                  - string
+              pulls_url:
+                description: URL to access pulls in the repository.
+                type:
+                  - "null"
+                  - string
+              milestones_url:
+                description: URL to access milestones in the repository.
+                type:
+                  - "null"
+                  - string
+              notifications_url:
+                description: URL to access notifications in the repository.
+                type:
+                  - "null"
+                  - string
+              labels_url:
+                description: URL to access labels in the repository.
+                type:
+                  - "null"
+                  - string
+              releases_url:
+                description: URL to access releases in the repository.
+                type:
+                  - "null"
+                  - string
+              deployments_url:
+                description: URL to access deployments of the repository.
+                type:
+                  - "null"
+                  - string
+          actor:
+            description: The user or entity responsible for triggering the workflow run.
+            $ref: user.json
+          triggering_actor:
+            description: The user or entity that triggered the workflow run.
+            $ref: user.json
+
 # Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
 # is per token, so this is conservative — a multi-token config could spend more than this
 # allows. Left global on purpose, because the CDK budget has no notion of which credential a
@@ -1163,6 +2016,7 @@ concurrency_level:
 
 streams:
   - $ref: "#/definitions/repositories_stream"
+  - $ref: "#/definitions/workflow_run_attempts_stream"
 
 check:
   type: CheckStream

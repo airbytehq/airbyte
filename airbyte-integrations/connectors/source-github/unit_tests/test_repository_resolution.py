@@ -309,7 +309,7 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     python_stream = source.streams(config)[0]
     streams = ConcurrentDeclarativeSource.streams(source, config)
 
-    assert [stream.name for stream in streams] == ["repositories"]
+    assert [stream.name for stream in streams] == ["repositories", "workflow_run_attempts"]
     max_waiting_time = max_waiting_time_config.get("max_waiting_time")
     expected_wait_time = max_waiting_time if max_waiting_time is not None else 120
     assert python_stream.max_wait_time_seconds == expected_wait_time * 60

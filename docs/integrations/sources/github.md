@@ -162,8 +162,14 @@ This connector outputs the following incremental streams:
    `workflow_runs` holds the latest attempt of each run and nothing else: the GitHub endpoint it reads returns a single
    record per run, so when a workflow is re-run the earlier attempts never reach your destination, and the record you do
    get mixes the latest attempt's status with the original attempt's `created_at`. Sync `workflow_run_attempts` if you
-   need the full re-run history. It emits one record per attempt, keyed on `[id, run_attempt]`, and only spends extra API
-   calls on runs that actually were re-run.
+   need the full re-run history. It emits one record per attempt, keyed on `[id, run_attempt]`, with each attempt's own
+   `created_at`, `conclusion`, `logs_url` and `jobs_url`.
+
+   `workflow_run_attempts` is the more expensive of the two, because GitHub has no endpoint that lists attempts: every
+   attempt costs one request. Budget roughly one request per workflow run in the synced window on top of what
+   `workflow_runs` costs, and one more for each additional attempt of a re-run workflow. Which runs fall in the window is
+   decided exactly as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that run's
+   attempts are then emitted, including ones last updated before the cursor.
 
 3. Other 19 incremental streams are also incremental but with one difference, they:
 
