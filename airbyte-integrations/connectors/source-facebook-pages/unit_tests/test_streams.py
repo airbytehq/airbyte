@@ -160,7 +160,7 @@ def test_facebook_bad_request_fails_without_retrying():
     [
         pytest.param({"message": "(#4) Application request limit reached", "type": "OAuthException", "code": 4}, id="rate_limit_code"),
         pytest.param(
-            {"message": "An unexpected error has occurred.", "type": "OAuthException", "code": 2, "is_transient": True},
+            {"message": "An unexpected error has occurred.", "type": "OAuthException", "code": 100, "is_transient": True},
             id="is_transient",
         ),
     ],
