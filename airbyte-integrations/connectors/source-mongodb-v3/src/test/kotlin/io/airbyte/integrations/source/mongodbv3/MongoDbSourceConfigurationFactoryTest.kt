@@ -41,7 +41,10 @@ class MongoDbSourceConfigurationFactoryTest {
 """,
             )
         Assertions.assertEquals(MongoDbClusterType.ATLAS_REPLICA_SET, config.clusterType)
-        Assertions.assertEquals("mongodb+srv://cluster0.abcd1.mongodb.net/", config.connectionString)
+        Assertions.assertEquals(
+            "mongodb+srv://cluster0.abcd1.mongodb.net/",
+            config.connectionString
+        )
         Assertions.assertEquals(listOf("db1", "db2"), config.databases)
         Assertions.assertEquals("user", config.username)
         Assertions.assertEquals("secret", config.password)
@@ -115,7 +118,10 @@ class MongoDbSourceConfigurationFactoryTest {
 }
 """,
             )
-        Assertions.assertEquals("mongodb+srv://cluster0.abcd1.mongodb.net/", config.connectionString)
+        Assertions.assertEquals(
+            "mongodb+srv://cluster0.abcd1.mongodb.net/",
+            config.connectionString
+        )
     }
 
     @Test
@@ -149,7 +155,11 @@ class MongoDbSourceConfigurationFactoryTest {
         val exception: ConfigErrorException =
             Assertions.assertThrows(ConfigErrorException::class.java) {
                 MongoDbSourceConfigurationFactory()
-                    .make(parse("""{"database_config": {"cluster_type": "SELF_MANAGED_REPLICA_SET", "connection_string": "mongodb://localhost:27017/", "databases": []}}"""))
+                    .make(
+                        parse(
+                            """{"database_config": {"cluster_type": "SELF_MANAGED_REPLICA_SET", "connection_string": "mongodb://localhost:27017/", "databases": []}}"""
+                        )
+                    )
             }
         Assertions.assertEquals("No databases specified in the configuration.", exception.message)
     }

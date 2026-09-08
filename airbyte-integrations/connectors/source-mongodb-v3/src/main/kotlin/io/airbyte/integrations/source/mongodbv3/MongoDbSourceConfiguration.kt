@@ -57,7 +57,10 @@ enum class UpdateCaptureMode(val specValue: String) {
 /** MongoDB-specific implementation of [SourceConfiguration]. */
 data class MongoDbSourceConfiguration(
     val clusterType: MongoDbClusterType,
-    /** Sanitized connection string, see [MongoDbSourceConfigurationFactory.sanitizeConnectionString]. */
+    /**
+     * Sanitized connection string, see [MongoDbSourceConfigurationFactory.sanitizeConnectionString]
+     * .
+     */
     val connectionString: String,
     val databases: List<String>,
     val username: String?,
@@ -163,7 +166,8 @@ constructor(
             } catch (e: IllegalArgumentException) {
                 throw ConfigErrorException("Invalid connection string: ${e.message}", e)
             }
-        val (realHost: String, realPort: Int) = splitHostAndPort(parsedConnectionString.hosts.first())
+        val (realHost: String, realPort: Int) =
+            splitHostAndPort(parsedConnectionString.hosts.first())
 
         val clusterType: MongoDbClusterType =
             when (databaseConfig) {
@@ -175,7 +179,9 @@ constructor(
             (pojo.queueSize ?: MAX_QUEUE_SIZE).let { requested: Int ->
                 val effective: Int = requested.coerceIn(MIN_QUEUE_SIZE, MAX_QUEUE_SIZE)
                 if (effective != requested) {
-                    log.warn { "Requested queue_size $requested is out of range, using $effective." }
+                    log.warn {
+                        "Requested queue_size $requested is out of range, using $effective."
+                    }
                 }
                 effective
             }
@@ -193,23 +199,24 @@ constructor(
             databases = databases,
             username = databaseConfig.username,
             password = databaseConfig.password,
-            authSource =
-                databaseConfig.authSource ?: MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE,
+            authSource = databaseConfig.authSource
+                    ?: MongoDbSourceConfigurationSpecification.DEFAULT_AUTH_SOURCE,
             schemaEnforced = databaseConfig.schemaEnforced ?: true,
             initialWaitingDuration =
                 Duration.ofSeconds(
                     (pojo.initialWaitingSeconds
-                            ?: MongoDbSourceConfigurationSpecification.DEFAULT_INITIAL_WAITING_SECONDS)
+                            ?: MongoDbSourceConfigurationSpecification
+                                .DEFAULT_INITIAL_WAITING_SECONDS)
                         .toLong(),
                 ),
             queueSize = queueSize,
-            discoverSampleSize =
-                pojo.discoverSampleSize
+            discoverSampleSize = pojo.discoverSampleSize
                     ?: MongoDbSourceConfigurationSpecification.DEFAULT_DISCOVER_SAMPLE_SIZE,
             discoverTimeout =
                 Duration.ofSeconds(
                     (pojo.discoverTimeoutSeconds
-                            ?: MongoDbSourceConfigurationSpecification.DEFAULT_DISCOVER_TIMEOUT_SECONDS)
+                            ?: MongoDbSourceConfigurationSpecification
+                                .DEFAULT_DISCOVER_TIMEOUT_SECONDS)
                         .toLong(),
                 ),
             invalidCdcCursorPositionBehavior =

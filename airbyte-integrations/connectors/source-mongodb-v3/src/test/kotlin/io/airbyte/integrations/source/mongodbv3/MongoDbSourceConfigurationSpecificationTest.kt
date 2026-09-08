@@ -14,7 +14,8 @@ import org.junit.jupiter.api.Test
 class MongoDbSourceConfigurationSpecificationTest {
 
     @Inject
-    lateinit var supplier: ConfigurationSpecificationSupplier<MongoDbSourceConfigurationSpecification>
+    lateinit var supplier:
+        ConfigurationSpecificationSupplier<MongoDbSourceConfigurationSpecification>
 
     @Test
     fun testSchemaViolation() {

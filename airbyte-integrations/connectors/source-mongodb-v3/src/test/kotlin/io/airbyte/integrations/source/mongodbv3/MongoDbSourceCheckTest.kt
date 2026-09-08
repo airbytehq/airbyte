@@ -63,7 +63,8 @@ class MongoDbSourceCheckTest {
     fun testCheckFailsWithBadCredentials() {
         SyncsTestFixture.testCheck(
             config(replicaSet.connectionString, listOf(DATABASE), username = "u", password = "p"),
-            expectedFailure = "Authentication failed.  Please check the source's configured credentials.",
+            expectedFailure =
+                "Authentication failed.  Please check the source's configured credentials.",
         )
     }
 
@@ -80,7 +81,8 @@ class MongoDbSourceCheckTest {
         fun startContainers() {
             replicaSet = MongoDBContainer(IMAGE).also { it.start() }
             standalone = GenericContainer(IMAGE).withExposedPorts(27017).also { it.start() }
-            for (connectionString in listOf(replicaSet.connectionString, standaloneConnectionString())) {
+            for (connectionString in
+                listOf(replicaSet.connectionString, standaloneConnectionString())) {
                 MongoClients.create(connectionString).use { client ->
                     client
                         .getDatabase(DATABASE)
@@ -110,6 +112,7 @@ class MongoDbSourceCheckTest {
             databases: List<String>,
             username: String? = null,
             password: String? = null,
+            schemaEnforced: Boolean? = null,
         ): MongoDbSourceConfigurationSpecification {
             val databaseConfig: MutableMap<String, Any> =
                 mutableMapOf(
@@ -119,8 +122,8 @@ class MongoDbSourceCheckTest {
                 )
             username?.let { databaseConfig["username"] = it }
             password?.let { databaseConfig["password"] = it }
-            val json: String =
-                Jsons.writeValueAsString(mapOf("database_config" to databaseConfig))
+            schemaEnforced?.let { databaseConfig["schema_enforced"] = it }
+            val json: String = Jsons.writeValueAsString(mapOf("database_config" to databaseConfig))
             return Jsons.readValue(json, MongoDbSourceConfigurationSpecification::class.java)
         }
     }

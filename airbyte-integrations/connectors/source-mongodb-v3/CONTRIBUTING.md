@@ -60,3 +60,18 @@ docker run --rm -v $PWD/secrets:/secrets airbyte/source-mongodb-v3:dev check --c
   message in "Could not connect with provided configuration. Error: ..."; the wrapped message
   matches the legacy one except for "no authorized collections", where the CDK reports
   "Discovered zero tables.".
+- `discover` parity: `src/test/resources/expected-catalog-*.json` are the `CATALOG` objects the
+  legacy image produced for the seed data of `MongoDbSourceDiscoverTest` (every BSON type, `_id` of
+  ObjectId/int/string, an empty collection, a view, a `system.*` collection, two databases), and the
+  test asserts JSON equality after sorting streams by name (the legacy connector emits streams in
+  hash order). Legacy quirks are reproduced on purpose: booleans, dates, timestamps, ObjectIds and
+  binary data are all declared as `string`; ints/longs/doubles/decimals as `number`; arrays as
+  `{"type":"array"}` without `items`; empty collections are omitted; views are included; every
+  stream advertises `default_cursor_field: ["_ab_cdc_cursor"]` and `is_resumable: true`. A field
+  seen with several BSON types takes the type of whichever document shape the server returns first,
+  in both connectors. To diff the Docker images, run `discover` for both on the parity replica set
+  and compare the `CATALOG` lines with streams sorted (scripts in the skill's
+  `databases/mongodb/parity/`).
+- `check` does not sample documents (the legacy `check` only ran `listCollections`);
+  `MongoDbSourceMetadataQuerier.Factory` reads `airbyte.connector.operation` and returns no fields
+  during `check`.

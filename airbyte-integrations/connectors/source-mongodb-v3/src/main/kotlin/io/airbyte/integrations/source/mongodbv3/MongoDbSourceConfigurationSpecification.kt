@@ -55,7 +55,9 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
     @JsonSchemaDescription(
         "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds.",
     )
-    @JsonSchemaInject(json = """{"default":300,"order":8,"min":120,"max":1200,"group":"advanced"}""")
+    @JsonSchemaInject(
+        json = """{"default":300,"order":8,"min":120,"max":1200,"group":"advanced"}"""
+    )
     var initialWaitingSeconds: Int? = DEFAULT_INITIAL_WAITING_SECONDS
 
     @JsonProperty("queue_size")
@@ -97,7 +99,8 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
         json =
             """{"enum":["Fail sync","Re-sync data"],"default":"Fail sync","order":12,"group":"advanced"}""",
     )
-    var invalidCdcCursorPositionBehavior: String? = InvalidCdcCursorPositionBehavior.FAIL_SYNC.specValue
+    var invalidCdcCursorPositionBehavior: String? =
+        InvalidCdcCursorPositionBehavior.FAIL_SYNC.specValue
 
     @JsonProperty("update_capture_mode")
     @JsonSchemaTitle("Capture mode (Advanced)")
@@ -105,7 +108,8 @@ class MongoDbSourceConfigurationSpecification : ConfigurationSpecification() {
         "Determines how Airbyte looks up the value of an updated document. If 'Lookup' is chosen, the current value of the document will be read. If 'Post Image' is chosen, then the version of the document immediately after an update will be read. WARNING : Severe data loss will occur if this option is chosen and the appropriate settings are not set on your Mongo instance : https://www.mongodb.com/docs/manual/changeStreams/#change-streams-with-document-pre-and-post-images.",
     )
     @JsonSchemaInject(
-        json = """{"enum":["Lookup","Post Image"],"default":"Lookup","order":13,"group":"advanced"}""",
+        json =
+            """{"enum":["Lookup","Post Image"],"default":"Lookup","order":13,"group":"advanced"}""",
     )
     var updateCaptureMode: String? = UpdateCaptureMode.LOOKUP.specValue
 

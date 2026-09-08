@@ -11,7 +11,10 @@ import com.mongodb.client.MongoClients
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
-/** Builds a [MongoClient] from a [MongoDbSourceConfiguration], the same way the legacy connector did. */
+/**
+ * Builds a [MongoClient] from a [MongoDbSourceConfiguration], the same way the legacy connector
+ * did.
+ */
 object MongoDbClientFactory {
     const val DRIVER_NAME = "Airbyte"
 
