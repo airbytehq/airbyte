@@ -7137,15 +7137,14 @@ definitions:
                 - 'null'
                 - string
               date_time:
-                type:
-                - 'null'
-                - string
+                type: string
               transcript_download_url:
                 type:
                 - 'null'
                 - string
             required:
             - id
+            - date_time
         type: DeclarativeStream
         name: "phone_recordings"
         primary_key: id
@@ -7229,9 +7228,7 @@ definitions:
             - 'null'
             - string
           recording_date_time:
-            type:
-            - 'null'
-            - string
+            type: string
           type:
             type:
             - 'null'
@@ -7267,6 +7264,7 @@ definitions:
               additionalProperties: true
         required:
         - recording_id
+        - recording_date_time
     type: DeclarativeStream
     name: "phone_recording_transcripts"
     primary_key: recording_id
@@ -7383,14 +7381,13 @@ definitions:
               type: object
               additionalProperties: true
           recording_date_time:
-            type:
-            - 'null'
-            - string
+            type: string
         required:
         - timeline_id
         - recording_id
         - ts
         - end_ts
+        - recording_date_time
     type: DeclarativeStream
     name: phone_recording_transcript_timeline
     primary_key: timeline_id
@@ -14744,9 +14741,7 @@ streams:
           - 'null'
           - string
         start_time:
-          type:
-          - 'null'
-          - string
+          type: string
         answer_time:
           type:
           - 'null'
@@ -14825,6 +14820,7 @@ streams:
           - string
       required:
       - call_history_uuid
+      - start_time
   type: DeclarativeStream
   name: "phone_call_history"
   primary_key: call_history_uuid
@@ -14914,9 +14910,7 @@ streams:
           - 'null'
           - string
         date_time:
-          type:
-          - 'null'
-          - string
+          type: string
         end_time:
           type:
           - 'null'
@@ -15001,6 +14995,7 @@ streams:
           - string
       required:
       - id
+      - date_time
   type: DeclarativeStream
   name: "phone_recordings"
   primary_key: id
