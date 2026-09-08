@@ -10,7 +10,7 @@ from airbyte_cdk.test.entrypoint_wrapper import read
 
 MANIFEST_PATH = str(Path(__file__).parent.parent / "manifest.yaml")
 
-TEST_CONFIG = {"api_key": "fake-key", "start_date": "2025-01-01"}
+TEST_CONFIG = {"api_key": "fake-key"}
 
 
 def _source() -> YamlDeclarativeSource:
@@ -28,8 +28,10 @@ def test_rcs_messages_stream_extracts_records(requests_mock):
     )
     output = read(_source(), TEST_CONFIG, _catalog("rcs_messages"))
     records = output.records
-    assert len(records) == 1
+    # Le partition router interroge les slices MT et MO (2 requêtes)
+    assert len(records) == 2
     assert records[0].record.data["messageId"] == "abc123"
+    assert records[1].record.data["messageId"] == "abc123"
 
 
 def test_consumptions_rcs_stream_extracts_records(requests_mock):
@@ -46,4 +48,5 @@ def test_consumptions_rcs_stream_extracts_records(requests_mock):
 def test_api_key_sent_as_header_on_rcs_messages(requests_mock):
     mock = requests_mock.get("https://rest.smsmode.com/rcs/v1/messages", json={"items": []})
     read(_source(), TEST_CONFIG, _catalog("rcs_messages"))
+    assert mock.call_count == 2
     assert mock.last_request.headers["X-Api-Key"] == "fake-key"
