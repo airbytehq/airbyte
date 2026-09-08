@@ -79,7 +79,7 @@ def test_migrated_low_code_state_filters_reports(config):
                 "state": {"date": "20251107"},
                 "parent_state": {
                     "report": {
-                        "state": {"date": "2025-11-07T07:00:00.000000Z"},
+                        "state": {"date": "2025-11-09T00:00:00.000000Z"},
                         "lookback_window": 0,
                     }
                 },
@@ -94,7 +94,7 @@ def test_migrated_low_code_state_filters_reports(config):
         output = read(source, config, catalog)
 
     query = parse_qs(urlparse(_reports_request(mocker).url).query, keep_blank_values=True)
-    assert query == {"startTimeAtOrAfter": ["2025-11-07T07:00:00.000000Z"]}
+    assert query == {"createdAfter": ["2025-11-09T00:00:00.000000Z"]}
     requested_urls = _downloaded_urls(mocker)
     assert _DOWNLOAD_OLD not in requested_urls
     assert _DOWNLOAD_SAME not in requested_urls
@@ -102,8 +102,8 @@ def test_migrated_low_code_state_filters_reports(config):
     assert len(output.records) == 1
     assert output.records[0].record.data["date"] == 20260301
     report_state = output.most_recent_state.stream_state.__dict__["parent_state"]["report"]
-    assert report_state["state"] == {"date": "2026-03-01T07:00:00.000000Z"}
-    assert [state["cursor"] for state in report_state["states"]] == [{"date": "2026-03-01T07:00:00.000000Z"}]
+    assert report_state["state"] == {"date": "2026-03-03T00:00:00.000000Z"}
+    assert [state["cursor"] for state in report_state["states"]] == [{"date": "2026-03-03T00:00:00.000000Z"}]
 
 
 def test_legacy_state_migrates_and_filters_reports(config):
@@ -115,12 +115,14 @@ def test_legacy_state_migrates_and_filters_reports(config):
         output = read(source, config, catalog)
 
     query = parse_qs(urlparse(_reports_request(mocker).url).query)
-    assert query == {"startTimeAtOrAfter": ["2025-11-07T00:00:00.000000Z"]}
+    assert query == {"createdAfter": ["2025-11-07T00:00:00.000000Z"]}
     requested_urls = _downloaded_urls(mocker)
     assert _DOWNLOAD_OLD not in requested_urls
     assert _DOWNLOAD_SAME in requested_urls
     assert _DOWNLOAD_NEW in requested_urls
     assert len(output.records) == 2
+    report_state = output.most_recent_state.stream_state.__dict__["parent_state"]["report"]
+    assert report_state["state"] == {"date": "2026-03-03T00:00:00.000000Z"}
 
 
 def test_initial_sync_requests_all_reports(config):
@@ -131,9 +133,11 @@ def test_initial_sync_requests_all_reports(config):
         output = read(source, config, catalog)
 
     query = parse_qs(urlparse(_reports_request(mocker).url).query, keep_blank_values=True)
-    assert query == {"startTimeAtOrAfter": ["1990-01-01T00:00:00.000000Z"]}
+    assert query == {"createdAfter": ["1990-01-01T00:00:00.000000Z"]}
     requested_urls = _downloaded_urls(mocker)
     assert _DOWNLOAD_OLD in requested_urls
     assert _DOWNLOAD_SAME in requested_urls
     assert _DOWNLOAD_NEW in requested_urls
     assert len(output.records) == 3
+    report_state = output.most_recent_state.stream_state.__dict__["parent_state"]["report"]
+    assert report_state["state"] == {"date": "2026-03-03T00:00:00.000000Z"}
