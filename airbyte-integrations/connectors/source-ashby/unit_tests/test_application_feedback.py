@@ -7,7 +7,6 @@ free-form `submittedValues` pass through verbatim.
 """
 
 import base64
-import json
 import logging
 from pathlib import Path
 
