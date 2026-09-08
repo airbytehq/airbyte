@@ -264,7 +264,7 @@ Amazon accepts a `reportOptions` object when you request a report, and those opt
 
 ### Report options you configure
 
-The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.10.2, the connector sends these options for four streams:
+The **Report Options** setting takes a report type, a stream name, and a list of option name/value pairs. As of version 5.10.3, the connector sends these options for four streams:
 
 - `GET_LEDGER_DETAIL_VIEW_DATA` — for example, set `eventType` to `Adjustments` to return only adjustment rows.
 - `GET_LEDGER_SUMMARY_VIEW_DATA` — for example, set `aggregatedByTimePeriod` to `DAILY` for daily rows instead of Amazon's `MONTHLY` default, or set `aggregateByLocation` to `FC` to break out rows by fulfillment center instead of by country.
@@ -485,7 +485,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                             |
 |:-----------|:-----------|:----------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.10.2 | 2026-09-02 | [85294](https://github.com/airbytehq/airbyte/pull/85294) | Send Amazon-required `reportOptions` (`reportPeriod`, `distributorView`, `sellingProgram`) for vendor sales/inventory/traffic/net pure product margin reports, fixing FATAL report generation |
+| 5.10.3 | 2026-09-02 | [85294](https://github.com/airbytehq/airbyte/pull/85294) | Send Amazon-required `reportOptions` (`reportPeriod`, `distributorView`, `sellingProgram`) for vendor sales/inventory/traffic/net pure product margin reports, fixing FATAL report generation |
+| 5.10.2 | 2026-09-08 | [85388](https://github.com/airbytehq/airbyte/pull/85388) | Update dependencies |
 | 5.10.1 | 2026-08-25 | [84913](https://github.com/airbytehq/airbyte/pull/84913) | Send an explicit, day-aligned report window for the daily `GET_VENDOR_TRAFFIC_REPORT`, `GET_VENDOR_NET_PURE_PRODUCT_MARGIN_REPORT`, and `GET_VENDOR_REAL_TIME_INVENTORY_REPORT` streams, fixing records that were labelled with a date the report did not actually cover |
 | 5.10.0 | 2026-08-24 | [76434](https://github.com/airbytehq/airbyte/pull/76434) | Add Fulfillment Inbound streams (FbaInboundShipments, FbaInboundShipmentItems) and Inbound API settings (`inbound_replication_mode`, `inbound_rolling_days`, `inbound_start_datetime`, `inbound_end_datetime`) |
 | 5.9.5 | 2026-08-18 | [84482](https://github.com/airbytehq/airbyte/pull/84482) | Update dependencies |

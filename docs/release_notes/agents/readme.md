@@ -1,5 +1,16 @@
 # Airbyte Agents release notes
 
+## September 4, 2026
+
+Connectors
+
+- Your agents can now search your Klaviyo email templates by meaning, including the template name and email body, so they can find templates on a similar topic without matching the exact wording.
+
+Other
+
+- Search by meaning is now more reliable. Previously, during periods of heavy indexing, some records could be indexed without searchable content and were silently missing from your agents' results. All records are now indexed completely.
+- Indexing connectors that sync files, such as Google Drive, is now more reliable when processing large volumes of extracted text, so file indexing no longer stalls or fails partway through on big document sets.
+
 ## September 2, 2026
 
 Web app

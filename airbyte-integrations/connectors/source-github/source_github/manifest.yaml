@@ -405,8 +405,11 @@ definitions:
                   - string
 
   # Shared partition routers. Repo-scoped streams reference
-  # `repository_partition_router`; org-scoped streams reference
-  # `organization_partition_router`.
+  # `repository_partition_router`. For orgs there are deliberately two routers with
+  # different audiences: the `repositories` stream references
+  # `organization_partition_router` (config-derived candidates), the org-scoped Python
+  # streams reference `organization_resolution_partition_router` (payload-confirmed).
+  # Picking the wrong one for an org-scoped stream is what broke 2.2.0 — see below.
   #
   # `repository_partition_router` yields the deduplicated union of
   # wildcard-expanded repos and validated explicit repos.
@@ -415,6 +418,16 @@ definitions:
   # orgs (derived inline from config) and the orgs owning explicit repos.
   # User-owned repos have no `organization` object, so the substream child
   # skips them (they contribute a repository but not an organization).
+  # It drives the `repositories` stream, which has to *attempt* `orgs/{org}/repos`
+  # for a wildcard entry to learn whether the login is an organization at all.
+  #
+  # `organization_resolution_partition_router` is the narrower list the org-scoped
+  # Python streams slice on, and must not be the router above: a login taken from
+  # config text is only a *candidate* org, and `orgs/{login}` 404s on every
+  # org-scoped stream when it is a user. Both branches here take the org from a
+  # response payload instead — `owner/login` of the repos `orgs/{org}/repos`
+  # returned, `organization/login` of `repos/{owner}/{repo}` (absent for user-owned
+  # repos) — which is how the legacy Python resolver built the list.
   repository_partition_router:
     type: UnionPartitionRouter
     partition_field: repository
@@ -442,6 +455,25 @@ definitions:
         values:
           $ref: "#/definitions/wildcard_organizations"
         cursor_field: "organization"
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repository_stats_stream"
+            parent_key: "organization/login"
+            partition_field: "organization"
+
+  organization_resolution_partition_router:
+    type: UnionPartitionRouter
+    partition_field: organization
+    partition_routers:
+      - type: SubstreamPartitionRouter
+        parent_stream_configs:
+          - type: ParentStreamConfig
+            stream:
+              $ref: "#/definitions/repositories_resolver_stream"
+            parent_key: "owner/login"
+            partition_field: "organization"
       - type: SubstreamPartitionRouter
         parent_stream_configs:
           - type: ParentStreamConfig
