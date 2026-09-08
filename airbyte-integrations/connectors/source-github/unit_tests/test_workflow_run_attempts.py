@@ -680,6 +680,10 @@ def test_a_descending_link_is_followed_whatever_it_is_suffixed_with(rate_limit_m
         },
     )
     # Registered at the suffixed URL, because following the link is exactly what is under test.
+    # `requests` keeps the suffix on `PreparedRequest.url`, which is what `requests_mock` matches
+    # on, and drops the fragment from `path_url`, which is what goes on the wire — so the fragment
+    # case really does reach the same endpoint as the bare one. What differs, and what this pins,
+    # is the string the stop condition is handed: anchoring the regex kills three of these four.
     requests_mock.get(
         f"{RUNS_URL}/2/attempts/1{suffix}",
         json=_attempt(2, 1, updated_at="2022-02-02T10:04:00Z", created_at="2022-02-02T10:00:00Z"),
