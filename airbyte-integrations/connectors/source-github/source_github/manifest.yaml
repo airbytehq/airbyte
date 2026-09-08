@@ -1368,14 +1368,27 @@ definitions:
           # config with no `start_date` (`break_point` stayed None and it paged the whole
           # history).
           #
+          # Anchored on the raw page tail rather than on `last_record`, which is the wrong value
+          # here twice over: `SimpleRetriever._read_pages` assigns it from records that survived
+          # the record selector, and this stream's selector is the `is_client_side_incremental`
+          # decorator. A page of runs that are all older than the cursor - which is exactly what
+          # the deep pages of an old listing are - leaves `last_record` at None and never breaks,
+          # and a record that does survive the filter has `updated_at >= cursor >= start_date`,
+          # so by the same 32-day rule its `created_at` is inside the window and the comparison
+          # can never be true. `response` is the decoded body, which the filter cannot touch.
+          #
           # `(config.get('start_date') or '') != ''` rather than a bare `config.get('start_date')`:
           # InterpolatedBoolean compares the *rendered* string against a fixed false-values list
           # that does not include "None", so a present-but-null `start_date` would render "None",
-          # read as true, and stop pagination after the first page.
+          # read as true, and stop pagination after the first page. `is string` for the same class
+          # of reason: `JinjaInterpolation._eval` swallows a TypeError and returns the raw
+          # template, which reads as true, so comparing a null `created_at` with `<` would stop
+          # the walk and lose every page behind it.
           stop_condition: >-
             {{ (config.get('start_date') or '') != ''
-            and last_record is not none
-            and last_record['created_at'] < format_datetime(str_to_datetime(config['start_date']) - duration('P32D'), '%Y-%m-%dT%H:%M:%SZ') }}
+            and (response.get('workflow_runs') or []) | length > 0
+            and response['workflow_runs'][-1].get('created_at') is string
+            and response['workflow_runs'][-1]['created_at'] < format_datetime(str_to_datetime(config['start_date']) - duration('P32D'), '%Y-%m-%dT%H:%M:%SZ') }}
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     incremental_sync:
@@ -1399,7 +1412,8 @@ definitions:
     schema_loader:
       type: InlineSchemaLoader
       # Only the fields this stream is read for: the cursor, the run URL and attempt count the
-      # child slices on. The records are never emitted to a destination.
+      # child slices on, and `created_at`, which the paginator's stop condition compares against
+      # the re-run window. The records are never emitted to a destination.
       schema:
         $schema: https://json-schema.org/draft-07/schema#
         type: object
@@ -1416,6 +1430,10 @@ definitions:
             type:
               - "null"
               - integer
+          created_at:
+            type:
+              - "null"
+              - string
           updated_at:
             type:
               - "null"
@@ -1460,12 +1478,15 @@ definitions:
         # `field_path: []` emits whatever the body is, so a 200 carrying an envelope rather than
         # a run - GitHub answers `{"message": ...}` with 200 on some redirect and deprecation
         # paths - would otherwise land in the destination as a row whose whole primary key is
-        # null. Deliberately only `id`: `run_attempt` is filled in by the transformation below,
-        # and a filter on it here would run first (RecordSelector filters, then transforms) and
-        # drop the very records that transformation exists to repair.
+        # null. Both key fields are required, and deliberately nothing invents a missing
+        # `run_attempt`: the attempt number is only knowable from the request path, which a
+        # transformation cannot see, so defaulting it to 1 would label a mid-chain attempt as
+        # attempt 1 and collide with the real one. Skipping the unkeyable record loses that one
+        # attempt; mislabelling it silently overwrites a good one on a deduplicating destination.
+        # The walk itself continues either way - the paginator only stops on proven non-descent.
         record_filter:
           type: RecordFilter
-          condition: "{{ record.get('id') is not none }}"
+          condition: "{{ record.get('id') is integer and record.get('run_attempt') is integer }}"
       paginator:
         # `previous_attempt_url` is the documented back-link from an attempt to the one before it,
         # and null on the first attempt - so the attempt chain is literally a cursor pagination and
@@ -1489,11 +1510,16 @@ definitions:
           # types. That matters because `JinjaInterpolation._eval` swallows a `TypeError` and
           # returns the raw template, which `InterpolatedBoolean` then reads as true - so an
           # expression that can raise is an expression that silently stops the walk.
+          # The regex is not anchored on the end of the string: `.../attempts/3/` and
+          # `.../attempts/3?x=1` would both fail to match an anchored pattern, and the guard would
+          # then wave through exactly the malformed links it exists to catch.
           stop_condition: >-
             {{ not response.get('previous_attempt_url')
+            or (response.get('url') is string
+            and not response['previous_attempt_url'].startswith(response['url'] ~ '/attempts/'))
             or (response.get('run_attempt') is number
-            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)$') or '') != ''
-            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)$') | int) >= response['run_attempt']) }}
+            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') or '') != ''
+            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') | int) >= response['run_attempt']) }}
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1513,16 +1539,6 @@ definitions:
             # attempt finishing and the re-run starting leaves the cursor above attempt 1's
             # `updated_at`, and attempt 1 would then never be emitted by any sync.
             incremental_dependency: true
-    transformations:
-      # `run_attempt` is half the primary key but is not a required field of GitHub's workflow-run
-      # schema, and the attempt endpoint returns the same object shape as the listing. A payload
-      # without it would otherwise be emitted with half a null key. A run that does not report an
-      # attempt number has exactly one attempt, which is also why the request path above falls
-      # back to `attempts/1`.
-      - type: AddFields
-        fields:
-          - path: ["run_attempt"]
-            value: "{{ record.get('run_attempt') or 1 }}"
     incremental_sync:
       # Required for `incremental_dependency` to take effect: the CDK only persists parent state
       # inside the child's state, and only for a child that declares a cursor of its own

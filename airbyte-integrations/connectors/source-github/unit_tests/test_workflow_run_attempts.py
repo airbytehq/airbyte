@@ -614,10 +614,11 @@ def test_a_chain_that_does_not_descend_is_cut_off(rate_limit_mock_response, requ
     assert {record["id"] for record in records} == {2}
 
 
-def test_a_non_integer_run_attempt_does_not_truncate_the_chain(rate_limit_mock_response, requests_mock):
-    """A string cannot be compared with `<` against an integer. `JinjaInterpolation._eval` swallows
-    a TypeError and hands back the raw template, which `InterpolatedBoolean` reads as true — so a
-    stop condition that can raise is a stop condition that silently ends the walk one attempt in."""
+def test_a_non_integer_run_attempt_is_skipped_and_does_not_truncate_the_chain(rate_limit_mock_response, requests_mock):
+    """A string cannot be half of an integer primary key, and it cannot be compared with `<` either.
+    `JinjaInterpolation._eval` swallows a TypeError and hands back the raw template, which
+    `InterpolatedBoolean` reads as true — so a stop condition that can raise is a stop condition
+    that silently ends the walk one attempt in."""
     _mock_repository(requests_mock)
     _mock_runs(requests_mock, [_run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")])
     requests_mock.get(
@@ -629,19 +630,103 @@ def test_a_non_integer_run_attempt_does_not_truncate_the_chain(rate_limit_mock_r
     records, statuses, _ = _read(CONFIG)
 
     assert statuses[-1] == "COMPLETE"
-    assert _keys(records) == [(2, 1), (2, 2)]
+    # The unkeyable record is dropped; attempt 1 behind it is still reached.
+    assert _keys(records) == [(2, 1)]
+    assert len(_attempt_requests(requests_mock)) == 2
 
 
-def test_an_attempt_payload_without_run_attempt_still_gets_a_key(rate_limit_mock_response, requests_mock):
-    """`run_attempt` is half the primary key and is not a required field of GitHub's schema. Without
-    the transformation the record is emitted with half a null key, or dropped outright."""
+def test_an_attempt_payload_without_run_attempt_is_skipped_but_does_not_end_the_walk(rate_limit_mock_response, requests_mock):
+    """`run_attempt` is half the primary key and is not a required field of GitHub's schema. The
+    attempt number is only knowable from the request path, which no transformation can see, so
+    defaulting it to 1 would label a mid-chain attempt as attempt 1 and overwrite the real one on a
+    deduplicating destination. The unkeyable record is dropped instead — and only that record."""
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(1)])
-    attempt = _attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")
-    del attempt["run_attempt"]
-    requests_mock.get(f"{RUNS_URL}/1/attempts/1", json=attempt)
+    _mock_runs(requests_mock, [_run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")])
+    unkeyable = _attempt(2, 2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T11:00:00Z")
+    del unkeyable["run_attempt"]
+    requests_mock.get(f"{RUNS_URL}/2/attempts/2", json=unkeyable)
+    _mock_attempts(requests_mock, [_attempt(2, 1, updated_at="2022-02-02T10:04:00Z", created_at="2022-02-02T10:00:00Z")])
 
     records, statuses, _ = _read(CONFIG)
 
     assert statuses[-1] == "COMPLETE"
-    assert _keys(records) == [(1, 1)]
+    assert _keys(records) == [(2, 1)]
+    # The chain was still followed past the record that could not be keyed.
+    assert len(_attempt_requests(requests_mock)) == 2
+
+
+def test_the_break_fires_on_a_page_whose_records_are_all_older_than_the_cursor(rate_limit_mock_response, requests_mock):
+    """The case the break exists for, and the one an obvious implementation gets wrong.
+
+    `SimpleRetriever` sets `last_record` from records that survived the record selector, and this
+    stream's selector filters on the cursor. Deep pages of an old listing therefore contribute no
+    surviving record at all, so a stop condition reading `last_record` never fires and the sync
+    pages the repository's whole history. The condition reads the raw page tail instead.
+    """
+    _mock_repository(requests_mock)
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    # Everything on page 1 is far below the cursor, so the record selector drops all of it.
+    _paged_listing(
+        requests_mock,
+        [_run(1, updated_at="2021-01-02T10:05:00Z", created_at="2021-01-01T10:00:00Z")],
+        [_run(2, updated_at="2020-01-02T10:05:00Z", created_at="2020-01-01T10:00:00Z")],
+    )
+
+    records, statuses, _ = _read(config, state=_state("2022-07-01T00:00:00Z"))
+
+    assert statuses[-1] == "COMPLETE"
+    assert records == []
+    assert len(_listing_requests(requests_mock)) == 1
+
+
+def test_a_page_tail_without_a_usable_created_at_does_not_end_the_listing(rate_limit_mock_response, requests_mock):
+    """`JinjaInterpolation._eval` swallows a TypeError and returns the raw template, which
+    `InterpolatedBoolean` reads as true — so comparing a null `created_at` with `<` would stop the
+    walk and lose every page behind it, on a green sync."""
+    _mock_repository(requests_mock)
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    head = _run(1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z")
+    head["created_at"] = None
+    _paged_listing(requests_mock, [head], [_run(2, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z")])
+    _mock_attempts(
+        requests_mock,
+        [
+            _attempt(1, 1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z"),
+            _attempt(2, 1, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z"),
+        ],
+    )
+
+    records, _, _ = _read(config)
+
+    assert len(_listing_requests(requests_mock)) == 2
+    assert (2, 1) in _keys(records)
+
+
+@pytest.mark.parametrize(
+    "link",
+    [
+        # An anchored regex would fail to match either of these and wave the link through, which is
+        # precisely backwards: they are the malformed shapes the guard exists to catch.
+        pytest.param("{url}/attempts/{n}/", id="trailing_slash"),
+        pytest.param("{url}/attempts/{n}?per_page=1", id="query_string"),
+        # A link that leaves the run entirely.
+        pytest.param("https://api.github.com/repos/org/repos/actions/runs/999/attempts/1", id="different_run"),
+    ],
+)
+def test_a_malformed_attempt_link_is_not_followed(rate_limit_mock_response, requests_mock, link):
+    _mock_repository(requests_mock)
+    _mock_runs(requests_mock, [_run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")])
+    run_url = f"{RUNS_URL}/2"
+    requests_mock.get(
+        f"{run_url}/attempts/2",
+        json={
+            **_attempt(2, 2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T11:00:00Z"),
+            "previous_attempt_url": link.format(url=run_url, n=2),
+        },
+    )
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/2/attempts/2"]
+    assert _keys(records) == [(2, 2)]

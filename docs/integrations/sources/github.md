@@ -172,20 +172,24 @@ This connector outputs the following incremental streams:
 
    Four things worth planning for before you enable it:
 
-   - **The first sync is the expensive one, and it is all-or-nothing.** It reads every attempt of every run created
-     since the **Start Date**, so budget about one request per run. An authenticated token is limited to 5,000 requests
-     an hour, which puts a 100,000-run repository at roughly 20 hours. That work does not accumulate across syncs: the
-     cursor for a repository only advances once that repository has been read to the end, so a sync that is interrupted
-     part-way starts over. **Set a recent Start Date before enabling this stream on a busy repository** - it is the only
-     setting that bounds the initial read.
-   - **More tokens help, up to a point.** The connector holds itself to GitHub's documented 900 requests per minute
-     secondary limit across all tokens, so throughput stops improving at around eleven tokens (11 x 5,000/hour is
-     already 900/minute).
-   - **The run listing is read more than once per sync.** `workflow_run_attempts` pages it, and if you also select
-     `workflow_runs` it is paged again, and again for `workflow_jobs` - the streams cannot share a read yet. On a
-     repository with a long history that fixed cost dominates a quiet sync, since the listing is paged back to
-     `Start Date` minus 32 days whether or not anything changed. The variable cost is small: one request per run whose
-     `updated_at` moved since the last sync, plus one per additional attempt.
+   - **The first sync is the expensive one, and a repository is all-or-nothing.** It reads every attempt of every run
+     created since the **Start Date**, so budget about one request per run. An authenticated token is limited to 5,000
+     requests an hour, which puts a 100,000-run repository at roughly 20 hours. That work does not accumulate across
+     syncs: a repository's cursor only advances once that repository has been read to the end, so a sync interrupted
+     part-way through one starts that repository over. Repositories that did finish are not re-read.
+   - **Start Date bounds the recurring cost too, not just the first read.** Every sync pages the run listing back to
+     **Start Date** minus 32 days, whether or not anything changed, because GitHub allows a workflow to be re-run for 32
+     days after it was created and the listing is ordered by creation date. On a repository producing ~275 runs a day, a
+     Start Date two years old costs about 2,170 listing requests on every sync before a single attempt is fetched, and
+     that figure grows as the Start Date recedes. Moving **Start Date** forward is the only lever that shrinks it.
+   - **The run listing is read more than once per sync, at different depths.** `workflow_run_attempts` pages it back to
+     Start Date minus 32 days; `workflow_runs` and `workflow_jobs`, if you also select them, each page it again but only
+     back to 32 days before their own cursor. The streams cannot share a read yet.
+   - **More tokens help, up to a point.** The connector holds itself to one global budget of 900 requests per minute -
+     GitHub's documented secondary limit is per token, so this is deliberately conservative - which means throughput
+     stops improving at around eleven tokens. That budget covers this stream and the other manifest-backed streams;
+     `workflow_runs` and `workflow_jobs` are not subject to it. Note also that GitHub's 5,000 requests an hour is per
+     account, not per token, so extra tokens only add quota if they belong to different accounts.
    - **It runs before everything else.** Manifest-backed streams are read before the rest of the catalog, so enabling
      this one puts every other stream behind it, and a rate-limit failure inside it ends the sync before they start. If
      that matters, give it its own connection.
