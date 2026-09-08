@@ -108,10 +108,16 @@ For Page Insights, Meta requires access to a Page that you own or administer, or
 
 ### "Please reduce the amount of data you're asking for" error
 
-This error occurs when the Facebook Graph API considers the total response data too large. There are two ways to resolve it:
+This error occurs when the Facebook Graph API considers the total response data too large. Starting from version 2.1.3, the connector treats it as a configuration error and fails the sync instead of retrying, because retrying the same request never succeeds. There are two ways to resolve it:
 
 - **Remove fields from the request via the Schema Tab.** Go to your connection's Schema Tab and deselect fields you don't need for the affected stream. This reduces the number of fields included in API requests. Supported streams: `page`, `post`.
 - **Reduce page size.** Set the **Page Size** configuration parameter to a lower value (e.g., 25 or 50). This reduces the number of records fetched per API request. Supported streams: `post`, `post_insights`.
+
+### "Facebook API request contains invalid Page fields, metrics, or permissions" error
+
+Starting from version 2.1.3, the connector fails a sync with this configuration error when the Graph API rejects a request with HTTP 400 for a reason it can't retry, and includes Facebook's own error message so you can see what was rejected. Earlier versions retried these requests several times before failing, which hid the message from Facebook.
+
+To resolve it, read the Facebook message that follows the error. It usually names a Page or Post field your token isn't allowed to read, or a field Meta no longer supports. Deselect that field in the connection's **Schema** tab, or use a token with the [required permissions](#creating-your-own-oauth-app).
 
 ### Reach metrics missing from Page Insights and Post Insights
 
@@ -152,7 +158,9 @@ Starting from version 2.0.4, the `product_catalogs` field is no longer synced in
 
 Facebook heavily throttles API tokens generated from Facebook Apps by default, making it infeasible to use such a token for syncs with Airbyte. To be able to use this connector without your syncs taking days due to rate limiting, follow the instructions in the Setup Guide above to generate a Long-Lived Page Token.
 
-See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for more information on requesting a quota upgrade.
+The Graph API reports rate limits with HTTP 400 and an error code such as `4`, `17`, `32`, `613`, or `80001`, rather than with HTTP 429. Starting from version 2.1.3, the connector recognizes these codes, and any error Meta marks as transient, and retries the request with backoff instead of failing the sync. If your Page is heavily throttled, syncs slow down but don't fail on these errors.
+
+See Facebook's [documentation on rate limiting](https://developers.facebook.com/docs/graph-api/overview/rate-limiting) for the full list of codes and for information on requesting a quota upgrade.
 
 ## IP allow list
 
