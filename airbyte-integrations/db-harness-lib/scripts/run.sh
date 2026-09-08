@@ -299,7 +299,7 @@ CONFIG_TEMPLATE="${CONFIG_TEMPLATE:-${DEFAULT_CONFIG_TEMPLATE:?engine shim must 
 case " ${COMMANDS[*]} " in *" read "*)
   if [[ -z "$CATALOG" && "$SYNC_MODE" == full_refresh ]] \
     && jq -e '.replication_method.method == "CDC"' "$WORKING_CONFIG" >/dev/null; then
-    echo "[run] config uses replication_method CDC but the derived catalog would be full_refresh; pass --sync-mode=incremental --cursor-field=<cursor> --streams=<tables> (or --catalog=PATH), otherwise the connector configures no CDC streams and the read aborts with a misleading 'Saved offset no longer present' error" >&2
+    echo "[run] config uses replication_method CDC but the derived catalog would be full_refresh; pass --sync-mode=incremental --cursor-field=CURSOR --streams=TABLE1,TABLE2 (or --catalog=PATH), otherwise the connector configures no CDC streams and the read aborts with a misleading 'Saved offset no longer present' error" >&2
     exit 2
   fi
   ;;

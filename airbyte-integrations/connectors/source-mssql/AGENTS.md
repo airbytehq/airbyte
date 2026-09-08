@@ -162,7 +162,7 @@ directly.
 - **`Incumbent CDC state is invalid ... Saved offset no longer present`
   on both control and target with a fresh backend.** The derived
   catalog was `full_refresh`, so no CDC streams were configured. Pass
-  `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=<tables>`
+  `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users`
   or `--catalog=PATH`; see the
   [db-harness-lib README](../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
 

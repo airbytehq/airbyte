@@ -59,7 +59,7 @@ either an explicit `--catalog=PATH` (the CDC skills ship one, e.g.
 `fixtures/catalogs/users-cdc.json`) or derive an incremental one:
 
 ```bash
---sync-mode=incremental --cursor-field=<cursor> --streams=<tables>
+--sync-mode=incremental --cursor-field=CURSOR --streams=TABLE1,TABLE2
 ```
 
 The cursor field is the stream's source-defined CDC cursor
