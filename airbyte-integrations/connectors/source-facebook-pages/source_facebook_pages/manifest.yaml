@@ -37,6 +37,17 @@ definitions:
             still asks for. Upgrade to the latest connector version; if you are already on the
             latest version, please report it at https://github.com/airbytehq/airbyte/issues. Facebook
             returned: {{ response.get('error', {}).get('message', '') }}
+        # Facebook reports rate limits and temporary errors with HTTP 400 as well, so they must be
+        # matched before the blanket 400 filter. Filter conditions are OR-ed, so no http_codes here.
+        # Codes: https://developers.facebook.com/docs/graph-api/overview/rate-limiting/
+        - predicate: >-
+            {{ response.get('error', {}).get('is_transient', false)
+               or response.get('error', {}).get('code') in [1, 2, 4, 17, 32, 613, 80000, 80001, 80002, 80003, 80004, 80005, 80006, 80008] }}
+          action: RETRY
+          failure_type: transient_error
+          error_message: >-
+            Facebook API request hit a rate limit or temporary error.
+            Facebook returned: {{ response.get('error', {}).get('message', '') }}
         - http_codes: [400]
           action: FAIL
           failure_type: config_error

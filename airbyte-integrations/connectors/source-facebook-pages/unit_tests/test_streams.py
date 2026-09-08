@@ -155,6 +155,34 @@ def test_facebook_bad_request_fails_without_retrying():
         assert "pages_read_engagement" in output.errors[0].trace.error.internal_message
 
 
+@pytest.mark.parametrize(
+    "error",
+    [
+        pytest.param({"message": "(#4) Application request limit reached", "type": "OAuthException", "code": 4}, id="rate_limit_code"),
+        pytest.param(
+            {"message": "An unexpected error has occurred.", "type": "OAuthException", "code": 2, "is_transient": True},
+            id="is_transient",
+        ),
+    ],
+)
+def test_facebook_transient_bad_request_is_retried(error):
+    with rm.Mocker() as m:
+        m.get(ACCESS_TOKEN_URL, json={"access_token": "access"})
+        page_request = m.get(
+            PAGE_URL,
+            [
+                {"json": {"error": error}, "status_code": 400},
+                {"json": {"id": "1", "name": "page"}, "status_code": 200},
+            ],
+        )
+
+        output = read_from_stream(CONFIG, "page", SyncMode.full_refresh)
+
+        assert page_request.call_count == 2
+        assert len(output.records) == 1
+        assert not output.errors
+
+
 def test_facebook_app_approval_error_is_config_error():
     manifest = yaml.safe_load(MANIFEST_PATH.read_text())
     response_filter = manifest["definitions"]["requester"]["error_handler"]["response_filters"][0]
