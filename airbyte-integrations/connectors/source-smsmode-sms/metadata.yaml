@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: 58bf5021-0dc4-46d3-b834-bf576ee27748
-  dockerImageTag: 0.0.1
+  dockerImageTag: 0.0.2
   dockerRepository: airbyte/source-smsmode-sms
   githubIssueLabel: source-smsmode-sms
   icon: icon.svg
