@@ -242,6 +242,223 @@ streams:
               - string
             format: date-time
   - type: DeclarativeStream
+    name: application_feedback
+    primary_key:
+      - id
+    retriever:
+      type: SimpleRetriever
+      requester:
+        type: HttpRequester
+        url_base: https://api.ashbyhq.com
+        authenticator:
+          type: BasicHttpAuthenticator
+          username: "{{ config['api_key'] }}"
+          password: "{{ config['api_key'] }}"
+        path: /applicationFeedback.list
+        http_method: POST
+        request_body_json:
+          createdAfter: "{{ timestamp(config['start_date']) * 1000 }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path:
+            - results
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: cursor
+        page_size_option:
+          type: RequestOption
+          inject_into: body_json
+          field_name: limit
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response.nextCursor }}"
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        type: object
+        $schema: http://json-schema.org/draft-07/schema#
+        additionalProperties: true
+        properties:
+          id:
+            type:
+              - "null"
+              - string
+          applicationId:
+            type:
+              - "null"
+              - string
+          applicationHistoryId:
+            type:
+              - "null"
+              - string
+          feedbackFormDefinitionId:
+            type:
+              - "null"
+              - string
+          interviewId:
+            type:
+              - "null"
+              - string
+          interviewEventId:
+            type:
+              - "null"
+              - string
+          submittedAt:
+            type:
+              - "null"
+              - string
+            format: date-time
+          submittedByUser:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              firstName:
+                type:
+                  - "null"
+                  - string
+              lastName:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              globalRole:
+                type:
+                  - "null"
+                  - string
+              isEnabled:
+                type:
+                  - "null"
+                  - boolean
+              updatedAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          creditedToUser:
+            type:
+              - "null"
+              - object
+            properties:
+              id:
+                type:
+                  - "null"
+                  - string
+              firstName:
+                type:
+                  - "null"
+                  - string
+              lastName:
+                type:
+                  - "null"
+                  - string
+              email:
+                type:
+                  - "null"
+                  - string
+              globalRole:
+                type:
+                  - "null"
+                  - string
+              isEnabled:
+                type:
+                  - "null"
+                  - boolean
+              updatedAt:
+                type:
+                  - "null"
+                  - string
+                format: date-time
+          formDefinition:
+            type:
+              - "null"
+              - object
+            properties:
+              sections:
+                type:
+                  - "null"
+                  - array
+                items:
+                  type: object
+                  properties:
+                    title:
+                      type:
+                        - "null"
+                        - string
+                    fields:
+                      type:
+                        - "null"
+                        - array
+                      items:
+                        type: object
+                        properties:
+                          isRequired:
+                            type:
+                              - "null"
+                              - boolean
+                          field:
+                            type:
+                              - "null"
+                              - object
+                            properties:
+                              id:
+                                type:
+                                  - "null"
+                                  - string
+                              type:
+                                type:
+                                  - "null"
+                                  - string
+                              path:
+                                type:
+                                  - "null"
+                                  - string
+                              title:
+                                type:
+                                  - "null"
+                                  - string
+                              humanReadablePath:
+                                type:
+                                  - "null"
+                                  - string
+                              isNullable:
+                                type:
+                                  - "null"
+                                  - boolean
+                              selectableValues:
+                                type:
+                                  - "null"
+                                  - array
+                                items:
+                                  type: object
+                                  properties:
+                                    label:
+                                      type:
+                                        - "null"
+                                        - string
+                                    value:
+                                      type:
+                                        - "null"
+                                        - string
+          submittedValues:
+            type:
+              - "null"
+              - object
+            additionalProperties: true
+  - type: DeclarativeStream
     name: archive_reasons
     primary_key:
       - id
@@ -2312,6 +2529,7 @@ spec:
 metadata:
   autoImportSchema:
     applications: false
+    application_feedback: false
     archive_reasons: false
     candidate_tags: false
     candidates: false

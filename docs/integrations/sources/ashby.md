@@ -15,7 +15,7 @@ Your API key must have read permissions enabled for the modules that correspond 
 
 | Ashby permission module | Streams |
 | :--- | :--- |
-| Candidates | `applications`, `application_criteria_evaluations`, `application_history`, `candidates` |
+| Candidates | `applications`, `application_criteria_evaluations`, `application_feedback`, `application_history`, `candidates` |
 | Interviews | `interviews`, `interview_stages`, `interview_schedules` |
 | Jobs | `jobs`, `job_postings` |
 | Hiring Process | `archive_reasons`, `candidate_tags`, `custom_fields`, `feedback_form_definitions`, `sources` |
@@ -32,7 +32,7 @@ The `application_criteria_evaluations` stream requires the AI Application Review
 2. Generate an API key following the [Ashby authentication guide](https://developers.ashbyhq.com/reference/authentication). Grant the API key read permissions for the modules listed in the prerequisites. At minimum, you must enable the **Organization** read permission (required for the connection check) plus read permissions for any additional modules whose streams you want to sync.
 3. In Airbyte, create a new Ashby source.
 4. Enter your **API key**.
-5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector sends this date as the `createdAfter` filter on the `applications` and `interview_schedules` streams, so records created before it aren't replicated. The date also limits `application_criteria_evaluations` and `application_history`, because those streams read the same filtered application list to decide which applications to request child records for. All other streams ignore the start date and always return everything the API exposes.
+5. Enter a **Start date** in `YYYY-MM-DDTHH:MM:SSZ` format. The connector sends this date as the `createdAfter` filter on the `application_feedback`, `applications`, and `interview_schedules` streams, so records created before it aren't replicated. The date also limits `application_criteria_evaluations` and `application_history`, because those streams read the same filtered application list to decide which applications to request child records for. All other streams ignore the start date and always return everything the API exposes.
 
 ## Supported sync modes
 
@@ -49,6 +49,7 @@ This source syncs the following streams:
 
 - [applications](https://developers.ashbyhq.com/reference/applicationlist)
 - [application_criteria_evaluations](https://developers.ashbyhq.com/reference/applicationlistcriteriaevaluations) (substream of applications)
+- [application_feedback](https://developers.ashbyhq.com/reference/applicationfeedbacklist)
 - [application_history](https://developers.ashbyhq.com/reference/applicationlisthistory) (substream of applications)
 - [archive_reasons](https://developers.ashbyhq.com/reference/archivereasonlist)
 - [candidate_tags](https://developers.ashbyhq.com/reference/candidatetaglist)
@@ -76,6 +77,8 @@ The connector requests history one application at a time, and `application.listH
 
 If Ashby returns an `application_not_found` error for an application, which happens when the application is deleted or your API key can't access it, the connector skips that application's history, logs the Ashby request ID, and continues. It retries HTTP 429 and 5xx responses. Any other error fails the sync.
 
+The `application_feedback` stream returns submitted interview scorecards, one record per feedback form submission, with the `submittedValues` an interviewer entered and the `formDefinition` that was in effect when the form was submitted. Join `applicationId` to `applications.id`, `interviewId` to `interviews.id`, and `feedbackFormDefinitionId` to `feedback_form_definitions.id`. `submittedValues` is a free-form object keyed by each field's `path`, so the connector doesn't declare its keys. For select fields, it holds the stored option value, such as `hire`, rather than the display label, such as `Hire`. To get labels, map each value through `formDefinition.sections[].fields[].field.selectableValues` on the same record, not through the current `feedback_form_definitions` stream, because a form definition can change after feedback is submitted. The `creditedToUser` field was added to the Ashby API on 2026-07-21 and may be null on older records. This endpoint requires the **Candidates** read permission.
+
 The `interviews` stream returns interview definitions, which are the interview types configured in your Ashby account, such as a technical phone screen. It doesn't return scheduled interviews. Each record carries the definition's `title`, `externalTitle`, instructions, feedback settings, and `feedbackFormDefinitionId`. For interviews that were actually scheduled, along with their times and interviewers, use `interview_schedules`.
 
 Starting in version 1.2.0, the connector sends `includeNonSharedInterviews: true`, so definitions that belong to a single job sync alongside shared ones. Use `jobId` to tell them apart: it holds the job the definition belongs to, and is null for shared definitions, which can be scheduled against any job. The connector leaves Ashby's `includeArchived` parameter at its default of `false`, so archived definitions aren't synced.
@@ -101,6 +104,7 @@ Version 1.0.0 declares element schemas for array columns that the connector prev
 
 | Version | Date       | Pull Request                                             | Subject                                     |
 |:--------| :--------- | :------------------------------------------------------- |:--------------------------------------------|
+| 1.3.0 | 2026-09-08 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Add `application_feedback` stream |
 | 1.2.1 | 2026-09-08 | [85402](https://github.com/airbytehq/airbyte/pull/85402) | Update dependencies |
 | 1.2.0 | 2026-08-29 | [85183](https://github.com/airbytehq/airbyte/pull/85183) | Declare the interview definition fields `interview.list` actually returns on the `interviews` stream, and request non-shared (job-specific) interviews |
 | 1.1.0 | 2026-08-25 | [84392](https://github.com/airbytehq/airbyte/pull/84392) | Add application history stream |
