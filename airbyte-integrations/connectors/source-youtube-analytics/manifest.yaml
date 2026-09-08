@@ -55,6 +55,11 @@ definitions:
                 $ref: "#/definitions/streams/jobs"
       incremental_sync:
         type: DatetimeBasedCursor
+        # The cursor is the newest report file's `createTime`, NOT a data date. The key is
+        # named `date` only to keep existing saved state working. YouTube re-issues corrected
+        # reports with a new id and createTime but the SAME startTime, so keying on startTime
+        # silently drops every correction.
+        # https://developers.google.com/youtube/reporting/v1/reports (Backfill data)
         cursor_field: date
         cursor_datetime_formats:
           - "%Y-%m-%dT%H:%M:%S.%fZ"
