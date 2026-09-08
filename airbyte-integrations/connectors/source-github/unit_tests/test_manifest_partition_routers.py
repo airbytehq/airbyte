@@ -90,3 +90,56 @@ def test_repository_partition_router_explicit_repos_only(rate_limit_mock_respons
     partitions = [stream_slice.partition for stream_slice in router.stream_slices()]
 
     assert partitions == [{"repository": "airbytehq/integration-test"}]
+
+
+_USER_WILDCARD_CONFIG = {
+    "credentials": {"access_token": "test_token"},
+    # `octocat` is a user account, not an organization: `orgs/octocat/repos` 404s, and the repo is
+    # reachable only as an explicit entry.
+    "repositories": ["octocat/*", "octocat/hello-world"],
+}
+
+
+def _mock_user_wildcard_api(requests_mock):
+    requests_mock.get("https://api.github.com/orgs/octocat/repos", status_code=404, json={"message": "Not Found"})
+    requests_mock.get(
+        "https://api.github.com/repos/octocat/hello-world",
+        json={"id": 5, "full_name": "octocat/hello-world", "owner": {"login": "octocat"}},
+    )
+
+
+def test_organization_resolution_router_omits_wildcard_user_login(rate_limit_mock_response, requests_mock):
+    """A wildcard whose owner is a user must not produce an organization partition.
+
+    Deriving the org from config text put `octocat` on `Organizations`, `Teams` and `Users`,
+    where every request to `orgs/octocat` 404s.
+    """
+    _mock_user_wildcard_api(requests_mock)
+    router = _build_router("organization_resolution_partition_router", _USER_WILDCARD_CONFIG)
+
+    assert list(router.stream_slices()) == []
+
+
+def test_organization_partition_router_still_attempts_wildcard_login(rate_limit_mock_response, requests_mock):
+    """The `repositories` stream keeps the unverified candidate on purpose.
+
+    It has to issue `orgs/{login}/repos` to find out whether the login is an organization;
+    a 404 there is skipped by the requester's error handler.
+    """
+    _mock_user_wildcard_api(requests_mock)
+    router = _build_router("organization_partition_router", _USER_WILDCARD_CONFIG)
+
+    partitions = [stream_slice.partition for stream_slice in router.stream_slices()]
+
+    assert partitions == [{"organization": "octocat"}]
+
+
+def test_organization_resolution_router_keeps_payload_confirmed_orgs(rate_limit_mock_response, requests_mock):
+    """A wildcard whose owner really is an org resolves through the repo listing's `owner/login`."""
+    _mock_github_api(requests_mock)
+    router = _build_router("organization_resolution_partition_router", _CONFIG)
+
+    partitions = [stream_slice.partition for stream_slice in router.stream_slices()]
+
+    assert sorted(partition["organization"] for partition in partitions) == ["airbytehq", "docker"]
+    assert all(set(partition) == {"organization"} for partition in partitions)
