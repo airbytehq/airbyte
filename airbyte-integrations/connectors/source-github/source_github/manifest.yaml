@@ -1383,7 +1383,12 @@ definitions:
           # read as true, and stop pagination after the first page. `is string` for the same class
           # of reason: `JinjaInterpolation._eval` swallows a TypeError and returns the raw
           # template, which reads as true, so comparing a null `created_at` with `<` would stop
-          # the walk and lose every page behind it.
+          # the walk and lose every page behind it. The `length` test beside it is belt and braces
+          # by comparison: indexing an empty list raises UndefinedError, which
+          # `JinjaInterpolation.eval` already resolves to this expression's False default.
+          #
+          # `[-1]` is the oldest run on the page. The listing is `created_at` descending, so the
+          # head of a page says nothing about whether the next page is still inside the window.
           stop_condition: >-
             {{ (config.get('start_date') or '') != ''
             and (response.get('workflow_runs') or []) | length > 0
@@ -1411,9 +1416,10 @@ definitions:
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
-      # Only the fields this stream is read for: the cursor, the run URL and attempt count the
-      # child slices on, and `created_at`, which the paginator's stop condition compares against
-      # the re-run window. The records are never emitted to a destination.
+      # Only the fields this stream is read for: the cursor, the run URL and the attempt count
+      # the child slices on. `created_at` is listed for documentation - the paginator's stop
+      # condition compares it against the re-run window, but it reads the decoded body directly,
+      # so the schema is not what makes it available. The records are never emitted anywhere.
       schema:
         $schema: https://json-schema.org/draft-07/schema#
         type: object
@@ -1512,14 +1518,16 @@ definitions:
           # expression that can raise is an expression that silently stops the walk.
           # The regex is not anchored on the end of the string: `.../attempts/3/` and
           # `.../attempts/3?x=1` would both fail to match an anchored pattern, and the guard would
-          # then wave through exactly the malformed links it exists to catch.
+          # then wave through exactly the malformed links it exists to catch. A link that is on
+          # this run but carries no attempt number the regex can read is itself the proof - there
+          # is nothing to descend to - so that case stops rather than spending a request on it.
           stop_condition: >-
             {{ not response.get('previous_attempt_url')
             or (response.get('url') is string
             and not response['previous_attempt_url'].startswith(response['url'] ~ '/attempts/'))
             or (response.get('run_attempt') is number
-            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') or '') != ''
-            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') | int) >= response['run_attempt']) }}
+            and ((response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') or '') == ''
+            or (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)(?:[/?#]|$)') | int) >= response['run_attempt'])) }}
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:

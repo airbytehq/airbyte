@@ -3,6 +3,7 @@
 #
 
 import logging
+from unittest.mock import patch
 
 import jsonschema
 import pytest
@@ -582,6 +583,24 @@ def test_the_state_the_connector_emits_can_be_fed_back_to_it(rate_limit_mock_res
     assert _keys(second_records) == [(1, 1)]
 
 
+def _looping_attempt_responder(run_url, attempt_number, link, gives_up_after):
+    """An attempt endpoint that keeps pointing the walk back at itself, then relents.
+
+    Bounded on purpose. A `requests_mock` payload that loops forever turns a broken loop guard into
+    a hung suite - no failing test name, no diff, just a job that burns to the CI timeout. Relenting
+    after `gives_up_after` calls lets the guard's absence show up as a request count instead.
+    """
+    calls = {"n": 0}
+
+    def responder(request, context):
+        calls["n"] += 1
+        body = _attempt(2, attempt_number, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T11:00:00Z")
+        body["previous_attempt_url"] = link if calls["n"] <= gives_up_after else None
+        return body
+
+    return responder
+
+
 @pytest.mark.parametrize(
     "broken_link",
     [
@@ -589,6 +608,15 @@ def test_the_state_the_connector_emits_can_be_fed_back_to_it(rate_limit_mock_res
         pytest.param(lambda url, n: f"{url}/attempts/{n}", id="self_referential"),
         # A link that climbs instead of descending, which oscillates between two attempts.
         pytest.param(lambda url, n: f"{url}/attempts/{n + 1}", id="ascending"),
+        # An anchored regex would match neither of these and wave the link through, which is
+        # precisely backwards: they are the malformed shapes the guard exists to catch.
+        pytest.param(lambda url, n: f"{url}/attempts/{n}/", id="trailing_slash"),
+        pytest.param(lambda url, n: f"{url}/attempts/{n}?per_page=1", id="query_string"),
+        pytest.param(lambda url, n: f"{url}/attempts/{n}#frag", id="fragment"),
+        # A link that leaves the run entirely.
+        pytest.param(lambda url, n: "https://api.github.com/repos/org/repos/actions/runs/999/attempts/1", id="different_run"),
+        # A link with no attempt number to compare at all.
+        pytest.param(lambda url, n: f"{url}/attempts/abc", id="non_numeric"),
     ],
 )
 def test_a_chain_that_does_not_descend_is_cut_off(rate_limit_mock_response, requests_mock, broken_link):
@@ -596,22 +624,17 @@ def test_a_chain_that_does_not_descend_is_cut_off(rate_limit_mock_response, requ
     so a `previous_attempt_url` that fails to descend would page until the platform kills the sync.
     The guard stops on positive proof of non-descent."""
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(2, run_attempt=3, updated_at="2022-02-02T12:05:00Z", created_at="2022-02-02T10:00:00Z")])
+    _mock_runs(requests_mock, [_run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")])
     run_url = f"{RUNS_URL}/2"
-    for attempt_number in (2, 3):
-        requests_mock.get(
-            f"{run_url}/attempts/{attempt_number}",
-            json={
-                **_attempt(2, attempt_number, updated_at="2022-02-02T12:05:00Z", created_at="2022-02-02T12:00:00Z"),
-                "previous_attempt_url": broken_link(run_url, attempt_number),
-            },
-        )
+    requests_mock.get(f"{run_url}/attempts/2", json=_looping_attempt_responder(run_url, 2, broken_link(run_url, 2), 5))
+    requests_mock.get(f"{run_url}/attempts/3", json=_looping_attempt_responder(run_url, 3, broken_link(run_url, 3), 5))
+    _mock_attempts(requests_mock, [_attempt(2, 1, updated_at="2022-02-02T10:04:00Z", created_at="2022-02-02T10:00:00Z")])
 
     records, statuses, _ = _read(CONFIG)
 
     assert statuses[-1] == "COMPLETE"
-    assert len(_attempt_requests(requests_mock)) <= 2
-    assert {record["id"] for record in records} == {2}
+    assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/2/attempts/2"]
+    assert _keys(records) == [(2, 2)]
 
 
 def test_a_non_integer_run_attempt_is_skipped_and_does_not_truncate_the_chain(rate_limit_mock_response, requests_mock):
@@ -702,6 +725,53 @@ def test_a_page_tail_without_a_usable_created_at_does_not_end_the_listing(rate_l
     assert (2, 1) in _keys(records)
 
 
+def test_the_break_fires_on_a_page_whose_records_are_all_older_than_the_cursor(rate_limit_mock_response, requests_mock):
+    """The case the break exists for, and the one an obvious implementation gets wrong.
+
+    `SimpleRetriever` sets `last_record` from records that survived the record selector, and this
+    stream's selector filters on the cursor. Deep pages of an old listing therefore contribute no
+    surviving record at all, so a stop condition reading `last_record` never fires and the sync
+    pages the repository's whole history. The condition reads the raw page tail instead.
+    """
+    _mock_repository(requests_mock)
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    # Everything on page 1 is far below the cursor, so the record selector drops all of it.
+    _paged_listing(
+        requests_mock,
+        [_run(1, updated_at="2021-01-02T10:05:00Z", created_at="2021-01-01T10:00:00Z")],
+        [_run(2, updated_at="2020-01-02T10:05:00Z", created_at="2020-01-01T10:00:00Z")],
+    )
+
+    records, statuses, _ = _read(config, state=_state("2022-07-01T00:00:00Z"))
+
+    assert statuses[-1] == "COMPLETE"
+    assert records == []
+    assert len(_listing_requests(requests_mock)) == 1
+
+
+def test_a_page_tail_without_a_usable_created_at_does_not_end_the_listing(rate_limit_mock_response, requests_mock):
+    """`JinjaInterpolation._eval` swallows a TypeError and returns the raw template, which
+    `InterpolatedBoolean` reads as true — so comparing a null `created_at` with `<` would stop the
+    walk and lose every page behind it, on a green sync."""
+    _mock_repository(requests_mock)
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    head = _run(1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z")
+    head["created_at"] = None
+    _paged_listing(requests_mock, [head], [_run(2, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z")])
+    _mock_attempts(
+        requests_mock,
+        [
+            _attempt(1, 1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z"),
+            _attempt(2, 1, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z"),
+        ],
+    )
+
+    records, _, _ = _read(config)
+
+    assert len(_listing_requests(requests_mock)) == 2
+    assert (2, 1) in _keys(records)
+
+
 @pytest.mark.parametrize(
     "link",
     [
@@ -730,3 +800,197 @@ def test_a_malformed_attempt_link_is_not_followed(rate_limit_mock_response, requ
     assert statuses[-1] == "COMPLETE"
     assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/2/attempts/2"]
     assert _keys(records) == [(2, 2)]
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        pytest.param("/repos/org/repos/actions/runs", id="run_listing"),
+        pytest.param("/repos/org/repos/actions/runs/1/attempts/1", id="attempt"),
+    ],
+)
+@patch("time.sleep")
+def test_a_secondary_rate_limit_is_waited_out_not_skipped(sleep_mock, rate_limit_mock_response, requests_mock, endpoint):
+    """GitHub reports a secondary rate limit as a 403, and leaves `X-RateLimit-Remaining` positive.
+
+    Both new error handlers skip a 403 instead of failing, which is what a repository the token
+    cannot read Actions for needs — but the rate-limit filters have to stay ahead of that skip in
+    the filter list, or a throttled response is read as "no access" and the page is dropped for
+    good while the cursor advances past it. Three hand-maintained copies of that ordering exist;
+    this is what keeps them honest.
+    """
+    _mock_repository(requests_mock)
+    throttled = {
+        "status_code": 403,
+        "headers": {"X-RateLimit-Remaining": "4999", "X-RateLimit-Reset": "0"},
+        "json": {"message": "You have exceeded a secondary rate limit. Please wait a few minutes before you try again."},
+    }
+    listing = {"json": {"total_count": 1, "workflow_runs": [_run(1)]}}
+    attempt = {"json": _attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")}
+    requests_mock.get(RUNS_URL, [throttled, listing] if endpoint.endswith("runs") else [listing])
+    requests_mock.get(f"{RUNS_URL}/1/attempts/1", [throttled, attempt] if endpoint.endswith("1") else [attempt])
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(1, 1)]
+    assert sleep_mock.called
+
+
+def test_a_403_on_one_attempt_does_not_fail_the_stream(rate_limit_mock_response, requests_mock):
+    """A fine-grained token can list a repository's runs and still be denied `Actions: read` on
+    one of them. The shared handler would turn that into a `config_error` that ends the sync."""
+    _mock_repository(requests_mock)
+    _mock_runs(requests_mock, [_run(1), _run(2, updated_at="2022-02-03T10:05:00Z", created_at="2022-02-03T10:00:00Z")])
+    _mock_attempts(requests_mock, [_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")])
+    requests_mock.get(f"{RUNS_URL}/2/attempts/1", status_code=403, json={"message": "Resource not accessible by integration"})
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(1, 1)]
+
+
+@patch("time.sleep")
+def test_a_200_carrying_retry_after_on_an_attempt_is_kept(sleep_mock, rate_limit_mock_response, requests_mock):
+    """A proxy, a CDN or GHES can throttle on its own account and still answer 200. Without the
+    `SUCCESS` short-circuit ahead of the rate-limit filters, that response is classified
+    RATE_LIMITED, its record discarded, and the stream fails once retries run out."""
+    _mock_repository(requests_mock)
+    _mock_runs(requests_mock, [_run(1)])
+    requests_mock.get(
+        f"{RUNS_URL}/1/attempts/1",
+        json=_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z"),
+        headers={"Retry-After": "120"},
+    )
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(1, 1)]
+    assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/1/attempts/1"]
+    # `time.sleep` is patched so that losing the short-circuit fails in seconds rather than after
+    # the full retry ladder — a ten-minute red build reads as a hang, not as a regression.
+    assert not sleep_mock.called
+
+
+def test_a_404_on_the_run_listing_skips_that_repository(rate_limit_mock_response, requests_mock):
+    """A repository deleted or renamed between resolution and read must not fail the others."""
+    _mock_repository(requests_mock, "org/repos")
+    _mock_repository(requests_mock, "org/other", repo_id=2)
+    _mock_runs(requests_mock, [_run(1)], full_name="org/repos")
+    _mock_attempts(requests_mock, [_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")])
+    requests_mock.get("https://api.github.com/repos/org/other/actions/runs", status_code=404, json={"message": "Not Found"})
+
+    records, statuses, _ = _read({**CONFIG, "repositories": ["org/repos", "org/other"]})
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(1, 1)]
+
+
+def test_the_break_reads_the_oldest_run_on_the_page_not_the_newest(rate_limit_mock_response, requests_mock):
+    """The listing is `created_at` descending, so only the tail of a page says anything about
+    whether the next page is still inside the re-run window. Reading the head instead would page on
+    past the window, and single-record pages cannot tell the two apart."""
+    _mock_repository(requests_mock)
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    # The window opens at 2022-05-14. The head of page 1 is inside it, the tail is below.
+    _paged_listing(
+        requests_mock,
+        [
+            _run(1, updated_at="2022-06-20T10:05:00Z", created_at="2022-06-01T10:00:00Z"),
+            _run(2, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-13T10:00:00Z"),
+        ],
+        [_run(3, updated_at="2022-06-22T10:05:00Z", created_at="2022-01-01T10:00:00Z")],
+    )
+    _mock_attempts(
+        requests_mock,
+        [
+            _attempt(1, 1, updated_at="2022-06-20T10:05:00Z", created_at="2022-06-01T10:00:00Z"),
+            _attempt(2, 1, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-13T10:00:00Z"),
+        ],
+    )
+
+    records, _, _ = _read(config)
+
+    assert len(_listing_requests(requests_mock)) == 1
+    assert _keys(records) == [(1, 1), (2, 1)]
+
+
+@pytest.mark.parametrize(
+    "tail_created_at,expected_pages",
+    [
+        # The window is `start_date - 32 days` = 2022-05-14. A tail on 2022-05-15 is inside it, and
+        # would be outside a 30-day window — so this case is what pins the constant itself.
+        pytest.param("2022-05-15T10:00:00Z", 2, id="inside_a_32_day_window_but_not_a_30_day_one"),
+        # Exactly on the boundary. The comparison is strict, so this page is not the last one.
+        pytest.param("2022-05-14T00:00:00Z", 2, id="exactly_on_the_boundary"),
+        # One second below it.
+        pytest.param("2022-05-13T23:59:59Z", 1, id="one_second_below_the_boundary"),
+    ],
+)
+def test_the_break_is_exactly_32_days_wide(rate_limit_mock_response, requests_mock, tail_created_at, expected_pages):
+    _mock_repository(requests_mock)
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    _paged_listing(
+        requests_mock,
+        [_run(1, updated_at="2021-01-01T10:05:00Z", created_at=tail_created_at)],
+        [_run(2, updated_at="2021-01-01T10:05:00Z", created_at="2020-01-01T10:00:00Z")],
+    )
+
+    _read(config)
+
+    assert len(_listing_requests(requests_mock)) == expected_pages
+
+
+def test_the_discovered_schema_covers_exactly_the_attempt_payload(rate_limit_mock_response, requests_mock):
+    """The inline schema was hand-copied from the `workflow_runs` stream's file, and the attempt
+    endpoint is a different endpoint. CAT gives this stream no live coverage — the acceptance
+    repository has no workflow runs at all — so nothing else would notice a property being dropped
+    or a new one going undeclared."""
+    _mock_repository(requests_mock)
+    source = SourceGithub(config=dict(CONFIG), catalog=_catalog(), state=None)
+
+    schema = next(
+        stream for stream in source.discover(logging.getLogger("airbyte"), dict(CONFIG)).streams if stream.name == "workflow_run_attempts"
+    ).json_schema
+
+    # Verified against a live `GET /actions/runs/{id}/attempts/{n}` response: the attempt endpoint
+    # returns this key set exactly, no more and no less.
+    assert set(schema["properties"]) == {
+        "actor",
+        "artifacts_url",
+        "cancel_url",
+        "check_suite_id",
+        "check_suite_node_id",
+        "check_suite_url",
+        "conclusion",
+        "created_at",
+        "display_title",
+        "event",
+        "head_branch",
+        "head_commit",
+        "head_repository",
+        "head_sha",
+        "html_url",
+        "id",
+        "jobs_url",
+        "logs_url",
+        "name",
+        "node_id",
+        "path",
+        "previous_attempt_url",
+        "pull_requests",
+        "referenced_workflows",
+        "repository",
+        "rerun_url",
+        "run_attempt",
+        "run_number",
+        "run_started_at",
+        "status",
+        "triggering_actor",
+        "updated_at",
+        "url",
+        "workflow_id",
+        "workflow_url",
+    }

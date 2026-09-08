@@ -170,7 +170,7 @@ This connector outputs the following incremental streams:
    the window is decided as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that
    run's attempts are then emitted, including ones last updated before the cursor.
 
-   Four things worth planning for before you enable it:
+   Five things worth planning for before you enable it:
 
    - **The first sync is the expensive one, and a repository is all-or-nothing.** It reads every attempt of every run
      created since the **Start Date**, so budget about one request per run. An authenticated token is limited to 5,000
@@ -180,7 +180,7 @@ This connector outputs the following incremental streams:
    - **Start Date bounds the recurring cost too, not just the first read.** Every sync pages the run listing back to
      **Start Date** minus 32 days, whether or not anything changed, because GitHub allows a workflow to be re-run for 32
      days after it was created and the listing is ordered by creation date. On a repository producing ~275 runs a day, a
-     Start Date two years old costs about 2,170 listing requests on every sync before a single attempt is fetched, and
+     Start Date two years old costs about 2,100 listing requests on every sync before a single attempt is fetched, and
      that figure grows as the Start Date recedes. Moving **Start Date** forward is the only lever that shrinks it.
    - **The run listing is read more than once per sync, at different depths.** `workflow_run_attempts` pages it back to
      Start Date minus 32 days; `workflow_runs` and `workflow_jobs`, if you also select them, each page it again but only
@@ -198,7 +198,7 @@ This connector outputs the following incremental streams:
    log line rather than failing the sync - so an empty `workflow_run_attempts` can also mean a missing `workflow` scope
    (classic token) or `Actions: read` permission (fine-grained token), not just an absence of re-runs.
 
-3. Other 19 incremental streams are also incremental but with one difference, they:
+3. Other 20 incremental streams are also incremental but with one difference, they:
 
    - read all records;
    - output only new records.
@@ -266,7 +266,7 @@ For example, a connection syncing `docker/*` since 2026-01-01 that you widen to 
 
 To pull the full history of a newly added repository or organization, clear the affected streams (or refresh the connection) after saving the new value, then sync. Each stream then re-reads from the beginning of the range it supports — your configured **Start date** for streams that honor it, and everything available for the streams listed above that do not.
 
-This currently affects the `repositories` stream. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
+This currently affects the `repositories` and `workflow_run_attempts` streams. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
 
 #### GitHub Enterprise Server with rate limiting disabled
 

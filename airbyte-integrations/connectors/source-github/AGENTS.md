@@ -82,6 +82,40 @@ streams and for slices that carry no `partition` key — several substreams read
 calling `read_records` directly with a bare mapping, and those parents are shared instances whose
 STATE would otherwise gain a meaningless `{"partition": {}}` entry.
 
+## Workflow run attempts: three traps, all silent
+
+`workflow_run_attempts` is the first manifest stream that is not just a resolver, and every one of
+these cost a review round. They are enforced by `unit_tests/test_workflow_run_attempts.py`; if a
+test there starts failing, read this before "fixing" it.
+
+**Never filter the child on the attempt's own cursor.** `GET /actions/runs` returns one record per
+run — the latest attempt — so earlier attempts are only reachable through the per-attempt endpoint.
+A sync landing between the first attempt finishing and the re-run starting leaves the cursor above
+attempt 1's `updated_at`. If the child filters on its own records, attempt 1 is dropped and no later
+sync revisits it, because the run's cursor has already moved past. Gating belongs on the parent run;
+the child's cursor exists only so `incremental_dependency` persists parent state.
+
+**Never put a filter parameter on the run listing.** GitHub caps `GET /actions/runs` at 1000 results
+whenever `actor`, `branch`, `check_suite_id`, `created`, `event`, `head_sha` or `status` is present,
+and it truncates invisibly: measured on a 23352-run repository, `created=>=1970-01-01` served pages
+1-10 with `total_count: 23352` and then answered page 11 with an empty array, `total_count: 0` and no
+`rel="next"`. The unfiltered listing returned 100 records on page 20 of the same repository. The
+32-day re-run window is applied as a paginator `stop_condition` for this reason.
+
+**A JSON-Schema `$ref` to a file does not work inside a manifest.** The manifest reference resolver
+claims every `$ref` key, and for a non-`#/` target it returns the raw string and discards the sibling
+keys — so a property copied from `schemas/*.json` as `{$ref: user.json, description: ...}` collapses
+to the literal string `"user.json"` and the published schema stops being valid JSON Schema. Shared
+sub-schemas belong in `definitions` and are referenced with `#/definitions/...`.
+
+Two more things that bite when reading that stream's manifest. A paginator `stop_condition` is
+evaluated with `config`, `response`, `headers`, `last_record` and `last_page_size` only — never the
+cursor or the slice — and `last_record` is assigned *after* the record selector has run, so on a
+client-side-incremental stream it is empty on exactly the pages a break needs to fire on. And
+`JinjaInterpolation._eval` swallows a `TypeError` and returns the raw template, which
+`InterpolatedBoolean` reads as **true**: an expression in a stop condition that can raise is an
+expression that silently ends pagination.
+
 ## Incremental Stream Considerations
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting. The connector is a Python CDK connector with stream classes extending `GithubStream`.
