@@ -242,7 +242,13 @@
         "state": { "updated_at": "2121-12-31T23:59:59Z" },
         "parent_state": {
           "workflow_runs_for_attempts": {
-            "use_global_cursor": true,
+            "use_global_cursor": false,
+            "states": [
+              {
+                "partition": { "repository": "airbytehq/integration-test" },
+                "cursor": { "updated_at": "2121-12-31T23:59:59Z" }
+              }
+            ],
             "state": { "updated_at": "2121-12-31T23:59:59Z" }
           }
         }

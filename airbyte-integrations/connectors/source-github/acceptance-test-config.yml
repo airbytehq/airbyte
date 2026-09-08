@@ -26,7 +26,7 @@ acceptance_tests:
           - name: "events"
             bypass_reason: "Only events created within the past 90 days can be showed. Stream is tested with integration tests."
           - name: "workflow_run_attempts"
-            bypass_reason: "The test repository has no workflow runs, so there are no attempts to read. Stream is covered by unit tests."
+            bypass_reason: "airbytehq/integration-test reports total_count 0 for GET /actions/runs, so there is no run to read an attempt of. Covered by unit tests instead."
   incremental:
     tests:
       - config_path: "secrets/config.json"

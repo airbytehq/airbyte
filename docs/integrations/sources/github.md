@@ -170,16 +170,29 @@ This connector outputs the following incremental streams:
    the window is decided as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that
    run's attempts are then emitted, including ones last updated before the cursor.
 
-   Two consequences worth planning for:
+   Four things worth planning for before you enable it:
 
-   - **The first sync is the expensive one.** It reads every attempt of every run created since the **Start Date**, so
-     budget about one request per run. An authenticated token is limited to 5,000 requests an hour, so a repository with
-     100,000 historical runs needs on the order of a day of syncing before it catches up. **Set a recent Start Date
-     before enabling this stream on a busy repository** - it is the only setting that bounds the initial sync. Adding
-     more tokens to **Personal Access Token** raises the ceiling proportionally.
-   - **Selecting `workflow_runs` alongside it does not come for free.** The two streams cannot share a read yet, so the
-     run listing is paginated twice per sync. Steady-state incremental syncs are otherwise cheap: one request per run
-     whose `updated_at` moved since the last sync, plus one per additional attempt.
+   - **The first sync is the expensive one, and it is all-or-nothing.** It reads every attempt of every run created
+     since the **Start Date**, so budget about one request per run. An authenticated token is limited to 5,000 requests
+     an hour, which puts a 100,000-run repository at roughly 20 hours. That work does not accumulate across syncs: the
+     cursor for a repository only advances once that repository has been read to the end, so a sync that is interrupted
+     part-way starts over. **Set a recent Start Date before enabling this stream on a busy repository** - it is the only
+     setting that bounds the initial read.
+   - **More tokens help, up to a point.** The connector holds itself to GitHub's documented 900 requests per minute
+     secondary limit across all tokens, so throughput stops improving at around eleven tokens (11 x 5,000/hour is
+     already 900/minute).
+   - **The run listing is read more than once per sync.** `workflow_run_attempts` pages it, and if you also select
+     `workflow_runs` it is paged again, and again for `workflow_jobs` - the streams cannot share a read yet. On a
+     repository with a long history that fixed cost dominates a quiet sync, since the listing is paged back to
+     `Start Date` minus 32 days whether or not anything changed. The variable cost is small: one request per run whose
+     `updated_at` moved since the last sync, plus one per additional attempt.
+   - **It runs before everything else.** Manifest-backed streams are read before the rest of the catalog, so enabling
+     this one puts every other stream behind it, and a rate-limit failure inside it ends the sync before they start. If
+     that matters, give it its own connection.
+
+   If the token cannot read Actions for a repository, GitHub answers 403 and the connector skips that repository with a
+   log line rather than failing the sync - so an empty `workflow_run_attempts` can also mean a missing `workflow` scope
+   (classic token) or `Actions: read` permission (fine-grained token), not just an absence of re-runs.
 
 3. Other 19 incremental streams are also incremental but with one difference, they:
 
@@ -282,7 +295,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.3.0 | 2026-09-07 | [85378](https://github.com/airbytehq/airbyte/pull/85378) | Add `workflow_run_attempts` stream: every attempt of a workflow run, keyed on `[id, run_attempt]`, since `workflow_runs` only ever returns the latest attempt |
+| 2.3.0 | 2026-09-08 | [85378](https://github.com/airbytehq/airbyte/pull/85378) | Add `workflow_run_attempts` stream: every attempt of a workflow run, keyed on `[id, run_attempt]`, since `workflow_runs` only ever returns the latest attempt |
 | 2.2.2 | 2026-09-01 | [85253](https://github.com/airbytehq/airbyte/pull/85253) | Fix syncs hanging until the platform heartbeat timeout when a wildcard repository entry (`owner/*`) names a user account instead of an organization: the org-scoped streams no longer receive an unverified login, and a skipped stream slice can no longer be retried indefinitely |
 | 2.2.1 | 2026-09-01 | [85244](https://github.com/airbytehq/airbyte/pull/85244) | Update dependencies |
 | 2.2.0 | 2026-08-27 | [81428](https://github.com/airbytehq/airbyte/pull/81428) | Declarative migration Step 2 - multi-token auth shared by all streams (now rotates off a rate-limited token instead of waiting for its reset), spec in manifest, declarative Repositories stream, new optional `num_workers` setting for concurrent partition reads, a request budget matching GitHub's 900-points/minute secondary rate limit, Max Waiting Time now bounding every rate-limit wait so Test connection fails fast instead of sleeping until the reset, and support for GitHub Enterprise Server instances with rate limiting disabled |

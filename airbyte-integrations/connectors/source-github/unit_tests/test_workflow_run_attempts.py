@@ -99,7 +99,8 @@ def _state(cursor_value):
                         "state": {"updated_at": cursor_value},
                         "parent_state": {
                             "workflow_runs_for_attempts": {
-                                "use_global_cursor": True,
+                                "use_global_cursor": False,
+                                "states": [{"partition": {"repository": "org/repos"}, "cursor": {"updated_at": cursor_value}}],
                                 "state": {"updated_at": cursor_value},
                             }
                         },
@@ -289,55 +290,109 @@ def test_state_tracks_the_run_cursor_and_carries_parent_state(rate_limit_mock_re
     assert parent["states"] == [{"partition": {"repository": "org/repos"}, "cursor": {"updated_at": "2022-02-02T11:05:00Z"}}]
 
 
-@pytest.mark.parametrize(
-    "state_value,expected_created",
-    [
-        pytest.param(None, ">=2021-11-30", id="first_sync_uses_the_config_start_date"),
-        pytest.param("2022-06-15T00:00:00Z", ">=2022-05-14", id="resumed_sync_uses_the_cursor"),
-    ],
-)
-def test_listing_is_bounded_to_the_32_day_rerun_window(rate_limit_mock_response, requests_mock, state_value, expected_created):
-    """GitHub refuses to re-run a workflow more than 32 days after it was created, so no run created
-    before that window can still be updated after the cursor. Bounding `created` server-side is what
-    keeps an incremental sync from walking the repository's entire run history, and replaces the
-    legacy pagination break in `WorkflowRuns.read_records`."""
+def _paged_listing(requests_mock, first_page, second_page):
+    """Two listing pages joined by a `Link: rel="next"` header, the way GitHub serves them."""
+    page_two = f"{RUNS_URL}?per_page=100&page=2"
+    requests_mock.get(
+        RUNS_URL,
+        [
+            {"json": {"total_count": 2, "workflow_runs": first_page}, "headers": {"Link": f'<{page_two}>; rel="next"'}},
+            {"json": {"total_count": 2, "workflow_runs": second_page}},
+        ],
+    )
+
+
+def _listing_requests(requests_mock):
+    return [request for request in requests_mock.request_history if request.path == "/repos/org/repos/actions/runs"]
+
+
+def test_the_listing_is_never_filtered_server_side(rate_limit_mock_response, requests_mock):
+    """GitHub caps this endpoint at 1000 results as soon as `actor`, `branch`, `check_suite_id`,
+    `created`, `event`, `head_sha` or `status` is present, and truncates without saying so: page 11
+    of a 23352-run repository comes back empty, with `total_count: 0` and no `rel="next"`. Since the
+    cursor advances anyway, a filtered listing would drop history that no later sync goes back for.
+    """
     _mock_repository(requests_mock)
     _mock_runs(requests_mock, [])
 
-    _read(CONFIG, state=_state(state_value) if state_value else None)
+    _read(CONFIG)
 
-    listing = next(request for request in requests_mock.request_history if request.path == "/repos/org/repos/actions/runs")
-    assert listing.qs["created"] == [expected_created]
-    assert listing.qs["per_page"] == ["100"]
+    assert set(_listing_requests(requests_mock)[0].qs) == {"per_page"}
 
 
-def test_no_start_date_still_asks_for_the_whole_history(rate_limit_mock_response, requests_mock):
-    """`start_date` is optional, and GitHub answers a pre-1970 `created` bound with HTTP 200 and
-    `total_count: 0` rather than an error — so without the epoch clamp in the manifest this
-    (very common) config would sync nothing at all, silently and on a green run."""
+def test_pagination_stops_below_the_32_day_rerun_window(rate_limit_mock_response, requests_mock):
+    """The legacy pagination break. GitHub refuses to re-run a workflow more than 32 days after it
+    was created, so a page that ends below `start_date - 32 days` is the last page worth reading —
+    nothing further down the `created_at`-descending listing can have been updated since."""
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(1)])
-    _mock_attempts(requests_mock, [_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")])
-    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["org/repos"]}
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    # 2022-05-13 is one day below the window, which opens at 2022-05-14.
+    _paged_listing(
+        requests_mock,
+        [_run(1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-13T10:00:00Z")],
+        [_run(2, updated_at="2022-06-20T10:05:00Z", created_at="2022-01-01T10:00:00Z")],
+    )
+    _mock_attempts(requests_mock, [_attempt(1, 1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-13T10:00:00Z")])
 
     records, _, _ = _read(config)
 
-    listing = next(request for request in requests_mock.request_history if request.path == "/repos/org/repos/actions/runs")
-    assert listing.qs["created"] == [">=1970-01-01"]
+    assert len(_listing_requests(requests_mock)) == 1
     assert _keys(records) == [(1, 1)]
 
 
-def test_null_start_date_is_treated_as_no_start_date(rate_limit_mock_response, requests_mock):
-    """A present-but-null `start_date` is reachable through the API, Terraform and embedded use."""
+def test_pagination_continues_while_runs_are_inside_the_window(rate_limit_mock_response, requests_mock):
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [])
-    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["org/repos"], "start_date": None}
+    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
+    _paged_listing(
+        requests_mock,
+        [_run(1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z")],
+        [_run(2, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z")],
+    )
+    _mock_attempts(
+        requests_mock,
+        [
+            _attempt(1, 1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z"),
+            _attempt(2, 1, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z"),
+        ],
+    )
 
-    _, statuses, _ = _read(config)
+    records, _, _ = _read(config)
 
-    listing = next(request for request in requests_mock.request_history if request.path == "/repos/org/repos/actions/runs")
-    assert listing.qs["created"] == [">=1970-01-01"]
-    assert statuses[-1] == "COMPLETE"
+    assert [request.qs.get("page") for request in _listing_requests(requests_mock)] == [None, ["2"]]
+    assert _keys(records) == [(1, 1), (2, 1)]
+
+
+@pytest.mark.parametrize(
+    "start_date",
+    [
+        # `start_date` is optional, and a present-but-null value is reachable through the API,
+        # Terraform and embedded use. Legacy paged the whole history in both cases, because its
+        # break point stayed None. A bare `config.get('start_date')` in the stop condition would
+        # instead render the string "None", read as true, and end the sync after one page.
+        pytest.param({}, id="absent"),
+        pytest.param({"start_date": None}, id="null"),
+    ],
+)
+def test_without_a_start_date_the_whole_history_is_paged(rate_limit_mock_response, requests_mock, start_date):
+    _mock_repository(requests_mock)
+    config = {"credentials": {"personal_access_token": "token"}, "repositories": ["org/repos"], **start_date}
+    _paged_listing(
+        requests_mock,
+        [_run(1)],
+        [_run(2, updated_at="2015-01-01T10:05:00Z", created_at="2015-01-01T10:00:00Z")],
+    )
+    _mock_attempts(
+        requests_mock,
+        [
+            _attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z"),
+            _attempt(2, 1, updated_at="2015-01-01T10:05:00Z", created_at="2015-01-01T10:00:00Z"),
+        ],
+    )
+
+    records, _, _ = _read(config)
+
+    assert len(_listing_requests(requests_mock)) == 2
+    assert _keys(records) == [(1, 1), (2, 1)]
 
 
 def test_discovered_schema_is_valid_and_describes_the_records(rate_limit_mock_response, requests_mock):
@@ -477,34 +532,6 @@ def test_each_repository_is_partitioned_and_checkpointed_separately(rate_limit_m
     assert sorted(entry["partition"]["repository"] for entry in parent["states"]) == ["org/other", "org/repos"]
 
 
-def test_the_parent_listing_is_paginated(rate_limit_mock_response, requests_mock):
-    """The listing carries the `created` bound onto every page; losing it on page 2 would quietly
-    widen the window back to the repository's whole history."""
-    _mock_repository(requests_mock)
-    page_two = f"{RUNS_URL}?per_page=100&page=2"
-    requests_mock.get(
-        RUNS_URL,
-        [
-            {"json": {"total_count": 2, "workflow_runs": [_run(1)]}, "headers": {"Link": f'<{page_two}>; rel="next"'}},
-            {"json": {"total_count": 2, "workflow_runs": [_run(2, updated_at="2022-02-01T09:05:00Z", created_at="2022-02-01T09:00:00Z")]}},
-        ],
-    )
-    _mock_attempts(
-        requests_mock,
-        [
-            _attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z"),
-            _attempt(2, 1, updated_at="2022-02-01T09:05:00Z", created_at="2022-02-01T09:00:00Z"),
-        ],
-    )
-
-    records, _, _ = _read(CONFIG)
-
-    assert _keys(records) == [(1, 1), (2, 1)]
-    listings = [request for request in requests_mock.request_history if request.path == "/repos/org/repos/actions/runs"]
-    assert [request.qs.get("page") for request in listings] == [None, ["2"]]
-    assert all(request.qs["created"] == [">=2021-11-30"] for request in listings)
-
-
 def test_every_request_stays_on_a_github_enterprise_host(rate_limit_mock_response, requests_mock):
     """The attempt path is built from the parent record's absolute `url`, so it follows whatever
     host GitHub reports rather than `url_base`. Making that path relative would break GHES."""
@@ -553,3 +580,68 @@ def test_the_state_the_connector_emits_can_be_fed_back_to_it(rate_limit_mock_res
     # `SemiIncrementalMixin` compared with a strict `>`. Deduplicating destinations absorb it; an
     # append destination sees one extra copy of the newest run per repository per sync.
     assert _keys(second_records) == [(1, 1)]
+
+
+@pytest.mark.parametrize(
+    "broken_link",
+    [
+        # A link that points back at the attempt that produced it.
+        pytest.param(lambda url, n: f"{url}/attempts/{n}", id="self_referential"),
+        # A link that climbs instead of descending, which oscillates between two attempts.
+        pytest.param(lambda url, n: f"{url}/attempts/{n + 1}", id="ascending"),
+    ],
+)
+def test_a_chain_that_does_not_descend_is_cut_off(rate_limit_mock_response, requests_mock, broken_link):
+    """`DefaultPaginator` has no page cap and `stop_condition` never sees the previous page token,
+    so a `previous_attempt_url` that fails to descend would page until the platform kills the sync.
+    The guard stops on positive proof of non-descent."""
+    _mock_repository(requests_mock)
+    _mock_runs(requests_mock, [_run(2, run_attempt=3, updated_at="2022-02-02T12:05:00Z", created_at="2022-02-02T10:00:00Z")])
+    run_url = f"{RUNS_URL}/2"
+    for attempt_number in (2, 3):
+        requests_mock.get(
+            f"{run_url}/attempts/{attempt_number}",
+            json={
+                **_attempt(2, attempt_number, updated_at="2022-02-02T12:05:00Z", created_at="2022-02-02T12:00:00Z"),
+                "previous_attempt_url": broken_link(run_url, attempt_number),
+            },
+        )
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert len(_attempt_requests(requests_mock)) <= 2
+    assert {record["id"] for record in records} == {2}
+
+
+def test_a_non_integer_run_attempt_does_not_truncate_the_chain(rate_limit_mock_response, requests_mock):
+    """A string cannot be compared with `<` against an integer. `JinjaInterpolation._eval` swallows
+    a TypeError and hands back the raw template, which `InterpolatedBoolean` reads as true — so a
+    stop condition that can raise is a stop condition that silently ends the walk one attempt in."""
+    _mock_repository(requests_mock)
+    _mock_runs(requests_mock, [_run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")])
+    requests_mock.get(
+        f"{RUNS_URL}/2/attempts/2",
+        json={**_attempt(2, 2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T11:00:00Z"), "run_attempt": "2"},
+    )
+    _mock_attempts(requests_mock, [_attempt(2, 1, updated_at="2022-02-02T10:04:00Z", created_at="2022-02-02T10:00:00Z")])
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(2, 1), (2, 2)]
+
+
+def test_an_attempt_payload_without_run_attempt_still_gets_a_key(rate_limit_mock_response, requests_mock):
+    """`run_attempt` is half the primary key and is not a required field of GitHub's schema. Without
+    the transformation the record is emitted with half a null key, or dropped outright."""
+    _mock_repository(requests_mock)
+    _mock_runs(requests_mock, [_run(1)])
+    attempt = _attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z")
+    del attempt["run_attempt"]
+    requests_mock.get(f"{RUNS_URL}/1/attempts/1", json=attempt)
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(1, 1)]

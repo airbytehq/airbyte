@@ -1304,8 +1304,9 @@ definitions:
   # deliberately mirrors WorkflowRuns' incremental contract instead of inventing a second one.
   #
   # Four differences from WorkflowRuns, all forced by what the declarative components can express:
-  #  - the 32-day re-run window is applied server-side through `created` rather than as a
-  #    pagination break (see the parameter below);
+  #  - the 32-day pagination break is anchored on `start_date` rather than on the cursor,
+  #    because a stop condition cannot see the cursor, so an incremental sync pages back further
+  #    than legacy did (see the paginator below);
   #  - the run listing is fetched a second time when both streams are selected, because a manifest
   #    stream and a Python stream cannot share a read - `use_cache` would not help, the two build
   #    separate cache backends and only this one sends `created`;
@@ -1335,23 +1336,15 @@ definitions:
         request_parameters:
           # WorkflowRuns is not a `large_stream`, so it pages at constants.DEFAULT_PAGE_SIZE.
           per_page: "100"
-          # Server-side form of the legacy 32-day pagination break (streams.py::WorkflowRuns.
-          # read_records). The listing is ordered by `created_at` descending and GitHub does not
-          # allow a run to be re-run more than 32 days after it was created
-          # (https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs),
-          # so no run created before `cursor - 32 days` can still be updated after the cursor.
-          # The legacy code walked pages until it saw such a run and then broke; asking GitHub to
-          # exclude them is the same window with fewer pages transferred, and it is the only form
-          # available here - a paginator `stop_condition` is evaluated with `response`, `headers`,
-          # `last_record` and `last_page_size` only, so it cannot see the cursor.
-          # `stream_interval.start_time` is the partition's cursor value (the config `start_date`
-          # on the first sync); the day-granularity format rounds the window outwards, never in.
-          # The epoch floor is not cosmetic. With no `start_date` the window opens at
-          # 1970-01-01, minus 32 days is 1969-11-30, and GitHub answers `created=>=1969-11-30`
-          # with HTTP 200 and `total_count: 0` - measured - so without the clamp the stream
-          # returns nothing at all for the (optional, therefore common) no-start-date config.
-          # `>=1970-01-01` returns the full history, which is what no start date means.
-          created: ">={{ format_datetime(max(str_to_datetime(stream_interval.start_time) - duration('P32D'), str_to_datetime('1970-01-01T00:00:00Z')), '%Y-%m-%d') }}"
+          # Deliberately no `created` filter, however tempting it is as a server-side form of the
+          # legacy pagination break. GitHub caps this endpoint at 1000 results whenever `actor`,
+          # `branch`, `check_suite_id`, `created`, `event`, `head_sha` or `status` is present, and
+          # the truncation is invisible. Measured on a 23352-run repository:
+          # `created=>=1970-01-01` served pages 1-10 with `total_count: 23352`, then answered page
+          # 11 with an empty array, `total_count: 0` and no `rel="next"` link; the unfiltered
+          # listing returned 100 records on page 20 of the same repository. A filtered listing
+          # would silently drop every run past the newest 1000 while the cursor advanced past
+          # them, so no later sync would go back for them.
       record_selector:
         type: RecordSelector
         extractor:
@@ -1359,6 +1352,30 @@ definitions:
           field_path: ["workflow_runs"]
       paginator:
         $ref: "#/definitions/page_link_paginator"
+        pagination_strategy:
+          $ref: "#/definitions/page_link_paginator/pagination_strategy"
+          # The legacy pagination break (streams.py::WorkflowRuns.read_records), as far as a
+          # declarative stop condition can carry it. The listing is ordered by `created_at`
+          # descending, and GitHub refuses to re-run a workflow more than 32 days after it was
+          # created, so once a page ends below `start_date - 32 days` nothing further down can
+          # have been updated after `start_date` - and the cursor is never below `start_date`.
+          #
+          # Anchored on `start_date` rather than on the cursor because a `stop_condition` is
+          # evaluated with `config`, `response`, `headers`, `last_record` and `last_page_size`
+          # only. An incremental sync therefore pages back to `start_date - 32 days` instead of
+          # to `cursor - 32 days`: more pages than legacy spent on an incremental sync, exactly
+          # what legacy spent on its first sync, and exactly what legacy spent on every sync of a
+          # config with no `start_date` (`break_point` stayed None and it paged the whole
+          # history).
+          #
+          # `(config.get('start_date') or '') != ''` rather than a bare `config.get('start_date')`:
+          # InterpolatedBoolean compares the *rendered* string against a fixed false-values list
+          # that does not include "None", so a present-but-null `start_date` would render "None",
+          # read as true, and stop pagination after the first page.
+          stop_condition: >-
+            {{ (config.get('start_date') or '') != ''
+            and last_record is not none
+            and last_record['created_at'] < format_datetime(str_to_datetime(config['start_date']) - duration('P32D'), '%Y-%m-%dT%H:%M:%SZ') }}
       partition_router:
         $ref: "#/definitions/repository_partition_router"
     incremental_sync:
@@ -1373,10 +1390,11 @@ definitions:
         # otherwise reach MinMaxDatetime as the literal string "None" and abort the stream.
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      # The `created` window above is wider than the cursor window on purpose, so the runs it lets
-      # through still have to be filtered on `updated_at` - exactly what the legacy
-      # SemiIncrementalMixin did. Not `is_data_feed`: that stops paginating on the cursor field,
-      # and this listing is sorted by `created_at`, not by `updated_at`.
+      # Filters the listing on `updated_at` exactly as the legacy SemiIncrementalMixin did. Not
+      # `is_data_feed`: that stops paginating once a page ends at or below the cursor, and this
+      # listing is ordered by `created_at`, not by `updated_at` - a run created long ago and
+      # re-run yesterday sits far down the listing, so a cursor-field stop condition would cut
+      # the sync short of exactly the records this stream exists for.
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
@@ -1442,10 +1460,12 @@ definitions:
         # `field_path: []` emits whatever the body is, so a 200 carrying an envelope rather than
         # a run - GitHub answers `{"message": ...}` with 200 on some redirect and deprecation
         # paths - would otherwise land in the destination as a row whose whole primary key is
-        # null. Requiring the key fields is the cheapest way to keep that out.
+        # null. Deliberately only `id`: `run_attempt` is filled in by the transformation below,
+        # and a filter on it here would run first (RecordSelector filters, then transforms) and
+        # drop the very records that transformation exists to repair.
         record_filter:
           type: RecordFilter
-          condition: "{{ record.get('id') is not none and record.get('run_attempt') is not none }}"
+          condition: "{{ record.get('id') is not none }}"
       paginator:
         # `previous_attempt_url` is the documented back-link from an attempt to the one before it,
         # and null on the first attempt - so the attempt chain is literally a cursor pagination and
@@ -1456,11 +1476,24 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response['previous_attempt_url'] }}"
-          # The second clause is a loop guard, not a correctness condition: attempt 1 always
-          # reports a null `previous_attempt_url`, so the first clause is what normally ends the
-          # walk. The CDK's DefaultPaginator has no page cap, so a `previous_attempt_url` that
-          # failed to descend would otherwise page forever.
-          stop_condition: "{{ not response['previous_attempt_url'] or (response['run_attempt'] or 0) <= 1 }}"
+          # First clause is the normal end of the walk: attempt 1 reports a null
+          # `previous_attempt_url`. The rest is a loop guard, because `DefaultPaginator` has no
+          # page cap and `last_page_token_value` is not passed to `stop_condition`
+          # (cursor_pagination_strategy.py), so a link that points at the current attempt, or
+          # oscillates between two, would page until the sync is killed.
+          #
+          # It stops only on positive proof that the chain failed to descend - a link whose
+          # attempt number is not below the attempt just read. Everything else keeps walking:
+          # a missing or non-integer `run_attempt` makes `is number` false and the guard yields
+          # False rather than truncating the chain, and it never evaluates `<` on mismatched
+          # types. That matters because `JinjaInterpolation._eval` swallows a `TypeError` and
+          # returns the raw template, which `InterpolatedBoolean` then reads as true - so an
+          # expression that can raise is an expression that silently stops the walk.
+          stop_condition: >-
+            {{ not response.get('previous_attempt_url')
+            or (response.get('run_attempt') is number
+            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)$') or '') != ''
+            and (response['previous_attempt_url'] | regex_search('/attempts/([0-9]+)$') | int) >= response['run_attempt']) }}
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1480,6 +1513,16 @@ definitions:
             # attempt finishing and the re-run starting leaves the cursor above attempt 1's
             # `updated_at`, and attempt 1 would then never be emitted by any sync.
             incremental_dependency: true
+    transformations:
+      # `run_attempt` is half the primary key but is not a required field of GitHub's workflow-run
+      # schema, and the attempt endpoint returns the same object shape as the listing. A payload
+      # without it would otherwise be emitted with half a null key. A run that does not report an
+      # attempt number has exactly one attempt, which is also why the request path above falls
+      # back to `attempts/1`.
+      - type: AddFields
+        fields:
+          - path: ["run_attempt"]
+            value: "{{ record.get('run_attempt') or 1 }}"
     incremental_sync:
       # Required for `incremental_dependency` to take effect: the CDK only persists parent state
       # inside the child's state, and only for a child that declares a cursor of its own
@@ -1621,17 +1664,25 @@ definitions:
               - "null"
               - array
             items:
-              type: object
+              type:
+                - "null"
+                - object
               properties:
                 path:
                   description: Path of the referenced workflow file
-                  type: string
+                  type:
+                    - "null"
+                    - string
                 sha:
                   description: SHA hash of the referenced workflow
-                  type: string
+                  type:
+                    - "null"
+                    - string
                 ref:
                   description: Type of reference to the workflow
-                  type: string
+                  type:
+                    - "null"
+                    - string
           run_started_at:
             description: The timestamp when the workflow run started.
             type:
@@ -1706,7 +1757,9 @@ definitions:
                   - string
               author:
                 description: The author details of the head commit.
-                type: object
+                type:
+                  - "null"
+                  - object
                 properties:
                   name:
                     type:
@@ -1718,7 +1771,9 @@ definitions:
                       - string
               committer:
                 description: The committer details of the head commit.
-                type: object
+                type:
+                  - "null"
+                  - object
                 properties:
                   name:
                     type:
@@ -1751,7 +1806,9 @@ definitions:
                   - string
               full_name:
                 description: Full name of the repository.
-                type: string
+                type:
+                  - "null"
+                  - string
               private:
                 description: Indicates if the repository is private.
                 type:
