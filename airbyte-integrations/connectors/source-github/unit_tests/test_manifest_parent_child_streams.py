@@ -660,8 +660,9 @@ def test_team_members_and_memberships_legacy_scenario(rate_limit_mock_response, 
 
 def test_issue_timeline_events_expand_every_issue_regardless_of_start_date(rate_limit_mock_response, requests_mock):
     """Legacy `IssueTimelineEvents` built its `Issues` parent without `start_date`, so the timeline
-    of every issue was read. The parent here is the `issues` definition with its window opened to
-    the epoch, which selects the same issues."""
+    of every issue was read and no `since` was sent. The parent here is the `issues` definition
+    without the `since` parameter: GitHub answers an empty list for `since=1970-01-01T00:00:00Z`,
+    so opening the window to the epoch would have read nothing."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(f"{_API}/repos/{_REPO}/issues", json=[_record(id=30, number=3, updated_at=_BEFORE_START)])
@@ -671,9 +672,7 @@ def test_issue_timeline_events_expand_every_issue_regardless_of_start_date(rate_
 
     assert error is None
     assert records == [{"closed": {"event": "closed"}, "repository": _REPO, "issue_number": 3}]
-    assert [request.qs["since"] for request in _requested(requests_mock, "/issues") if request.path.endswith("/issues")] == [
-        ["1970-01-01t00:00:00z"]
-    ]
+    assert [request.qs.get("since") for request in _requested(requests_mock, "/issues") if request.path.endswith("/issues")] == [None]
 
 
 def test_issue_timeline_events_collapse_a_page_into_one_record(rate_limit_mock_response, requests_mock):
