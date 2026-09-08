@@ -658,6 +658,22 @@ def test_team_members_and_memberships_legacy_scenario(rate_limit_mock_response, 
     ]
 
 
+def test_issue_timeline_events_expand_every_issue_regardless_of_start_date(rate_limit_mock_response, requests_mock):
+    """Legacy `IssueTimelineEvents` built its `Issues` parent without `start_date`, so the timeline
+    of every issue was read. The parent here is the `issues` definition with its window opened to
+    the epoch, which selects the same issues."""
+    config = _config(_REPO)
+    _mock_repository_resolution(requests_mock, _REPO)
+    requests_mock.get(f"{_API}/repos/{_REPO}/issues", json=[_record(id=30, number=3, updated_at=_BEFORE_START)])
+    requests_mock.get(f"{_API}/repos/{_REPO}/issues/3/timeline", json=[{"event": "closed"}])
+
+    records, _, _, error = _read(config, "issue_timeline_events")
+
+    assert error is None
+    assert records == [{"closed": {"event": "closed"}, "repository": _REPO, "issue_number": 3}]
+    assert [request.qs["since"] for request in _requested(requests_mock, "/issues") if request.path.endswith("/issues")] == [["1970-01-01t00:00:00z"]]
+
+
 def test_issue_timeline_events_collapse_a_page_into_one_record(rate_limit_mock_response, requests_mock):
     """`test_issues_timeline_events`, ported onto the fixture files it used: the page of timeline
     events becomes one record keyed by event type, plus `repository` and `issue_number`."""
