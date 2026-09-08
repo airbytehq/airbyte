@@ -117,13 +117,10 @@ poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
 poe e2e-local --command=read --test-version=5.0.0
 ```
 
-The CDC example must derive an incremental catalog
-(`--sync-mode=incremental --cursor-field=_ab_cdc_cursor`) and restrict
-it with `--streams` —
-`discover` also returns the CDC system table `dbo.systranschemas`, which
-has no capture instance. A CDC config with a full-refresh derived catalog
-configures zero CDC streams and aborts with a misleading "Saved offset no
-longer present" error; `run.sh` refuses that combination (exit 2).
+The CDC example needs an incremental catalog (`--sync-mode=incremental
+--cursor-field=_ab_cdc_cursor`) restricted with `--streams` to exclude
+`dbo.systranschemas`; the general rule is in the
+[db-harness-lib README](../../../../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
 
 The sweep runs every command against the one backend and reports each
 result rather than stopping at the first failure, then prints a summary

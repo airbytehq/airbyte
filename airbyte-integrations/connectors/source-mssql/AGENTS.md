@@ -161,11 +161,10 @@ directly.
   throwaway container, never for a real source.
 - **`Incumbent CDC state is invalid ... Saved offset no longer present`
   on both control and target with a fresh backend.** The derived
-  catalog defaulted to `full_refresh`, so the connector configured no
-  CDC streams and rejected its own cold-start offset. Pass
+  catalog was `full_refresh`, so no CDC streams were configured. Pass
   `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=<tables>`
-  (or `--catalog=PATH`); `run.sh` detects this
-  combination and exits 2 before running `read`.
+  or `--catalog=PATH`; see the
+  [db-harness-lib README](../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
 
 ## Comparison-mode regression testing
 
@@ -194,16 +193,11 @@ poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
 ```
 
-For CDC the catalog must be incremental: the catalog derived from
-`discover` defaults to `full_refresh`, which configures zero CDC
-streams, so pass `--sync-mode=incremental --cursor-field=_ab_cdc_cursor`
-(or an explicit
-`--catalog=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/catalogs/users-cdc.json`).
-`--streams` is required because `discover` also lists the CDC system
-table `dbo.systranschemas`, which has no capture instance and fails
-the CDC availability check. `run.sh` refuses to run `read` when a
-CDC config (`replication_method.method == "CDC"`) would get a
-full-refresh derived catalog, exiting 2 with the flags to pass.
+For CDC the catalog must be incremental — see
+[CDC config templates need an incremental catalog](../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
+MSSQL specifics: the cursor is `_ab_cdc_cursor`, and `--streams` must
+exclude `dbo.systranschemas`, a CDC system table `discover` lists
+that has no capture instance.
 
 Both runs must observe equivalent backend state. Under
 `--reset=none` (the default) the two images share the backend, which is
