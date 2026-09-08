@@ -71,9 +71,7 @@ jq -s \
           destination_object_name: .name,
           include_files: false
         }
-        + (if ((.source_defined_primary_key // []) | length) > 0
-           then {primary_key: .source_defined_primary_key}
-           else {} end)
+        + {primary_key: (.source_defined_primary_key // [])}
       ]}
     end
   ' "$STDOUT_FILE" > "$TMP_OUTPUT"
