@@ -84,8 +84,8 @@ STATE would otherwise gain a meaningless `{"partition": {}}` entry.
 
 ## Workflow run attempts: three traps, all silent
 
-`workflow_run_attempts` is the first manifest stream that is not just a resolver, and every one of
-these cost a review round. They are enforced by `unit_tests/test_workflow_run_attempts.py`; if a
+`workflow_run_attempts` is the first manifest stream with a parent of its own, and the first whose
+parent is internal rather than a catalog stream. Every one of these cost a review round. They are enforced by `unit_tests/test_workflow_run_attempts.py`; if a
 test there starts failing, read this before "fixing" it.
 
 **Never filter the child on the attempt's own cursor.** `GET /actions/runs` returns one record per

@@ -1356,9 +1356,10 @@ definitions:
           $ref: "#/definitions/page_link_paginator/pagination_strategy"
           # The legacy pagination break (streams.py::WorkflowRuns.read_records), as far as a
           # declarative stop condition can carry it. The listing is ordered by `created_at`
-          # descending, and GitHub refuses to re-run a workflow more than 32 days after it was
-          # created, so once a page ends below `start_date - 32 days` nothing further down can
-          # have been updated after `start_date` - and the cursor is never below `start_date`.
+          # descending, and GitHub stops allowing a workflow to be re-run 30 days after it was
+          # created; 32 is the margin legacy chose (`WorkflowRuns.re_run_period`) and this keeps
+          # it. So once a page ends below `start_date - 32 days` nothing further down can have
+          # been updated after `start_date` - and the cursor is never below `start_date`.
           #
           # Anchored on `start_date` rather than on the cursor because a `stop_condition` is
           # evaluated with `config`, `response`, `headers`, `last_record` and `last_page_size`
@@ -1516,11 +1517,17 @@ definitions:
           # types. That matters because `JinjaInterpolation._eval` swallows a `TypeError` and
           # returns the raw template, which `InterpolatedBoolean` then reads as true - so an
           # expression that can raise is an expression that silently stops the walk.
-          # The regex is not anchored on the end of the string: `.../attempts/3/` and
-          # `.../attempts/3?x=1` would both fail to match an anchored pattern, and the guard would
-          # then wave through exactly the malformed links it exists to catch. A link that is on
-          # this run but carries no attempt number the regex can read is itself the proof - there
-          # is nothing to descend to - so that case stops rather than spending a request on it.
+          # A same-run link carrying no attempt number the regex can read is itself proof: there
+          # is nothing to descend to, so that case stops rather than spending a request that 404s.
+          # Which is why the regex is not end-anchored - `.../attempts/1/` and `.../attempts/1?x=1`
+          # descend perfectly well, and an anchored pattern would read them as unreadable and stop
+          # a legitimate walk one attempt in.
+          #
+          # One shape stays unbounded: an attempt payload with no usable `run_attempt` AND a
+          # same-run link with a numeric segment satisfies no clause, so the walk would continue
+          # until the platform stops it. Bounding it would mean stopping on a payload this
+          # connector cannot reason about, which is the trade the rest of this expression refuses
+          # to make - and GitHub has never omitted `run_attempt` from a run object.
           stop_condition: >-
             {{ not response.get('previous_attempt_url')
             or (response.get('url') is string

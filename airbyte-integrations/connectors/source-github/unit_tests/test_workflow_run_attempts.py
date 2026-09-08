@@ -124,8 +124,29 @@ def _mock_runs(requests_mock, runs, full_name="org/repos", api="https://api.gith
 
 
 def _mock_attempts(requests_mock, attempts, full_name="org/repos", api="https://api.github.com"):
+    """Serve each attempt, and refuse to serve the same one indefinitely.
+
+    A static `requests_mock` body turns any regression that breaks out of the attempt chain into a
+    hung suite rather than a failing test — no test name, no diff, just a job burning to the CI
+    timeout. Cutting the link after a few repeats makes the walk terminate so an assertion can fail.
+    """
     for attempt in attempts:
-        requests_mock.get(f"{api}/repos/{full_name}/actions/runs/{attempt['id']}/attempts/{attempt['run_attempt']}", json=attempt)
+        requests_mock.get(
+            f"{api}/repos/{full_name}/actions/runs/{attempt['id']}/attempts/{attempt['run_attempt']}",
+            json=_bounded_responder(attempt),
+        )
+
+
+def _bounded_responder(attempt, repeats_before_giving_up=3):
+    calls = {"n": 0}
+
+    def responder(request, context):
+        calls["n"] += 1
+        if calls["n"] <= repeats_before_giving_up:
+            return attempt
+        return {**attempt, "previous_attempt_url": None}
+
+    return responder
 
 
 def _read(config, state=None):
@@ -637,6 +658,39 @@ def test_a_chain_that_does_not_descend_is_cut_off(rate_limit_mock_response, requ
     assert _keys(records) == [(2, 2)]
 
 
+@pytest.mark.parametrize(
+    "suffix",
+    [
+        pytest.param("", id="bare"),
+        # The regex deliberately is not anchored on the end of the string. These descend correctly
+        # and must be followed; an anchored pattern would read them as unparseable and stop.
+        pytest.param("/", id="trailing_slash"),
+        pytest.param("?per_page=1", id="query_string"),
+        pytest.param("#frag", id="fragment"),
+    ],
+)
+def test_a_descending_link_is_followed_whatever_it_is_suffixed_with(rate_limit_mock_response, requests_mock, suffix):
+    _mock_repository(requests_mock)
+    _mock_runs(requests_mock, [_run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")])
+    requests_mock.get(
+        f"{RUNS_URL}/2/attempts/2",
+        json={
+            **_attempt(2, 2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T11:00:00Z"),
+            "previous_attempt_url": f"{RUNS_URL}/2/attempts/1{suffix}",
+        },
+    )
+    # Registered at the suffixed URL, because following the link is exactly what is under test.
+    requests_mock.get(
+        f"{RUNS_URL}/2/attempts/1{suffix}",
+        json=_attempt(2, 1, updated_at="2022-02-02T10:04:00Z", created_at="2022-02-02T10:00:00Z"),
+    )
+
+    records, statuses, _ = _read(CONFIG)
+
+    assert statuses[-1] == "COMPLETE"
+    assert _keys(records) == [(2, 1), (2, 2)]
+
+
 def test_a_non_integer_run_attempt_is_skipped_and_does_not_truncate_the_chain(rate_limit_mock_response, requests_mock):
     """A string cannot be half of an integer primary key, and it cannot be compared with `<` either.
     `JinjaInterpolation._eval` swallows a TypeError and hands back the raw template, which
@@ -725,83 +779,6 @@ def test_a_page_tail_without_a_usable_created_at_does_not_end_the_listing(rate_l
     assert (2, 1) in _keys(records)
 
 
-def test_the_break_fires_on_a_page_whose_records_are_all_older_than_the_cursor(rate_limit_mock_response, requests_mock):
-    """The case the break exists for, and the one an obvious implementation gets wrong.
-
-    `SimpleRetriever` sets `last_record` from records that survived the record selector, and this
-    stream's selector filters on the cursor. Deep pages of an old listing therefore contribute no
-    surviving record at all, so a stop condition reading `last_record` never fires and the sync
-    pages the repository's whole history. The condition reads the raw page tail instead.
-    """
-    _mock_repository(requests_mock)
-    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
-    # Everything on page 1 is far below the cursor, so the record selector drops all of it.
-    _paged_listing(
-        requests_mock,
-        [_run(1, updated_at="2021-01-02T10:05:00Z", created_at="2021-01-01T10:00:00Z")],
-        [_run(2, updated_at="2020-01-02T10:05:00Z", created_at="2020-01-01T10:00:00Z")],
-    )
-
-    records, statuses, _ = _read(config, state=_state("2022-07-01T00:00:00Z"))
-
-    assert statuses[-1] == "COMPLETE"
-    assert records == []
-    assert len(_listing_requests(requests_mock)) == 1
-
-
-def test_a_page_tail_without_a_usable_created_at_does_not_end_the_listing(rate_limit_mock_response, requests_mock):
-    """`JinjaInterpolation._eval` swallows a TypeError and returns the raw template, which
-    `InterpolatedBoolean` reads as true — so comparing a null `created_at` with `<` would stop the
-    walk and lose every page behind it, on a green sync."""
-    _mock_repository(requests_mock)
-    config = {**CONFIG, "start_date": "2022-06-15T00:00:00Z"}
-    head = _run(1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z")
-    head["created_at"] = None
-    _paged_listing(requests_mock, [head], [_run(2, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z")])
-    _mock_attempts(
-        requests_mock,
-        [
-            _attempt(1, 1, updated_at="2022-06-20T10:05:00Z", created_at="2022-05-20T10:00:00Z"),
-            _attempt(2, 1, updated_at="2022-06-21T10:05:00Z", created_at="2022-05-19T10:00:00Z"),
-        ],
-    )
-
-    records, _, _ = _read(config)
-
-    assert len(_listing_requests(requests_mock)) == 2
-    assert (2, 1) in _keys(records)
-
-
-@pytest.mark.parametrize(
-    "link",
-    [
-        # An anchored regex would fail to match either of these and wave the link through, which is
-        # precisely backwards: they are the malformed shapes the guard exists to catch.
-        pytest.param("{url}/attempts/{n}/", id="trailing_slash"),
-        pytest.param("{url}/attempts/{n}?per_page=1", id="query_string"),
-        # A link that leaves the run entirely.
-        pytest.param("https://api.github.com/repos/org/repos/actions/runs/999/attempts/1", id="different_run"),
-    ],
-)
-def test_a_malformed_attempt_link_is_not_followed(rate_limit_mock_response, requests_mock, link):
-    _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(2, run_attempt=2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T10:00:00Z")])
-    run_url = f"{RUNS_URL}/2"
-    requests_mock.get(
-        f"{run_url}/attempts/2",
-        json={
-            **_attempt(2, 2, updated_at="2022-02-02T11:05:00Z", created_at="2022-02-02T11:00:00Z"),
-            "previous_attempt_url": link.format(url=run_url, n=2),
-        },
-    )
-
-    records, statuses, _ = _read(CONFIG)
-
-    assert statuses[-1] == "COMPLETE"
-    assert _attempt_requests(requests_mock) == ["/repos/org/repos/actions/runs/2/attempts/2"]
-    assert _keys(records) == [(2, 2)]
-
-
 @pytest.mark.parametrize(
     "endpoint",
     [
@@ -851,17 +828,30 @@ def test_a_403_on_one_attempt_does_not_fail_the_stream(rate_limit_mock_response,
     assert _keys(records) == [(1, 1)]
 
 
+@pytest.mark.parametrize(
+    "throttled_endpoint",
+    [
+        pytest.param("listing", id="run_listing"),
+        pytest.param("attempt", id="attempt"),
+    ],
+)
 @patch("time.sleep")
-def test_a_200_carrying_retry_after_on_an_attempt_is_kept(sleep_mock, rate_limit_mock_response, requests_mock):
+def test_a_200_carrying_retry_after_is_kept(sleep_mock, rate_limit_mock_response, requests_mock, throttled_endpoint):
     """A proxy, a CDN or GHES can throttle on its own account and still answer 200. Without the
     `SUCCESS` short-circuit ahead of the rate-limit filters, that response is classified
-    RATE_LIMITED, its record discarded, and the stream fails once retries run out."""
+    RATE_LIMITED, its record discarded, and the stream fails once retries run out. Both handlers
+    carry their own copy of that filter, so both endpoints are exercised."""
     _mock_repository(requests_mock)
-    _mock_runs(requests_mock, [_run(1)])
+    throttle = {"Retry-After": "120"}
+    _mock_runs(
+        requests_mock,
+        [_run(1)],
+        headers=throttle if throttled_endpoint == "listing" else {},
+    )
     requests_mock.get(
         f"{RUNS_URL}/1/attempts/1",
         json=_attempt(1, 1, updated_at="2022-02-01T10:05:00Z", created_at="2022-02-01T10:00:00Z"),
-        headers={"Retry-After": "120"},
+        headers=throttle if throttled_endpoint == "attempt" else {},
     )
 
     records, statuses, _ = _read(CONFIG)

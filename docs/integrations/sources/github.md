@@ -155,7 +155,7 @@ This connector outputs the following incremental streams:
 
 2. Streams `workflow_runs`, `workflow_jobs` and `workflow_run_attempts` are almost pure incremental:
 
-   - read new records and some portion of old records (the past 32 days, since GitHub refuses to re-run a workflow after that and an older run can therefore no longer change) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   - read new records and some portion of old records (the past 32 days — GitHub stops allowing a re-run 30 days after a run was created, and the connector keeps two days of margin, so an older run can no longer change) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
@@ -178,18 +178,18 @@ This connector outputs the following incremental streams:
      syncs: a repository's cursor only advances once that repository has been read to the end, so a sync interrupted
      part-way through one starts that repository over. Repositories that did finish are not re-read.
    - **Start Date bounds the recurring cost too, not just the first read.** Every sync pages the run listing back to
-     **Start Date** minus 32 days, whether or not anything changed, because GitHub allows a workflow to be re-run for 32
-     days after it was created and the listing is ordered by creation date. On a repository producing ~275 runs a day, a
+     **Start Date** minus 32 days, whether or not anything changed, because GitHub allows a workflow to be re-run for 30
+     days after it was created (the connector keeps two days of margin) and the listing is ordered by creation date. On a repository producing ~275 runs a day, a
      Start Date two years old costs about 2,100 listing requests on every sync before a single attempt is fetched, and
      that figure grows as the Start Date recedes. Moving **Start Date** forward is the only lever that shrinks it.
    - **The run listing is read more than once per sync, at different depths.** `workflow_run_attempts` pages it back to
      Start Date minus 32 days; `workflow_runs` and `workflow_jobs`, if you also select them, each page it again but only
      back to 32 days before their own cursor. The streams cannot share a read yet.
-   - **More tokens help, up to a point.** The connector holds itself to one global budget of 900 requests per minute -
-     GitHub's documented secondary limit is per token, so this is deliberately conservative - which means throughput
-     stops improving at around eleven tokens. That budget covers this stream and the other manifest-backed streams;
-     `workflow_runs` and `workflow_jobs` are not subject to it. Note also that GitHub's 5,000 requests an hour is per
-     account, not per token, so extra tokens only add quota if they belong to different accounts.
+   - **More tokens help only if they belong to different accounts.** GitHub's 5,000 requests an hour is per account,
+     and it scopes secondary rate limits per account too, so extra tokens on one account buy nothing. Above that, the
+     connector holds itself to one global budget of 900 requests per minute, which caps throughput at around eleven
+     tokens' worth; that budget covers this stream and the other manifest-backed streams, but not the Python
+     `workflow_runs` and `workflow_jobs`.
    - **It runs before everything else.** Manifest-backed streams are read before the rest of the catalog, so enabling
      this one puts every other stream behind it, and a rate-limit failure inside it ends the sync before they start. If
      that matters, give it its own connection.
