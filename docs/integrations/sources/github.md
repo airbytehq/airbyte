@@ -153,9 +153,9 @@ This connector outputs the following incremental streams:
    - read only new records;
    - output only new records.
 
-2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
+2. Streams `workflow_runs`, `workflow_jobs` and `workflow_run_attempts` are almost pure incremental:
 
-   - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   - read new records and some portion of old records (the past 32 days, since GitHub refuses to re-run a workflow after that and an older run can therefore no longer change) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
@@ -165,11 +165,21 @@ This connector outputs the following incremental streams:
    need the full re-run history. It emits one record per attempt, keyed on `[id, run_attempt]`, with each attempt's own
    `created_at`, `conclusion`, `logs_url` and `jobs_url`.
 
-   `workflow_run_attempts` is the more expensive of the two, because GitHub has no endpoint that lists attempts: every
-   attempt costs one request. Budget roughly one request per workflow run in the synced window on top of what
-   `workflow_runs` costs, and one more for each additional attempt of a re-run workflow. Which runs fall in the window is
-   decided exactly as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that run's
-   attempts are then emitted, including ones last updated before the cursor.
+   `workflow_run_attempts` is by far the more expensive of the two, because GitHub has no endpoint that lists attempts:
+   every attempt costs one request, including the single attempt of a workflow that was never re-run. Which runs fall in
+   the window is decided as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that
+   run's attempts are then emitted, including ones last updated before the cursor.
+
+   Two consequences worth planning for:
+
+   - **The first sync is the expensive one.** It reads every attempt of every run created since the **Start Date**, so
+     budget about one request per run. An authenticated token is limited to 5,000 requests an hour, so a repository with
+     100,000 historical runs needs on the order of a day of syncing before it catches up. **Set a recent Start Date
+     before enabling this stream on a busy repository** - it is the only setting that bounds the initial sync. Adding
+     more tokens to **Personal Access Token** raises the ceiling proportionally.
+   - **Selecting `workflow_runs` alongside it does not come for free.** The two streams cannot share a read yet, so the
+     run listing is paginated twice per sync. Steady-state incremental syncs are otherwise cheap: one request per run
+     whose `updated_at` moved since the last sync, plus one per additional attempt.
 
 3. Other 19 incremental streams are also incremental but with one difference, they:
 

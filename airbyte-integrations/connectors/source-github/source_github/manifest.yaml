@@ -23,6 +23,252 @@ definitions:
     {{ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | list | length) == 0
        or record['full_name'] | regex_search('^((' ~ (config.get('repositories', []) | map('regex_search', '^(.*[*].*)$') | select | map('replace', '*', '.*') | join(')|(')) ~ '))') }}
 
+  response_filter_success:
+    # Short-circuit successful responses before any rate-limit filter sees them.
+    # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
+    # (default_error_handler.py::interpret_response) and returns on the first match, so
+    # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
+    # throttling on its own account — is classified RATE_LIMITED: its records are
+    # discarded and the request is retried until `max_retries` runs out, failing the
+    # stream. The guard has to live in its own filter rather than as a conjunct in the
+    # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
+    # (http_response_filter.py::_matches_filter) and the predicate context carries only
+    # the parsed body and the headers — no status code.
+    # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
+    # computing, retry later", which `contributor_activity` backs off on today and which
+    # must not become a success when that stream migrates onto this requester.
+    type: HttpResponseFilter
+    http_codes: [200]
+    action: SUCCESS
+
+  response_filter_retry_after:
+    type: HttpResponseFilter
+    predicate: "{{ 'Retry-After' in headers }}"
+    action: RATE_LIMITED
+    error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
+
+  response_filter_primary_rate_limit:
+    type: HttpResponseFilter
+    error_message_contains: "API rate limit exceeded"
+    action: RATE_LIMITED
+    error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
+
+  response_filter_secondary_rate_limit:
+    type: HttpResponseFilter
+    error_message_contains: "secondary rate limit"
+    action: RATE_LIMITED
+    error_message: "GitHub secondary rate limit hit. Waiting before retrying."
+
+  response_filter_exhausted_quota:
+    type: HttpResponseFilter
+    # `is not none` (rather than a bare `response.get('message')`) is required:
+    # InterpolatedBoolean compares the *rendered* string against a fixed
+    # false-values list that does not include "None", so a falsy `.get()` would
+    # evaluate to true and rate-limit successful responses.
+    predicate: "{{ headers.get('X-RateLimit-Remaining') == '0' and response is mapping and response.get('message') is not none }}"
+    action: RATE_LIMITED
+    error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
+
+  response_filter_not_found:
+    type: HttpResponseFilter
+    http_codes: [404]
+    action: IGNORE
+    error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
+    # 403 -> FAIL matches legacy behavior for `Repositories` ONLY — streams.py:162
+    # re-raised 403 for that stream, which is what lets `check` catch bad token scopes.
+    # Legacy SKIPPED 403 with a warning for Organizations/Teams/Users and the repo-scoped
+    # streams (streams.py:168-182), so a stream in either of those groups must reference
+    # `error_handler_repo_scoped` below instead of the base handler, or "skip the one
+    # org/repo you can't read" becomes a failed sync.
+
+  response_filter_forbidden_fails:
+    type: HttpResponseFilter
+    http_codes: [403]
+    action: FAIL
+    failure_type: config_error
+    error_message: >-
+      GitHub denied access (HTTP 403). Your token may be missing required scopes
+      (this connector typically needs: repo, read:org, read:user, read:project, workflow),
+      or this organization may require SAML SSO authorization.
+      See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
+  # The repo-scoped counterpart of the filter above, kept adjacent so the two cannot drift.
+  # `error_message_contains` is deliberately absent: this must not compete with the
+  # rate-limit filters, which is why every handler below lists it last.
+  response_filter_forbidden_skips:
+    type: HttpResponseFilter
+    http_codes: [403]
+    action: IGNORE
+    error_message: >-
+      GitHub denied access (HTTP 403) to this organization/repository. Skipping it.
+      The token may be missing the scope this stream needs (Actions data needs `workflow`
+      on a classic token, or `Actions: read` on a fine-grained one), or the organization
+      may require SAML SSO authorization.
+
+  # `workflow_run_attempts` walks the attempt chain backwards, so a 404 partway through it
+  # is not the same event as a 404 on a whole repository: what is skipped is the remainder
+  # of one run's history, and the run's cursor still advances, so no later sync retries it.
+  # Kept as IGNORE rather than FAIL on purpose - GitHub deletes whole runs, and a run
+  # deleted between the listing and the attempt read would otherwise wedge the stream
+  # permanently - but the message has to name what was lost so it is greppable in logs.
+  response_filter_attempt_not_found:
+    type: HttpResponseFilter
+    http_codes: [404]
+    action: IGNORE
+    error_message: >-
+      A workflow run attempt returned HTTP 404, so the remaining earlier attempts of that
+      run were not read. The run was most likely deleted between the run listing and this
+      request. Skipping the rest of that run's attempt chain.
+
+  # Replicates the legacy GithubStreamABC error contract:
+  # - rate limits are waited out instead of failing the sync. GitHub signals them
+  #   three different ways, and the legacy handler retried on any of them
+  #   (errors_handlers.py::GithubStreamABCErrorHandler.interpret_response), so all
+  #   three are matched below, ahead of the 404/403 filters:
+  #     1. a `Retry-After` header (sent on most, but per the docs not all,
+  #        secondary-limit responses);
+  #     2. an "API rate limit exceeded" message (primary limit) or an
+  #        "exceeded a secondary rate limit" message (secondary limit without
+  #        `Retry-After` — note secondary limits are tracked separately from the
+  #        primary quota, so `X-RateLimit-Remaining` may still be non-zero);
+  #     3. `X-RateLimit-Remaining: 0` on an error response, which is the fallback
+  #        the docs prescribe when `Retry-After` is absent. The declarative
+  #        predicate cannot see the status code, so "is an error response" is
+  #        approximated by GitHub's error envelope (a JSON object with a
+  #        `message`); successful payloads are arrays, or objects without a
+  #        top-level `message`, and must not match — the request that spends the
+  #        last quota point returns 200 with `X-RateLimit-Remaining: 0` and its
+  #        records have to be kept (token rotation handles the exhausted token);
+  # - 404 on an organization or repository is skipped with a warning so one
+  #   deleted repo or renamed org doesn't fail the whole sync (`check` enumerates
+  #   the partition routers below and relies on the same skip semantics);
+  # - plain 403 fails with an actionable scopes/SSO message (matches the legacy
+  #   mapping so `check` can catch bad token scopes).
+  # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
+  # Three handlers, differing only in their last one or two filters. The rate-limit filters
+  # must stay ahead of the 403 and 404 filters in every one of them: GitHub reports a
+  # secondary rate limit as a 403, and reports an exhausted primary quota as an error
+  # response carrying `X-RateLimit-Remaining: 0`, so a 403 or 404 filter placed first would
+  # swallow a retryable wait. The lists are spelled out rather than composed because a
+  # manifest `$ref` cannot append to a list.
+  error_handler_base:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
+      # rate-limit wait rather than only the ones the authenticator decides before sending.
+      # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap
+      # 1s: an interactive check then fails in seconds with the rate-limit message instead of
+      # sleeping until the reset. A sync keeps the user's budget.
+      #
+      # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
+      # `HttpClient` asked the authenticator for a spare credential only *after* a strategy
+      # returned a wait, and a cap raises instead of returning — so a budget shorter than the
+      # distance to the reset ended the stream rather than rotating onto a healthy token
+      # (measured on 7.28.0: 30min budget against a 60min reset failed with a second token
+      # idle). The rotation question is now asked first and the cap only governs waits that are
+      # actually taken, which `test_short_wait_budget_does_not_cost_token_rotation` proves end
+      # to end. 7.28.1 also resolves the cap at construction, so an expression this manifest
+      # got wrong fails at startup rather than at whichever rate limit reaches it first.
+      #
+      # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach
+      # the multiplication as None, and a falsy test would read check's deliberate 0 as absent
+      # and hand it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`,
+      # so a user on the spec's minimum of 1 minute would otherwise get a 60s cap equal to the
+      # `min_wait: 60` floor below, and every headerless 5xx would fail instead of retrying.
+      - type: WaitTimeFromHeader
+        header: "Retry-After"
+        max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+      - type: WaitUntilTimeFromHeader
+        header: "X-RateLimit-Reset"
+        min_wait: 60
+        # The cap is compared against the computed wait, not the raw reset timestamp, and it
+        # is applied after `min_wait` — so during check, where the cap is 1s, even the 60s
+        # floor below is refused.
+        max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
+        # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
+        # timestamp already in the past, or seconds away, doesn't turn into a tight retry
+        # loop against a quota that hasn't actually refilled.
+        #
+        # It does NOT land on exactly the same responses legacy floored. Measured:
+        #
+        #                                     here    legacy
+        #   403 + Retry-After: 30              30s      60s    <- floor missing
+        #   403 + X-RateLimit-Reset now+10     60s      60s
+        #   403 + reset already past           60s      60s
+        #   500 / timeout, no such headers     60s     expo    <- floor leaking
+        #
+        # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
+        # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
+        # `min_wait` outright when its header is *absent* rather than treating it as a floor
+        # on a computed wait, and backoff_strategies are shared by every retryable response
+        # on this requester.
+        #
+        # Accepted deliberately, after measuring the alternatives:
+        #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
+        #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
+        #     strategies into one list -- its own docstring says the list "is not used to map
+        #     different strategies to different error conditions" -- and HttpClient takes the
+        #     first truthy one regardless of which branch matched. Byte-identical backoffs.
+        #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
+        #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
+        #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
+        #     refilled. That is what the floor exists to prevent.
+        #
+        # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
+        # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
+        # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
+        # With the header present but stale, max(negative, min_wait) already yields 60s, so
+        # the floor survives exactly where it belongs. Four other connectors combine these
+        # two strategies and would move the same way.
+        #
+        # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
+        # max_retries (5), on every stream that inherits this requester.
+        # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
+        # authenticator's counters against every response (the `*_header` fields on the
+        # quota pools above), so a primary rate limit — which GitHub reports as
+        # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
+        # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
+        # spare token it retries in 0.1s on that token instead of waiting out this window.
+        # This covers the reactive rotation the legacy strategy did at the 10-minute mark
+        # (backoff_strategies.py) and applies to manifest and Python streams alike, since
+        # both share one authenticator.
+        # Still waited out, correctly: a secondary rate limit, where the token's counters
+        # stay positive. GitHub scopes secondary limits per account, so rotating to another
+        # token of the same account would only be rejected again.
+    response_filters:
+      - $ref: "#/definitions/response_filter_success"
+      - $ref: "#/definitions/response_filter_retry_after"
+      - $ref: "#/definitions/response_filter_primary_rate_limit"
+      - $ref: "#/definitions/response_filter_secondary_rate_limit"
+      - $ref: "#/definitions/response_filter_exhausted_quota"
+      - $ref: "#/definitions/response_filter_not_found"
+      - $ref: "#/definitions/response_filter_forbidden_fails"
+
+  # For repo-scoped and org-scoped streams, where legacy skipped a 403 with a warning
+  # instead of failing the sync.
+  error_handler_repo_scoped:
+    $ref: "#/definitions/error_handler_base"
+    response_filters:
+      - $ref: "#/definitions/response_filter_success"
+      - $ref: "#/definitions/response_filter_retry_after"
+      - $ref: "#/definitions/response_filter_primary_rate_limit"
+      - $ref: "#/definitions/response_filter_secondary_rate_limit"
+      - $ref: "#/definitions/response_filter_exhausted_quota"
+      - $ref: "#/definitions/response_filter_not_found"
+      - $ref: "#/definitions/response_filter_forbidden_skips"
+
+  # For the attempt chain, which needs the repo-scoped 403 handling and a 404 message that
+  # says which records were skipped.
+  error_handler_attempt_chain:
+    $ref: "#/definitions/error_handler_base"
+    response_filters:
+      - $ref: "#/definitions/response_filter_success"
+      - $ref: "#/definitions/response_filter_retry_after"
+      - $ref: "#/definitions/response_filter_primary_rate_limit"
+      - $ref: "#/definitions/response_filter_secondary_rate_limit"
+      - $ref: "#/definitions/response_filter_exhausted_quota"
+      - $ref: "#/definitions/response_filter_attempt_not_found"
+      - $ref: "#/definitions/response_filter_forbidden_skips"
+
   requester_base:
     type: HttpRequester
     url_base: "{{ config.get('api_url', 'https://api.github.com').rstrip('/') }}"
@@ -102,172 +348,8 @@ definitions:
               url_path_pattern: "/graphql"
     request_headers:
       User-Agent: "PostmanRuntime/7.28.0"
-    # Replicates the legacy GithubStreamABC error contract:
-    # - rate limits are waited out instead of failing the sync. GitHub signals them
-    #   three different ways, and the legacy handler retried on any of them
-    #   (errors_handlers.py::GithubStreamABCErrorHandler.interpret_response), so all
-    #   three are matched below, ahead of the 404/403 filters:
-    #     1. a `Retry-After` header (sent on most, but per the docs not all,
-    #        secondary-limit responses);
-    #     2. an "API rate limit exceeded" message (primary limit) or an
-    #        "exceeded a secondary rate limit" message (secondary limit without
-    #        `Retry-After` — note secondary limits are tracked separately from the
-    #        primary quota, so `X-RateLimit-Remaining` may still be non-zero);
-    #     3. `X-RateLimit-Remaining: 0` on an error response, which is the fallback
-    #        the docs prescribe when `Retry-After` is absent. The declarative
-    #        predicate cannot see the status code, so "is an error response" is
-    #        approximated by GitHub's error envelope (a JSON object with a
-    #        `message`); successful payloads are arrays, or objects without a
-    #        top-level `message`, and must not match — the request that spends the
-    #        last quota point returns 200 with `X-RateLimit-Remaining: 0` and its
-    #        records have to be kept (token rotation handles the exhausted token);
-    # - 404 on an organization or repository is skipped with a warning so one
-    #   deleted repo or renamed org doesn't fail the whole sync (`check` enumerates
-    #   the partition routers below and relies on the same skip semantics);
-    # - plain 403 fails with an actionable scopes/SSO message (matches the legacy
-    #   mapping so `check` can catch bad token scopes).
-    # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
     error_handler:
-      type: DefaultErrorHandler
-      backoff_strategies:
-        # Both strategies are capped by the user's Max Waiting Time, so that setting bounds every
-        # rate-limit wait rather than only the ones the authenticator decides before sending.
-        # `check_connection` resolves the manifest with `max_waiting_time: 0`, which makes the cap
-        # 1s: an interactive check then fails in seconds with the rate-limit message instead of
-        # sleeping until the reset. A sync keeps the user's budget.
-        #
-        # Requires CDK >= 7.28.1, which ships airbytehq/airbyte-python-cdk#1126. Before it,
-        # `HttpClient` asked the authenticator for a spare credential only *after* a strategy
-        # returned a wait, and a cap raises instead of returning — so a budget shorter than the
-        # distance to the reset ended the stream rather than rotating onto a healthy token
-        # (measured on 7.28.0: 30min budget against a 60min reset failed with a second token
-        # idle). The rotation question is now asked first and the cap only governs waits that are
-        # actually taken, which `test_short_wait_budget_does_not_cost_token_rotation` proves end
-        # to end. 7.28.1 also resolves the cap at construction, so an expression this manifest
-        # got wrong fails at startup rather than at whichever rate limit reaches it first.
-        #
-        # `is not none` rather than `or 120`: a present-but-null `max_waiting_time` would reach
-        # the multiplication as None, and a falsy test would read check's deliberate 0 as absent
-        # and hand it 120 minutes. `+ 1` keeps the budget inclusive — the CDK compares with `>=`,
-        # so a user on the spec's minimum of 1 minute would otherwise get a 60s cap equal to the
-        # `min_wait: 60` floor below, and every headerless 5xx would fail instead of retrying.
-        - type: WaitTimeFromHeader
-          header: "Retry-After"
-          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-        - type: WaitUntilTimeFromHeader
-          header: "X-RateLimit-Reset"
-          min_wait: 60
-          # The cap is compared against the computed wait, not the raw reset timestamp, and it
-          # is applied after `min_wait` — so during check, where the cap is 1s, even the 60s
-          # floor below is refused.
-          max_waiting_time_in_seconds: "{{ (config['max_waiting_time'] if config.get('max_waiting_time') is not none else 120) * 60 + 1 }}"
-          # The 60s floor the legacy strategy enforced (backoff_strategies.py), so a reset
-          # timestamp already in the past, or seconds away, doesn't turn into a tight retry
-          # loop against a quota that hasn't actually refilled.
-          #
-          # It does NOT land on exactly the same responses legacy floored. Measured:
-          #
-          #                                     here    legacy
-          #   403 + Retry-After: 30              30s      60s    <- floor missing
-          #   403 + X-RateLimit-Reset now+10     60s      60s
-          #   403 + reset already past           60s      60s
-          #   500 / timeout, no such headers     60s     expo    <- floor leaking
-          #
-          # Two CDK strategies with mismatched options are why: WaitTimeFromHeader has no
-          # `min_wait` at all, so Retry-After is used raw; WaitUntilTimeFromHeader returns
-          # `min_wait` outright when its header is *absent* rather than treating it as a floor
-          # on a computed wait, and backoff_strategies are shared by every retryable response
-          # on this requester.
-          #
-          # Accepted deliberately, after measuring the alternatives:
-          #   - A CompositeErrorHandler with `min_wait` on a rate-limit-only branch changes
-          #     nothing. `CompositeErrorHandler.backoff_strategies` flattens every child's
-          #     strategies into one list -- its own docstring says the list "is not used to map
-          #     different strategies to different error conditions" -- and HttpClient takes the
-          #     first truthy one regardless of which branch matched. Byte-identical backoffs.
-          #   - Dropping `min_wait` fixes the leak but costs more: a stale or near reset then
-          #     returns None, the rate-limit path lands on backoff.expo with jitter=None, and
-          #     the retry budget is spent at 1s, 2s, 4s, 8s, 16s against a limit that has not
-          #     refilled. That is what the floor exists to prevent.
-          #
-          # The fix belongs in the CDK: WaitUntilTimeFromHeader should return None when its
-          # header is missing (`min_wait` is documented as a "minimum time to wait for safety",
-          # i.e. a floor on a computed wait), and WaitTimeFromHeader should gain `min_wait`.
-          # With the header present but stale, max(negative, min_wait) already yields 60s, so
-          # the floor survives exactly where it belongs. Four other connectors combine these
-          # two strategies and would move the same way.
-          #
-          # Until then: a headerless 5xx or a connection timeout waits 60s per attempt, up to
-          # max_retries (5), on every stream that inherits this requester.
-          # The wait below is only paid when rotating cannot help. CDK 7.26.0 reconciles the
-          # authenticator's counters against every response (the `*_header` fields on the
-          # quota pools above), so a primary rate limit — which GitHub reports as
-          # `X-RateLimit-Remaining: 0` — spends the rejected token's pool, and `HttpClient`
-          # asks `has_alternative_token` before sleeping on a RATE_LIMITED resolution: with a
-          # spare token it retries in 0.1s on that token instead of waiting out this window.
-          # This covers the reactive rotation the legacy strategy did at the 10-minute mark
-          # (backoff_strategies.py) and applies to manifest and Python streams alike, since
-          # both share one authenticator.
-          # Still waited out, correctly: a secondary rate limit, where the token's counters
-          # stay positive. GitHub scopes secondary limits per account, so rotating to another
-          # token of the same account would only be rejected again.
-      response_filters:
-        # Short-circuit successful responses before any rate-limit filter sees them.
-        # DefaultErrorHandler evaluates response_filters *before* it checks `response.ok`
-        # (default_error_handler.py::interpret_response) and returns on the first match, so
-        # without this a 200 that merely carries `Retry-After` — GHE, a proxy or a CDN
-        # throttling on its own account — is classified RATE_LIMITED: its records are
-        # discarded and the request is retried until `max_retries` runs out, failing the
-        # stream. The guard has to live in its own filter rather than as a conjunct in the
-        # predicates below, because `http_codes` is OR'd with `predicate` inside a filter
-        # (http_response_filter.py::_matches_filter) and the predicate context carries only
-        # the parsed body and the headers — no status code.
-        # Deliberately 200 only: GitHub answers 202 on /stats/contributors to mean "still
-        # computing, retry later", which `contributor_activity` backs off on today and which
-        # must not become a success when that stream migrates onto this requester.
-        - type: HttpResponseFilter
-          http_codes: [200]
-          action: SUCCESS
-        - type: HttpResponseFilter
-          predicate: "{{ 'Retry-After' in headers }}"
-          action: RATE_LIMITED
-          error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
-        - type: HttpResponseFilter
-          error_message_contains: "API rate limit exceeded"
-          action: RATE_LIMITED
-          error_message: "GitHub rate limit hit. Waiting for the rate limit window to reset before retrying."
-        - type: HttpResponseFilter
-          error_message_contains: "secondary rate limit"
-          action: RATE_LIMITED
-          error_message: "GitHub secondary rate limit hit. Waiting before retrying."
-        - type: HttpResponseFilter
-          # `is not none` (rather than a bare `response.get('message')`) is required:
-          # InterpolatedBoolean compares the *rendered* string against a fixed
-          # false-values list that does not include "None", so a falsy `.get()` would
-          # evaluate to true and rate-limit successful responses.
-          predicate: "{{ headers.get('X-RateLimit-Remaining') == '0' and response is mapping and response.get('message') is not none }}"
-          action: RATE_LIMITED
-          error_message: "GitHub rate limit exhausted (X-RateLimit-Remaining: 0). Waiting for the rate limit window to reset before retrying."
-        - type: HttpResponseFilter
-          http_codes: [404]
-          action: IGNORE
-          error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
-        # NOTE (Step 3+ migration checklist): 403 -> FAIL matches legacy behavior for
-        # `Repositories` ONLY — streams.py:162 re-raised 403 for that stream. Legacy
-        # SKIPPED 403 with a warning for Organizations/Teams/Users and the repo-scoped
-        # streams (streams.py:168-182), so migrating any of those under this shared
-        # filter would turn "skip the one org/repo you can't read" into a failed sync.
-        # Before migrating them, move this filter onto the per-stream error_handler (or
-        # switch it to IGNORE for those streams).
-        - type: HttpResponseFilter
-          http_codes: [403]
-          action: FAIL
-          failure_type: config_error
-          error_message: >-
-            GitHub denied access (HTTP 403). Your token may be missing required scopes
-            (this connector typically needs: repo, read:org, read:user, read:project, workflow),
-            or this organization may require SAML SSO authorization.
-            See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
+      $ref: "#/definitions/error_handler_base"
 
   page_link_paginator:
     type: DefaultPaginator
@@ -1132,16 +1214,109 @@ definitions:
                       - "null"
                       - string
 
+  # The `user.json` schema the Python streams share, hoisted so the inline schema below can
+  # reference it. A JSON-Schema `$ref` to a file does NOT work inside a manifest: the manifest
+  # reference resolver claims every `$ref` key, and for a non-`#/` target it returns the raw
+  # string and discards the sibling keys, so a `{$ref: user.json, description: ...}` property
+  # collapses to the literal string "user.json" and the schema stops being valid JSON Schema. A `#/`
+  # reference resolves to this object and keeps the sibling `description`.
+  github_user_schema:
+    type:
+      - "null"
+      - object
+    properties:
+      login:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      node_id:
+        type:
+          - "null"
+          - string
+      avatar_url:
+        type:
+          - "null"
+          - string
+      gravatar_id:
+        type:
+          - "null"
+          - string
+      url:
+        type:
+          - "null"
+          - string
+      html_url:
+        type:
+          - "null"
+          - string
+      followers_url:
+        type:
+          - "null"
+          - string
+      following_url:
+        type:
+          - "null"
+          - string
+      gists_url:
+        type:
+          - "null"
+          - string
+      starred_url:
+        type:
+          - "null"
+          - string
+      subscriptions_url:
+        type:
+          - "null"
+          - string
+      organizations_url:
+        type:
+          - "null"
+          - string
+      repos_url:
+        type:
+          - "null"
+          - string
+      events_url:
+        type:
+          - "null"
+          - string
+      received_events_url:
+        type:
+          - "null"
+          - string
+      type:
+        type:
+          - "null"
+          - string
+      site_admin:
+        type:
+          - "null"
+          - boolean
+
   # `workflow_runs_for_attempts` is the parent listing behind `workflow_run_attempts`, not a catalog
   # stream: the exposed `workflow_runs` stream is still Python (streams.py::WorkflowRuns) and stays
   # there until the workflow family is migrated. Both read the same endpoint, so this definition
   # deliberately mirrors WorkflowRuns' incremental contract instead of inventing a second one.
   #
-  # The two differences from WorkflowRuns, both forced by what the declarative components can
-  # express, are called out on the fields below: the 32-day re-run window is applied server-side
-  # through `created` rather than as a pagination break, and the run listing is fetched a second
-  # time when both streams are selected because a manifest stream and a Python stream cannot share
-  # a read.
+  # Four differences from WorkflowRuns, all forced by what the declarative components can express:
+  #  - the 32-day re-run window is applied server-side through `created` rather than as a
+  #    pagination break (see the parameter below);
+  #  - the run listing is fetched a second time when both streams are selected, because a manifest
+  #    stream and a Python stream cannot share a read - `use_cache` would not help, the two build
+  #    separate cache backends and only this one sends `created`;
+  #  - the cursor boundary is inclusive. `ConcurrentCursor.should_be_synced` is
+  #    `start <= value <= end` where `SemiIncrementalMixin` used a strict `>`, so the newest run of
+  #    each repository is re-read once per sync. Deduplicating destinations absorb it;
+  #  - a repository added to `repositories` after the first sync starts from the global cursor,
+  #    not from `start_date`. ConcurrentPerPartitionCursor seeds an unknown partition from the
+  #    global cursor (its own docstring: "The history data added after the initial sync will be
+  #    missing"), where legacy backfilled it. The `repositories` stream above carries the same
+  #    caveat for the same reason.
   workflow_runs_for_attempts_stream:
     type: DeclarativeStream
     name: workflow_runs_for_attempts
@@ -1152,6 +1327,11 @@ definitions:
         $ref: "#/definitions/requester_base"
         path: "repos/{{ stream_partition.repository }}/actions/runs"
         http_method: GET
+        # Legacy skipped a 403 on a repo-scoped stream with a warning rather than failing the
+        # sync (streams.py:176-183), and one repository the token cannot read Actions for must
+        # not take the other repositories down with it.
+        error_handler:
+          $ref: "#/definitions/error_handler_repo_scoped"
         request_parameters:
           # WorkflowRuns is not a `large_stream`, so it pages at constants.DEFAULT_PAGE_SIZE.
           per_page: "100"
@@ -1166,7 +1346,12 @@ definitions:
           # `last_record` and `last_page_size` only, so it cannot see the cursor.
           # `stream_interval.start_time` is the partition's cursor value (the config `start_date`
           # on the first sync); the day-granularity format rounds the window outwards, never in.
-          created: ">={{ format_datetime(str_to_datetime(stream_interval.start_time) - duration('P32D'), '%Y-%m-%d') }}"
+          # The epoch floor is not cosmetic. With no `start_date` the window opens at
+          # 1970-01-01, minus 32 days is 1969-11-30, and GitHub answers `created=>=1969-11-30`
+          # with HTTP 200 and `total_count: 0` - measured - so without the clamp the stream
+          # returns nothing at all for the (optional, therefore common) no-start-date config.
+          # `>=1970-01-01` returns the full history, which is what no start date means.
+          created: ">={{ format_datetime(max(str_to_datetime(stream_interval.start_time) - duration('P32D'), str_to_datetime('1970-01-01T00:00:00Z')), '%Y-%m-%d') }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1240,14 +1425,27 @@ definitions:
         # config names - GitHub Enterprise Server included - without repeating `url_base` here.
         # The first request of each partition targets the latest attempt; the paginator below walks
         # back from there, so this stream costs `run_attempt` requests per run.
-        path: "{{ stream_partition.run_url }}/attempts/{{ stream_slice.extra_fields.run_attempt }}"
+        # `or 1` because `run_attempt` is not required by GitHub's workflow-run schema and
+        # SubstreamPartitionRouter._extract_extra_fields yields None for a missing field, which
+        # Jinja renders as the literal "None" - the request would 404 and the run would be
+        # dropped in full. A run without `run_attempt` has exactly one attempt.
+        path: "{{ stream_partition.run_url }}/attempts/{{ stream_slice.extra_fields.run_attempt or 1 }}"
         http_method: GET
+        error_handler:
+          $ref: "#/definitions/error_handler_attempt_chain"
       record_selector:
         type: RecordSelector
         extractor:
           # Unlike the listing, the attempt endpoint returns a single workflow run object.
           type: DpathExtractor
           field_path: []
+        # `field_path: []` emits whatever the body is, so a 200 carrying an envelope rather than
+        # a run - GitHub answers `{"message": ...}` with 200 on some redirect and deprecation
+        # paths - would otherwise land in the destination as a row whose whole primary key is
+        # null. Requiring the key fields is the cheapest way to keep that out.
+        record_filter:
+          type: RecordFilter
+          condition: "{{ record.get('id') is not none and record.get('run_attempt') is not none }}"
       paginator:
         # `previous_attempt_url` is the documented back-link from an attempt to the one before it,
         # and null on the first attempt - so the attempt chain is literally a cursor pagination and
@@ -1258,7 +1456,11 @@ definitions:
         pagination_strategy:
           type: CursorPagination
           cursor_value: "{{ response['previous_attempt_url'] }}"
-          stop_condition: "{{ not response['previous_attempt_url'] }}"
+          # The second clause is a loop guard, not a correctness condition: attempt 1 always
+          # reports a null `previous_attempt_url`, so the first clause is what normally ends the
+          # walk. The CDK's DefaultPaginator has no page cap, so a `previous_attempt_url` that
+          # failed to descend would otherwise page forever.
+          stop_condition: "{{ not response['previous_attempt_url'] or (response['run_attempt'] or 0) <= 1 }}"
       partition_router:
         type: SubstreamPartitionRouter
         parent_stream_configs:
@@ -1387,7 +1589,9 @@ definitions:
               - string
           pull_requests:
             description: List of all pull requests associated with the workflow run.
-            type: array
+            type:
+              - "null"
+              - array
             items:
               type:
                 - "null"
@@ -1396,11 +1600,15 @@ definitions:
               additionalProperties: true
           created_at:
             description: The timestamp when this attempt was created.
-            type: string
+            type:
+              - "null"
+              - string
             format: date-time
           updated_at:
             description: The timestamp when the workflow run was last updated.
-            type: string
+            type:
+              - "null"
+              - string
             format: date-time
           run_attempt:
             description: Attempt number of this workflow run attempt.
@@ -1409,7 +1617,9 @@ definitions:
               - integer
           referenced_workflows:
             description: List of workflows referenced by the workflow runs
-            type: array
+            type:
+              - "null"
+              - array
             items:
               type: object
               properties:
@@ -1424,7 +1634,9 @@ definitions:
                   type: string
           run_started_at:
             description: The timestamp when the workflow run started.
-            type: string
+            type:
+              - "null"
+              - string
             format: date-time
           jobs_url:
             description: URL to access jobs associated with this workflow run attempt.
@@ -1468,7 +1680,9 @@ definitions:
               - string
           head_commit:
             description: Details about the commit associated with the workflow run.
-            type: object
+            type:
+              - "null"
+              - object
             properties:
               id:
                 description: ID of the head commit.
@@ -1516,7 +1730,9 @@ definitions:
                       - string
           repository:
             description: Details about the repository where the workflow run is executed.
-            type: object
+            type:
+              - "null"
+              - object
             properties:
               id:
                 description: ID of the repository.
@@ -1543,7 +1759,7 @@ definitions:
                   - boolean
               owner:
                 description: The owner of the repository.
-                $ref: user.json
+                $ref: "#/definitions/github_user_schema"
               html_url:
                 description: HTML URL of the repository.
                 type:
@@ -1777,7 +1993,7 @@ definitions:
                   - boolean
               owner:
                 description: The owner of the repository.
-                $ref: user.json
+                $ref: "#/definitions/github_user_schema"
               html_url:
                 description: HTML URL of the repository.
                 type:
@@ -1980,10 +2196,10 @@ definitions:
                   - string
           actor:
             description: The user or entity responsible for triggering the workflow run.
-            $ref: user.json
+            $ref: "#/definitions/github_user_schema"
           triggering_actor:
             description: The user or entity that triggered the workflow run.
-            $ref: user.json
+            $ref: "#/definitions/github_user_schema"
 
 # Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
 # is per token, so this is conservative — a multi-token config could spend more than this
