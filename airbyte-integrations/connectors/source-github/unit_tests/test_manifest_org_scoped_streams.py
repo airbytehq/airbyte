@@ -212,14 +212,9 @@ def test_only_payload_confirmed_organizations_are_sliced(stream_name, path, inje
 
 
 def test_teams_listing_is_read_once_for_both_teams_and_team_members(rate_limit_mock_response, requests_mock):
-    """`orgs/{org}/teams` must serve the declarative `teams` stream and the Python `Teams` parent
-    read from one request.
-
-    `Teams` survives Step 4 only as `TeamMembers`' parent, on the argument that it costs no extra
-    quota. That holds because both sides cache under the same `teams.sqlite` name — drop
-    `use_cache` from either `organization_scoped_requester` or the class and the listing is
-    fetched once per organization per selected stream instead.
-    """
+    """`orgs/{org}/teams` must serve the `teams` stream and the parent read `team_members` makes
+    from one request; `organization_scoped_requester` caches it (`use_cache: true`), so drop that
+    and the listing is fetched once per organization per selected stream instead."""
     config = _config("airbytehq/airbyte")
     _mock_repository_resolution(requests_mock, *config["repositories"])
     listing = requests_mock.get(

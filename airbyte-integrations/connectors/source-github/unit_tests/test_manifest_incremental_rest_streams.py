@@ -21,7 +21,6 @@ from unittest.mock import patch
 
 import pytest
 from source_github.source import SourceGithub
-from source_github.streams import Comments, Issues
 
 from airbyte_cdk.models import (
     AirbyteStateBlob,
@@ -447,25 +446,6 @@ def test_streams_are_served_by_the_manifest_only(rate_limit_mock_response, reque
     discovered = [stream.name for stream in SourceGithub(config=dict(config)).discover(logging.getLogger("airbyte"), dict(config)).streams]
     for name in migrated:
         assert discovered.count(name) == 1
-
-
-@pytest.mark.parametrize(
-    ("technical_stream", "child", "fields"),
-    [
-        (Comments, "IssueCommentReactions", ["repository", "id"]),
-        (Issues, "IssueTimelineEvents", ["repository", "number"]),
-    ],
-)
-def test_technical_parent_streams_still_answer_get_json_schema(technical_stream, child, fields):
-    """`Comments` and `Issues` stay in `streams.py` after this step because `{child}` constructs
-    them as its parent and is only migrated in Step 7. Their schema files were deleted with the
-    migration, so both override `get_json_schema` rather than falling back to the missing file."""
-    stream = technical_stream(repositories=["docker/compose"], page_size_for_large_streams=10)
-
-    schema = stream.get_json_schema()
-
-    assert schema["type"] == "object"
-    assert set(fields) <= set(schema["properties"])
 
 
 def test_comments_two_sync_parity_with_legacy(rate_limit_mock_response, requests_mock):
