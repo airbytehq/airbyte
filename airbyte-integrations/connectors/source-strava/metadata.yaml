@@ -6,7 +6,7 @@ data:
     hosts:
       - strava.com
   connectorBuildOptions:
-    baseImage: docker.io/airbyte/source-declarative-manifest:7.23.4@sha256:f63c39a8a6f28ec20ada2ddf5861f3b1fb7b6a1ef1a8a8d1d537ff684ee3f9bd
+    baseImage: docker.io/airbyte/source-declarative-manifest:7.28.3@sha256:6c926ab34644e3fb6f5422aea148599eef8a8d877cd8b8b28b3e7af914d93bbf
   connectorSubtype: api
   connectorType: source
   definitionId: 7a4327c4-315a-11ec-8d3d-0242ac130003
