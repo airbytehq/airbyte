@@ -84,9 +84,17 @@ STATE would otherwise gain a meaningless `{"partition": {}}` entry.
 
 ## Workflow run attempts: three traps, all silent
 
-`workflow_run_attempts` is the first manifest stream with a parent of its own, and the first whose
-parent is internal rather than a catalog stream. Every one of these cost a review round. They are enforced by `unit_tests/test_workflow_run_attempts.py`; if a
-test there starts failing, read this before "fixing" it.
+`workflow_run_attempts` is the first manifest stream whose parent carries state
+(`incremental_dependency`, which appears nowhere else in the manifest), and so the first whose
+incremental behaviour is decided by a stream other than itself. Parent/child wiring on its own is
+not new — `repositories` slices on `organization_partition_router`, whose parent is the internal
+`repository_stats` stream — and the difference between that router and
+`organization_resolution_partition_router` is what broke 2.2.0, so read the manifest comment above
+them before adding another one.
+
+Each trap below cost a review round. They are enforced by
+`unit_tests/test_workflow_run_attempts.py`; if a test there starts failing, read this before
+"fixing" it.
 
 **Never filter the child on the attempt's own cursor.** `GET /actions/runs` returns one record per
 run — the latest attempt — so earlier attempts are only reachable through the per-attempt endpoint.

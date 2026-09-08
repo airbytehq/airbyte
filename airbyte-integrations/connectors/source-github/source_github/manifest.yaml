@@ -2289,11 +2289,13 @@ definitions:
             description: The user or entity that triggered the workflow run.
             $ref: "#/definitions/github_user_schema"
 
-# Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
-# is per token, so this is conservative — a multi-token config could spend more than this
-# allows. Left global on purpose, because the CDK budget has no notion of which credential a
-# request will be signed with, and under-spending a secondary limit is much cheaper than
-# tripping one. It also only covers declarative requesters: the Python streams, and the
+# Deliberately one global budget rather than one per token. GitHub scopes the 900 points/min
+# secondary limit per *account*, not per token — see the authenticator's `quotas` comment above,
+# which is why rotating to another token of the same account does not escape one — so a global
+# budget is the correct shape for the common single-account config, and conservative only when
+# the tokens span several accounts. Left global in either case, because the CDK budget has no
+# notion of which credential a request will be signed with, and under-spending a secondary limit
+# is much cheaper than tripping one. It also only covers declarative requesters: the Python streams, and the
 # authenticator's own /rate_limit probes (RateLimitedMultipleTokenAuthenticator builds its
 # quota client without an api_budget), spend the same GitHub budget outside it.
 api_budget:
