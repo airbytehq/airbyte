@@ -83,7 +83,7 @@ def test_sync_still_waits_out_a_rate_limit_within_the_budget(requests_mock):
                 "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(time.time()) + 120)},
                 "json": {"message": "API rate limit exceeded for user ID 1."},
             },
-            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+            {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
@@ -106,7 +106,7 @@ def test_transient_error_still_retries_on_the_smallest_wait_budget(requests_mock
         "https://api.github.com/orgs/org/repos",
         [
             {"status_code": 500, "json": {"message": "Server Error"}},
-            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+            {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "max_waiting_time": 1}
@@ -140,7 +140,7 @@ def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
                 "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(reset_at)},
                 "json": {"message": "API rate limit exceeded for user ID 1."},
             },
-            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+            {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
     config = {
@@ -251,7 +251,7 @@ def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_m
     requests_mock.get(f"{api_url}/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
     requests_mock.get(
         f"{api_url}/orgs/org/repos",
-        json=[{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}],
+        json=[{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}],
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "api_url": api_url}
 
@@ -526,3 +526,27 @@ def test_resolution_stops_without_next_link(requests_mock):
 
     assert len(repositories) == 100
     assert listing.call_count == 1
+
+
+def test_wildcard_on_user_account_resolves_no_organization(requests_mock):
+    """A wildcard naming a user account contributes repositories but no organization.
+
+    `orgs/{user}/repos` 404s, so the wildcard expands to nothing and the repo is reachable
+    only through its explicit entry. Handing `octocat` to the org-scoped streams anyway made
+    every `orgs/octocat` request 404, and the swallowed 404 on those full-refresh streams
+    retried the same partition until the platform's source heartbeat killed the sync. The
+    legacy resolver collected orgs from fetched repo metadata, which is why 2.1.x synced this
+    config fine."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get("https://api.github.com/orgs/octocat/repos", status_code=404, json={"message": "Not Found"})
+    requests_mock.get(
+        "https://api.github.com/repos/octocat/hello-world",
+        json={"full_name": "octocat/hello-world", "owner": {"login": "octocat"}},
+    )
+
+    organizations, repositories = _resolve(
+        {"credentials": {"personal_access_token": "test_token"}, "repositories": ["octocat/*", "octocat/hello-world"]}
+    )
+
+    assert repositories == ["octocat/hello-world"]
+    assert organizations == []
