@@ -98,7 +98,7 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ### Pricing streams
 
-The `voice_pricing_countries`, `messaging_pricing_countries`, and `phone_number_pricing_countries` streams return per-country price lists from Twilio's Pricing API. Each stream first lists all supported countries, then makes one request per country to fetch that country's prices, so each sync makes one API request per supported country. Prices are specific to the account you authenticate with: `base_price` is Twilio's list price and `current_price` includes any volume or custom discounts on your account. Each record is keyed by `iso_country`.
+The `voice_pricing_countries`, `messaging_pricing_countries`, and `phone_number_pricing_countries` streams return per-country price lists from Twilio's Pricing API. Each stream first pages through the list of supported countries, then makes one additional request per country to fetch that country's prices, so a sync of these streams makes more API requests than there are supported countries. Prices are specific to the account you authenticate with: `base_price` is Twilio's list price and `current_price` includes any volume or custom discounts on your account. Each record is keyed by `iso_country`.
 
 ## Upgrading to 1.0.0
 
