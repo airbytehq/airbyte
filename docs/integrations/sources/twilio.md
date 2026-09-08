@@ -163,6 +163,7 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.0 | 2026-09-08 | [85748](https://github.com/airbytehq/airbyte/pull/85748) | Promoting release candidate 1.1.0-rc.1 to a main version. |
 | 1.1.0-rc.1 | 2026-08-11 | [84203](https://github.com/airbytehq/airbyte/pull/84203) | Add voice, messaging, and phone number pricing country streams |
 | 1.0.13 | 2026-08-11 | [84128](https://github.com/airbytehq/airbyte/pull/84128) | Update dependencies |
 | 1.0.12 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
