@@ -159,6 +159,13 @@ directly.
   a row to the changelog when you touch any of them.
 - **`config.cdc.json` uses `ssl_method: unencrypted`.** Fine for a local
   throwaway container, never for a real source.
+- **`Incumbent CDC state is invalid ... Saved offset no longer present`
+  on both control and target with a fresh backend.** The derived
+  catalog defaulted to `full_refresh`, so the connector configured no
+  CDC streams and rejected its own cold-start offset. Pass
+  `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=<tables>`
+  (or `--catalog=PATH`); `run.sh` now detects this
+  combination and exits 2 before running `read`.
 
 ## Comparison-mode regression testing
 
@@ -181,9 +188,22 @@ poe e2e-local --test-version=dev --control-version=5.0.0 \
 # CDC. Two single-version sweeps with a fixture reset between them, so
 # the target does not read against the control's warm capture instance.
 poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
+  --config-template=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/configs/cdc.template.json \
+  --sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/00-init-cdc.sql \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
 ```
+
+For CDC the catalog must be incremental: the catalog derived from
+`discover` defaults to `full_refresh`, which configures zero CDC
+streams, so pass `--sync-mode=incremental --cursor-field=_ab_cdc_cursor`
+(or an explicit
+`--catalog=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/catalogs/users-cdc.json`).
+`--streams` is required because `discover` also lists the CDC system
+table `dbo.systranschemas`, which has no capture instance and fails
+the CDC availability check. `run.sh` now refuses to run `read` when a
+CDC config (`replication_method.method == "CDC"`) would get a
+full-refresh derived catalog, exiting 2 with the flags to pass.
 
 Both runs must observe equivalent backend state. Under
 `--reset=none` (the default) the two images share the backend, which is

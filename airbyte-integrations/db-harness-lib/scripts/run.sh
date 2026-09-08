@@ -36,6 +36,14 @@
 #           if any `--fixture=` is also passed (either apply fixtures
 #           or skip them — asking for both is a caller bug).
 #
+#   --sync-mode=incremental (with --cursor-field and usually
+#          --streams, or an explicit --catalog) is required when the
+#          config uses `replication_method.method == "CDC"`: without it
+#          the derived catalog is full_refresh, the connector configures
+#          no CDC streams, and the read aborts with a misleading
+#          'Saved offset no longer present' error. run.sh refuses that
+#          combination outright (exit 2) once the config is rendered.
+#
 #   --state passes a saved state file to the read step as
 #           `--state-path`. Meant for multi-phase drivers: a first
 #           `run.sh` writes the read's stdout, the driver extracts a
@@ -283,6 +291,19 @@ rm -rf "$ARTIFACTS_DIR"
 mkdir -p "$ARTIFACTS_DIR"
 CONFIG_TEMPLATE="${CONFIG_TEMPLATE:-${DEFAULT_CONFIG_TEMPLATE:?engine shim must export DEFAULT_CONFIG_TEMPLATE}}"
 "$LIB_SCRIPTS/render-config.sh" "$CONFIG_TEMPLATE" "$WORKING_CONFIG"
+
+# A CDC config with a full-refresh derived catalog configures zero
+# incremental CDC streams and the read aborts with a misleading 'Saved
+# offset no longer present' error, so refuse that combination outright.
+# An explicit --catalog is the caller's escape hatch.
+case " ${COMMANDS[*]} " in *" read "*)
+  if [[ -z "$CATALOG" && "$SYNC_MODE" != incremental ]] \
+    && jq -e '.replication_method.method == "CDC"' "$WORKING_CONFIG" >/dev/null; then
+    echo "[run] config uses replication_method CDC but the derived catalog would be full_refresh; pass --sync-mode=incremental --cursor-field=<cursor> --streams=<tables> (or --catalog=PATH), otherwise the connector configures no CDC streams and the read aborts with a misleading 'Saved offset no longer present' error" >&2
+    exit 2
+  fi
+  ;;
+esac
 
 # Under --reset=fixture|backend we run two full single-version sweeps
 # with a reset between them. Every STATUS/RC/NOTE entry is prefixed by
