@@ -55,7 +55,7 @@ definitions:
             customerTicketCount cycle { id } description descriptionState
             dueDate estimate identifier integrationSourceType labelIds number
             parent { id } previousIdentifiers priority priorityLabel
-            prioritySortOrder project { id } projectMilestone { id }
+            prioritySortOrder project { id teams { nodes { id } } } projectMilestone { id }
             reactionData snoozedBy { id } snoozedUntilAt sortOrder startedAt
             state { id } startedTriageAt subIssueSortOrder team { id } title
             trashed triagedAt updatedAt url attachments { nodes { id } }
@@ -158,6 +158,16 @@ definitions:
         field_pointers:
           - - project
             - id
+      - type: AddFields
+        fields:
+          - type: AddedFieldDefinition
+            path:
+              - projectTeamIds
+            value: "{{ (record.project.teams.nodes | map(attribute='id') | list) if (record.project and record.project.teams) else [] }}"
+      - type: RemoveFields
+        field_pointers:
+          - - project
+            - teams
       - type: AddFields
         fields:
           - type: AddedFieldDefinition
@@ -2355,6 +2365,14 @@ schemas:
         type:
           - object
           - "null"
+      projectTeamIds:
+        type:
+          - array
+          - "null"
+        items:
+          type:
+            - string
+            - "null"
       reactionData:
         type:
           - array
