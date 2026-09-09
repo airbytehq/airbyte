@@ -3,39 +3,42 @@ plan: all
 sidebar_position: 4
 ---
 
-import SdkVsApi from '@site/static/_ai-agents-sdk-vs-api.md';
-
 # API
 
 The Agent API lets you manage connectors, credentials, and data operations programmatically over HTTP. Use it to integrate Airbyte Agents into any language or framework, or to build custom backend services that interact with third-party data sources.
 
-This section walks through the four operations most apps need: authenticate, add a connector, execute operations, and manage workspaces. Deeper endpoint details (every parameter, response schema, and error code) live in the [API reference](/ai-agents/reference/api).
+This section walks through the operations most apps need: authenticate, add a connector, execute operations, and manage workspaces. Deeper endpoint details (every parameter, response schema, and error code) live in the [API reference](/ai-agents/reference/api).
 
-## Choose your interface
+## When to use the API
 
-<SdkVsApi />
+- Your backend isn't Python, so the SDK isn't an option.
+- You need direct HTTP control over authentication, connector management, or execution.
+- You're building custom admin flows or embedding the authentication module in your application.
+- You want to call Airbyte Agents from any language or framework that can make HTTP requests.
+
+If you're writing Python, the [SDK](../sdk/readme.md) wraps the same endpoints with a typed interface. If your agent speaks the Model Context Protocol, the [MCP server](../mcp/readme.md) gives you zero-install access. For shell scripts and CI, see the [CLI](../cli/readme.md).
 
 ## Base URL
 
 All API requests use the base URL `https://api.airbyte.ai`.
 
-If your account belongs to multiple organizations, generate your application token from the organization you want to target. The API resolves the target organization from the token, so you don't need to pass an extra header.
+If your account belongs to a single organization, the API resolves the target organization from your credentials and you don't need to pass an extra header. If your account belongs to multiple organizations, you must add an `X-Organization-Id: <organization_id>` header when you request an application token, or the API returns a `400` asking you to specify the organization. To find the ID, run `airbyte-agent organizations list` with the [CLI](../cli/workspaces.md#list-organizations), or copy it from the `/organizations/<organization_id>` URL after you select the organization in [app.airbyte.ai](https://app.airbyte.ai).
 
 ## How the pieces fit together
 
-The four pages in this section are designed to map one-to-one with the [SDK](../sdk) section so the same mental model works in either environment.
+The pages in this section follow the same order as the [SDK](../sdk/readme.md) section, so the same mental model works in either environment.
 
-1. **[Authentication](./authentication)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
+1. **[Authentication](./authentication/readme.md)**: Get an application token (and, when needed, a scoped token). This is how every subsequent call is authorized.
 
-2. **[Add a connector](./add-connector)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
+2. **[Add a connector](./add-connector.md)**: Create a connector from a `definition_id` plus the credentials for the third-party service.
 
-3. **[Execute operations](./execute)**: Call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
+3. **[Execute operations](./execute.md)**: First introspect the connector (`GET /integrations/connectors/<connector_id>/inspect`, then `GET /skills/docs`) to discover its entities, actions, and usage guidance, then call `POST /integrations/connectors/<connector_id>/execute` to read from or take action on the connected service.
 
-4. **[Manage workspaces](./workspaces)**: Administer workspaces (list, update, delete). These are operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
+4. **[Manage workspaces](./workspaces.md)**: Administer workspaces (list, update, delete). These are operations the SDK defers to the API. Most apps use the `default` workspace and don't need this page.
 
 ## End-to-end example
 
-This snippet authenticates, creates a connector, and executes a single operation. It parallels the [SDK end-to-end example](../sdk).
+This snippet authenticates, creates a connector, and executes a single operation. It parallels the [SDK end-to-end example](../sdk/readme.md).
 
 ```bash title="1. Get an application token"
 curl -X POST https://api.airbyte.ai/api/v1/account/applications/token \

@@ -16,7 +16,7 @@ jobs:
     # Only run on PR comments from Devin bot that contain the review result marker
     if: |
       github.event.issue.pull_request &&
-      github.event.comment.user.login == 'devin-ai-integration[bot]' &&
+      (github.event.comment.user.login == 'devin-ai-integration[bot]' || github.event.comment.user.login == 'airbyte-support-bot') &&
       contains(github.event.comment.body, '<!-- pr_ai_review_result:')
     runs-on: ubuntu-latest
     steps:

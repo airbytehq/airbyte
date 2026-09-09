@@ -38,8 +38,9 @@ Classes
         - completed_at: ISO 8601 timestamp when the checkout was completed, if applicable
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -50,6 +51,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against abandoned_checkouts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, limit: int | None = None, since_id: int | None = None, created_at_min: str | None = None, created_at_max: str | None = None, updated_at_min: str | None = None, updated_at_max: str | None = None, status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[AbandonedCheckout], AbandonedCheckoutsListResultMeta]`
     :   Returns a list of abandoned checkouts
@@ -66,6 +82,306 @@ Classes
         
         Returns:
             AbandonedCheckoutsListResult
+
+<a id="ArticlesQuery"></a>
+
+`ArticlesQuery(connector: ShopifyConnector)`
+:   Query class for Articles entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: ArticlesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ArticlesSearchData]`
+    :   Search articles records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ArticlesSearchFilter):
+        - id: Unique identifier for the article
+        - title: Title of the article
+        - handle: URL-friendly handle for the article
+        - author: Name of the author of the article
+        - blog_id: Identifier of the blog the article belongs to
+        - body_html: HTML content of the article body
+        - summary_html: Summary of the article in HTML
+        - tags: Comma-separated list of tags for the article
+        - published_at: ISO 8601 timestamp when the article was published
+        - created_at: ISO 8601 timestamp when the article was created
+        - updated_at: ISO 8601 timestamp when the article was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ArticlesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against articles records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, article: ArticlesCreateParamsArticle, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ArticleCreatePayload`
+    :   Creates a new blog article via GraphQL mutation.
+        
+        
+        Args:
+            article: Parameter article
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticleCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ArticleDeletePayload`
+    :   Deletes a blog article via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the article to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticleDeletePayload
+
+    `get(self, blog_id: str, article_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Article`
+    :   Retrieves a single article by ID from a blog
+        
+        Args:
+            blog_id: The blog ID
+            article_id: The article ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Article
+
+    `list(self, blog_id: str, limit: int | None = None, since_id: int | None = None, created_at_min: str | None = None, created_at_max: str | None = None, updated_at_min: str | None = None, updated_at_max: str | None = None, published_status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Article], ArticlesListResultMeta]`
+    :   Returns a list of articles from a specific blog
+        
+        Args:
+            blog_id: The blog ID
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            created_at_min: Show articles created after date (ISO 8601 format)
+            created_at_max: Show articles created before date (ISO 8601 format)
+            updated_at_min: Show articles last updated after date (ISO 8601 format)
+            updated_at_max: Show articles last updated before date (ISO 8601 format)
+            published_status: Filter by published status (published, unpublished, any)
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticlesListResult
+
+    `update(self, article: ArticlesUpdateParamsArticle, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ArticleUpdatePayload`
+    :   Updates an existing blog article via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the article to update
+            article: Parameter article
+            **kwargs: Additional parameters
+        
+        Returns:
+            ArticleUpdatePayload
+
+<a id="BalanceTransactionsQuery"></a>
+
+`BalanceTransactionsQuery(connector: ShopifyConnector)`
+:   Query class for BalanceTransactions entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: BalanceTransactionsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BalanceTransactionsSearchData]`
+    :   Search balance_transactions records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (BalanceTransactionsSearchFilter):
+        - id: Unique identifier of the balance transaction
+        - type_: Type of the transaction (charge, refund, dispute, reserve, adjustment, credit, debit, payout, etc.)
+        - amount: Gross amount of the transaction
+        - fee: Total fees deducted from the transaction
+        - net: Net amount of the transaction
+        - currency: ISO 4217 currency code of the transaction
+        - payout_id: Identifier of the payout the transaction was paid out in
+        - payout_status: Status of the associated payout
+        - source_type: Type of the resource that led to this transaction
+        - source_order_id: Identifier of the source order, if applicable
+        - processed_at: ISO 8601 timestamp when the transaction was processed
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            BalanceTransactionsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against balance_transactions records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, limit: int | None = None, since_id: int | None = None, payout_id: int | None = None, payout_status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[BalanceTransaction], BalanceTransactionsListResultMeta]`
+    :   Returns a list of Shopify Payments balance transactions
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            payout_id: Filter to transactions in a specific payout
+            payout_status: Filter by payout status
+            **kwargs: Additional parameters
+        
+        Returns:
+            BalanceTransactionsListResult
+
+<a id="BlogsQuery"></a>
+
+`BlogsQuery(connector: ShopifyConnector)`
+:   Query class for Blogs entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: BlogsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[BlogsSearchData]`
+    :   Search blogs records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (BlogsSearchFilter):
+        - id: Unique identifier for the blog
+        - title: Title of the blog
+        - handle: URL-friendly handle for the blog
+        - commentable: Whether readers can post comments (no, moderate, yes)
+        - tags: Comma-separated tags from the blog's articles
+        - created_at: ISO 8601 timestamp when the blog was created
+        - updated_at: ISO 8601 timestamp when the blog was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            BlogsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against blogs records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, blog: BlogsCreateParamsBlog, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.BlogCreatePayload`
+    :   Creates a new blog on the online store via GraphQL mutation.
+        
+        
+        Args:
+            blog: Parameter blog
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.BlogDeletePayload`
+    :   Deletes a blog from the online store via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the blog to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogDeletePayload
+
+    `get(self, blog_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Blog`
+    :   Retrieves a single blog by ID
+        
+        Args:
+            blog_id: The blog ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Blog
+
+    `list(self, limit: int | None = None, since_id: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Blog], BlogsListResultMeta]`
+    :   Returns a list of blogs for the store
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogsListResult
+
+    `update(self, blog: BlogsUpdateParamsBlog, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.BlogUpdatePayload`
+    :   Updates an existing blog via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the blog to update
+            blog: Parameter blog
+            **kwargs: Additional parameters
+        
+        Returns:
+            BlogUpdatePayload
 
 <a id="CollectsQuery"></a>
 
@@ -91,8 +407,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the collect was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -103,6 +420,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against collects records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, collect_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Collect`
     :   Retrieves a single collect by ID
@@ -149,8 +481,9 @@ Classes
         - tax_name: Localized name of the tax applied in this country
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -161,6 +494,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against countries records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, country_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Country`
     :   Retrieves a single country by ID
@@ -207,8 +555,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the collection was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -219,6 +568,44 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against custom_collections records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, input: CustomCollectionsCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CollectionCreatePayload`
+    :   Creates a new collection (custom or smart) via GraphQL mutation.
+        For smart collections, provide ruleSet with rules.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CollectionCreatePayload
+
+    `delete(self, input: CustomCollectionsDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CollectionDeletePayload`
+    :   Deletes a collection via GraphQL mutation.
+        
+        
+        Args:
+            input: Parameter input
+            **kwargs: Additional parameters
+        
+        Returns:
+            CollectionDeletePayload
 
     `get(self, collection_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomCollection`
     :   Retrieves a single custom collection by ID
@@ -244,6 +631,18 @@ Classes
         
         Returns:
             CustomCollectionsListResult
+
+    `update(self, input: CustomCollectionsUpdateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CollectionUpdatePayload`
+    :   Updates an existing collection via GraphQL mutation.
+        Rule-based membership recompute is async for smart collections.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CollectionUpdatePayload
 
 <a id="CustomerAddressQuery"></a>
 
@@ -305,8 +704,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the customer record was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -317,6 +717,45 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against customers records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, input: CustomersCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomerCreatePayload`
+    :   Creates a new customer in the store via GraphQL mutation.
+        Requires at least one of: email, phone, firstName, or lastName.
+        
+        
+                Args:
+                    input: CustomerInput object
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CustomerCreatePayload
+
+    `delete(self, input: CustomersDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomerDeletePayload`
+    :   Deletes a customer from the store via GraphQL mutation.
+        Only succeeds if the customer has no orders. This action is irreversible.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CustomerDeletePayload
 
     `get(self, customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Customer`
     :   Retrieves a single customer by ID
@@ -343,6 +782,18 @@ Classes
         Returns:
             CustomersListResult
 
+    `update(self, input: CustomersUpdateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.CustomerUpdatePayload`
+    :   Updates an existing customer via GraphQL mutation.
+        All fields except id are optional for partial updates.
+        
+        
+                Args:
+                    input: CustomerInput object with id
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    CustomerUpdatePayload
+
 <a id="DiscountCodesQuery"></a>
 
 `DiscountCodesQuery(connector: ShopifyConnector)`
@@ -367,8 +818,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the code was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -379,6 +831,44 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against discount_codes records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, basic_code_discount: DiscountCodesCreateParamsBasiccodediscount, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCodeBasicCreatePayload`
+    :   Creates a basic discount code via GraphQL mutation.
+        Supports percentage, fixed amount, or free shipping discounts.
+        
+        
+                Args:
+                    basic_code_discount: Parameter basicCodeDiscount
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DiscountCodeBasicCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCodeDeletePayload`
+    :   Deletes a discount code via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the discount code node to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            DiscountCodeDeletePayload
 
     `get(self, price_rule_id: str, discount_code_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCode`
     :   Retrieves a single discount code by ID
@@ -401,6 +891,120 @@ Classes
         
         Returns:
             DiscountCodesListResult
+
+    `update(self, basic_code_discount: DiscountCodesUpdateParamsBasiccodediscount, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DiscountCodeBasicUpdatePayload`
+    :   Updates an existing basic discount code via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the discount code node to update
+            basic_code_discount: Parameter basicCodeDiscount
+            **kwargs: Additional parameters
+        
+        Returns:
+            DiscountCodeBasicUpdatePayload
+
+<a id="DisputesQuery"></a>
+
+`DisputesQuery(connector: ShopifyConnector)`
+:   Query class for Disputes entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: DisputesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[DisputesSearchData]`
+    :   Search disputes records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (DisputesSearchFilter):
+        - id: Unique identifier for the dispute
+        - order_id: Identifier of the order the dispute belongs to
+        - type_: Whether the dispute is an inquiry or chargeback
+        - amount: Disputed amount
+        - currency: ISO 4217 currency code of the dispute amount
+        - reason: Reason for the dispute provided by the cardholder's bank
+        - network_reason_code: Network reason code from the cardholder's bank
+        - status: Current state of the dispute (needs_response, under_review, charge_refunded, accepted, won, lost)
+        - evidence_due_by: ISO 8601 deadline for evidence submission
+        - initiated_at: ISO 8601 timestamp when the dispute was initiated
+        - finalized_on: ISO 8601 timestamp when the dispute was resolved
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            DisputesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against disputes records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `get(self, dispute_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Dispute`
+    :   Retrieves a single Shopify Payments dispute by ID
+        
+        Args:
+            dispute_id: The dispute ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Dispute
+
+    `list(self, limit: int | None = None, since_id: int | None = None, status: str | None = None, initiated_at: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Dispute], DisputesListResultMeta]`
+    :   Returns a list of Shopify Payments disputes (chargebacks and inquiries)
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            status: Filter by dispute status
+            initiated_at: Filter by initiated date (ISO 8601 format)
+            **kwargs: Additional parameters
+        
+        Returns:
+            DisputesListResult
+
+<a id="DraftOrderCompleteQuery"></a>
+
+`DraftOrderCompleteQuery(connector: ShopifyConnector)`
+:   Query class for DraftOrderComplete entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `update(self, id: str | None = None, payment_pending: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderCompletePayload`
+    :   Completes a draft order, converting it to a regular order via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the draft order to complete
+            payment_pending: Whether payment is pending (true) or mark as paid (false/omit)
+            **kwargs: Additional parameters
+        
+        Returns:
+            DraftOrderCompletePayload
 
 <a id="DraftOrdersQuery"></a>
 
@@ -430,8 +1034,9 @@ Classes
         - completed_at: ISO 8601 timestamp when the draft order was completed, if applicable
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -442,6 +1047,45 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against draft_orders records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, input: DraftOrdersCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderCreatePayload`
+    :   Creates a new draft order via GraphQL mutation.
+        Draft orders can be completed to become regular orders.
+        
+        
+                Args:
+                    input: DraftOrderInput object
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DraftOrderCreatePayload
+
+    `delete(self, input: DraftOrdersDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderDeletePayload`
+    :   Deletes a draft order via GraphQL mutation.
+        Only open draft orders can be deleted.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DraftOrderDeletePayload
 
     `get(self, draft_order_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrder`
     :   Retrieves a single draft order by ID
@@ -466,6 +1110,19 @@ Classes
         
         Returns:
             DraftOrdersListResult
+
+    `update(self, input: DraftOrdersUpdateParamsInput, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.DraftOrderUpdatePayload`
+    :   Updates an existing draft order via GraphQL mutation.
+        Only open draft orders can be updated.
+        
+        
+                Args:
+                    id: The GraphQL GID of the draft order to update
+                    input: DraftOrderInput object with updated fields
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    DraftOrderUpdatePayload
 
 <a id="FulfillmentOrdersQuery"></a>
 
@@ -493,8 +1150,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the fulfillment order was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -505,6 +1163,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against fulfillment_orders records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, fulfillment_order_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.FulfillmentOrder`
     :   Retrieves a single fulfillment order by ID
@@ -553,8 +1226,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the fulfillment was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -565,6 +1239,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against fulfillments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, order_id: str, fulfillment_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Fulfillment`
     :   Retrieves a single fulfillment by ID
@@ -593,6 +1282,26 @@ Classes
         Returns:
             FulfillmentsListResult
 
+<a id="InventoryAdjustQuery"></a>
+
+`InventoryAdjustQuery(connector: ShopifyConnector)`
+:   Query class for InventoryAdjust entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, input: InventoryAdjustCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventoryAdjustQuantitiesPayload`
+    :   Adjusts inventory quantities relatively (add/subtract) for items at locations via GraphQL mutation.
+        
+        
+        Args:
+            input: Parameter input
+            **kwargs: Additional parameters
+        
+        Returns:
+            InventoryAdjustQuantitiesPayload
+
 <a id="InventoryItemsQuery"></a>
 
 `InventoryItemsQuery(connector: ShopifyConnector)`
@@ -618,8 +1327,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the inventory item was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -630,6 +1340,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against inventory_items records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, inventory_item_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventoryItem`
     :   Retrieves a single inventory item by ID
@@ -674,8 +1399,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the inventory level was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -687,6 +1413,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against inventory_levels records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, location_id: str, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[InventoryLevel], InventoryLevelsListResultMeta]`
     :   Returns a list of inventory levels for a specific location
         
@@ -697,6 +1438,27 @@ Classes
         
         Returns:
             InventoryLevelsListResult
+
+<a id="InventorySetQuery"></a>
+
+`InventorySetQuery(connector: ShopifyConnector)`
+:   Query class for InventorySet entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, input: InventorySetCreateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.InventorySetQuantitiesPayload`
+    :   Sets absolute inventory quantities for items at locations via GraphQL mutation.
+        Uses the inventorySetQuantities mutation with a required reason and reference document.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    InventorySetQuantitiesPayload
 
 <a id="LocationsQuery"></a>
 
@@ -727,8 +1489,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the location was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -739,6 +1502,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against locations records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, location_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Location`
     :   Retrieves a single location by ID
@@ -755,6 +1533,143 @@ Classes
         
         Returns:
             LocationsListResult
+
+<a id="MetafieldArticlesQuery"></a>
+
+`MetafieldArticlesQuery(connector: ShopifyConnector)`
+:   Query class for MetafieldArticles entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MetafieldArticlesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldArticlesSearchData]`
+    :   Search metafield_articles records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MetafieldArticlesSearchFilter):
+        - id: Unique identifier for the metafield
+        - namespace: Container namespace for the metafield
+        - key: Identifier key for the metafield
+        - value: The metafield value
+        - type_: The metafield's information type
+        - description: Human-readable description of the metafield
+        - owner_id: Identifier of the article that owns this metafield
+        - owner_resource: Resource type that owns this metafield (e.g. `article`)
+        - created_at: ISO 8601 timestamp when the metafield was created
+        - updated_at: ISO 8601 timestamp when the metafield was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MetafieldArticlesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_articles records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, blog_id: str, article_id: str, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldArticlesListResultMeta]`
+    :   Returns a list of metafields for a specific article
+        
+        Args:
+            blog_id: The blog ID
+            article_id: The article ID
+            limit: Maximum number of results to return (max 250)
+            **kwargs: Additional parameters
+        
+        Returns:
+            MetafieldArticlesListResult
+
+<a id="MetafieldBlogsQuery"></a>
+
+`MetafieldBlogsQuery(connector: ShopifyConnector)`
+:   Query class for MetafieldBlogs entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MetafieldBlogsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldBlogsSearchData]`
+    :   Search metafield_blogs records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MetafieldBlogsSearchFilter):
+        - id: Unique identifier for the metafield
+        - namespace: Container namespace for the metafield
+        - key: Identifier key for the metafield
+        - value: The metafield value
+        - type_: The metafield's information type
+        - description: Human-readable description of the metafield
+        - owner_id: Identifier of the blog that owns this metafield
+        - owner_resource: Resource type that owns this metafield (e.g. `blog`)
+        - created_at: ISO 8601 timestamp when the metafield was created
+        - updated_at: ISO 8601 timestamp when the metafield was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MetafieldBlogsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_blogs records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, blog_id: str, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldBlogsListResultMeta]`
+    :   Returns a list of metafields for a specific blog
+        
+        Args:
+            blog_id: The blog ID
+            limit: Maximum number of results to return (max 250)
+            **kwargs: Additional parameters
+        
+        Returns:
+            MetafieldBlogsListResult
 
 <a id="MetafieldCustomersQuery"></a>
 
@@ -784,8 +1699,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -796,6 +1712,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_customers records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, customer_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldCustomersListResultMeta]`
     :   Returns a list of metafields for a customer
@@ -839,8 +1770,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -851,6 +1783,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_draft_orders records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, draft_order_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldDraftOrdersListResultMeta]`
     :   Returns a list of metafields for a draft order
@@ -894,8 +1841,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -906,6 +1854,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_locations records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, location_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldLocationsListResultMeta]`
     :   Returns a list of metafields for a location
@@ -949,8 +1912,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -961,6 +1925,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_orders records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, order_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldOrdersListResultMeta]`
     :   Returns a list of metafields for an order
@@ -975,6 +1954,74 @@ Classes
         
         Returns:
             MetafieldOrdersListResult
+
+<a id="MetafieldPagesQuery"></a>
+
+`MetafieldPagesQuery(connector: ShopifyConnector)`
+:   Query class for MetafieldPages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: MetafieldPagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[MetafieldPagesSearchData]`
+    :   Search metafield_pages records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (MetafieldPagesSearchFilter):
+        - id: Unique identifier for the metafield
+        - namespace: Container namespace for the metafield
+        - key: Identifier key for the metafield
+        - value: The metafield value
+        - type_: The metafield's information type
+        - description: Human-readable description of the metafield
+        - owner_id: Identifier of the page that owns this metafield
+        - owner_resource: Resource type that owns this metafield (e.g. `page`)
+        - created_at: ISO 8601 timestamp when the metafield was created
+        - updated_at: ISO 8601 timestamp when the metafield was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            MetafieldPagesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_pages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, page_id: str, limit: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldPagesListResultMeta]`
+    :   Returns a list of metafields for a specific page
+        
+        Args:
+            page_id: The page ID
+            limit: Maximum number of results to return (max 250)
+            **kwargs: Additional parameters
+        
+        Returns:
+            MetafieldPagesListResult
 
 <a id="MetafieldProductImagesQuery"></a>
 
@@ -1004,8 +2051,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1016,6 +2064,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_product_images records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, product_id: str, image_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldProductImagesListResultMeta]`
     :   Returns a list of metafields for a product image
@@ -1060,8 +2123,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1072,6 +2136,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_product_variants records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, variant_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldProductVariantsListResultMeta]`
     :   Returns a list of metafields for a product variant
@@ -1115,8 +2194,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1127,6 +2207,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_products records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, product_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldProductsListResultMeta]`
     :   Returns a list of metafields for a product
@@ -1170,8 +2265,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1182,6 +2278,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_shops records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, metafield_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Metafield`
     :   Retrieves a single metafield by ID
@@ -1235,8 +2346,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the metafield was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1247,6 +2359,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against metafield_smart_collections records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, collection_id: str, limit: int | None = None, since_id: int | None = None, namespace: str | None = None, key: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Metafield], MetafieldSmartCollectionsListResultMeta]`
     :   Returns a list of metafields for a smart collection
@@ -1261,6 +2388,39 @@ Classes
         
         Returns:
             MetafieldSmartCollectionsListResult
+
+<a id="MetafieldsQuery"></a>
+
+`MetafieldsQuery(connector: ShopifyConnector)`
+:   Query class for Metafields entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `create(self, metafields: list[MetafieldsCreateParamsMetafieldsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.MetafieldsSetPayload`
+    :   Sets (creates or updates) up to 25 metafields atomically via GraphQL mutation.
+        Works across all resource types (products, customers, orders, etc.).
+        
+        
+                Args:
+                    metafields: List of metafields to set
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    MetafieldsSetPayload
+
+    `delete(self, metafields: list[MetafieldsDeleteParamsMetafieldsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.MetafieldDeletePayload`
+    :   Deletes one or more metafields via GraphQL mutation.
+        Identifies metafields by ownerId + namespace + key.
+        
+        
+                Args:
+                    metafields: List of metafield identifiers to delete
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    MetafieldDeletePayload
 
 <a id="OrderRefundsQuery"></a>
 
@@ -1286,8 +2446,9 @@ Classes
         - processed_at: ISO 8601 timestamp when the refund was processed
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1298,6 +2459,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against order_refunds records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, order_id: str, refund_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Refund`
     :   Retrieves a single refund by ID
@@ -1330,6 +2506,95 @@ Classes
 
     ### Methods
 
+    `context_store_search(self, query: OrdersSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[OrdersSearchData]`
+    :   Search orders records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (OrdersSearchFilter):
+        - id: Unique identifier for the order
+        - name: Shopify-assigned display name for the order (e.g. `#1001`)
+        - email: Email address associated with the order
+        - phone: Phone number associated with the order
+        - order_number: Sequential order number displayed in the Shopify admin
+        - financial_status: Payment status of the order (e.g. `paid`, `pending`, `refunded`, `partially_refunded`)
+        - fulfillment_status: Fulfillment status of the order (e.g. `fulfilled`, `partial`, `null` for unfulfilled)
+        - currency: ISO 4217 currency code for the order totals
+        - total_price: Total price of the order including taxes and discounts
+        - subtotal_price: Subtotal of the order before shipping and taxes
+        - total_tax: Total tax amount applied to the order
+        - total_discounts: Total discount amount applied to the order
+        - total_weight: Total weight of all items in the order, in grams
+        - cancel_reason: Reason the order was cancelled, if applicable
+        - cancelled_at: ISO 8601 timestamp when the order was cancelled, if applicable
+        - closed_at: ISO 8601 timestamp when the order was closed, if applicable
+        - tags: Comma-separated tags attached to the order
+        - note: Merchant-provided note on the order
+        - processed_at: ISO 8601 timestamp when the order was processed
+        - created_at: ISO 8601 timestamp when the order was created
+        - updated_at: ISO 8601 timestamp when the order was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            OrdersSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against orders records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, order: OrdersCreateParamsOrder, options: OrdersCreateParamsOptions | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.OrderCreatePayload`
+    :   Creates a new order via GraphQL mutation.
+        Use line items with either variantId or customAttributes.
+        
+        
+                Args:
+                    order: OrderCreateOrderInput object
+                    options: OrderCreateOptionsInput
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OrderCreatePayload
+
+    `delete(self, order_id: str, reason: str, restock: bool, notify_customer: bool | None = None, refund: bool | None = None, staff_note: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.OrderCancelPayload`
+    :   Cancels an open order via GraphQL mutation.
+        This action is irreversible. Optional refund and restock parameters.
+        
+        
+                Args:
+                    order_id: The GraphQL GID of the order to cancel
+                    reason: Reason for cancellation
+                    notify_customer: Whether to notify the customer
+                    refund: Whether to refund the order
+                    restock: Whether to restock items
+                    staff_note: Staff note for the cancellation
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OrderCancelPayload
+
     `get(self, order_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Order`
     :   Retrieves a single order by ID
         
@@ -1357,6 +2622,133 @@ Classes
         
         Returns:
             OrdersListResult
+
+    `update(self, input: OrdersUpdateParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.OrderUpdatePayload`
+    :   Updates simple fields on an existing order via GraphQL mutation.
+        For line item changes, use orderEditBegin/orderEditCommit instead.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    OrderUpdatePayload
+
+<a id="PagesQuery"></a>
+
+`PagesQuery(connector: ShopifyConnector)`
+:   Query class for Pages entity operations.
+    
+    Initialize query with connector reference.
+
+    ### Methods
+
+    `context_store_search(self, query: PagesSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[PagesSearchData]`
+    :   Search pages records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (PagesSearchFilter):
+        - id: Unique identifier for the page
+        - title: Title of the page
+        - handle: URL-friendly handle for the page
+        - author: Name of the page author
+        - body_html: HTML content of the page
+        - published_at: ISO 8601 timestamp when the page was published
+        - created_at: ISO 8601 timestamp when the page was created
+        - updated_at: ISO 8601 timestamp when the page was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            PagesSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against pages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, page: PagesCreateParamsPage, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.PageCreatePayload`
+    :   Creates a new page on the online store via GraphQL mutation.
+        
+        
+        Args:
+            page: Parameter page
+            **kwargs: Additional parameters
+        
+        Returns:
+            PageCreatePayload
+
+    `delete(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.PageDeletePayload`
+    :   Deletes a page from the online store via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the page to delete
+            **kwargs: Additional parameters
+        
+        Returns:
+            PageDeletePayload
+
+    `get(self, page_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Page`
+    :   Retrieves a single page by ID
+        
+        Args:
+            page_id: The page ID
+            **kwargs: Additional parameters
+        
+        Returns:
+            Page
+
+    `list(self, limit: int | None = None, since_id: int | None = None, created_at_min: str | None = None, created_at_max: str | None = None, updated_at_min: str | None = None, updated_at_max: str | None = None, published_status: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[Page], PagesListResultMeta]`
+    :   Returns a list of static pages for the store
+        
+        Args:
+            limit: Maximum number of results to return (max 250)
+            since_id: Restrict results to after the specified ID
+            created_at_min: Show pages created after date (ISO 8601 format)
+            created_at_max: Show pages created before date (ISO 8601 format)
+            updated_at_min: Show pages last updated after date (ISO 8601 format)
+            updated_at_max: Show pages last updated before date (ISO 8601 format)
+            published_status: Filter by published status (published, unpublished, any)
+            **kwargs: Additional parameters
+        
+        Returns:
+            PagesListResult
+
+    `update(self, page: PagesUpdateParamsPage, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.PageUpdatePayload`
+    :   Updates an existing page on the online store via GraphQL mutation.
+        
+        
+        Args:
+            id: The GraphQL GID of the page to update
+            page: Parameter page
+            **kwargs: Additional parameters
+        
+        Returns:
+            PageUpdatePayload
 
 <a id="PriceRulesQuery"></a>
 
@@ -1387,8 +2779,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the rule was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1399,6 +2792,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against price_rules records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, price_rule_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.PriceRule`
     :   Retrieves a single price rule by ID
@@ -1452,8 +2860,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the image was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1464,6 +2873,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against product_images records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, product_id: str, image_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductImage`
     :   Retrieves a single product image by ID
@@ -1515,8 +2939,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the variant was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1527,6 +2952,47 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against product_variants records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, product_id: str, variants: list[ProductVariantsCreateParamsVariantsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariantsBulkCreatePayload`
+    :   Creates one or more product variants via GraphQL mutation.
+        Variants are created in bulk for a given product.
+        
+        
+                Args:
+                    product_id: The GraphQL GID of the product (e.g. gid://shopify/Product/123)
+                    variants: List of variants to create
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductVariantsBulkCreatePayload
+
+    `delete(self, product_id: str, variants_ids: list[str], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariantsBulkDeletePayload`
+    :   Deletes one or more product variants via GraphQL mutation.
+        Cannot delete the last variant of a product.
+        
+        
+                Args:
+                    product_id: The GraphQL GID of the product
+                    variants_ids: List of variant GIDs to delete
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductVariantsBulkDeletePayload
 
     `get(self, variant_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariant`
     :   Retrieves a single product variant by ID
@@ -1550,6 +3016,19 @@ Classes
         Returns:
             ProductVariantsListResult
 
+    `update(self, product_id: str, variants: list[ProductVariantsUpdateParamsVariantsItem], **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductVariantsBulkUpdatePayload`
+    :   Updates one or more product variants via GraphQL mutation.
+        Variants are updated in bulk for a given product.
+        
+        
+                Args:
+                    product_id: The GraphQL GID of the product
+                    variants: List of variants to update (each must include id)
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductVariantsBulkUpdatePayload
+
 <a id="ProductsQuery"></a>
 
 `ProductsQuery(connector: ShopifyConnector)`
@@ -1558,6 +3037,82 @@ Classes
     Initialize query with connector reference.
 
     ### Methods
+
+    `context_store_search(self, query: ProductsSearchQuery, limit: int | None = None, cursor: str | None = None, fields: list[list[str]] | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[ProductsSearchData]`
+    :   Search products records from Airbyte cache.
+        
+        This operation searches cached data from Airbyte syncs.
+        Only available in hosted execution mode.
+        
+        Available filter fields (ProductsSearchFilter):
+        - id: Unique identifier for the product
+        - title: Product title
+        - body_html: Product description in HTML
+        - vendor: Product vendor or manufacturer
+        - product_type: Product type used for categorization
+        - handle: URL-friendly handle for the product
+        - status: Product status (`active`, `archived`, or `draft`)
+        - tags: Comma-separated tags attached to the product
+        - published_scope: Publishing scope (`web` or `global`)
+        - published_at: ISO 8601 timestamp when the product was published
+        - created_at: ISO 8601 timestamp when the product was created
+        - updated_at: ISO 8601 timestamp when the product was last updated
+        
+        Args:
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            limit: Maximum results to return (default 1000)
+            cursor: Pagination cursor from previous response's meta.cursor
+            fields: Field paths to include in results. Each path is a list of keys for nested access.
+                    Example: [["id"], ["user", "name"]] returns id and user.name fields.
+        
+        Returns:
+            ProductsSearchResult with typed records, pagination metadata, and optional search metadata
+        
+        Raises:
+            NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against products records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `create(self, product: ProductsCreateParamsProduct, media: list[ProductsCreateParamsMediaItem] | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductCreatePayload`
+    :   Creates a new product via GraphQL mutation.
+        Creates the product with a default variant. Use productVariantsBulkCreate
+        to add additional variants afterwards.
+        
+        
+                Args:
+                    product: ProductCreateInput object
+                    media: Media to attach to the product
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductCreatePayload
+
+    `delete(self, input: ProductsDeleteParamsInput, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductDeletePayload`
+    :   Deletes a product from the store via GraphQL mutation.
+        This action is irreversible.
+        
+        
+                Args:
+                    input: Parameter input
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductDeletePayload
 
     `get(self, product_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Product`
     :   Retrieves a single product by ID
@@ -1588,6 +3143,18 @@ Classes
         Returns:
             ProductsListResult
 
+    `update(self, product: ProductsUpdateParamsProduct, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ProductUpdatePayload`
+    :   Updates an existing product via GraphQL mutation.
+        All fields except id are optional for partial updates.
+        
+        
+                Args:
+                    product: ProductUpdateInput object
+                    **kwargs: Additional parameters
+        
+                Returns:
+                    ProductUpdatePayload
+
 <a id="ShopQuery"></a>
 
 `ShopQuery(connector: ShopifyConnector)`
@@ -1617,8 +3184,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the shop was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1629,6 +3197,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against shop records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.Shop`
     :   Retrieves the shop's configuration
@@ -1689,48 +3272,138 @@ Classes
 
     ### Static methods
 
-    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
-    :   Decorator that adds tool utilities like docstring augmentation and output limits.
+    `agent_tool(role: AgentToolRole | None = None, *, inspect_tool: str | None = None, docs_tool: str | None = None, max_output_chars: int | None | Unset = UNSET, framework: FrameworkName = 'none', internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> Callable[[~_F], ~_F]`
+    :   Framework-agnostic decorator for user-written connector tool functions.
         
-        Composes :func:`airbyte_agent_sdk.translation.translate_exceptions` for
-        runtime wrapping (sync/async branch + output-size check + framework
-        signal translation + optional internal retry loop), and adds
-        connector-specific docstring augmentation on top of it.
+        The progressive-docs sibling of tool_utils: instead of baking the full
+        entity/action reference into the docstring, it instructs the agent to
+        call this connector's inspect and docs tools before executing. Tool
+        failures raise :class:`airbyte_agent_sdk.AirbyteToolError` by default
+        (``framework="none"``, no auto-detection) — pass ``framework=...`` to
+        translate to a supported framework's signal instead.
+        
+        Decorate three functions per connector — execute, inspect and docs.
+        The role is inferred from each function's signature (extra parameters
+        are allowed); a signature matching more than one role, a generic
+        ``(*args, **kwargs)`` wrapper, or a callable whose signature cannot
+        be read must pass the role explicitly:
+        
+        - ``(entity, action, ...)`` -> ``"execute"``
+        - ``(section, ...)``        -> ``"read_skill_docs"``
+        - ``()``                    -> ``"inspect_connector"``
         
         Usage:
-            @mcp.tool()
-            @ShopifyConnector.tool_utils
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            connector = ShopifyConnector(...)
         
-            @mcp.tool()
-            @ShopifyConnector.tool_utils(update_docstring=False, max_output_chars=None)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @ShopifyConnector.agent_tool()
+            async def execute(entity: str, action: str, params: dict | None = None):
+                return await connector.execute(entity=entity, action=action, params=params or \{\})
         
-            @mcp.tool()
-            @ShopifyConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
-            async def execute(entity: str, action: str, params: dict):
-                ...
+            @ShopifyConnector.agent_tool()
+            async def inspect_connector():
+                return await connector.inspect_connector()
+        
+            @ShopifyConnector.agent_tool()
+            async def read_skill_docs(section: str | None = None):
+                return await connector.read_skill_docs(section)
         
         Args:
-            update_docstring: When True, append connector capabilities to __doc__.
-            max_output_chars: Max serialized output size before raising. Use None to disable.
-            framework: One of ``"pydantic_ai" | "langchain" | "openai_agents" | "mcp"``.
-                Defaults to None → auto-detect by attempting each framework's canonical
+            role: ``"execute" | "inspect_connector" | "read_skill_docs"``.
+                None (default) infers the role from the decorated function's
+                signature; an explicit role validates the canonical
+                parameters are present (functions accepting ``**kwargs``, or
+                callables whose signature cannot be read, pass validation).
+            inspect_tool: Exact registered name of the sibling inspect tool,
+                woven into the execute docstring for tighter steering.
+                Defaults to generic phrasing.
+            docs_tool: Exact registered name of the sibling docs tool (see
+                inspect_tool).
+            max_output_chars: Max serialized output size before failing.
+                Defaults per role: execute -> DEFAULT_MAX_OUTPUT_CHARS, docs
+                tools -> None.
+            framework: Translation target for tool failures. Defaults to
+                ``"none"`` (raise AirbyteToolError); never auto-detects.
+            internal_retries: How many transient runtime failures (429/5xx,
+                network, timeout) to retry silently before surfacing.
+                Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate ``(error, args, kwargs)
+                -> bool`` further restricting which retryable errors are safe
+                for this specific tool. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+            exhausted_runtime_failure_message: Optional callback ``(error,
+                args, kwargs) -> str | None`` invoked after internal retries
+                are exhausted or skipped. Forwarded to
+                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+
+    `tool_utils(func: _F | None = None, *, update_docstring: bool = True, max_output_chars: int | None = 100000, framework: FrameworkName | None = None, internal_retries: int = 0, should_internal_retry: Callable[[Exception, tuple[Any, ...], dict[str, Any]], bool] | None = None, exhausted_runtime_failure_message: Callable[[Exception, tuple[Any, ...], dict[str, Any]], str | None] | None = None) ‑> ~_F | Callable[[~_F], ~_F]`
+    :   Add connector-specific documentation and runtime safeguards to one tool.
+        
+        For new agents, prefer `build_connector_tools`. It returns progressive
+        `inspect_connector`, `read_skill_docs`, and `execute` tools so the agent
+        can load only the connector guidance it needs:
+        
+        ```python
+        from airbyte_agent_sdk import build_connector_tools
+        from pydantic_ai import Agent
+        
+        tools = build_connector_tools(connector, framework="pydantic_ai")
+        agent = Agent("openai:gpt-4o", tools=tools.as_list())
+        ```
+        
+        ### Legacy: one generated-description tool
+        
+        Existing integrations can keep using `tool_utils` for one broad
+        `execute` tool with the connector's full generated catalog in its
+        description:
+        
+        ```python
+        from fastmcp import FastMCP
+        
+        connector = ShopifyConnector()
+        mcp = FastMCP("Connector Agent")
+        
+        @mcp.tool()
+        @ShopifyConnector.tool_utils
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        Configure documentation, output limits, framework translation, and
+        retries when needed:
+        
+        ```python
+        @mcp.tool()
+        @ShopifyConnector.tool_utils(update_docstring=False, max_output_chars=None)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        
+        @mcp.tool()
+        @ShopifyConnector.tool_utils(framework="pydantic_ai", internal_retries=2)
+        async def execute(entity: str, action: str, params: dict):
+            ...
+        ```
+        
+        This decorator composes `translate_exceptions` for runtime wrapping,
+        output-size checks, framework signal translation, and optional internal
+        retries, then adds connector-specific docstring augmentation.
+        
+        Args:
+            update_docstring: When True, append connector capabilities to `__doc__`.
+            max_output_chars: Max serialized output size before raising. Use `None` to disable.
+            framework: One of `"pydantic_ai" | "langchain" | "openai_agents" | "mcp"`.
+                Defaults to `None`, which auto-detects each framework's canonical
                 import in order. Explicit always wins.
             internal_retries: How many transient runtime failures (429/5xx, network,
                 timeout) to retry silently before surfacing. Default 0. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
-            should_internal_retry: Optional predicate ``(error, args, kwargs) -> bool``
+                `airbyte_agent_sdk.translation.translate_exceptions`.
+            should_internal_retry: Optional predicate `(error, args, kwargs) -> bool`
                 further restricting which retryable errors are safe for this specific
-                tool. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                tool. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
             exhausted_runtime_failure_message: Optional callback
-                ``(error, args, kwargs) -> str | None``. Invoked after internal retries
-                are exhausted OR were skipped via ``should_internal_retry`` returning
-                False. Forwarded to
-                :func:`airbyte_agent_sdk.translation.translate_exceptions`.
+                `(error, args, kwargs) -> str | None`. Invoked after internal retries
+                are exhausted or were skipped because `should_internal_retry` returned
+                `False`. Forwarded to `airbyte_agent_sdk.translation.translate_exceptions`.
 
     ### Instance variables
 
@@ -1775,7 +3448,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'delete', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1801,6 +3474,17 @@ Classes
                 params=\{"id": "cus_123"\}
             )
 
+    `inspect_connector(self) ‑> dict[str, typing.Any]`
+    :   Inspect this connector's hosted metadata/readiness and resolve its docs skill id.
+        
+        Call this before read_skill_docs in the normal hosted flow. For
+        local/offline connectors this returns a local-mode payload with a
+        warning instead of a hosted inspection.
+        
+        Example:
+            info = await connector.inspect_connector()
+            print(info["docs_skill_id"])
+
     `list_entities(self) ‑> list[dict[str, typing.Any]]`
     :   Get structured data about available entities, actions, and parameters.
         
@@ -1814,6 +3498,18 @@ Classes
             entities = connector.list_entities()
             for entity in entities:
                 print(f"\{entity['entity_name']\}: \{entity['available_actions']\}")
+
+    `read_skill_docs(self, section: str | None = None) ‑> str`
+    :   Read this connector's usage docs, rendered to text.
+        
+        Omit section for the outline and general guidance; pass an exact
+        section id from the outline for full details. For local/offline
+        connectors the full generated docs are returned and section is
+        ignored.
+        
+        Example:
+            outline = await connector.read_skill_docs()
+            details = await connector.read_skill_docs(section="entity:contacts")
 
 <a id="SmartCollectionsQuery"></a>
 
@@ -1840,8 +3536,9 @@ Classes
         - updated_at: ISO 8601 timestamp when the collection was last updated
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1852,6 +3549,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against smart_collections records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, collection_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.SmartCollection`
     :   Retrieves a single smart collection by ID
@@ -1904,8 +3616,9 @@ Classes
         - processed_at: ISO 8601 timestamp when the transaction was processed
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1916,6 +3629,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.shopify.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tender_transactions records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, limit: int | None = None, since_id: int | None = None, processed_at_min: str | None = None, processed_at_max: str | None = None, order: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.shopify.models.ShopifyExecuteResultWithMeta[list[TenderTransaction], TenderTransactionsListResultMeta]`
     :   Returns a list of tender transactions

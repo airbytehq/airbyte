@@ -1,6 +1,8 @@
 #
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
+import gzip
+import io
 import itertools
 import json
 import logging
@@ -36,6 +38,8 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
     """
     Stream reader for Google Cloud Storage (GCS).
     """
+
+    _GZIP_MAGIC = b"\x1f\x8b"
 
     def __init__(self):
         super().__init__()
@@ -146,6 +150,18 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
         else:
             compression = "disable"
 
+        # For gs:// URIs whose blob has Content-Encoding: gzip, bypass
+        # smart_open and handle decompression directly.  GCS decompressive
+        # transcoding conflicts with google-cloud-storage BlobReader's
+        # ranged downloads, producing "incorrect header check" errors.
+        if (
+            file.uri.startswith("gs://")
+            and file.blob is not None
+            and getattr(file.blob, "content_encoding", None) == "gzip"
+            and compression == "disable"
+        ):
+            return self._open_gzip_encoded_blob(file, mode, encoding, logger)
+
         try:
             result = smart_open.open(
                 file.uri, mode=mode.value, compression=compression, encoding=encoding, transport_params={"client": self.gcs_client}
@@ -157,3 +173,37 @@ class SourceGCSStreamReader(AbstractFileBasedStreamReader):
             logger.exception(oe)
             raise oe
         return result
+
+    def _open_gzip_encoded_blob(
+        self,
+        file: GCSUploadableRemoteFile,
+        mode: FileReadMode,
+        encoding: Optional[str],
+        logger: logging.Logger,
+    ) -> IOBase:
+        """Open a GCS blob whose `Content-Encoding` is `gzip` using a raw download.
+
+        `raw_download=True` tells google-cloud-storage to skip decompressive
+        transcoding and return the stored bytes directly.  We then inspect the
+        gzip magic number to decide whether the content is genuinely compressed
+        or mislabeled, and wrap the stream accordingly.
+
+        The resulting stream is seekable and does not require loading the entire
+        object into memory.
+        """
+        blob_reader = file.blob.open("rb", raw_download=True)
+        magic = blob_reader.read(2)
+        blob_reader.seek(0)
+
+        if magic == self._GZIP_MAGIC:
+            stream: IOBase = gzip.GzipFile(fileobj=blob_reader)
+        else:
+            logger.info(
+                "Object %s has Content-Encoding: gzip but content is not gzip-compressed. Reading as plain text.",
+                file.uri,
+            )
+            stream = blob_reader
+
+        if mode == FileReadMode.READ:
+            return io.TextIOWrapper(stream, encoding=encoding or "utf-8")
+        return stream

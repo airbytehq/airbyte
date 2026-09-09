@@ -1442,27 +1442,38 @@ definitions:
               - string
 streams:
   - type: DeclarativeStream
+    name: organizations
+    description: Organizations stream. Events are the base object of Goldcast.
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://customapi.goldcast.io/core/organization/
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://customapi.goldcast.io"
-        http_method: "GET"
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: "Authorization"
-          api_token: "Token {{ config['access_key'] }}"
-        path: "/core/organization/"
-    name: "organizations"
-    description: "Organizations stream. Events are the base object of Goldcast."
-    primary_key: "id"
+          field_path:
+            - results
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1759,27 +1770,38 @@ streams:
           owner:
             type: string
   - type: DeclarativeStream
+    name: events
+    description: Events stream. Events are the base object of Goldcast.
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://customapi.goldcast.io/event/
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://customapi.goldcast.io"
-        http_method: "GET"
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: "Authorization"
-          api_token: "Token {{ config['access_key'] }}"
-        path: "/event/"
-    name: "events"
-    description: "Events stream. Events are the base object of Goldcast."
-    primary_key: "id"
+          field_path:
+            - results
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -1949,27 +1971,38 @@ streams:
           description:
             type: string
   - type: DeclarativeStream
+    name: agenda_items
+    description: Agenda items stream. Agenda items are associated to events.
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://customapi.goldcast.io/event/agenda-item/
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://customapi.goldcast.io"
-        http_method: "GET"
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: "Authorization"
-          api_token: "Token {{ config['access_key'] }}"
-        path: "/event/agenda-item/"
-    name: "agenda_items"
-    description: "Agenda items stream. Agenda items are associated to events."
-    primary_key: "id"
+          field_path:
+            - results
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2020,27 +2053,38 @@ streams:
                 - "null"
               format: date-time
   - type: DeclarativeStream
+    name: discussion_groups
+    description: Discussion groups stream. Discussion groups of events.
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://customapi.goldcast.io/event/discussion-groups/
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://customapi.goldcast.io"
-        http_method: "GET"
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: "Authorization"
-          api_token: "Token {{ config['access_key'] }}"
-        path: "/event/discussion-groups/"
-    name: "discussion_groups"
-    description: "Discussion groups stream. Discussion groups of events."
-    primary_key: "id"
+          field_path:
+            - results
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2116,27 +2160,38 @@ streams:
           owner:
             type: string
   - type: DeclarativeStream
+    name: tracks
+    description: Tracks stream. Tasks of events.
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: https://customapi.goldcast.io/event/tracks/
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://customapi.goldcast.io"
-        http_method: "GET"
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: "Authorization"
-          api_token: "Token {{ config['access_key'] }}"
-        path: "/event/tracks/"
-    name: "tracks"
-    description: "Tracks stream. Tasks of events."
-    primary_key: "id"
+          field_path:
+            - results
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2172,224 +2227,83 @@ streams:
           event:
             type: string
   - type: DeclarativeStream
+    name: webinars
+    description: Webinars stream. Information on the webinars of events.
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: NoPagination
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: >-
+          https://customapi.goldcast.io/event/webinars/{{
+          stream_partition.event }}
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://customapi.goldcast.io"
-        http_method: "GET"
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: "Authorization"
-          api_token: "Token {{ config['access_key'] }}"
-        path: "/event/webinars/{{ stream_partition.event }}"
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: event
+              # Not registered as a top-level stream on purpose: this exists only to
+              # drive the webinars partition router. The events endpoint returns every
+              # event type, but /event/webinars/{id} 400s for non-webinar events, so we
+              # scope the parent to event_type=Webinar via the API's own filter instead
+              # of a client-side filter.
               stream:
                 type: DeclarativeStream
+                name: webinar_events
+                description: >-
+                  Webinar-type events only. Internal parent for the webinars stream;
+                  not exposed as a syncable stream.
                 retriever:
                   type: SimpleRetriever
+                  paginator:
+                    type: DefaultPaginator
+                    pagination_strategy:
+                      type: OffsetIncrement
+                      page_size: 100
+                    page_size_option:
+                      type: RequestOption
+                      field_name: limit
+                      inject_into: request_parameter
+                    page_token_option:
+                      type: RequestOption
+                      field_name: offset
+                      inject_into: request_parameter
+                  requester:
+                    type: HttpRequester
+                    http_method: GET
+                    url: https://customapi.goldcast.io/event/?event_type=Webinar
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      header: Authorization
+                      api_token: "Token {{ config['access_key'] }}"
                   record_selector:
                     type: RecordSelector
                     extractor:
                       type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-                  requester:
-                    type: HttpRequester
-                    url_base: "https://customapi.goldcast.io"
-                    http_method: "GET"
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      header: "Authorization"
-                      api_token: "Token {{ config['access_key'] }}"
-                    path: "/event/"
-                name: "events"
-                description: "Events stream. Events are the base object of Goldcast."
-                primary_key: "id"
+                      field_path:
+                        - results
+                primary_key: id
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
-                    $schema: http://json-schema.org/draft-07/schema#
-                    title: Event Schema
                     type: object
                     additionalProperties: true
                     properties:
                       id:
                         type: string
-                      timezone:
-                        type: string
-                      csv_data:
-                        type:
-                          - "null"
-                          - string
-                      manual_breakout:
-                        type: boolean
-                      vivenu_event_url:
-                        type:
-                          - "null"
-                          - string
-                      ticker_url:
-                        type:
-                          - "null"
-                          - string
-                      is_single_session:
-                        type: boolean
-                      created_by_user:
-                        type: object
-                        properties:
-                          id:
-                            type: string
-                          first_name:
-                            type: string
-                          last_name:
-                            type: string
-                          email:
-                            type: string
-                          organization:
-                            type: string
-                          role:
-                            type: string
-                          profile_picture_url:
-                            type:
-                              - "null"
-                              - string
-                      updated_by_user:
-                        type: object
-                        properties:
-                          id:
-                            type: string
-                          first_name:
-                            type: string
-                          last_name:
-                            type: string
-                          email:
-                            type: string
-                          organization:
-                            type: string
-                          role:
-                            type: string
-                          profile_picture_url:
-                            type:
-                              - "null"
-                              - string
-                      registrant_count:
-                        type: integer
-                      registration_cta_link:
-                        type: string
-                      deleted:
-                        type:
-                          - "null"
-                          - string
-                      deleted_by_cascade:
-                        type: boolean
-                      created_at:
-                        type: string
-                        format: date-time
-                      updated_at:
-                        type: string
-                        format: date-time
-                      start_time:
-                        type: string
-                        format: date-time
-                      end_time:
-                        type: string
-                        format: date-time
-                      discussions_chat_disabled:
-                        type: boolean
-                      discussion_room_tab_title:
-                        type:
-                          - "null"
-                          - string
-                      show_booths:
-                        type: boolean
-                      booth_chat_disabled:
-                        type: boolean
-                      booth_tab_title:
-                        type:
-                          - "null"
-                          - string
-                      booth_tab_title_2:
-                        type:
-                          - "null"
-                          - string
-                      show_attendees:
-                        type: boolean
-                      p2p_chat_disabled:
-                        type: boolean
-                      people_tab_title:
-                        type:
-                          - "null"
-                          - string
-                      speaker_tab_visible:
-                        type: boolean
-                      speaker_tab_title:
-                        type:
-                          - "null"
-                          - string
-                      public_chat_disabled:
-                        type: boolean
-                      gifs_enabled:
-                        type: boolean
-                      is_text_qna_moderated:
-                        type: boolean
-                      have_text_qna:
-                        type: boolean
-                      have_video_qna:
-                        type: boolean
-                      enable_live_captions:
-                        type: boolean
-                      enable_live_captions_translations:
-                        type: boolean
-                      email_alias_name:
-                        type:
-                          - "null"
-                          - string
-                      demo_request_message:
-                        type: string
-                      broadcast_chat_disabled:
-                        type: boolean
-                      anonymous_qna_enabled:
-                        type: boolean
-                      show_answerers_identity:
-                        type: boolean
-                      textqna_answerers_alias:
-                        type: string
-                      is_title_visible:
-                        type: boolean
-                      disable_enter_event_button:
-                        type: boolean
-                      enable_tech_check:
-                        type: boolean
-                      show_onboarding:
-                        type: boolean
-                      logo_url:
-                        type: string
-                      favicon:
-                        type:
-                          - "null"
-                          - string
-                      show_discussion_rooms:
-                        type: boolean
-                      title:
-                        type: string
-                      description:
-                        type: string
-    name: webinars
-    description: "Webinars stream. Information on the webinars of events."
-    primary_key: "id"
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -2580,53 +2494,77 @@ streams:
               show_schedule:
                 type: boolean
   - type: DeclarativeStream
+    name: event_members
+    description: Events members stream. Information on who particpated on events.
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 100
+        page_size_option:
+          type: RequestOption
+          field_name: limit
+          inject_into: request_parameter
+        page_token_option:
+          type: RequestOption
+          field_name: offset
+          inject_into: request_parameter
+      requester:
+        type: HttpRequester
+        http_method: GET
+        url: >-
+          https://customapi.goldcast.io/event/event-members?event={{
+          stream_partition.event }}
+        authenticator:
+          type: ApiKeyAuthenticator
+          header: Authorization
+          api_token: "Token {{ config['access_key'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
-          field_path: []
-      paginator:
-        type: NoPagination
-      requester:
-        type: HttpRequester
-        url_base: "https://customapi.goldcast.io"
-        http_method: "GET"
-        authenticator:
-          type: ApiKeyAuthenticator
-          header: "Authorization"
-          api_token: "Token {{ config['access_key'] }}"
-        path: "/event/event-members?event={{ stream_partition.event }}"
+          field_path:
+            - results
       partition_router:
         - type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
-              parent_key: id
-              partition_field: event
               stream:
                 type: DeclarativeStream
+                name: events
+                description: Events stream. Events are the base object of Goldcast.
                 retriever:
                   type: SimpleRetriever
+                  paginator:
+                    type: DefaultPaginator
+                    pagination_strategy:
+                      type: OffsetIncrement
+                      page_size: 100
+                    page_size_option:
+                      type: RequestOption
+                      field_name: limit
+                      inject_into: request_parameter
+                    page_token_option:
+                      type: RequestOption
+                      field_name: offset
+                      inject_into: request_parameter
+                  requester:
+                    type: HttpRequester
+                    http_method: GET
+                    url: https://customapi.goldcast.io/event/
+                    authenticator:
+                      type: ApiKeyAuthenticator
+                      header: Authorization
+                      api_token: "Token {{ config['access_key'] }}"
                   record_selector:
                     type: RecordSelector
                     extractor:
                       type: DpathExtractor
-                      field_path: []
-                  paginator:
-                    type: NoPagination
-                  requester:
-                    type: HttpRequester
-                    url_base: "https://customapi.goldcast.io"
-                    http_method: "GET"
-                    authenticator:
-                      type: ApiKeyAuthenticator
-                      header: "Authorization"
-                      api_token: "Token {{ config['access_key'] }}"
-                    path: "/event/"
-                name: "events"
-                description: "Events stream. Events are the base object of Goldcast."
-                primary_key: "id"
+                      field_path:
+                        - results
+                primary_key: id
                 schema_loader:
                   type: InlineSchemaLoader
                   schema:
@@ -2795,9 +2733,9 @@ streams:
                         type: string
                       description:
                         type: string
-    name: event_members
-    description: "Events members stream. Information on who particpated on events."
-    primary_key: "id"
+              parent_key: id
+              partition_field: event
+    primary_key: id
     schema_loader:
       type: InlineSchemaLoader
       schema:
@@ -3229,30 +3167,31 @@ streams:
 check:
   type: CheckStream
   stream_names:
-    - "events"
-    - "agenda_items"
-    - "organizations"
-    - "discussion_groups"
-    - "tracks"
-    - "webinars"
-    - "event_members"
+    - organizations
+    - events
+    - agenda_items
+    - discussion_groups
+    - tracks
+    - webinars
+    - event_members
+
 spec:
-  documentation_url: https://customapi.goldcast.io/swagger-ui/#/
+  type: Spec
+  documentation_url: https://apidocs.goldcast.io/
   connection_specification:
-    $schema: http://json-schema.org/draft-07/schema#
-    title: goldcast.io Source Spec
     type: object
+    title: goldcast.io Source Spec
+    $schema: http://json-schema.org/draft-07/schema#
     required:
       - access_key
-    additionalProperties: true
     properties:
       access_key:
         type: string
         description: >-
           Your API Access Key. See <a
           href="https://help.goldcast.io/hc/en-us/articles/22931655725723-How-To-Create-an-API-Token-in-Goldcast">here</a>.
-          The key is
-          case sensitive.
+          The key is case sensitive.
         airbyte_secret: true
-  type: Spec
+    additionalProperties: true
+
 type: DeclarativeSource
