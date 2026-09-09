@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - deals
+    - currencies
 
 definitions:
   streams:
@@ -41,7 +41,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -88,7 +88,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -150,7 +150,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -203,7 +203,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -272,7 +272,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -309,7 +309,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -362,7 +362,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -431,7 +431,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -472,6 +472,11 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "50"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - $ref: "#/definitions/substream_missing_parent_error_handler"
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -486,7 +491,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -528,7 +533,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -559,7 +564,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -618,7 +623,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -665,7 +670,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -702,7 +707,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -755,7 +760,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -802,7 +807,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -833,7 +838,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -870,7 +875,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -923,7 +928,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified
@@ -956,6 +961,11 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "50"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - $ref: "#/definitions/substream_missing_parent_error_handler"
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -970,7 +980,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1011,7 +1021,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: ListPartitionRouter
           values:
@@ -1349,6 +1359,81 @@ definitions:
   base_requester:
     type: HttpRequester
     url_base: https://api.pipedrive.com/
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: x-ratelimit-reset
+        max_waiting_time_in_seconds: 300
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [401]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Pipedrive rejected the API token (401: {{ response.get('error', 'unauthorized access') }}).
+          In Pipedrive, open Company settings > Personal preferences > API, copy the current API token
+          and update it in the connector configuration. If the API tab is missing, ask a Pipedrive
+          company admin to enable API access for your user.
+      - type: HttpResponseFilter
+        http_codes: [402]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Your Pipedrive company account is not active (402: {{ response.get('error', 'payment required') }}).
+          The trial has expired or billing details are missing. Reactivate the company account in
+          Pipedrive billing settings, then retry the sync.
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Pipedrive refused the request (403{{ ': ' ~ response['error'] if response.get('error') else '' }}).
+          The token owner does not have permission to read this data, the Pipedrive plan does not include it,
+          or Pipedrive's Cloudflare protection blocked the token after repeated rate-limit violations. Use an
+          API token from a user with access to this data, upgrade the plan, or reduce the sync frequency and
+          retry later.
+      - type: HttpResponseFilter
+        http_codes: [410]
+        action: FAIL
+        error_message: >-
+          Pipedrive reports this resource as permanently removed (410{{ ': ' ~ response['error'] if response.get('error') else '' }}).
+          The endpoint may have been retired by Pipedrive. Upgrade to the latest connector version or
+          disable the affected stream.
+      - type: HttpResponseFilter
+        http_codes: [429]
+        action: RATE_LIMITED
+        error_message: >-
+          Pipedrive rate limit reached (429: {{ response.get('error', 'request over limit') }}). Airbyte waits for
+          the window reported by the x-ratelimit-reset header and retries. Burst limits are 20-120 requests
+          per 2 seconds per token depending on plan. If every request is rejected, the daily API token budget
+          is exhausted and resets at midnight (Pipedrive server time): reduce sync frequency or upgrade the plan.
+      - type: HttpResponseFilter
+        http_codes: [500, 502, 503, 504]
+        action: RETRY
+        error_message: Pipedrive returned a temporary server error; retrying.
+  substream_missing_parent_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [404, 410]
+        action: IGNORE
+        error_message: >-
+          Pipedrive no longer has the parent record for this request ({{ response.get('error', 'not found') }});
+          it was deleted or merged after the parent stream was read. Skipping its child records and continuing.
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: IGNORE
+        error_message: >-
+          Pipedrive denied access to the parent record for this request ({{ response.get('error', 'forbidden') }});
+          the API token owner cannot see it. Skipping its child records and continuing. Use a token from a user
+          with wider visibility to sync these records.
   v2_cursor_paginator:
     type: DefaultPaginator
     page_token_option:
