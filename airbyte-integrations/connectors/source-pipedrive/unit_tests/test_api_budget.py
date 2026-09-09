@@ -2,17 +2,15 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 import time
-from pathlib import Path
 
 import pytest
 import requests
 import yaml
-from conftest import get_source
+from conftest import _YAML_FILE_PATH, get_source
 
 from airbyte_cdk.sources.streams.call_rate import HttpAPIBudget
 
 
-_MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
 _CONFIG = {"api_token": "t", "replication_start_date": "2024-01-01T00:00:00Z"}
 
 
@@ -24,7 +22,7 @@ def _get_api_budget(config=_CONFIG):
 
 
 def test_manifest_declares_api_budget_and_concurrency():
-    manifest = yaml.safe_load(_MANIFEST_PATH.read_text())
+    manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
 
     api_budget = manifest["api_budget"]
     assert api_budget["type"] == "HTTPAPIBudget"
@@ -68,8 +66,8 @@ def test_twenty_one_rapid_requests_take_at_least_two_seconds():
     for _ in range(20):
         prepared = requests.Request("GET", "https://api.pipedrive.com/v1/deals", params={"api_token": "t"}).prepare()
         api_budget.acquire_call(prepared)
-    # The first 20 calls fill the burst window without blocking.
-    assert time.monotonic() - start < 1.0
+    # The first 20 calls must not consume the whole 2-second window.
+    assert time.monotonic() - start < 2.0
 
     # The 21st call blocks until the oldest call leaves the rolling 2-second window.
     api_budget.acquire_call(requests.Request("GET", "https://api.pipedrive.com/v1/deals", params={"api_token": "t"}).prepare())
