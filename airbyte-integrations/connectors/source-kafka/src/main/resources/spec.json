@@ -204,6 +204,15 @@
                 "type": "string",
                 "description": "Endpoint for requesting tokens if setting SASL Mechanism to OAUTHBEARER",
                 "default": ""
+              },
+              "tls_ca_certificate": {
+                "title": "TLS CA Certificate (PEM)",
+                "description": "The CA certificate in PEM format used to verify the Kafka broker's TLS certificate. Provide this when the broker uses a private or self-signed CA that is not present in the default trust store. The certificate is passed to the client as an in-memory PEM trust store, so no file needs to be mounted into the connector.",
+                "type": "string",
+                "multiline": true,
+                "examples": [
+                  "-----BEGIN CERTIFICATE-----\n<cert>\n-----END CERTIFICATE-----"
+                ]
               }
             }
           }

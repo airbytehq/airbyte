@@ -16,6 +16,7 @@ import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.config.SaslConfigs;
+import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule;
 import org.apache.kafka.common.security.oauthbearer.secured.OAuthBearerLoginCallbackHandler;
 import org.slf4j.Logger;
@@ -89,6 +90,12 @@ public abstract class AbstractFormat implements KafkaFormat {
         } else if (saslMechanism.equals("AWS_MSK_IAM")) {
           // IAMClientCallbackHandler
           builder.put(SaslConfigs.SASL_CLIENT_CALLBACK_HANDLER_CLASS, IAMClientCallbackHandler.class.getName());
+        }
+        if (protocol == KafkaProtocol.SASL_SSL && protocolConfig.hasNonNull("tls_ca_certificate")
+            && !protocolConfig.get("tls_ca_certificate").asText().isBlank()) {
+          // Pass the CA as an in-memory PEM trust store so no file needs to be mounted into the connector image.
+          builder.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, "PEM");
+          builder.put(SslConfigs.SSL_TRUSTSTORE_CERTIFICATES_CONFIG, protocolConfig.get("tls_ca_certificate").asText());
         }
       }
       default -> throw new RuntimeException("Unexpected Kafka protocol: " + Jsons.serialize(protocol));
