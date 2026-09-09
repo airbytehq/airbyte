@@ -52,11 +52,11 @@ Pipedrive enforces two independent limits per API token ([docs](https://pipedriv
 
 **Why this matters:** Keep the filters on `base_requester` so new endpoints (including the API v2 migration) inherit them; do not add per-stream copies. Do not extend the IGNORE list to top-level streams. Tests must not assert on retry log text, which comes from the CDK or the backoff library and changes between versions.
 
-## 7. No API Budget or Concurrency Tuning
+## 7. One Shared Request Budget and a Small Thread Pool
 
-The manifest sets no `api_budget` and no `concurrency_level`, so the source runs with the CDK's default concurrency and no client-side request throttling. Pipedrive enforces a per-company, [token-based budget](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that varies by plan and seat count, so the correct budget cannot be hard-coded.
+The manifest declares a top-level `api_budget` (`HTTPAPIBudget` with one `MovingWindowCallRatePolicy`: 20 requests per rolling 2 seconds) and a `concurrency_level` (`default_concurrency` from the optional `num_workers` config field, default 3, `max_concurrency` 10). The policy's `HttpRequestRegexMatcher` matches on the URL path (`^(/api)?/v[12]/`), not on the host, so it covers `https://api.pipedrive.com/v1/...`, `/api/v2/...` and the per-company hosts that OAuth uses. 20 per 2 seconds is the burst limit of Pipedrive's lowest plan ([docs](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting)); the plan is not knowable from the config, so the floor is used. `x-ratelimit-reset` is deliberately not read: Pipedrive sends a relative number of seconds and the CDK parses that header as an epoch timestamp. `x-ratelimit-remaining` and a 429 only nudge the bucket when Pipedrive reports zero calls left; the moving window is the actual throttle.
 
-**Why this matters:** Raising concurrency or adding fan-out streams without a budget increases the chance of hitting the company-wide limit and starving other integrations the customer runs against the same account. Issue [airbyte-internal-issues#17200](https://github.com/airbytehq/airbyte-internal-issues/issues/17200) owns the budget and concurrency design.
+**Why this matters:** Every stream shares the one budget, so more workers never exceed the burst limit and rarely make a sync faster. The daily token budget (30,000 tokens x plan multiplier x seats) is not modeled and remains the dominant limit for large accounts; see section 6 for how a 429 from an exhausted daily budget is reported. Do not add per-stream budgets or a second policy; tune the single `Rate` if the floor ever changes. Parent streams that the CDK caches (`deals`, `mailThreads`) share one HTTP session across partitions, so keep `max_concurrency` modest.
 
 ## 8. Deletes Are Not Replicated
 

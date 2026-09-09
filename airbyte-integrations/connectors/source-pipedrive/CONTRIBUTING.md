@@ -31,10 +31,10 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    configuration errors carrying Pipedrive's `error` text, 410 fails as a system error, 429 waits on
    `x-ratelimit-reset` then backs off, 5xx retry; `deal_products` and `mail` skip a single
    inaccessible or deleted parent instead of failing the sync. Details in AGENTS.md section 6.
-7. **No API Budget or Concurrency Tuning** -- there is no client-side throttling against
-   Pipedrive's per-company token budget, so adding fan-out or concurrency raises the risk of
-   company-wide rate limiting. Owned by
-   [airbyte-internal-issues#17200](https://github.com/airbytehq/airbyte-internal-issues/issues/17200).
+7. **One Shared Request Budget and a Small Thread Pool** -- `api_budget` throttles every stream to
+   20 requests per rolling 2 seconds (Pipedrive's lowest-plan burst limit, matched by URL path so
+   OAuth company hosts are covered too) and `concurrency_level` runs `num_workers` streams in
+   parallel (default 3, max 10). Details in AGENTS.md section 7.
 8. **Deletes Are Not Replicated** -- deleted Pipedrive records stay in destinations until the
    stream is cleared. Any change here comes with the API v2 migration in
    [airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204).
