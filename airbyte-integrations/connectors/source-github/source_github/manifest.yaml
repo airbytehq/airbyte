@@ -6106,13 +6106,12 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_datetime:
       type: MinMaxDatetime
-      # `or` rather than `config.get('start_date', default)`, as on `repositories`: the default
-      # is only substituted when the key is *absent*, so a present-but-null `start_date` would
-      # reach MinMaxDatetime as the literal string "None" and abort the stream. Legacy sent no
-      # `since` at all when `start_date` was unset (`get_starting_point` returned ""), so the
-      # epoch is the faithful stand-in — `since=1970-01-01T00:00:00Z` selects the same records,
-      # the request just carries one more parameter.
-      datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+      # `or` rather than `config.get('start_date', default)`: a present-but-null `start_date` would
+      # otherwise reach MinMaxDatetime as the literal string "None". Legacy sent no `since` when
+      # `start_date` was unset. 2008 predates every GitHub repository and selects the same records;
+      # the epoch does not — GitHub answers `since=1970-01-01T00:00:00Z` on the issues endpoint with
+      # an empty list.
+      datetime: "{{ config.get('start_date') or '2008-01-01T00:00:00Z' }}"
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
     start_time_option:
       type: RequestOption
