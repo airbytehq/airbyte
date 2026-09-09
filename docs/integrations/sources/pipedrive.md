@@ -34,7 +34,7 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 <FieldAnchor field="replication_start_date">
 
-**Start Date**: A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
+**Start Date**: A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
 
@@ -61,7 +61,7 @@ The connector uses the [Pipedrive API v1](https://developers.pipedrive.com/docs/
 | `activity_types`      | Full Refresh              | [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)                                                                                                                                                 |
 | `currencies`          | Full Refresh              | [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)                                                                                                                                                          |
 | `deal_fields`         | Full Refresh              | [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)                                                                                                                                                          |
-| `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal ([DealProducts](https://developers.pipedrive.com/docs/api/v1/DealProducts#getDealProducts); the connector calls the v1 path `GET /v1/deals/{id}/products`). |
+| `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal ([DealProducts](https://developers.pipedrive.com/docs/api/v1/DealProducts#getDealProducts)). The connector still calls the v1 path `GET /v1/deals/{id}/products`, which Pipedrive stopped supporting on 2026-08-01, and only expands deals returned by the `deals` stream. |
 | `deals`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=deal`. Cursor: `update_time`.                                                                                                                |
 | `files`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=file`. Cursor: `update_time`.                                                                                                                |
 | `filters`             | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=filter`. Cursor: `update_time`.                                                                                                              |
@@ -72,7 +72,7 @@ The connector uses the [Pipedrive API v1](https://developers.pipedrive.com/docs/
 | `mailThreads`         | Full Refresh              | Mail threads from the `inbox`, `drafts`, `sent`, and `archive` folders ([Mailbox getMailThreads](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreads)). See [Mail streams](#mail-streams).                                    |
 | `notes`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=note`. Cursor: `update_time`.                                                                                                                |
 | `organization_fields` | Full Refresh              | [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)                                                                                                                                  |
-| `organizations`       | Full Refresh              | [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations); the connector calls the v1 path `GET /v1/organizations`. |
+| `organizations`       | Full Refresh              | [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations). The connector still calls the v1 path `GET /v1/organizations`, which Pipedrive stopped supporting on 2026-08-01. |
 | `permission_sets`     | Full Refresh              | [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)                                                                                                                                              |
 | `person_fields`       | Full Refresh              | [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)                                                                                                                                                    |
 | `persons`             | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=person`. Cursor: `update_time`.                                                                                                              |
@@ -89,13 +89,15 @@ The ten incremental streams read from the Pipedrive [Recents](https://developers
 
 Because these streams use the Recents endpoint, they return records that changed in the window, not only records that were created in it. For example, a deal created years before your Start Date shows up in `deals` as soon as anyone edits it.
 
+Pipedrive's Recents endpoint returns at most one month of history, regardless of the Start Date. Records last modified more than a month before a sync are never backfilled by these streams, and moving the Start Date earlier does not retrieve them. The connector is being moved to Pipedrive API v2 to remove this limitation.
+
 ### Custom fields
 
 Pipedrive lets you add custom fields to deals, persons, organizations, products, and activities. The API returns each custom field as a 40-character hash key (for example `dcf558aac1ae4e8c4f849ba5e668430d8df9be12`) rather than a readable name. The `deals`, `persons`, `organizations`, `products`, and `activities` streams pass these keys through as additional top-level properties on each record. To map a hash key to its label and type, sync the matching `*_fields` stream (`deal_fields`, `person_fields`, `organization_fields`, `product_fields`, or `activity_fields`) and join on the `key` column.
 
 ### Mail streams
 
-`mailThreads` lists threads from the mailbox of the user who owns the API token. It queries each of the `inbox`, `drafts`, `sent`, and `archive` folders separately, so a thread that appears in more than one folder can be returned more than once. `mail` then requests the messages of every thread returned by `mailThreads`, one request per thread. Both streams are full refresh only, and you only see mail for the user whose token you configured, not for the whole company.
+`mailThreads` lists threads from the mailbox of the user who owns the API token. It queries each of the `inbox`, `drafts`, `sent`, and `archive` folders separately, so a thread that appears in more than one folder may be returned more than once. `mail` then requests the messages of every thread returned by `mailThreads`, one request per thread. Both streams are full refresh only, and you only see mail for the user whose token you configured, not for the whole company. If that user has not connected a mailbox to Pipedrive (Mail sync), both streams return no records.
 
 ## Performance considerations
 
@@ -117,15 +119,17 @@ Consider leaving these streams disabled unless you need them.
 
 - The connector doesn't replicate deletes. A record deleted in Pipedrive stays in your destination until you clear and resync the stream.
 - Only the ten streams marked Incremental above track state. The other sixteen streams are re-read in full on every sync.
-- Full refresh streams ignore the Start Date.
+- Full refresh streams ignore the Start Date, except `deal_products`, which only expands the deals returned by the `deals` stream.
+- The incremental streams read Pipedrive's Recents endpoint, which returns at most one month of history. Records last modified more than a month before a sync are not backfilled, whatever the Start Date.
+- `organizations` and `deal_products` call v1 endpoints that Pipedrive stopped supporting on 2026-08-01. They may stop working until the connector moves to API v2.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
 - The connector uses Pipedrive API v1. Newer fields that only exist in API v2 aren't available.
 
 ### Troubleshooting
 
 - **401 Unauthorized during setup**: Check that the API token was copied in full and that API access is enabled for your user (see Step 1).
-- **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin.
-- **Records missing from incremental streams**: Move the Start Date earlier and clear the stream, or run a full refresh. Records that haven't been modified since the Start Date are excluded.
+- **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin. `mail` and `mailThreads` are empty unless that user has a mailbox connected in Pipedrive.
+- **Records missing from incremental streams**: The Recents endpoint only returns records modified within the last month, so older records are not backfilled even with an earlier Start Date. Records that haven't been modified since the Start Date are excluded as well.
 - **Custom fields appear as hash keys**: This is expected. See [Custom fields](#custom-fields).
 - **Syncs fail with HTTP 429**: You have exceeded Pipedrive's rate limit. Reduce the number of enabled streams or increase the interval between syncs.
 

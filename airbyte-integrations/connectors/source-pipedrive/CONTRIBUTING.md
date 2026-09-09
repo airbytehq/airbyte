@@ -10,7 +10,9 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 1. **Incremental Streams Read From the Recents Endpoint, Not the Entity Endpoints** -- the ten
    incremental streams poll `/v1/recents` for anything modified since the start date, so they
    pick up edits to old records but never see untouched records created before the start date.
-   The other sixteen streams are full refresh and ignore the start date.
+   Pipedrive caps the Recents endpoint at one month of history, so older records are never
+   backfilled. The other sixteen streams are full refresh and ignore the start date, except
+   `deal_products`, which only expands the deals returned by `deals`.
 2. **Null-Payload Records From Recents Are Kept as Tombstones** -- when Pipedrive returns a
    `null` payload for a recent item, the connector emits a sparse record with just `id` and
    `item` instead of failing; don't filter these out or swap the custom extractor without
@@ -39,8 +41,8 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
 ## Testing notes
 
-- This is a manifest-only connector, so there are no Python unit tests; validate manifest
-  changes with the Connector Builder or `airbyte-ci connectors --name=source-pipedrive test`.
+- Validate manifest changes with `airbyte-cdk connector test` from the connector directory;
+  mock-server unit tests live in `unit_tests/` and run with `poe test-unit-tests`.
 - `integration_tests/` holds the acceptance test config. `expected_records.jsonl` mirrors a
   specific sandbox account, so record-level assertions need an updated fixture when the
   sandbox data changes.
