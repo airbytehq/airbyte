@@ -34,6 +34,16 @@ data:
           stream. Config has changed to only use API key. Please update your config."
   releaseDate: 2021-07-19
   releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - deals
+      - persons
+      - organizations
+      - activities
+      - leads
+      - pipelines
+      - stages
+      - users
   supportLevel: community
   tags:
     - cdk:low-code
