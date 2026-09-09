@@ -51,13 +51,13 @@ HubSpot is [retiring the creation of legacy Private Apps](https://developers.hub
 For accounts that can't create a Private App, use a HubSpot [Service Key](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/account-service-keys) (public beta). A Service Key is a static bearer token with the same `pat-` format and the same per-object scopes as a Private App access token, so the connector accepts it without any special configuration:
 
 1. In HubSpot, go to **Development**, then **Keys** > **Service keys**, and click **Create service key**.
-2. Add the scopes for the streams you want to sync (see [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-and-service-key-only)). HubSpot has deprecated the legacy `tickets` and `e-commerce` scopes, so the Service Key scope picker might not offer them; Step 2 lists their granular replacements.
+2. Add the scopes for the streams you want to sync (see [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only)). HubSpot has deprecated the legacy `tickets` and `e-commerce` scopes, so the Service Key scope picker might not offer them; Step 2 lists their granular replacements.
 3. Create the key, click **Show**, and copy it.
 4. In Airbyte, choose the **Private App** authentication method and paste the Service Key into the **Access token** field.
 
 A Service Key can only carry scopes that your HubSpot account and user already have. If HubSpot returns `403` for a stream even though you added its scope, your account's subscription tier doesn't include that object (for example, the `leads` stream needs the Leads object, which requires Sales Hub Professional or Enterprise).
 
-### Step 2: Configure the scopes for your streams (Private App and Service Key only)
+### Step 2: Configure the scopes for your streams (Private App and Service Key only) {#step-2-configure-the-scopes-for-your-streams-private-app-only}
 
 These instructions are only relevant if you are using a **Private App** or a **Service Key** for authentication. You can ignore this if you are authenticating via OAuth.
 
@@ -188,7 +188,7 @@ Enable the **Enable experimental streams** toggle to sync the Web Analytics stre
 - `line_items_web_analytics`
 - `products_web_analytics`
 
-These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-and-service-key-only)). They begin syncing from the configured **Start date** with fresh state.
+These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only)). They begin syncing from the configured **Start date** with fresh state.
 
 </FieldAnchor>
 
