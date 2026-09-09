@@ -157,7 +157,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                 |
 |:-----------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------|
-| 4.6.39 | 2026-09-09 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Exclude bases with a missing, null, or empty `permissionLevel` from the `bases` stream |
+| 4.6.39 | 2026-09-09 | [85794](https://github.com/airbytehq/airbyte/pull/85794) | Exclude bases with a missing, null, or empty `permissionLevel` from the `bases` stream |
 | 4.6.38 | 2026-09-08 | [85385](https://github.com/airbytehq/airbyte/pull/85385) | Update dependencies |
 | 4.6.37 | 2026-08-18 | [84475](https://github.com/airbytehq/airbyte/pull/84475) | Update dependencies |
 | 4.6.36 | 2026-08-11 | [83837](https://github.com/airbytehq/airbyte/pull/83837) | Update dependencies |
