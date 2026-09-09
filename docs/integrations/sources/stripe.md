@@ -317,6 +317,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                                 | Subject                                                                                                                                                                                                                       |
 |:------------|:-----------|:-------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 6.0.17 | 2026-09-09 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Prevent the events-based `invoice_line_items` and `subscription_items` transformations from running when `original_record` is missing or empty. |
 | 6.0.16 | 2026-09-08 | [85672](https://github.com/airbytehq/airbyte/pull/85672) | Update dependencies |
 | 6.0.15 | 2026-08-18 | [84768](https://github.com/airbytehq/airbyte/pull/84768) | Update dependencies |
 | 6.0.14 | 2026-08-17 | [84355](https://github.com/airbytehq/airbyte/pull/84355) | Update events now win same-second cursor ties with creation events so the newer payload is kept at the destination. |
