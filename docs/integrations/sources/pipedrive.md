@@ -17,6 +17,8 @@ The connector authenticates with a personal API token. Each token is tied to a P
 1. In the Pipedrive web app, click your account name (top right), then **Company settings** > **Personal preferences** > **API**.
 2. Copy the API token shown on that page. See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for screenshots.
 
+Pipedrive allows one active API token per user. If you regenerate it, update the connector configuration. If you belong to more than one company, each company has its own token.
+
 If the **API** tab isn't visible, your company admin hasn't enabled API access for your permission set. Ask them to follow [Enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users).
 
 ### Step 2: Set up the Pipedrive connector in Airbyte
@@ -37,6 +39,8 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 **Start Date**: A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
+
+When you click **Set up source**, Airbyte tests the connection by calling the [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies) endpoint. Every API token can read it, so the test passes even on an account that has no deals yet.
 
 ## Supported sync modes
 
