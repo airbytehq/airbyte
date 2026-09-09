@@ -68,12 +68,14 @@ class MySQLDestination :
 
             val compatibility = mySQLSqlOperations.isCompatibleVersion(database)
             if (!compatibility.isCompatible) {
-                throw RuntimeException(
-                    String.format(
-                        "Your MySQL version %s is not compatible with Airbyte",
-                        compatibility.version
-                    )
-                )
+                val errorMessage =
+                    compatibility.message.ifEmpty {
+                        String.format(
+                            "Your MySQL version %s is not compatible with Airbyte",
+                            compatibility.version
+                        )
+                    }
+                throw RuntimeException(errorMessage)
             }
 
             return AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED)

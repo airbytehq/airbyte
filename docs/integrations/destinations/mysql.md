@@ -25,7 +25,7 @@ Airbyte Cloud only supports connecting to your MySQL instance with TLS encryptio
 
 To use the MySQL destination, you'll need:
 
-- To sync data to MySQL **with** typing and deduping: MySQL database 8.0.0 or above
+- To sync data to MySQL **with** typing and deduping: MySQL database 8.0.21 or above (requires `JSON_VALUE` function)
 - To sync data to MySQL **without** typing and deduping: MySQL 5.0 or above.
 
 #### Troubleshooting
