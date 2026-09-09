@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.bigquery.write.standard_insert
 import com.google.cloud.bigquery.BigQuery
 import com.google.cloud.bigquery.BigQueryException
 import com.google.cloud.bigquery.FormatOptions
+import com.google.cloud.bigquery.Job
 import com.google.cloud.bigquery.JobId
 import com.google.cloud.bigquery.JobInfo
 import com.google.cloud.bigquery.JobStatistics
@@ -14,8 +15,8 @@ import com.google.cloud.bigquery.Schema
 import com.google.cloud.bigquery.TableDataWriteChannel
 import com.google.cloud.bigquery.TableId
 import com.google.cloud.bigquery.WriteChannelConfiguration
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.ConfigErrorException
+import io.airbyte.cdk.TransientErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.config.DataChannelFormat
@@ -41,9 +42,14 @@ import io.micronaut.context.condition.Condition
 import io.micronaut.context.condition.ConditionContext
 import jakarta.inject.Named
 import jakarta.inject.Singleton
-import java.io.ByteArrayOutputStream
+import java.io.BufferedOutputStream
+import java.io.OutputStream
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
+import java.nio.file.Files
+import java.nio.file.Path
+import kotlin.math.min
+import kotlinx.coroutines.delay
 
 private val logger = KotlinLogging.logger {}
 
@@ -56,46 +62,39 @@ class BigqueryBatchStandardInsertsLoader(
     private val writeChannelConfiguration: WriteChannelConfiguration,
     private val job: JobId,
     private val recordFormatter: RecordFormatter,
+    private val maxUploadAttempts: Int = DEFAULT_MAX_UPLOAD_ATTEMPTS,
+    private val initialRetryDelayMs: Long = DEFAULT_INITIAL_RETRY_DELAY_MS,
+    private val maxRetryDelayMs: Long = DEFAULT_MAX_RETRY_DELAY_MS,
 ) : DirectLoader {
-    // a TableDataWriteChannel holds (by default) a 15MB buffer in memory.
-    // so we start out by writing to a BAOS, which grows dynamically.
-    // when the BAOS reaches 15MB, we create the TableDataWriteChannel and switch over
-    // to writing to the writechannel directly.
-    // invariant: either the buffer is nonnull, or the writer is initialized. They are never both
-    // active at the same time.
-    // bigquery sets daily limits on how many TableDataWriteChannel jobs you can run,
-    // so we can't just flush+close a TableDataWriteChannel as soon as we reach 15MB.
-    private var buffer: ByteArrayOutputStream? = ByteArrayOutputStream()
-    private lateinit var writer: TableDataWriteChannel
+    // Records are spilled to a local file rather than streamed straight into a
+    // TableDataWriteChannel, so that the whole batch can be re-uploaded if BigQuery's resumable
+    // upload endpoint returns a transient error partway through.
+    // bigquery sets daily limits on how many load jobs you can run, so we upload one file per
+    // batch instead of flushing a TableDataWriteChannel every few MB.
+    private val spillFile: Path = Files.createTempFile("bigquery-standard-inserts-", ".jsonl")
+    private val spillOutput: OutputStream =
+        BufferedOutputStream(Files.newOutputStream(spillFile), SPILL_BUFFER_SIZE_BYTES)
 
-    @SuppressFBWarnings("RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE")
     override suspend fun accept(record: DestinationRecordRaw): DirectLoader.DirectLoadResult {
         val formattedRecord = recordFormatter.formatRecord(record)
         val byteArray =
             "$formattedRecord${System.lineSeparator()}".toByteArray(StandardCharsets.UTF_8)
-
-        if (this::writer.isInitialized) {
-            writer.write(ByteBuffer.wrap(byteArray))
-        } else {
-            buffer!!.write(byteArray)
-            // the default chunk size on the TableDataWriteChannel is 15MB,
-            // so switch to writing to a real writechannel when we reach that size
-            if (buffer!!.size() > 15 * 1024 * 1024) {
-                switchToWriteChannel()
-            }
-        }
+        spillOutput.write(byteArray)
 
         // rely on the CDK to tell us when to finish()
         return DirectLoader.Incomplete
     }
 
     override suspend fun finish() {
-        if (!this::writer.isInitialized) {
-            switchToWriteChannel()
-        }
-        writer.close()
-        BigQueryUtils.waitForJobFinish(writer.job)
-        val stats = writer.job.reload().getStatistics<JobStatistics.LoadStatistics>()
+        spillOutput.close()
+        val loadJob =
+            try {
+                uploadWithRetries()
+            } finally {
+                Files.deleteIfExists(spillFile)
+            }
+        BigQueryUtils.waitForJobFinish(loadJob)
+        val stats = loadJob.reload().getStatistics<JobStatistics.LoadStatistics>()
         logger.info {
             "Finished loading data into table ${writeChannelConfiguration.destinationTable.toPrettyString()}. ${stats.outputRows} rows loaded; ${stats.badRecords} bad records."
         }
@@ -108,26 +107,89 @@ class BigqueryBatchStandardInsertsLoader(
         }
     }
 
-    override fun close() {}
+    override fun close() {
+        spillOutput.close()
+        Files.deleteIfExists(spillFile)
+    }
 
-    // Somehow spotbugs thinks that `writer.write(ByteBuffer.wrap(byteArray))` is a redundant null
-    // check...
-    @SuppressFBWarnings(value = ["RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"])
-    private fun switchToWriteChannel() {
-        writer =
+    /**
+     * Uploads the spill file to BigQuery as a single load job, retrying on transient errors from
+     * the resumable upload endpoint.
+     *
+     * Every attempt reuses the same [JobId]. BigQuery job IDs are unique per project, so if a
+     * previous attempt's upload actually completed (and the load job was created) we detect that via
+     * [BigQuery.getJob] and wait for that job instead of re-submitting the data, which avoids
+     * duplicate loads.
+     */
+    private suspend fun uploadWithRetries(): Job {
+        var retryDelayMs = initialRetryDelayMs
+        var lastException: BigQueryException? = null
+        for (attempt in 1..maxUploadAttempts) {
+            if (attempt > 1) {
+                val existingJob = bigquery.getJob(job)
+                if (existingJob != null) {
+                    logger.info {
+                        "Load job ${job.job} already exists after a failed upload attempt; waiting for it instead of re-uploading."
+                    }
+                    return existingJob
+                }
+            }
+            try {
+                return uploadOnce()
+            } catch (e: BigQueryException) {
+                if (!isRetryableUploadError(e)) {
+                    throw e
+                }
+                lastException = e
+                logger.warn(e) {
+                    "Transient BigQuery error (HTTP ${e.code}) while uploading batch to ${writeChannelConfiguration.destinationTable.toPrettyString()} (attempt $attempt/$maxUploadAttempts). Sleeping ${retryDelayMs}ms and retrying."
+                }
+                if (attempt < maxUploadAttempts) {
+                    val withJitter = retryDelayMs + (1000 * Math.random()).toLong()
+                    delay(withJitter)
+                    retryDelayMs = min(retryDelayMs * 2, maxRetryDelayMs)
+                }
+            }
+        }
+        throw TransientErrorException(
+            "BigQuery batch upload failed with HTTP ${lastException!!.code} after $maxUploadAttempts attempts.",
+            lastException,
+        )
+    }
+
+    private fun uploadOnce(): Job {
+        val writer: TableDataWriteChannel =
             try {
                 bigquery.writer(job, writeChannelConfiguration)
             } catch (e: BigQueryException) {
                 if (e.code == HTTP_STATUS_CODE_FORBIDDEN || e.code == HTTP_STATUS_CODE_NOT_FOUND) {
                     throw ConfigErrorException(CONFIG_ERROR_MSG + e)
                 } else {
-                    throw BigQueryException(e.code, e.message)
+                    throw e
                 }
             }
-        val byteArray = buffer!!.toByteArray()
-        // please GC this object :)
-        buffer = null
-        writer.write(ByteBuffer.wrap(byteArray))
+        Files.newInputStream(spillFile).use { input ->
+            val chunk = ByteArray(UPLOAD_CHUNK_SIZE_BYTES)
+            while (true) {
+                val read = input.read(chunk)
+                if (read < 0) break
+                writer.write(ByteBuffer.wrap(chunk, 0, read))
+            }
+        }
+        writer.close()
+        return writer.job
+    }
+
+    companion object {
+        const val DEFAULT_MAX_UPLOAD_ATTEMPTS = 5
+        const val DEFAULT_INITIAL_RETRY_DELAY_MS = 5_000L
+        const val DEFAULT_MAX_RETRY_DELAY_MS = 60_000L
+        private const val SPILL_BUFFER_SIZE_BYTES = 1024 * 1024
+        private const val UPLOAD_CHUNK_SIZE_BYTES = 1024 * 1024
+        private const val HTTP_STATUS_CODE_TOO_MANY_REQUESTS = 429
+
+        fun isRetryableUploadError(e: BigQueryException): Boolean =
+            e.code >= 500 || e.code == HTTP_STATUS_CODE_TOO_MANY_REQUESTS || e.isRetryable
     }
 }
 
