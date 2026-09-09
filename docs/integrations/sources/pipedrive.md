@@ -136,7 +136,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.4.1 | 2026-09-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Classify Pipedrive HTTP errors (401/402/403 as configuration errors), honor `x-ratelimit-reset` on 429, and skip deleted or inaccessible parent records in `deal_products` and `mail` |
+| 2.4.1 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors (401/402/403 as configuration errors), honor `x-ratelimit-reset` on 429, and skip deleted or inaccessible parent records in `deal_products` and `mail` |
 | 2.4.0 | 2025-02-28 | [54716](https://github.com/airbytehq/airbyte/pull/54716) | Refactor: Optimize Parameters, remove redundant code and Improve Manifest Readability |
 | 2.3.8 | 2025-02-22 | [47292](https://github.com/airbytehq/airbyte/pull/47292) | Migrate to manifest only format |
 | 2.3.7 | 2025-02-08 | [53488](https://github.com/airbytehq/airbyte/pull/53488) | Update dependencies |
