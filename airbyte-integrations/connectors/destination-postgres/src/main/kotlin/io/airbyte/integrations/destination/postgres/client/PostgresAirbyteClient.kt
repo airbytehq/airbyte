@@ -190,7 +190,7 @@ class PostgresAirbyteClient(
      * Tables created by pre-direct-load connector versions may lack the `_airbyte_meta` and
      * `_airbyte_generation_id` columns. The schema diff can't repair them because the stream's
      * final schema excludes the meta columns, so [ensureSchemaMatches] detects and adds missing
-     * meta columns before the diff DDL runs, reusing the diff's column fetch.
+     * meta columns (behind a feature flag) before the diff DDL runs.
      */
     private fun repairMissingMetaColumns(
         tableName: TableName,
@@ -215,16 +215,13 @@ class PostgresAirbyteClient(
         tableName: TableName,
         columnNameMapping: ColumnNameMapping
     ) {
-        // A single fetch of ALL columns (including the airbyte meta columns) serves both the meta
-        // column repair and, with the meta columns filtered out, the schema diff.
-        val allColumnsInDb = getColumnsFromDbForDiscovery(tableName)
-
+        var columnsInDb = getColumnsFromDb(tableName)
         if (metaColumnRepairEnabled) {
-            repairMissingMetaColumns(tableName, allColumnsInDb)
+            // With the repair enabled, getColumnsFromDb also returns the airbyte meta columns:
+            // add any that are missing, then keep them out of the schema diff below.
+            repairMissingMetaColumns(tableName, columnsInDb)
+            columnsInDb = columnsInDb.filterKeys { it !in columnManager.getMetaColumnNames() }
         }
-
-        val metaColumnNames = columnManager.getMetaColumnNames()
-        val columnsInDb = allColumnsInDb.filterKeys { it !in metaColumnNames }
         // In raw tables mode, finalSchema contains just {_airbyte_data -> JSONB}
         // In typed mode, finalSchema contains the mapped user columns
         val columnsInStream = stream.tableSchema.columnSchema.finalSchema
@@ -306,10 +303,10 @@ class PostgresAirbyteClient(
     }
 
     /**
-     * Gets all of a table's columns from the database, including their types and the Airbyte
-     * metadata columns.
+     * Gets columns from the database including their types for schema discovery. Unlike
+     * [getColumnsFromDb], this returns all columns including Airbyte metadata columns.
      */
-    internal fun getColumnsFromDbForDiscovery(tableName: TableName): Map<String, ColumnType> =
+    private fun getColumnsFromDbForDiscovery(tableName: TableName): Map<String, ColumnType> =
         executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
             val columnsInDb: MutableMap<String, ColumnType> = mutableMapOf()
             while (rs.next()) {
@@ -392,6 +389,26 @@ class PostgresAirbyteClient(
         }
     }
 
+    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> =
+        executeQuery(sqlGenerator.getTableSchema(tableName)) { rs ->
+            val columnsInDb = mutableMapOf<String, ColumnType>()
+            val defaultColumnNames = columnManager.getMetaColumnNames()
+            while (rs.next()) {
+                val columnName = rs.getString(COLUMN_NAME_COLUMN)
+
+                // Filter out airbyte columns (unless the meta column repair needs to see them)
+                if (!metaColumnRepairEnabled && defaultColumnNames.contains(columnName)) {
+                    continue
+                }
+                val dataType = rs.getString("data_type")
+                val isNullable = rs.getString("is_nullable") == "YES"
+
+                columnsInDb[columnName] = ColumnType(normalizePostgresType(dataType), isNullable)
+            }
+
+            columnsInDb
+        }
+
     /**
      * Normalizes PostgreSQL type names from information_schema to match internal type names.
      *
@@ -446,12 +463,10 @@ class PostgresAirbyteClient(
             if (isMissingRelation(e)) {
                 log.debug(e) { "Table $tableName does not exist. Returning generation ID 0." }
                 0L
-            } else if (isUndefinedColumn(e)) {
-                // Tables created by pre-direct-load connector versions lack the
-                // _airbyte_generation_id column. This is queried before ensureSchemaMatches
-                // has had a chance to repair the table, so treat it as generation 0 (the repair
-                // happens later in the sync, and a generation of 0 routes truncate syncs down
-                // the overwrite path, which recreates the table with the full schema).
+            } else if (metaColumnRepairEnabled && isUndefinedColumn(e)) {
+                // Pre-direct-load tables lack _airbyte_generation_id until ensureSchemaMatches
+                // repairs them later in the sync; treat that as generation 0 (which routes
+                // truncate syncs down the overwrite path).
                 log.warn(e) {
                     "Table $tableName does not have a generation ID column. Returning generation ID 0."
                 }

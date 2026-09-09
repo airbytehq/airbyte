@@ -55,6 +55,17 @@ class SnowflakeMetaColumnRepairTest(
         )
     }
 
+    /** Inserts a row the way a pre-3.10.0 connector version would have: no meta columns. */
+    private fun insertLegacyRow(tableName: TableName) {
+        dataSource.execute(
+            """
+            INSERT INTO ${sqlGenerator.fullyQualifiedName(tableName)}
+                ("_AIRBYTE_RAW_ID", "_AIRBYTE_EXTRACTED_AT", "TEST")
+            VALUES ('legacy-row', CURRENT_TIMESTAMP(), 7)
+            """.trimIndent()
+        )
+    }
+
     @Test
     fun `ensureSchemaMatches adds meta columns to a pre-3_10 table`() = runTest {
         val namespace = Fixtures.generateTestNamespace("meta_repair")
@@ -85,6 +96,43 @@ class SnowflakeMetaColumnRepairTest(
             val rows = testClient.readTable(table)
             assertEquals(1, rows.size)
             assertEquals(42L, rows.first()["TEST"])
+
+            // The next sync reads the generation id written by this one.
+            assertEquals(1L, client.getGenerationId(table))
+        } finally {
+            testClient.dropNamespace(namespace)
+        }
+    }
+
+    @Test
+    fun `getGenerationId returns 0 after repairing a table with pre-existing rows`() = runTest {
+        val namespace = Fixtures.generateTestNamespace("meta_repair")
+        val table = Fixtures.generateTestTableName("meta_repair_legacy_rows", namespace)
+        val tableSchema = schemaFactory.make(table, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val stream = Fixtures.createStream(table.namespace, table.name, tableSchema)
+        try {
+            client.createNamespace(namespace)
+            createPre310Table(table)
+            insertLegacyRow(table)
+
+            // Before the repair the column does not exist at all.
+            assertEquals(0L, client.getGenerationId(table))
+
+            client.ensureSchemaMatches(stream, table, testMapping)
+
+            val columns = client.describeTable(table).keys
+            assertTrue(
+                columns.containsAll(SnowflakeColumnManager.Constants.schemaModeMetaColNames),
+                "Expected all Airbyte meta columns to exist after ensureSchemaMatches, got $columns",
+            )
+
+            // After the repair the column exists but the legacy row has a NULL generation id,
+            // which reads as generation 0 (no error).
+            assertEquals(0L, client.getGenerationId(table))
+
+            val rows = testClient.readTable(table)
+            assertEquals(1, rows.size)
+            assertEquals(7L, rows.first()["TEST"])
         } finally {
             testClient.dropNamespace(namespace)
         }

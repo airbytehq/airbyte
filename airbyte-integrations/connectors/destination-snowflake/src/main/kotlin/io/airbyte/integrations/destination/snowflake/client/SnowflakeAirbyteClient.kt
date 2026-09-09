@@ -205,40 +205,37 @@ class SnowflakeAirbyteClient(
         execute(sqlGenerator.createSnowflakeStage(tableName))
         /*
          * If legacy raw tables are in use, there is nothing to ensure in schema, as raw mode
-         * uses a fixed schema that is not based on the catalog/incoming record. Only the
-         * (flag-gated) meta column repair applies: raw tables created before 3.10.0 lack
-         * _airbyte_meta/_airbyte_generation_id.
+         * uses a fixed schema that is not based on the catalog/incoming record.  Otherwise,
+         * ensure that the destination schema is in sync with any changes.
          */
         if (snowflakeConfiguration.legacyRawTablesOnly) {
             if (metaColumnRepairEnabled) {
-                repairMissingMetaColumns(tableName, getAllColumnsFromDb(tableName).keys)
+                repairMissingMetaColumns(tableName, getColumnsFromDb(tableName).keys)
             }
             return
         }
-        // A single fetch of ALL columns (including the airbyte meta columns) serves both the meta
-        // column repair and, with the meta columns filtered out, the schema diff.
-        val allColumnsInDb = getAllColumnsFromDb(tableName)
+        super.ensureSchemaMatches(stream, tableName, columnNameMapping)
+    }
+
+    override suspend fun discoverSchema(tableName: TableName): TableSchema {
         if (metaColumnRepairEnabled) {
-            repairMissingMetaColumns(tableName, allColumnsInDb.keys)
+            // With the repair enabled, getColumnsFromDb also returns the airbyte meta columns:
+            // add any that are missing, then keep them out of the diff (computeSchema excludes
+            // them, and the CDK requires discoverSchema to match).
+            val allColumns = getColumnsFromDb(tableName)
+            repairMissingMetaColumns(tableName, allColumns.keys)
+            return TableSchema(allColumns.filterKeys { it !in columnManager.getMetaColumnNames() })
         }
-        val metaColumnNames = columnManager.getMetaColumnNames()
-        val actualColumns = allColumnsInDb.filterKeys { it !in metaColumnNames }
-        val expectedColumns = computeSchema(stream, columnNameMapping).columns
-        applyChangeset(
-            stream,
-            columnNameMapping,
-            tableName,
-            expectedColumns,
-            computeChangeset(actualColumns, expectedColumns),
-        )
+        return TableSchema(getColumnsFromDb(tableName))
     }
 
     /**
      * Tables created by connector versions prior to 3.10.0 lack the `_airbyte_meta` and
      * `_airbyte_generation_id` columns, and the migration that used to add them was removed in the
      * 4.0.0 direct-load rewrite. The schema diff can't repair them either, because [discoverSchema]
-     * and [computeSchema] both exclude the meta columns. So [ensureSchemaMatches] detects and adds
-     * missing meta columns before the schema diff runs, reusing the diff's column fetch.
+     * and [computeSchema] both exclude the meta columns. So, when the feature flag is enabled,
+     * [getColumnsFromDb] returns the meta columns too and this repair runs from [discoverSchema]
+     * (typed mode) or [ensureSchemaMatches] (raw mode), reusing that single DESCRIBE TABLE fetch.
      */
     private fun repairMissingMetaColumns(tableName: TableName, existingColumns: Set<String>) {
         val missingMetaColumns =
@@ -255,10 +252,6 @@ class SnowflakeAirbyteClient(
             }
             sqlGenerator.addMetaColumns(tableName, missingMetaColumns).forEach { execute(it) }
         }
-    }
-
-    override suspend fun discoverSchema(tableName: TableName): TableSchema {
-        return TableSchema(getColumnsFromDb(tableName))
     }
 
     override fun computeSchema(
@@ -292,11 +285,7 @@ class SnowflakeAirbyteClient(
         }
     }
 
-    /**
-     * Gets all of a table's columns from the database (DESCRIBE TABLE), including their types and
-     * the Airbyte metadata columns.
-     */
-    internal fun getAllColumnsFromDb(tableName: TableName): Map<String, ColumnType> {
+    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> {
         try {
             val sql =
                 sqlGenerator.describeTable(
@@ -311,6 +300,14 @@ class SnowflakeAirbyteClient(
 
                     while (rs.next()) {
                         val columnName = escapeJsonIdentifier(rs.getString("name"))
+
+                        // Filter out airbyte columns
+                        if (
+                            !metaColumnRepairEnabled &&
+                                columnManager.getMetaColumnNames().contains(columnName)
+                        ) {
+                            continue
+                        }
                         val dataType = toCanonicalDataType(rs.getString("type"))
                         // yes, this is how we live. The value is, in fact "Y" or "N".
                         val nullable = rs.getString("null?") == "Y"
@@ -324,11 +321,6 @@ class SnowflakeAirbyteClient(
         } catch (e: SnowflakeSQLException) {
             handleSnowflakePermissionError(e)
         }
-    }
-
-    internal fun getColumnsFromDb(tableName: TableName): Map<String, ColumnType> {
-        val metaColumnNames = columnManager.getMetaColumnNames()
-        return getAllColumnsFromDb(tableName).filterKeys { it !in metaColumnNames }
     }
 
     override suspend fun getGenerationId(tableName: TableName): Long =

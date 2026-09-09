@@ -22,8 +22,9 @@ import org.junit.jupiter.api.Test
 /**
  * Tables created by pre-direct-load connector versions lack the `_airbyte_meta` and
  * `_airbyte_generation_id` columns. These tests verify that [PostgresAirbyteClient] repairs such
- * tables during `ensureSchemaMatches` when the repair feature flag (off by default) is enabled, and
- * tolerates the missing generation id column before the repair has run.
+ * tables during `ensureSchemaMatches` when the repair feature flag (off by default) is enabled,
+ * tolerates the missing generation id column before the repair has run, and reads the generation id
+ * correctly afterwards (legacy rows keep a NULL generation id, which reads as 0).
  */
 @MicronautTest(environments = ["component"], resolveParameters = false)
 @Property(name = "airbyte.destination.postgres.meta-column-repair", value = "true")
@@ -44,6 +45,21 @@ class PostgresMetaColumnRepairTest(
                         "_airbyte_extracted_at" timestamp with time zone NOT NULL,
                         "${Fixtures.TEST_FIELD}" bigint
                     )
+                    """.trimIndent()
+                )
+            }
+        }
+    }
+
+    /** Inserts a row the way a pre-direct-load connector version would have (no meta columns). */
+    private fun insertLegacyRow(tableName: TableName, testFieldValue: Long) {
+        dataSource.connection.use { connection ->
+            connection.createStatement().use { statement ->
+                statement.execute(
+                    """
+                    INSERT INTO "${tableName.namespace}"."${tableName.name}"
+                        ("_airbyte_raw_id", "_airbyte_extracted_at", "${Fixtures.TEST_FIELD}")
+                    VALUES ('legacy-row', now(), $testFieldValue)
                     """.trimIndent()
                 )
             }
@@ -74,6 +90,10 @@ class PostgresMetaColumnRepairTest(
             val rows = testClient.readTable(table)
             assertEquals(1, rows.size)
             assertEquals(42L, rows.first()[Fixtures.TEST_FIELD])
+
+            // The next sync reads the generation id written by this sync (SINGLE_TEST_RECORD_INPUT
+            // carries generation id 1).
+            assertEquals(1L, client.getGenerationId(table))
         } finally {
             testClient.dropNamespace(namespace)
         }
@@ -88,6 +108,37 @@ class PostgresMetaColumnRepairTest(
             createPreDirectLoadTable(table)
 
             assertEquals(0L, client.getGenerationId(table))
+        } finally {
+            testClient.dropNamespace(namespace)
+        }
+    }
+
+    @Test
+    fun `getGenerationId returns 0 after repairing a table with pre-existing rows`() = runTest {
+        val namespace = Fixtures.generateTestNamespace("meta_repair")
+        val table = Fixtures.generateTestTableName("meta_repair_legacy_rows", namespace)
+        val tableSchema = schemaFactory.make(table, Fixtures.TEST_INTEGER_SCHEMA.properties, Append)
+        val stream = Fixtures.createStream(table.namespace, table.name, tableSchema)
+        try {
+            client.createNamespace(namespace)
+            createPreDirectLoadTable(table)
+            insertLegacyRow(table, testFieldValue = 7)
+
+            // Before the repair: the column is missing entirely (SQLSTATE 42703).
+            assertEquals(0L, client.getGenerationId(table))
+
+            client.ensureSchemaMatches(stream, table, Fixtures.TEST_MAPPING)
+            assertTrue(client.describeTable(table).containsAll(Meta.COLUMN_NAMES))
+
+            // After the repair: the column exists but the legacy row's value is NULL, which reads
+            // as generation 0 (no exception).
+            assertEquals(0L, client.getGenerationId(table))
+
+            // The legacy row survived the repair; its generation id is NULL (omitted by readTable).
+            val rows = testClient.readTable(table)
+            assertEquals(1, rows.size)
+            assertEquals(7L, rows.first()[Fixtures.TEST_FIELD])
+            assertFalse(rows.first().containsKey(Meta.COLUMN_NAME_AB_GENERATION_ID))
         } finally {
             testClient.dropNamespace(namespace)
         }

@@ -551,10 +551,7 @@ internal class SnowflakeAirbyteClientTest {
             "COL1" andThen
             COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName() andThen
             "COL2"
-        every { resultSet.getString("type") } returns
-            "VARCHAR(255)" andThen
-            "TEXT" andThen
-            "NUMBER(38,0)"
+        every { resultSet.getString("type") } returns "VARCHAR(255)" andThen "NUMBER(38,0)"
         every { resultSet.getString("null?") } returns "Y" andThen "N" andThen "N"
 
         val statement =
@@ -578,6 +575,46 @@ internal class SnowflakeAirbyteClientTest {
         val expectedColumns =
             mapOf(
                 "COL1" to ColumnType("VARCHAR", true),
+                "COL2" to ColumnType("NUMBER", false),
+            )
+
+        assertEquals(expectedColumns, result)
+    }
+
+    @Test
+    fun `getColumnsFromDb includes meta columns when the repair is enabled`() {
+        val tableName = TableName("test_namespace", "test_table")
+        val abRawId = COLUMN_NAME_AB_RAW_ID.toSnowflakeCompatibleName()
+        val resultSet = mockk<ResultSet>()
+        every { resultSet.next() } returns true andThen true andThen true andThen false
+        every { resultSet.getString("name") } returns "COL1" andThen abRawId andThen "COL2"
+        // With the repair enabled the meta row is no longer skipped, so its type is read too.
+        every { resultSet.getString("type") } returns
+            "VARCHAR(255)" andThen
+            "TEXT" andThen
+            "NUMBER(38,0)"
+        every { resultSet.getString("null?") } returns "Y" andThen "N" andThen "N"
+
+        val statement =
+            mockk<Statement> {
+                every { executeQuery(any()) } returns resultSet
+                every { close() } just Runs
+            }
+
+        val connection = mockk<Connection>()
+        every { connection.createStatement() } returns statement
+        every { connection.close() } just Runs
+
+        every { dataSource.connection } returns connection
+
+        every { columnManager.getMetaColumnNames() } returns setOf(abRawId)
+
+        val result = clientWithRepairEnabled().getColumnsFromDb(tableName)
+
+        val expectedColumns =
+            mapOf(
+                "COL1" to ColumnType("VARCHAR", true),
+                abRawId to ColumnType("TEXT", false),
                 "COL2" to ColumnType("NUMBER", false),
             )
 
@@ -809,7 +846,7 @@ internal class SnowflakeAirbyteClientTest {
         val abGenerationId = COLUMN_NAME_AB_GENERATION_ID.toSnowflakeCompatibleName()
 
         // Pre-3.10.0-shaped table: only _AIRBYTE_RAW_ID and _AIRBYTE_EXTRACTED_AT. The single
-        // DESCRIBE TABLE fetch serves both the meta column repair and the schema diff.
+        // DESCRIBE TABLE fetch (discoverSchema) serves both the meta column repair and the diff.
         val describeResultSet =
             mockDescribeTableResult(
                 mapOf(
@@ -1080,6 +1117,7 @@ internal class SnowflakeAirbyteClientTest {
         }
 
         verify(exactly = 0) { sqlGenerator.addMetaColumns(any(), any()) }
+        verify(exactly = 0) { columnManager.getMetaColumns() }
         // The regular schema diff discovery still runs.
         verify(exactly = 1) { sqlGenerator.describeTable(any(), any()) }
     }
