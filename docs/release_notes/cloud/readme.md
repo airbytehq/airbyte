@@ -2,6 +2,16 @@
 
 Airbyte Cloud is updated continuously. You always have the latest features and fixes.
 
+## September 9, 2026
+
+Connections
+
+- If your connection backfills new or changed columns and its source uses change data capture (CDC), syncs after a propagated schema change no longer re-read every stream from the beginning. Your existing sync progress is kept, so only new and changed data is synced.
+
+Platform
+
+- If your organization is on the Plus plan, you can have up to 3 workspaces. When you reach that limit, the create-workspace dialog tells you the limit has been reached and that you can upgrade your plan to add more.
+
 ## September 4, 2026
 
 Platform
