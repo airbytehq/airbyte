@@ -51,9 +51,7 @@ def test_sdk_targets_api_v26():
 )
 def test_v25_removed_fields_not_in_sdk(field_name):
     """Verify that fields removed in v25 are no longer present in AdsInsights.Field."""
-    assert not hasattr(AdsInsights.Field, field_name), (
-        f"Field '{field_name}' was expected to be removed in SDK " "v25 but is still present."
-    )
+    assert not hasattr(AdsInsights.Field, field_name), f"Field '{field_name}' was expected to be removed in SDK v25 but is still present."
 
 
 @pytest.mark.parametrize(
@@ -62,9 +60,7 @@ def test_v25_removed_fields_not_in_sdk(field_name):
 )
 def test_v26_removed_fields_not_in_sdk(field_name):
     """Verify that fields removed in v26 are no longer present in AdsInsights.Field."""
-    assert not hasattr(AdsInsights.Field, field_name), (
-        f"Field '{field_name}' was expected to be removed in SDK " "v26 but is still present."
-    )
+    assert not hasattr(AdsInsights.Field, field_name), f"Field '{field_name}' was expected to be removed in SDK v26 but is still present."
 
 
 def test_valid_fields_enum_excludes_removed_fields():
