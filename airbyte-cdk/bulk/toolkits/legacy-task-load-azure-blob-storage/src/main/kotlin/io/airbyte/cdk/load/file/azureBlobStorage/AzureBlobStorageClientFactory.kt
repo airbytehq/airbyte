@@ -4,6 +4,7 @@
 
 package io.airbyte.cdk.load.file.azureBlobStorage
 
+import com.azure.identity.AzureAuthorityHosts
 import com.azure.identity.ClientSecretCredentialBuilder
 import com.azure.storage.blob.BlobServiceClientBuilder
 import com.azure.storage.common.StorageSharedKeyCredential
@@ -18,13 +19,23 @@ class AzureBlobStorageClientFactory(
         AzureBlobStorageClientConfigurationProvider,
 ) {
 
+    private fun resolveAuthorityHost(endpointDomainName: String): String {
+        return when {
+            endpointDomainName.endsWith("core.usgovcloudapi.net", ignoreCase = true) ->
+                AzureAuthorityHosts.AZURE_GOVERNMENT
+            endpointDomainName.endsWith("core.chinacloudapi.cn", ignoreCase = true) ->
+                AzureAuthorityHosts.AZURE_CHINA
+            else -> AzureAuthorityHosts.AZURE_PUBLIC_CLOUD
+        }
+    }
+
     @Singleton
     @Secondary
     fun make(): AzureBlobClient {
-        val endpoint =
-            "https://${azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration.accountName}.blob.core.windows.net"
-
         val config = azureBlobStorageClientConfigurationProvider.azureBlobStorageClientConfiguration
+        val endpointDomainName =
+            config.endpointDomainName?.takeIf { it.isNotBlank() } ?: "blob.core.windows.net"
+        val endpoint = "https://${config.accountName}.$endpointDomainName"
 
         val clientBuilder = BlobServiceClientBuilder().endpoint(endpoint)
         when {
@@ -34,6 +45,7 @@ class AzureBlobStorageClientFactory(
                 !config.clientSecret.isNullOrBlank() -> {
                 val credential =
                     ClientSecretCredentialBuilder()
+                        .authorityHost(resolveAuthorityHost(endpointDomainName))
                         .tenantId(config.tenantId)
                         .clientId(config.clientId)
                         .clientSecret(config.clientSecret)

@@ -8,6 +8,7 @@ import io.airbyte.cdk.load.command.ImportType
 import io.airbyte.cdk.load.component.TableSchemaEvolutionFixtures
 import io.airbyte.cdk.load.component.TableSchemaEvolutionSuite
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.cdk.load.write.ColumnDropBehavior
 import io.airbyte.integrations.destination.redshift.client.RedshiftAirbyteClient
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import org.junit.jupiter.api.Disabled
@@ -20,6 +21,9 @@ class RedshiftTableSchemaEvolutionTest(
     override val testClient: RedshiftTestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
 ) : TableSchemaEvolutionSuite {
+
+    override val columnDropBehavior: ColumnDropBehavior
+        get() = ColumnDropBehavior.RETAIN
 
     @Test
     fun `discover recognizes all data types`() {

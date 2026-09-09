@@ -97,7 +97,7 @@ def test_source_check_connection_ok(config, requests_mock):
             (Status.FAILED, "Stream advertisers is not available: Access token is incorrect or has been revoked."),
             None,
         ),
-        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 6),
+        ({"code": 40100, "message": "App reaches the QPS limit."}, None, 10),
         (
             {"code": 40001, "message": "Permission error: The access token lacks the required scope for endpoint."},
             (Status.FAILED, "Insufficient permissions for this endpoint (error 40001)"),

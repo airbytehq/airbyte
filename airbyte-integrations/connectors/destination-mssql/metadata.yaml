@@ -31,7 +31,7 @@ data:
             type: GSM
   connectorType: destination
   definitionId: d4353156-9217-4cad-8dd7-c108fd4f74cf
-  dockerImageTag: 2.2.20
+  dockerImageTag: 2.2.21
   dockerRepository: airbyte/destination-mssql
   documentationUrl: https://docs.airbyte.com/integrations/destinations/mssql
   githubIssueLabel: destination-mssql
@@ -55,6 +55,13 @@ data:
 
           '
         upgradeDeadline: "2025-09-11"
+    rolloutConfiguration:
+      defaultRolloutMode: autopilot
+      autopilotConfig:
+        autoStart: true
+        autoPromoteStages: true
+        strategy: slow
+      enableProgressiveRollout: true
   releaseStage: generally_available
   supportLevel: certified
   supportsRefreshes: true
