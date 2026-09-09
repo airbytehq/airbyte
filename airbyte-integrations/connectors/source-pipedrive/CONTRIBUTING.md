@@ -27,10 +27,10 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 5. **Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread** --
    `mailThreads` queries four folders (so threads can repeat) and `mail` makes one request per
    thread; both only see the token owner's mailbox.
-6. **No Manifest-Level Error Handling; CDK Defaults Apply** -- 429s and 5xx get the CDK's
-   default exponential backoff and nothing reads Pipedrive's rate-limit headers. Error
-   classification is owned by
-   [airbyte-internal-issues#17198](https://github.com/airbytehq/airbyte-internal-issues/issues/17198).
+6. **HTTP Errors Are Classified on the Shared Base Requester** -- 401/402/403 fail as
+   configuration errors carrying Pipedrive's `error` text, 410 fails as a system error, 429 waits on
+   `x-ratelimit-reset` then backs off, 5xx retry; `deal_products` and `mail` skip a single
+   inaccessible or deleted parent instead of failing the sync. Details in AGENTS.md section 6.
 7. **No API Budget or Concurrency Tuning** -- there is no client-side throttling against
    Pipedrive's per-company token budget, so adding fan-out or concurrency raises the risk of
    company-wide rate limiting. Owned by
