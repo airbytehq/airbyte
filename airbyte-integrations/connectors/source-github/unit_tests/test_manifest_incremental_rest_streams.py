@@ -173,11 +173,12 @@ def test_start_date_is_sent_as_since_on_a_first_sync(stream_name, endpoint, rate
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)
-def test_missing_start_date_sends_the_epoch(stream_name, endpoint, rate_limit_mock_response, requests_mock):
+def test_missing_start_date_sends_2008(stream_name, endpoint, rate_limit_mock_response, requests_mock):
     """Legacy sent no `since` at all with no `start_date` (`get_starting_point` returned "").
-    `DatetimeBasedCursor` requires a start, so the manifest falls back to the epoch — the same
-    record set, one extra parameter. A present-but-null `start_date` must take that path too
-    rather than rendering as the literal "None"."""
+    `DatetimeBasedCursor` requires a start, so the manifest falls back to 2008-01-01, which predates
+    every GitHub repository and selects the same records. Not the epoch: GitHub answers
+    `since=1970-01-01T00:00:00Z` on the issues endpoint with an empty list. A present-but-null
+    `start_date` must take that path too rather than rendering as the literal "None"."""
     config = {**_config("docker/compose"), "start_date": None}
     _mock_repository_resolution(requests_mock, "docker/compose")
     requests_mock.get(f"https://api.github.com/repos/docker/compose/{endpoint}", json=[])
@@ -185,7 +186,7 @@ def test_missing_start_date_sends_the_epoch(stream_name, endpoint, rate_limit_mo
     _, _, _, error = _read(config, stream_name)
 
     assert error is None
-    assert [request.qs["since"] for request in _listings(requests_mock, endpoint)] == [["1970-01-01t00:00:00z"]]
+    assert [request.qs["since"] for request in _listings(requests_mock, endpoint)] == [["2008-01-01t00:00:00z"]]
 
 
 @pytest.mark.parametrize(("stream_name", "endpoint"), MIGRATED_STREAMS)

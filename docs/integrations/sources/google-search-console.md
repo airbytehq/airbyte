@@ -263,6 +263,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version     | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:------------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.1.12 | 2026-09-09 | [75289](https://github.com/airbytehq/airbyte/pull/75289) | Improve error messages for unverified or inaccessible site URLs on the sites and sitemaps streams |
 | 2.1.11 | 2026-09-08 | [85529](https://github.com/airbytehq/airbyte/pull/85529) | Update dependencies |
 | 2.1.10 | 2026-08-18 | [84615](https://github.com/airbytehq/airbyte/pull/84615) | Update dependencies |
 | 2.1.9 | 2026-08-11 | [83959](https://github.com/airbytehq/airbyte/pull/83959) | Update dependencies |
