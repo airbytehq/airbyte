@@ -1,0 +1,49 @@
+# source-pipedrive: Unique Connector Behaviors
+
+## 1. Incremental Streams Read From the Recents Endpoint, Not the Entity Endpoints
+
+The ten incremental streams (`activities`, `deals`, `files`, `filters`, `notes`, `persons`, `pipelines`, `products`, `stages`, `users`) do not call their entity endpoints (`/deals`, `/persons`, and so on). They all call [`GET /v1/recents`](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with an `items=<type>` parameter and a `since_timestamp` derived from the `DatetimeBasedCursor`. The start date is reformatted from the spec's `YYYY-MM-DDTHH:MM:SSZ` to the `YYYY-MM-DD HH:MM:SS` format that `/recents` requires. Every one of these streams uses `update_time` as the cursor except `users`, whose records expose `modified` instead, and `users` also unwraps one extra `data` level (`data.*.data.*`) because `/recents?items=user` nests an array under each item.
+
+**Why this matters:** `/recents` returns anything modified since the timestamp, so these streams see edits to old records but never see records that were created before the start date and not touched since. Switching a stream to its entity endpoint changes the record scope (and would need a different cursor and pagination), so that is a data-scope change, not a refactor. Since 2024-12-01 Pipedrive caps `since_timestamp` on `/recents` at one month of history, so these streams never backfill records last modified earlier than that; the API v2 migration ([airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204)) removes the cap. The remaining sixteen streams are full refresh and ignore `replication_start_date` entirely, except `deal_products`, whose parent is the recents-fed `deals` stream.
+
+## 2. Null-Payload Records From Recents Are Kept as Tombstones
+
+`/recents` wraps each item as `{"item": "deal", "id": 123, "data": {...}}`, and `data` can be `null`. The custom `NullCheckedDpathExtractor` in `components.py` returns `record["data"]` when it is present and otherwise returns the wrapper object itself, so a `null` payload becomes a record containing only `item` and `id`. Airbyte added this in [#31147](https://github.com/airbytehq/airbyte/pull/31147) after syncs crashed on `null` payloads.
+
+**Why this matters:** Downstream tables for the incremental streams can contain sparse rows with just `id` and `item`. Do not add a `RecordFilter` to drop them without confirming users are not relying on them, and do not replace the extractor with a plain `DpathExtractor` on `data.*.data` (that would fail again on `null`). Issue [airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204) owns moving these streams to API v2, which will remove the extractor; until then this behavior is intentional.
+
+## 3. Custom Fields Arrive as Hash Keys Outside the Declared Schema
+
+Pipedrive returns custom fields on deals, persons, organizations, products, and activities as 40-character hash keys (for example `dcf558aac1ae4e8c4f849ba5e668430d8df9be12`) alongside the built-in properties. The stream schemas set `additionalProperties: true` ([#31151](https://github.com/airbytehq/airbyte/pull/31151)) so those keys pass through, and the `*_fields` streams (`deal_fields`, `person_fields`, `organization_fields`, `product_fields`, `activity_fields`) expose the mapping from hash key to label and type.
+
+**Why this matters:** Turning on `autoImportSchema`, tightening `additionalProperties`, or adding schema normalization would silently drop every custom field. Because the keys differ per Pipedrive account, they can never be listed in the static schema.
+
+## 4. Authentication Is a Query Parameter, Not an Authenticator
+
+There is no `authenticator` in the manifest. Every stream injects `api_token: "{{ config['api_token'] }}"` into `request_parameters`, which is how Pipedrive's [API token auth](https://pipedrive.readme.io/docs/core-api-concepts-authentication) works. The token belongs to a single user, so all streams are scoped to that user's visibility and permission set.
+
+**Why this matters:** The token is part of the URL, so it appears in request logs and in any debug output that prints URLs. It also means `check` succeeding does not imply the token can see company-wide data. Issue [airbyte-internal-issues#17201](https://github.com/airbytehq/airbyte-internal-issues/issues/17201) owns adding OAuth and moving auth to a header; do not document or add OAuth ahead of that work.
+
+## 5. Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread
+
+`mailThreads` calls [`GET /v1/mailbox/mailThreads`](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreads) once per folder using a `ListPartitionRouter` over `inbox`, `drafts`, `sent`, and `archive`. `mail` is a substream that calls [`GET /v1/mailbox/mailThreads/{id}/mailMessages`](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreadMessages) for every thread `mailThreads` returns. Pipedrive's mailbox endpoints only return the mailbox of the token's user.
+
+**Why this matters:** The same thread can be emitted from more than one folder, so `mailThreads` can contain duplicate `id` values within a sync, and `mail` issues one request per thread, which dominates request volume on busy mailboxes. Neither stream can see other users' mail regardless of admin rights.
+
+## 6. No Manifest-Level Error Handling; CDK Defaults Apply
+
+None of the requesters define an `error_handler`, so the declarative CDK falls back to `DefaultErrorHandler` with the default response filters: 429 and 5xx are retried with the CDK's exponential backoff for five retries (six attempts), 401/403 fail the stream, and 4xx like 404 fail the stream rather than being ignored. Pipedrive's rate-limit headers (`x-ratelimit-*`, `Retry-After`) are not read.
+
+**Why this matters:** A single `429` storm on a large `deal_products` or `mail` sync burns through five retries quickly and fails the whole sync. Do not add stream-specific `error_handler` blocks piecemeal; issue [airbyte-internal-issues#17198](https://github.com/airbytehq/airbyte-internal-issues/issues/17198) owns error classification and rate-limit handling for the connector as a whole.
+
+## 7. No API Budget or Concurrency Tuning
+
+The manifest sets no `api_budget` and no `concurrency_level`, so the source runs with the CDK's default concurrency and no client-side request throttling. Pipedrive enforces a per-company, [token-based budget](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that varies by plan and seat count, so the correct budget cannot be hard-coded.
+
+**Why this matters:** Raising concurrency or adding fan-out streams without a budget increases the chance of hitting the company-wide limit and starving other integrations the customer runs against the same account. Issue [airbyte-internal-issues#17200](https://github.com/airbytehq/airbyte-internal-issues/issues/17200) owns the budget and concurrency design.
+
+## 8. Deletes Are Not Replicated
+
+No stream emits deletion markers or filters on a deleted flag. `/recents` reflects edits, not deletions, and the full refresh streams re-read the live collection. Issue [airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204) owns the API v2 migration that may change how deleted records surface.
+
+**Why this matters:** Destinations keep rows for records deleted in Pipedrive until the user clears the stream. Do not describe the tombstone rows from section 2 as deletions in user-facing docs; the relationship between `null` payloads and deletions has not been confirmed against the API.
