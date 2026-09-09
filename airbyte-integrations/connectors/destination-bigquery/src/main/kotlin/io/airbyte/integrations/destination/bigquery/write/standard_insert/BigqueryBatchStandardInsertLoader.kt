@@ -117,8 +117,8 @@ class BigqueryBatchStandardInsertsLoader(
      * the resumable upload endpoint.
      *
      * Every attempt reuses the same [JobId]. BigQuery job IDs are unique per project, so if a
-     * previous attempt's upload actually completed (and the load job was created) we detect that via
-     * [BigQuery.getJob] and wait for that job instead of re-submitting the data, which avoids
+     * previous attempt's upload actually completed (and the load job was created) we detect that
+     * via [BigQuery.getJob] and wait for that job instead of re-submitting the data, which avoids
      * duplicate loads.
      */
     private suspend fun uploadWithRetries(): Job {

@@ -126,9 +126,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
 
         val loader = loader(bigquery)
         loader.accept(mockk<DestinationRecordRaw>())
-        assertThrows(TransientErrorException::class.java) {
-            runBlocking { loader.finish() }
-        }
+        assertThrows(TransientErrorException::class.java) { runBlocking { loader.finish() } }
 
         verify(exactly = 3) { bigquery.writer(jobId, writeChannelConfiguration) }
     }
@@ -141,10 +139,7 @@ class BigqueryBatchStandardInsertsLoaderTest {
 
         val loader = loader(bigquery)
         loader.accept(mockk<DestinationRecordRaw>())
-        val e =
-            assertThrows(BigQueryException::class.java) {
-                runBlocking { loader.finish() }
-            }
+        val e = assertThrows(BigQueryException::class.java) { runBlocking { loader.finish() } }
         assertEquals(400, e.code)
 
         verify(exactly = 1) { bigquery.writer(jobId, writeChannelConfiguration) }
@@ -158,8 +153,6 @@ class BigqueryBatchStandardInsertsLoaderTest {
 
         val loader = loader(bigquery)
         loader.accept(mockk<DestinationRecordRaw>())
-        assertThrows(ConfigErrorException::class.java) {
-            runBlocking { loader.finish() }
-        }
+        assertThrows(ConfigErrorException::class.java) { runBlocking { loader.finish() } }
     }
 }
