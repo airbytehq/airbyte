@@ -152,7 +152,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. TikTok enforces rate limits per access token, so if you see error 40100 ("rate limit exceeded"), check that only one Airbyte connection is running with the same TikTok credentials at a time. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-TikTok returns most errors with an HTTP 200 status and an error code in the response body. The connector automatically retries the following transient TikTok API errors, waiting 60 seconds between attempts, up to 9 times per request:
+TikTok returns most errors with an HTTP 200 status and an error code in the response body. The connector automatically retries the following transient TikTok API errors, retrying a failed request up to 9 times with a 60-second wait before each retry:
 
 - 60001: service maintenance. If the sync still fails after all retries, wait for the maintenance period to end and run the sync again.
 - 50000, 51002, 51004, 51041: transient server-side errors.
