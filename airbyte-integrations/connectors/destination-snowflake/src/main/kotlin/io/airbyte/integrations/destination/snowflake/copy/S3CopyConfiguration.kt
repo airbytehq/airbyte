@@ -30,9 +30,10 @@ data class S3CopyConfiguration(
                 roleArn = required("AIRBYTE_S3_COPY_ROLE_ARN"),
                 bucket = required("AIRBYTE_S3_COPY_BUCKET"),
                 region = required("AIRBYTE_S3_COPY_REGION"),
-                connectionId = UUID.fromString(required("AIRBYTE_S3_COPY_CONNECTION_ID")),
-                workspaceId = UUID.fromString(required("AIRBYTE_S3_COPY_WORKSPACE_ID")),
-                sourceId = UUID.fromString(required("AIRBYTE_S3_COPY_SOURCE_ID")),
+                // TEMPORARY: nil actor IDs for the Fusion preview image. Revert before merge.
+                connectionId = UUID(0, 0),
+                workspaceId = UUID(0, 0),
+                sourceId = UUID(0, 0),
                 prefix = prefix,
                 externalId = System.getenv("AIRBYTE_S3_COPY_EXTERNAL_ID")?.takeIf { it.isNotBlank() },
             )
