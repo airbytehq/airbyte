@@ -9,7 +9,7 @@ import requests
 import yaml
 from conftest import get_source
 
-from airbyte_cdk.sources.streams.call_rate import HttpAPIBudget, MovingWindowCallRatePolicy
+from airbyte_cdk.sources.streams.call_rate import HttpAPIBudget
 
 
 _MANIFEST_PATH = Path(__file__).parent.parent / "manifest.yaml"
