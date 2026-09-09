@@ -8,7 +8,14 @@ import io.airbyte.cdk.ConfigErrorException
 import java.sql.SQLException
 
 object MSSQLErrorClassifier {
+    // SQL Server error numbers, see sys.messages:
+    //   229 - permission denied on an object (e.g. INSERT on a table)
+    //   230 - permission denied on a column
+    //   262 - permission denied in the database (e.g. CREATE TABLE)
+    //   297 - user does not have permission to perform this action
     private val PERMISSION_DENIED_ERROR_CODES = setOf(229, 230, 262, 297)
+    //   2628 - string or binary data would be truncated in table/column (SQL Server 2019+)
+    //   8152 - string or binary data would be truncated (legacy message)
     private val STRING_TRUNCATION_ERROR_CODES = setOf(2628, 8152)
 
     /**
