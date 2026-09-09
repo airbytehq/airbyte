@@ -1505,9 +1505,17 @@ streams:
 # 4.9x mean wall-time regression, so rc.4 returns to c=4 with the original
 # endpoint-specific budget LIVE. Customers can raise `num_workers` to fully
 # exploit higher Zendesk plans.
+# `num_workers` is floored at 2 here as well as in the spec. The config migration
+# that rewrites a stored `1` to `2` only takes effect on the sync *after* the one
+# that emits the control message, because CDK 7.23.8 builds this ConcurrencyLevel
+# from the pre-migration config. Clamping here makes the floor apply immediately,
+# on the first sync after the upgrade. A single worker serializes every stream
+# behind the single-partition `tickets` walk, so nothing emits a record or a state
+# message while it runs and the platform cancels the attempt on the heartbeat
+# timeout (airbytehq/oncall#13250).
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 4) }}"
+  default_concurrency: "{{ [config.get('num_workers', 4), 2] | max }}"
   max_concurrency: 40
 
 spec:

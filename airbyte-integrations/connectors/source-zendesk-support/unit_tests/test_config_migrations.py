@@ -44,3 +44,25 @@ def test_spec_declares_two_as_the_minimum():
     spec = get_source(config=dict(BASE_CONFIG)).spec(None)
 
     assert spec.connectionSpecification["properties"]["num_workers"]["minimum"] == 2
+
+
+@pytest.mark.parametrize(
+    "stored_num_workers, expected_threads",
+    [(1, 2), (2, 2), (4, 4), (None, 4)],
+    ids=["one-is-clamped", "two", "four", "unset-uses-manifest-default"],
+)
+def test_concurrency_never_drops_below_two(stored_num_workers, expected_threads):
+    """`concurrency_level` clamps as well as the migration.
+
+    The migration alone is not enough on the first sync after an upgrade: CDK 7.23.8 builds the
+    ConcurrencyLevel from the pre-migration config, so a stored `1` would still run one worker for
+    exactly the sync that needs two. Reaching into the thread pool is the only way to observe the
+    effective value.
+    """
+    config = dict(BASE_CONFIG)
+    if stored_num_workers is not None:
+        config["num_workers"] = stored_num_workers
+
+    source = get_source(config=config)
+
+    assert source._concurrent_source._threadpool._threadpool._max_workers == expected_threads

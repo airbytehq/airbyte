@@ -48,7 +48,13 @@ There is a second-order trap here. Because these are substreams with `incrementa
 
 ## 6. `num_workers` Minimum Is 2 — One Thread Deadlocks the Heartbeat
 
-The spec pins `num_workers` to `minimum: 2`, and `spec.config_normalization_rules` carries a `ConfigMigration` that rewrites a stored `num_workers: 1` to `2` on the next sync. Both are load-bearing; do not lower the minimum or drop the migration.
+The floor is enforced in three places, and all three are load-bearing:
+
+1. the spec pins `num_workers` to `minimum: 2`;
+2. `spec.config_normalization_rules` carries a `ConfigMigration` that rewrites a stored `num_workers: 1` to `2`;
+3. `concurrency_level.default_concurrency` clamps with `{{ [config.get('num_workers', 4), 2] | max }}`.
+
+The clamp is not redundant with the migration. In CDK 7.23.8 `ConcurrentDeclarativeSource.__init__` builds the `ConcurrencyLevel` component from the **pre-migration** config (`config=config or {}`, not `self._config`), so on the first sync after an upgrade a stored `1` would still run a single worker — exactly the sync that needs two. Verified locally: with a stored `num_workers: 1`, `self._config['num_workers']` is `2` while the thread pool is built with `max_workers=1`. The clamp makes the floor effective immediately; the migration keeps the persisted config consistent with the spec minimum. If the CDK is fixed to interpolate the migrated config, the clamp becomes redundant but stays harmless.
 
 `concurrency_level.default_concurrency` is `{{ config.get('num_workers', 4) }}`, so `num_workers: 1` makes the concurrent framework run a single worker thread and every stream is processed strictly one at a time. The `tickets` stream is the problem case: it reads the Incremental Ticket Export endpoint, which the `api_budget` limits to 10 requests per minute, and it uses `cursor_incremental_sync` with no `step` and no `end_datetime`, so the whole date range is a single partition. The concurrent cursor only emits state when a partition closes, so a long `tickets` walk produces no state message until it finishes.
 
