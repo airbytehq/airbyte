@@ -1,5 +1,11 @@
 # Airbyte Agents release notes
 
+## September 9, 2026
+
+Other
+
+- Indexing large PDF files from connectors that sync files, such as Google Drive, is now more reliable. Previously, very long PDFs could fail to index because processing the whole document at once used too much memory; they're now processed in smaller sections, so your agents can search their full content. Tables in long PDFs may look slightly different in search results than before.
+
 ## September 4, 2026
 
 Connectors
