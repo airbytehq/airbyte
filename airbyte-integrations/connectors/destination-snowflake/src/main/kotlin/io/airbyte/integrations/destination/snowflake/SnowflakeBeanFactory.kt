@@ -12,6 +12,10 @@ import io.airbyte.cdk.load.dataflow.config.model.AggregatePublishingConfig
 import io.airbyte.cdk.load.table.DefaultTempTableNameGenerator
 import io.airbyte.cdk.load.table.TempTableNameGenerator
 import io.airbyte.integrations.destination.snowflake.cdk.SnowflakeMigratingConfigurationSpecificationSupplier
+import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.EnabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.S3CopyConfiguration
+import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.KeyPairAuthConfiguration
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
@@ -57,6 +61,15 @@ internal const val PRIVATE_KEY_FILE_NAME: String = "rsa_key.p8"
 
 @Factory
 class SnowflakeBeanFactory {
+
+    @Singleton
+    @Requires(property = Operation.PROPERTY, value = "write")
+    fun snowflakeS3Copy(
+        columnManager: io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager,
+        snowflakeConfiguration: SnowflakeConfiguration,
+    ): SnowflakeS3Copy = S3CopyConfiguration.fromEnvironment()?.let {
+        EnabledSnowflakeS3Copy(it, columnManager, snowflakeConfiguration)
+    } ?: DisabledSnowflakeS3Copy
 
     @Singleton
     fun tempTableNameGenerator(

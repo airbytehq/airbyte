@@ -24,6 +24,8 @@ import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClie
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
 import jakarta.inject.Singleton
+import io.airbyte.integrations.destination.snowflake.copy.DisabledSnowflakeS3Copy
+import io.airbyte.integrations.destination.snowflake.copy.SnowflakeS3Copy
 
 @Singleton
 class SnowflakeWriter(
@@ -33,6 +35,7 @@ class SnowflakeWriter(
     private val snowflakeClient: SnowflakeAirbyteClient,
     private val snowflakeConfiguration: SnowflakeConfiguration,
     private val tempTableNameGenerator: TempTableNameGenerator,
+    private val snowflakeS3Copy: SnowflakeS3Copy = DisabledSnowflakeS3Copy,
 ) : DestinationWriter {
     private lateinit var initialStatuses: Map<DestinationStream, DirectLoadInitialStatus>
 
@@ -47,6 +50,11 @@ class SnowflakeWriter(
         )
 
         initialStatuses = stateGatherer.gatherInitialStatus()
+        snowflakeS3Copy.prepare(catalog)
+    }
+
+    override suspend fun teardown(hadFailure: Boolean) {
+        snowflakeS3Copy.close()
     }
 
     override fun createStreamLoader(stream: DestinationStream): StreamLoader {
