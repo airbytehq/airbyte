@@ -1149,7 +1149,10 @@ streams:
 # Burst limit is per API token on a rolling 2-second window; the lowest plan (Essential/Lite)
 # allows 20 requests per 2 seconds, so the budget uses that floor since the plan is not knowable
 # from config. `x-ratelimit-reset` is intentionally not used: Pipedrive sends a relative window
-# in seconds while the CDK parses that header as an epoch timestamp.
+# in seconds while the CDK parses that header as an epoch timestamp. `x-ratelimit-remaining` and a
+# 429 only nudge the bucket when Pipedrive reports zero calls left; the fixed window below is the
+# actual throttle. The matcher is path-based so it also covers the per-company hosts that OAuth
+# uses (`https://<company>.pipedrive.com/api/...`).
 api_budget:
   type: HTTPAPIBudget
   ratelimit_remaining_header: x-ratelimit-remaining
@@ -1161,11 +1164,11 @@ api_budget:
           interval: PT2S
       matchers:
         - type: HttpRequestRegexMatcher
-          url_base: https://api.pipedrive.com/
+          url_path_pattern: "^(/api)?/v[12]/"
 
 concurrency_level:
   type: ConcurrencyLevel
-  default_concurrency: "{{ config.get('num_workers', 3) }}"
+  default_concurrency: "{{ config.get('num_workers') or 3 }}"
   max_concurrency: 10
 
 spec:
@@ -1197,9 +1200,9 @@ spec:
         type: integer
         title: Number of concurrent workers
         description: >-
-          The number of worker threads to use for the sync. Requests from all workers share the
-          same API budget (20 requests per 2 seconds), so raising this does not increase throughput
-          beyond Pipedrive's burst limit.
+          Number of streams synced in parallel (1-10). All requests share one client-side request
+          budget sized to Pipedrive's lowest-plan burst limit, so higher values rarely make a sync
+          faster.
         minimum: 1
         maximum: 10
         default: 3
