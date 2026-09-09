@@ -122,14 +122,21 @@ If either of your tokens expire, you can generate new ones by returning to Linke
 9. (Optional) For **Number of Workers**, enter the number of concurrent workers for syncing ad analytics streams. The default is 3. Increasing this value may improve sync speed but could also increase the risk of hitting API rate limits.
 10. (Optional) For **Custom Ad Analytics Reports**, you may optionally provide one or more custom reports to query the LinkedIn Ads API for. By defining custom reports, you can better align the data pulled from LinkedIn Ads with your particular needs. To add a custom report:
    1. Click on **Add**.
-   2. Enter a **Report Name**. This will be used as the stream name during replication.
+   2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by `custom_`.
    3. Select a **Pivot Category** from the dropdown. This defines the main dimension by which the report data will be grouped or segmented.
    4. Select a **Time Granularity** to group the data in your report by time. The options are:
       - `ALL`: Data is not grouped by time, providing a cumulative view.
       - `DAILY`: Returns data grouped by day. Useful for closely monitoring short-term changes and effects.
       - `MONTHLY`: Returns data grouped by month. Ideal for evaluating monthly goals or observing seasonal patterns.
       - `YEARLY`: Returns data grouped by year. Ideal for high-level analysis of long-term trends and year-over-year comparisons.
-11. Click **Set up source** and wait for the tests to complete.
+11. (Optional) For **Custom Ad Statistics Reports**, you may optionally provide one or more reports that use LinkedIn's **Statistics Finder**, which groups results by up to three pivot categories at once. To add a statistics report:
+1. Click on **Add**.
+2. Enter a **Report Name**. This will be used as the stream name during replication and will be preceded by "custom_statistics_".
+3. Select up to three **Pivot Categories**. Airbyte sends these to LinkedIn's Statistics Finder (`q=statistics`) request format.
+4. Select a **Time Granularity** (same options as above).
+
+   **Note:** Analytics reports become streams named `custom_<Report Name>`; statistics reports become streams named `custom_statistics_<Report Name>`. Report names must be unique within each list. Also avoid naming an analytics report `statistics_<something>`, since that would collide with a statistics report named `<something>`.
+12. Click **Set up source** and wait for the tests to complete.
 <!-- /env:cloud -->
 
 ## Supported sync modes
@@ -222,14 +229,20 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:-----------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
-| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 6.0.2 | 2026-07-31 | [83268](https://github.com/airbytehq/airbyte/pull/83268) | Fix `pivot` in custom analytics report streams to contain the configured pivot category. |
+| 6.0.1 | 2026-07-31 | [83269](https://github.com/airbytehq/airbyte/pull/83269) | Fix invalid `error_handlers` manifest key so the custom error handler and exponential backoff are actually applied |
+| 6.0.0 | 2026-07-30 | [74334](https://github.com/airbytehq/airbyte/pull/74334) | Batch analytics requests for `ad_campaign_analytics`, `ad_creative_analytics`, and `ad_impression_device_analytics` in groups of up to 50, reducing sync time by approximately 98% for large accounts. Breaking change for `ad_impression_device_analytics` only: its primary key now includes `sponsoredCampaign`, preventing records from different campaigns from being collapsed in deduplication mode. Refresh the source schema after upgrading; deduplication users should refresh this stream to rebuild destination data. |
+| 5.7.0 | 2026-07-30 | [78505](https://github.com/airbytehq/airbyte/pull/78505) | Add custom_statistics_report stream and ad_statistics_reports config for LinkedIn Statistics Finder reports (up to three pivots). |
+| 5.6.13 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
+| 5.6.12 | 2026-07-28 | [83183](https://github.com/airbytehq/airbyte/pull/83183) | Roll Cloud back to 5.6.10 — 5.6.11 is built on SDM 7.23.7, which breaks bundled custom components |
+| 5.6.11 | 2026-07-28 | [83018](https://github.com/airbytehq/airbyte/pull/83018) | Update dependencies |
+| 5.6.10 | 2026-07-21 | [77286](https://github.com/airbytehq/airbyte/pull/77286) | Update dependencies |
 | 5.6.9 | 2026-04-21 | [73947](https://github.com/airbytehq/airbyte/pull/73947) | Update dependencies |
 | 5.6.8 | 2026-04-07 | [76120](https://github.com/airbytehq/airbyte/pull/76120) | Fix dynamic stream name field_path to avoid parent stream name collision |
-| 5.6.7 | 2026-04-02 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
-| 5.6.6 | 2026-04-01 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
+| 5.6.7 | 2026-04-06 | [76040](https://github.com/airbytehq/airbyte/pull/76040) | Replace deprecated MessageRepresentationAirbyteTracedErrors with AirbyteTracedException in tests |
+| 5.6.6 | 2026-04-06 | [75583](https://github.com/airbytehq/airbyte/pull/75583) | Add `oauth_connector_input_specification` with granular scopes |
 | 5.6.5 | 2026-03-30 | [75597](https://github.com/airbytehq/airbyte/pull/75597) | Map HTTP 429 responses to RATE_LIMITED instead of RETRY for proper indefinite backoff on rate-limited requests |
-| 5.6.4 | 2026-02-10 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
+| 5.6.4 | 2026-02-11 | [72831](https://github.com/airbytehq/airbyte/pull/72831) | Upgrade LinkedIn API version from 202502 to 202601 |
 | 5.6.3 | 2026-02-10 | [72768](https://github.com/airbytehq/airbyte/pull/72768) | Update dependencies |
 | 5.6.2 | 2026-01-20 | [72028](https://github.com/airbytehq/airbyte/pull/72028) | Update dependencies |
 | 5.6.1 | 2026-01-14 | [68982](https://github.com/airbytehq/airbyte/pull/68982) | Update dependencies |

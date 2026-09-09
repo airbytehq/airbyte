@@ -35,7 +35,7 @@ application {
 }
 
 val junitVersion = "5.11.4"
-val testContainersVersion = "1.20.5"
+val testContainersVersion = "1.21.4"
 
 configurations.configureEach {
     // Exclude additional SLF4J providers from all classpaths

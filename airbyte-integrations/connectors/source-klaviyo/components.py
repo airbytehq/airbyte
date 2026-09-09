@@ -11,6 +11,7 @@ import requests
 from requests.exceptions import InvalidURL
 
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
+from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
@@ -279,6 +280,51 @@ class KlaviyoIncludedFieldExtractor(DpathExtractor):
             yield from []
 
 
+@dataclass
+class FlowSeriesPerDayExtractor(RecordExtractor):
+    """
+    Flattens a Klaviyo flow-series report into one record per (day, grouping).
+
+    The endpoint returns a single `date_times` array at the attributes level plus a
+    `results` array where every grouping carries its statistics as parallel arrays,
+    index-aligned with `date_times`:
+
+    {
+      "data": {"attributes": {
+        "date_times": ["2024-01-05T00:00:00+00:00", "2024-01-06T00:00:00+00:00"],
+        "results": [{"groupings": {...}, "statistics": {"opens": [123, 156]}}]
+      }}
+    }
+
+    Emitting that shape as-is makes the record boundary the request window rather than
+    the reporting day, so the cursor has to be synthesized from the slice end and the
+    same day lands under a different primary key every time its window shifts. Yielding
+    one record per date_times entry instead gives every row the real calendar day it
+    reports on, so re-reading a day replaces it rather than appending a duplicate.
+    """
+
+    def extract_records(self, response: requests.Response) -> Iterable[Mapping[str, Any]]:
+        attributes = response.json().get("data", {}).get("attributes", {})
+        date_times = attributes.get("date_times") or []
+
+        for result in attributes.get("results") or []:
+            groupings = result.get("groupings", {})
+            statistics = result.get("statistics") or {}
+            for index, date_time in enumerate(date_times):
+                yield {
+                    "date": date_time,
+                    # Copied so the days of one grouping do not share a single mutable dict that
+                    # a downstream record transformation would edit for all of them at once.
+                    "groupings": dict(groupings),
+                    # A statistic Klaviyo omits or returns short is reported as null for that day
+                    # rather than shifting the remaining values onto the wrong dates.
+                    "statistics": {
+                        name: values[index] if isinstance(values, list) and index < len(values) else None
+                        for name, values in statistics.items()
+                    },
+                }
+
+
 class KlaviyoErrorHandler(DefaultErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]]) -> ErrorResolution:
         """
@@ -322,7 +368,8 @@ class PerPartitionToSingleStateMigration(StateMigration):
         self._cursor_field = InterpolatedString.create(self._cursor.cursor_field, parameters=self._parameters).eval(self._config)
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        return "states" in stream_state
+        states = stream_state.get("states") or []
+        return bool(states) and all("event_metric_id" not in (state.get("partition") or {}) for state in states)
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
         if not self.should_migrate(stream_state):

@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "airbyte-destination-milvus"
-version = "0.0.58"
+version = "0.0.61"
 description = "Airbyte destination implementation for Milvus."
 authors = ["Airbyte <contact@airbyte.io>"]
 license = "ELv2"
@@ -17,8 +17,10 @@ repository = "https://github.com/airbytehq/airbyte"
 include = "destination_milvus"
 
 [tool.poetry.dependencies]
-python = "^3.9,<3.12"
-airbyte-cdk = {version = "0.81.6", extras = ["vector-db-based"]}
+python = "^3.10,<3.12"
+airbyte-cdk = { version = ">=7.7.0,<8.0.0", extras = ["vector-db-based"] }
+# environs 9.5.0, pulled in by pymilvus, reads marshmallow.__version_info__, removed in marshmallow 4.
+marshmallow = ">=3.20,<4.0"
 pymilvus = "2.3.0"
 
 [tool.poetry.group.dev.dependencies]

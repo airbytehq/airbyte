@@ -459,3 +459,64 @@ class TestIssueWorklogsStream(TestCase):
         assert len(output.records) == 1
         # Verify issueId transformation is applied with correct value
         assert output.records[0].record.data["issueId"] == "10001"
+
+    @HttpMocker()
+    def test_worklogs_request_uses_max_results_5000(self, http_mocker: HttpMocker):
+        """
+        Test that the worklogs endpoint is requested with maxResults=5000.
+
+        The issue_worklogs stream overrides the shared paginator page_size (50) with 5000
+        so that far more worklogs are returned per request, reducing the number of paginated
+        calls against the /issue/{issueIdOrKey}/worklog endpoint.
+        """
+        config = ConfigBuilder().with_domain(_DOMAIN).build()
+
+        issue_records = [
+            {
+                "id": "10001",
+                "key": "PROJ-1",
+                "fields": {
+                    "summary": "Test Issue 1",
+                    "project": {"id": "10001", "key": "PROJ1"},
+                    "created": "2024-01-01T00:00:00.000+0000",
+                    "updated": "2024-01-15T00:00:00.000+0000",
+                },
+            },
+        ]
+
+        worklogs = [
+            {
+                "id": "100001",
+                "self": "https://airbyteio.atlassian.net/rest/api/3/issue/10001/worklog/100001",
+                "author": {"accountId": "user1", "displayName": "User One", "active": True},
+                "timeSpent": "2h",
+                "timeSpentSeconds": 7200,
+                "started": "2024-01-10T09:00:00.000+0000",
+                "created": "2024-01-10T10:00:00.000+0000",
+                "updated": "2024-01-10T10:00:00.000+0000",
+            },
+        ]
+
+        # Mock parent issues endpoint
+        http_mocker.get(
+            JiraRequestBuilder.issues_endpoint(_DOMAIN).with_any_query_params().build(),
+            JiraJqlResponseBuilder().with_records(issue_records).with_pagination(start_at=0, max_results=50, total=1, is_last=True).build(),
+        )
+
+        # Mock worklogs endpoint, matching the exact maxResults=5000 query param
+        http_mocker.get(
+            JiraRequestBuilder.issue_worklogs_endpoint(_DOMAIN, "10001").with_max_results(5000).build(),
+            JiraPaginatedResponseBuilder("worklogs")
+            .with_records(worklogs)
+            .with_pagination(start_at=0, max_results=5000, total=1, is_last=True)
+            .build(),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        # If the request had not used maxResults=5000, the mock above would not match and
+        # no records would be returned.
+        assert len(output.records) == 1
+        assert output.records[0].record.data["id"] == "100001"

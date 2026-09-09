@@ -151,6 +151,16 @@ fun stateValueToJsonNode(field: EmittedField, stateValue: String?): JsonNode {
     }
 }
 
+/**
+ * Base for all MSSQL partitions, implements the CDK's [JdbcPartition] interface. Provides every
+ * partition with two TABLESAMPLE-free defaults:
+ * ```
+ *     1. [nonResumableQuery] (a plain `SELECT <fields> FROM <table>`)
+ *     2. [samplingQuery] (a plain `SELECT TOP <n>`)
+ * ```
+ * Cursor handling, bounds, splitting, and TABLESAMPLE-based sampling are handled by
+ * [MsSqlServerJdbcResumablePartition] and [MsSqlServerJdbcCursorPartition].
+ */
 sealed class MsSqlServerJdbcPartition(
     val selectQueryGenerator: SelectQueryGenerator,
     override val streamState: DefaultJdbcStreamState,
@@ -232,7 +242,10 @@ class MsSqlServerJdbcNonResumableSnapshotWithCursorPartition(
 
 /**
  * For views (no TABLESAMPLE support) or streams without an ordered column, use non-resumable cursor
- * incremental.
+ * incremental. Extends:
+ * - [MsSqlServerJdbcPartition] directly and implements [JdbcCursorPartition].
+ * - Hence, unlike [MsSqlServerJdbcCursorIncrementalPartition] it has no bounds/where, no sampling
+ * and no splitting.
  */
 class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
     selectQueryGenerator: SelectQueryGenerator,
@@ -262,7 +275,7 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
     val cursorUpperBoundQuerySpec: SelectQuerySpec
         get() =
             if (cursorCutoffTime != null) {
-                // When excluding today's data, apply cutoff constraint to upper bound query too
+                // When excluding today's data, apply lesser than the cutoff time.
                 SelectQuerySpec(
                     SelectColumnMaxValue(cursor),
                     from,
@@ -274,16 +287,30 @@ class MsSqlServerJdbcNonResumableCursorIncrementalPartition(
 
     override val nonResumableQuerySpec: SelectQuerySpec
         get() {
-            // upperBound shouldn't be null in incremental syncs
-            val upperBound: JsonNode = streamState.cursorUpperBound!!
-            return SelectQuerySpec(
-                SelectColumns(stream.fields),
-                from,
-                Where(And(Greater(cursor, cursorLowerBound), LesserOrEqual(cursor, upperBound)))
-            )
+            val whereClause =
+                if (cursorCutoffTime != null) {
+                    // When excluding today's data, apply lesser than the cutoff time.
+                    And(Greater(cursor, cursorLowerBound), Lesser(cursor, cursorCutoffTime))
+                } else {
+                    Greater(cursor, cursorLowerBound)
+                }
+            return SelectQuerySpec(SelectColumns(stream.fields), from, Where(whereClause))
         }
 }
 
+/**
+ * Base for all splittable MSSQL partitions, implements the CDK's [JdbcSplittablePartition].
+ *
+ * On top of [MsSqlServerJdbcPartition], it adds everything needed to read a table range resumably
+ * and concurrently:
+ * 1. [checkpointColumns] that define the ordering and split key.
+ * 2. partition's lower/upper bounds and where clause built from those bounds.
+ * 3. [resumableQuery] which reads the range in [checkpointColumns] order with a limit so progress
+ * can be checkpointed and resumed
+ * 4. [samplingQuery] uses TABLESAMPLE to estimate table size and pick the split chunks.
+ *
+ * Cursor-based partitions extend this class to add cursor handling on top.
+ */
 sealed class MsSqlServerJdbcResumablePartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
@@ -332,7 +359,8 @@ sealed class MsSqlServerJdbcResumablePartition(
             val lowerBoundDisj: List<WhereClauseNode> =
                 zippedLowerBound.mapIndexed { idx: Int, (gtCol: EmittedField, gtValue: JsonNode) ->
                     val lastLeaf: WhereClauseLeafNode =
-                        if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
+                    // >= is used for cases when we start the sync, else its >.
+                    if (isLowerBoundIncluded && idx == checkpointColumns.size - 1) {
                             GreaterOrEqual(gtCol, gtValue)
                         } else {
                             Greater(gtCol, gtValue)
@@ -454,6 +482,14 @@ class MsSqlServerJdbcCdcSnapshotPartition(
         )
 }
 
+/**
+ * Splittable partition for cursor-based syncs, extends [MsSqlServerJdbcResumablePartition] and
+ * implements the CDK's [JdbcCursorPartition].
+ *
+ * It inherits the base class's functionalities and adds the cursor: a query to read the max cursor
+ * value and bound the sync, [cursorCutoffTime] to exclude today's data, and an overridden
+ * [samplingQuery] so the TABLESAMPLE is scoped to the partition's bounds via its where clause.
+ */
 sealed class MsSqlServerJdbcCursorPartition(
     selectQueryGenerator: SelectQueryGenerator,
     streamState: DefaultJdbcStreamState,
@@ -612,8 +648,13 @@ class MsSqlServerJdbcCursorIncrementalPartition(
         cursorCutoffTime
     ) {
     override val lowerBound: List<JsonNode> = listOf(cursorLowerBound)
-    override val upperBound: List<JsonNode>?
-        get() = cursorUpperBound?.let { listOf(it) }
+    // Deliberately no upper bound: with upperBound == null, upperBoundDisj is empty, so the ceiling
+    // clause drops out and the predicate is just `cursor > lower`.
+    // We leave it open-ended because the cursor is truncated to 6 digits: a `<= MAX(cursor)`
+    // ceiling
+    // would compare against the truncated max and miss rows whose datetime2(7) value has a non-zero
+    // 7th digit.
+    override val upperBound: List<JsonNode>? = null
 
     override val completeState: OpaqueStateValue
         get() =

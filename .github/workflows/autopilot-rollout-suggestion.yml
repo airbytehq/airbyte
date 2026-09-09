@@ -1,0 +1,177 @@
+name: Autopilot Rollout Suggestion
+
+# Posts a single, courtesy comment on internal connector PRs whose modified
+# connector(s) do NOT have autopilot progressive rollouts enabled, suggesting the
+# `/enable-autopilot-rollouts` slash command. This is purely informational: it
+# never fails CI and never blocks merge. The comment is kept updated in place
+# (one sticky comment per PR, identified by an HTML marker) so it never spams.
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    paths:
+      - "airbyte-integrations/connectors/**"
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Pull request number to inspect and comment on."
+        required: true
+        type: number
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: autopilot-rollout-suggestion-${{ github.event.pull_request.number || inputs.pr }}
+  cancel-in-progress: true
+
+jobs:
+  suggest-autopilot-rollouts:
+    name: Suggest enabling autopilot rollouts
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Resolve workflow inputs
+        id: vars
+        env:
+          INPUT_PR: ${{ inputs.pr }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          pr_number="${INPUT_PR:-${EVENT_PR_NUMBER}}"
+
+          # For workflow_dispatch, resolve head repo/sha from the PR itself.
+          if [[ -n "${INPUT_PR}" ]]; then
+            pr_json="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${pr_number}")"
+            head_repo="$(jq -r .head.repo.full_name <<< "${pr_json}")"
+            head_sha="$(jq -r .head.sha <<< "${pr_json}")"
+            is_fork="$(jq -r .head.repo.fork <<< "${pr_json}")"
+          else
+            head_repo="${EVENT_HEAD_REPO}"
+            head_sha="${EVENT_HEAD_SHA}"
+            is_fork="${EVENT_IS_FORK}"
+          fi
+
+          echo "pr-number=${pr_number}" | tee -a "${GITHUB_OUTPUT}"
+          echo "head-repo=${head_repo}" | tee -a "${GITHUB_OUTPUT}"
+          echo "head-sha=${head_sha}" | tee -a "${GITHUB_OUTPUT}"
+          echo "is-fork=${is_fork}" | tee -a "${GITHUB_OUTPUT}"
+
+      # Autopilot rollouts are an internal-maintainer concern (the
+      # `/enable-autopilot-rollouts` command requires maintainer permissions), so
+      # skip community fork PRs where the author could not act on the suggestion.
+      - name: Checkout connector metadata (PR head)
+        if: steps.vars.outputs.is-fork == 'false'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ steps.vars.outputs.head-repo }}
+          ref: ${{ steps.vars.outputs.head-sha }}
+          fetch-depth: 1
+
+      - name: Install uv
+        if: steps.vars.outputs.is-fork == 'false'
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          ignore-empty-workdir: true
+
+      - name: Install Ops CLI
+        if: steps.vars.outputs.is-fork == 'false'
+        run: uv tool install 'airbyte-internal-ops>=0.77.0'
+
+      - name: Detect connectors without autopilot rollouts enabled
+        id: detect
+        if: steps.vars.outputs.is-fork == 'false'
+        env:
+          PR_NUMBER: ${{ steps.vars.outputs.pr-number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          CONNECTORS="$(
+            airbyte-ops local connector list \
+              --repo-path . \
+              --modified-only \
+              --pr "${PR_NUMBER}" \
+              --gh-token "${GH_TOKEN}" \
+              --autopilot-enabled=false \
+              --output-format lines
+          )"
+
+          if [[ -z "${CONNECTORS}" ]]; then
+            echo "All modified connectors already have autopilot rollouts enabled (or none modified)."
+          else
+            echo "Connectors missing autopilot rollouts:"
+            echo "${CONNECTORS}"
+          fi
+
+          if [[ -n "${CONNECTORS}" ]]; then
+            EOF="$(dd if=/dev/urandom bs=15 count=1 status=none | base64)"
+            echo "connectors<<${EOF}" >> "${GITHUB_OUTPUT}"
+            echo "${CONNECTORS}" >> "${GITHUB_OUTPUT}"
+            echo "${EOF}" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Build suggestion comment
+        id: comment-body
+        if: steps.vars.outputs.is-fork == 'false' && steps.detect.outputs.connectors != ''
+        env:
+          CONNECTORS: ${{ steps.detect.outputs.connectors }}
+        run: |
+          set -euo pipefail
+          BODY_FILE="${RUNNER_TEMP}/autopilot-rollout-suggestion.md"
+          {
+            echo "<!-- autopilot-rollout-suggestion -->"
+            echo "> [!NOTE]"
+            echo "> **Autopilot progressive rollouts are not enabled** for the following modified connector(s):"
+            echo ">"
+            while IFS= read -r connector; do
+              [[ -z "${connector}" ]] && continue
+              echo "> - \`${connector}\`"
+            done <<< "${CONNECTORS}"
+            echo ">"
+            echo "> This is a courtesy heads-up only — it does **not** block merge or fail any check."
+            echo "> To enable automatic progressive rollouts for the connector(s) above, comment"
+            echo "> \`/enable-autopilot-rollouts\` on this PR. This sets \`defaultRolloutMode: autopilot\`"
+            echo "> and \`enableProgressiveRollout: true\` in each connector's \`metadata.yaml\`,"
+            echo "> preserving any existing \`autopilotConfig\`."
+          } > "${BODY_FILE}"
+          echo "path=${BODY_FILE}" | tee -a "${GITHUB_OUTPUT}"
+
+      - name: Find existing suggestion comment
+        id: find-comment
+        if: steps.vars.outputs.is-fork == 'false'
+        uses: peter-evans/find-comment@b30e6a3c0ed37e7c023ccd3f1db5c6c0b0c23aad # v4.0.0
+        with:
+          issue-number: ${{ steps.vars.outputs.pr-number }}
+          comment-author: github-actions[bot]
+          body-includes: "<!-- autopilot-rollout-suggestion -->"
+
+      - name: Upsert suggestion comment
+        if: steps.vars.outputs.is-fork == 'false' && steps.detect.outputs.connectors != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ steps.vars.outputs.pr-number }}
+          edit-mode: replace
+          body-path: ${{ steps.comment-body.outputs.path }}
+
+      - name: Mark suggestion resolved
+        if: steps.vars.outputs.is-fork == 'false' && steps.detect.outputs.connectors == '' && steps.find-comment.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ steps.vars.outputs.pr-number }}
+          edit-mode: replace
+          body: |
+            <!-- autopilot-rollout-suggestion -->
+            > [!NOTE]
+            > ✅ All modified connector(s) now have autopilot progressive rollouts enabled. Thanks!

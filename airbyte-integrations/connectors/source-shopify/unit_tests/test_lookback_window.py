@@ -14,7 +14,7 @@ def _make_stream(config):
 
 def _base_config(**overrides):
     config = {
-        "shop": "test_shop",
+        "shop": "test-shop",
         "credentials": {"auth_method": "api_password", "api_password": "api_password"},
         "start_date": "2023-01-01",
         "authenticator": None,

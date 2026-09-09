@@ -1,0 +1,129 @@
+name: Add Autopilot Release Immediately Checkbox
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+    paths:
+      - "airbyte-integrations/connectors/**"
+
+permissions: {}
+
+concurrency:
+  group: autopilot-release-immediately-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  detect-autopilot-connectors:
+    name: Detect autopilot-enabled connectors
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Resolve PR context from pull request event
+        id: context
+        env:
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          EVENT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          EVENT_IS_FORK: ${{ github.event.pull_request.head.repo.fork }}
+        run: |
+          {
+            echo "pr-number=${EVENT_PR_NUMBER}"
+            echo "head-repo=${EVENT_HEAD_REPO}"
+            echo "head-sha=${EVENT_HEAD_SHA}"
+            echo "is-fork=${EVENT_IS_FORK}"
+          } | tee -a "$GITHUB_OUTPUT"
+
+      - name: Read existing release immediately checkbox
+        id: bypass-state
+        if: steps.context.outputs.is-fork == 'false'
+        env:
+          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          body="$(gh api "repos/${GITHUB_REPOSITORY}/pulls/${PR_NUMBER}" --jq '.body // ""')"
+          normalized_body="$(printf '%s' "$body" | tr -d '*_')"
+          exists='false'
+          grep -Fqi -- \
+            "Release immediately (bypasses automatic progressive rollout)" \
+            <<< "$normalized_body" && exists='true'
+          echo "exists=$exists" | tee -a "$GITHUB_OUTPUT"
+
+      - name: Checkout connector metadata
+        if: steps.context.outputs.is-fork == 'false'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ${{ steps.context.outputs.head-repo }}
+          ref: ${{ steps.context.outputs.head-sha }}
+          fetch-depth: 1
+
+      - name: Install uv
+        if: steps.context.outputs.is-fork == 'false'
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          ignore-empty-workdir: true
+
+      - name: Install Ops CLI
+        if: steps.context.outputs.is-fork == 'false'
+        run: uv tool install "airbyte-internal-ops>=0.77.0"
+
+      - name: Detect modified connectors with autopilot enabled
+        id: detect
+        if: steps.context.outputs.is-fork == 'false'
+        env:
+          PR_NUMBER: ${{ steps.context.outputs.pr-number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          connectors="$(
+            airbyte-ops local connector list \
+              --repo-path . \
+              --autopilot-enabled=true \
+              --modified-only \
+              --pr "${PR_NUMBER}" \
+              --gh-token "${GH_TOKEN}" \
+              --output-format lines
+          )"
+          has_connectors='false'
+          [[ -n "$connectors" ]] && has_connectors='true'
+          echo "has-connectors=$has_connectors" | tee -a "$GITHUB_OUTPUT"
+    outputs:
+      has-connectors: ${{ steps.detect.outputs.has-connectors }}
+      callout-exists: ${{ steps.bypass-state.outputs.exists }}
+      is-fork: ${{ steps.context.outputs.is-fork }}
+
+  add-checkbox:
+    name: Add release immediately checkbox
+    needs: detect-autopilot-connectors
+    if: >
+      needs.detect-autopilot-connectors.outputs.is-fork == 'false' &&
+      needs.detect-autopilot-connectors.outputs.has-connectors == 'true' &&
+      needs.detect-autopilot-connectors.outputs.callout-exists != 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Add release immediately checkbox to PR description
+        uses: bcgov/action-pr-description-add@14338bfe0278ead273b3c1189e5aa286ff6709c4 # v2.0.0
+        with:
+          github_token: ${{ github.token }}
+          add_markdown: |
+            ---
+
+            > [!IMPORTANT]
+            > **Autopilot Progressive Rollout Enabled**
+            >
+            > [Autopilot progressive rollouts](https://github.com/airbytehq/airbyte-ops-mcp/blob/main/docs/autopilot-rollouts.md) are enabled for one or more connector(s) modified in this PR. Check the box below if you need to bypass normal rollout safety processes and release to all users immediately upon merge:
+            >
+            > - [ ] ⚡ **Release immediately** (bypasses automatic progressive rollout)
+            >
+            > **Note:**
+            >
+            > - ⚠️ The above bypass option is for emergency/hotfix use only.
+            > - 🔗 You can monitor or manually advance a rollout at **[ops.internal.airbyte.ai](https://ops.internal.airbyte.ai)**.

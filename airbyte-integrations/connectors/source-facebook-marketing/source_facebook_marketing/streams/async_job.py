@@ -31,6 +31,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger("airbyte")
 
+# Special "incrementality" attribution window (Meta beta). Facebook does not compute incrementality
+# for geographic breakdowns such as `comscore_market`/`region`, and an async report combining it with certain
+# fields (e.g. `conversions`) under those breakdowns cannot be generated at all (oncall #12088).
+# Mirrors `AdsInsights.INCREMENTALITY_WINDOW` in base_insight_streams.py.
+INCREMENTALITY_WINDOW = "incrementality"
+
 # `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
 # It still has http status 200 but the object can not be constructed from what was fetched from API.
 # Also, it does not happen while making a call to the API, but later - when parsing the result,
@@ -298,6 +304,7 @@ class InsightAsyncJob(AsyncJob):
         job_timeout: timedelta,
         primary_key: Optional[List[str]] = None,
         object_breakdowns: Optional[Mapping[str, str]] = None,
+        stream_name: Optional[str] = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -312,6 +319,7 @@ class InsightAsyncJob(AsyncJob):
         self._job: Optional[AdReportRun] = None
         self._primary_key = primary_key or []
         self._object_breakdowns = dict(object_breakdowns or {})
+        self._stream_name = stream_name
         self._start_time = None
         self._finish_time = None
         self._failed = False
@@ -465,6 +473,7 @@ class InsightAsyncJob(AsyncJob):
                 job_timeout=self._job_timeout,
                 primary_key=self._primary_key,
                 object_breakdowns=self._object_breakdowns,
+                stream_name=self._stream_name,
             )
             for pk in ids
         ]
@@ -563,10 +572,35 @@ class InsightAsyncJob(AsyncJob):
         primary_key_fields = [field for field in self._primary_key if field in all_fields]
         split_candidates = [f for f in all_fields if f not in primary_key_fields]
         if len(split_candidates) <= 1:
+            # Terminal, unsplittable leaf: Facebook keeps failing to generate this report even for a
+            # single field at single-ad/single-day granularity, so there is nothing left to split.
+            # This is a deterministic Facebook-side limitation, not a connector bug, and the user has a
+            # concrete fix (unselect the offending field; or, when the `incrementality` window is in
+            # play, disable "Include Incrementality"). Surface it as a config_error with actionable
+            # guidance instead of a cryptic system_error (oncall #12088).
+            breakdowns = self._params.get("breakdowns", [])
+            has_incrementality = INCREMENTALITY_WINDOW in self._params.get("action_attribution_windows", [])
+
+            stream_part = f" for stream '{self._stream_name}'" if self._stream_name else ""
+            scope = f"breakdown(s) {breakdowns} with the field(s) {split_candidates}" if breakdowns else f"the field(s) {split_candidates}"
+            fixes = []
+            if has_incrementality:
+                fixes.append('disable the "Include Incrementality" option for this stream')
+            fixes.append(f"unselect the field(s) {split_candidates} from this stream's schema")
+            fix_text = "; or ".join(f"({i + 1}) {fix}" for i, fix in enumerate(fixes)) if len(fixes) > 1 else fixes[0]
+
             raise AirbyteTracedException(
-                message="Unable to split the Facebook Insights request because there are not enough non-primary-key fields.",
-                internal_message=f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, pk={self._primary_key})",
-                failure_type=FailureType.system_error,
+                message=(
+                    f"Facebook could not generate the Insights report{stream_part} for {scope}"
+                    + (' when the "incrementality" attribution window is enabled' if has_incrementality else "")
+                    + f", even at the smallest request size. This is a Facebook-side limitation. To resolve it, {fix_text}."
+                ),
+                internal_message=(
+                    f"Cannot split by fields: not enough non-PK fields (candidates={split_candidates}, "
+                    f"pk={self._primary_key}); stream={self._stream_name}, breakdowns={breakdowns}, "
+                    f"level={self._params.get('level')}, incrementality={has_incrementality}"
+                ),
+                failure_type=FailureType.config_error,
             )
 
         mid = len(split_candidates) // 2
@@ -585,6 +619,7 @@ class InsightAsyncJob(AsyncJob):
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
+            stream_name=self._stream_name,
         )
         job_b = InsightAsyncJob(
             api=self._api,
@@ -594,6 +629,7 @@ class InsightAsyncJob(AsyncJob):
             job_timeout=self._job_timeout,
             primary_key=self._primary_key,
             object_breakdowns=self._object_breakdowns,
+            stream_name=self._stream_name,
         )
         logger.info("%s split by fields: common=%d, A=%d, B=%d", self, len(self._primary_key), len(part_a), len(part_b))
         return ParentAsyncJob(

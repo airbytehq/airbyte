@@ -106,6 +106,18 @@ concurrent rate limit, making it easier to start many queries at once.
     destination), try decreasing the chunk size. In that case, the sync will be slower but more
     likely to succeed.
 
+12. For **Job Execution Project ID (Optional)**, leave the field empty to run BigQuery jobs in the
+    project you entered as **Project ID**. To run them in a different project — for example to keep
+    ingestion from competing with analytics workloads for the same project quotas — enter that
+    project's ID.
+
+:::note
+Query, load, and copy jobs then run against the job project's quotas, while data still lands in
+datasets under **Project ID**. The service account needs the
+[`roles/bigquery.jobUser`](https://cloud.google.com/bigquery/docs/access-control#bigquery.jobUser)
+role on the job project, in addition to its existing roles on the dataset project.
+:::
+
 ## Supported sync modes
 
 The BigQuery destination connector supports the following
@@ -219,6 +231,22 @@ If your sync fails with `BigQueryException: 400 Bad Request` and the message
   - Try reducing concurrent syncs to your BigQuery instance or table. Contention is a
     possible contributing factor.
 
+### Quota exceeded for concurrent script queries per project
+
+If your sync fails with:
+
+```
+BigQueryException: Quota exceeded: Your project_and_region exceeded quota for
+concurrent script queries per project.
+```
+
+- This [quota](https://cloud.google.com/bigquery/quotas#query_jobs) is per project, so syncs share
+  it with every other workload in the same project, such as analytics queries or Dataform pipelines.
+- Set **Job Execution Project ID** to a separate project to run the connector's jobs against that
+  project's quota instead. Data continues to land in datasets under **Project ID**.
+- Alternatively, reduce the number of concurrently syncing streams or connections targeting the
+  project.
+
 ### Load job timeouts
 
 If your sync fails with `Fail to complete a load job in big query`:
@@ -252,6 +280,12 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 3.1.0 | 2026-08-25 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
+| 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
+| 3.0.23 | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
+| 3.0.21 | 2026-06-30 | [81346](https://github.com/airbytehq/airbyte/pull/81346) | Remove unnecessary NULL PK equality checks from merge SQL |
+| 3.0.20 | 2026-06-26 | [80932](https://github.com/airbytehq/airbyte/pull/80932) | Handle BigQueryException in getGenerationId() for legacy tables without _airbyte_generation_id column. |
 | 3.0.19 | 2026-05-21 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Promoting release candidate 3.0.19-rc.1 to a main version. |
 | 3.0.19-rc.1 | 2026-05-19 | [78239](https://github.com/airbytehq/airbyte/pull/78239) | Upgrade CDK to 1.0.13. Progressive rollout. |
 | 3.0.18 | 2026-03-31 | [75913](https://github.com/airbytehq/airbyte/pull/75913) | Finalize upgrade BigQuery Cloud dependencies and CDK version |
