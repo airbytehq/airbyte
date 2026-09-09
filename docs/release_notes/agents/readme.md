@@ -1,5 +1,29 @@
 # Airbyte Agents release notes
 
+## September 9, 2026
+
+Other
+
+- Indexing large PDF files from connectors that sync files, such as Google Drive, is now more reliable. Previously, very long PDFs could fail to index because processing the whole document at once used too much memory; they're now processed in smaller sections, so your agents can search their full content. Tables in long PDFs may look slightly different in search results than before.
+
+## September 4, 2026
+
+Connectors
+
+- Your agents can now search your Klaviyo email templates by meaning, including the template name and email body, so they can find templates on a similar topic without matching the exact wording.
+
+Other
+
+- Search by meaning is now more reliable. Previously, during periods of heavy indexing, some records could be indexed without searchable content and were silently missing from your agents' results. All records are now indexed completely.
+- Indexing connectors that sync files, such as Google Drive, is now more reliable when processing large volumes of extracted text, so file indexing no longer stalls or fails partway through on big document sets.
+
+## September 2, 2026
+
+Web app
+
+- Chat now searches across all of your indexed data by default, so your agent can pull in relevant records from every connector in your workspace without you turning on a setting first. Workspace-wide searches also no longer time out in workspaces with several connectors.
+- Everyone in your organization can now view the API client ID and secret on the Profile page. Previously only administrators could see them, and other members saw an empty page.
+
 ## September 1, 2026
 
 Web app

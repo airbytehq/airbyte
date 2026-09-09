@@ -129,6 +129,13 @@
         "airbyte_secret" : true,
         "always_show" : true
       },
+      "job_project_id" : {
+        "type" : "string",
+        "description" : "Optional. The GCP project ID where BigQuery jobs will be executed. When set, query jobs run against this project's quota instead of the dataset project's quota. This is useful for isolating BigQuery concurrent query quota between different workloads (e.g. data ingestion vs. analytics). The service account must have BigQuery Job User role on this project. If not set, jobs run in the dataset project (Project ID above).",
+        "title" : "Job Execution Project ID",
+        "group" : "advanced",
+        "order" : 4
+      },
       "cdc_deletion_mode" : {
         "type" : "string",
         "default" : "Hard delete",

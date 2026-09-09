@@ -66,6 +66,7 @@ Classes
     * airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[ChannelsSearchData]
     * airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[ThreadsSearchData]
     * airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.slack.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
