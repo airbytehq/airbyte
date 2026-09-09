@@ -9,7 +9,7 @@ This page contains the setup guide and reference information for the [Google Sea
 ## Prerequisites
 
 - Google Account
-- A verified property in Google Search Console (or the list of the `Site URLs` (Website URL Property))
+- One or more verified properties in Google Search Console. You need the exact property identifier for each one. URL-prefix properties look like `https://example.com/`, and Domain properties look like `sc-domain:example.com`. See [Google's guide to property types](https://support.google.com/webmasters/answer/34592).
 <!-- env:oss -->
 - Google Search Console API enabled for your project (**Airbyte Open Source** only)
 <!-- /env:oss -->
@@ -87,7 +87,7 @@ For more information on this topic, please refer to [this Google article](https:
 2. Click Sources and then click + New source.
 3. On the Set up the source page, select Google Search Console from the Source type dropdown.
 4. Enter a name for the Google Search Console connector.
-5. For **Website URL Property**, enter the website properties in Google Search Console that contain the data you want to replicate. You can add multiple site URLs.
+5. For **Website URL Property**, enter the properties in Google Search Console that contain the data you want to replicate. Enter each property exactly as Search Console shows it, for example `https://example.com/` for a URL-prefix property or `sc-domain:example.com` for a Domain property. You can add multiple properties.
 6. For **Start Date**, by default the `2021-01-01` is set, use the provided datepicker or enter a date in the format `YYYY-MM-DD`. Any data created on or after this date will be replicated.
 7. To authenticate the connection:
 <!-- env:cloud -->
@@ -247,6 +247,15 @@ Two effects are worth planning for:
 - Re-syncing a historical window may no longer reproduce rows for a retired value, so a full refresh can return fewer records than the original sync did.
 
 ### Troubleshooting
+
+#### Site URL errors during setup or sync
+
+The connection test reads the `sites` stream for every property you configured, so an incorrect **Website URL Property** value fails at setup rather than partway through a sync. The `sites` and `sitemaps` streams report the following errors as configuration errors:
+
+- `Configured site URL is not a verified Search Console property in this account.` The value doesn't match a property in the Search Console account you authenticated with. Compare the value against the property list in Search Console. Common mismatches are a missing trailing slash, `http` instead of `https`, a missing or extra `www.`, or entering a plain domain instead of the `sc-domain:` form for a Domain property.
+- `Configured site URL is not accessible with the account's Search Console permissions.` The property exists, but the authenticated account can't read it. Ask a property owner to add the Google account (for OAuth) or the service account email (for service account authentication) as a user on that property.
+
+#### Other issues
 
 - Check out common troubleshooting issues for the Google Search Console source connector on our [Airbyte Forum](https://github.com/airbytehq/airbyte/discussions).
 
