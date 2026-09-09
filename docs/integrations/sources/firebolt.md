@@ -47,6 +47,10 @@ The Firebolt source does not alter schema present in your database. Depending on
 
 You can now use the Airbyte Firebolt source.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

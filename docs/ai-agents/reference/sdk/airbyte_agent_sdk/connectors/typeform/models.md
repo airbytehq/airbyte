@@ -68,6 +68,7 @@ Classes
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[ThemesSearchData]
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[WebhooksSearchData]
     * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[WorkspacesSearchData]
+    * airbyte_agent_sdk.connectors.typeform.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2796,7 +2797,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `TypeformExecuteResultWithMeta[list[Form], FormsListResultMeta](**data: Any)`

@@ -36,6 +36,16 @@ def _get_date_field_values(stream):
     return values
 
 
+def _get_response_filters(stream):
+    error_handler = stream["retriever"]["requester"].get("error_handler", {})
+    if error_handler.get("type") == "CompositeErrorHandler":
+        filters = []
+        for handler in error_handler.get("error_handlers", []):
+            filters.extend(handler.get("response_filters", []))
+        return filters
+    return error_handler.get("response_filters", [])
+
+
 @pytest.mark.parametrize(
     "stream_name",
     [
@@ -75,6 +85,32 @@ def test_keywords_report_daily_retains_keyword_predicate(manifest):
 
     has_predicate = any("CAMPAIGN DOES NOT CONTAIN KEYWORD" in f.get("predicate", "") for f in error_handler.get("response_filters", []))
     assert has_predicate, "keywords_report_daily must retain the keyword-specific IGNORE predicate"
+
+
+@pytest.mark.parametrize(
+    "stream_name",
+    [
+        pytest.param("campaigns", id="campaigns"),
+        pytest.param("adgroups", id="adgroups"),
+        pytest.param("keywords", id="keywords"),
+        pytest.param("campaigns_report_daily", id="campaigns_report_daily"),
+        pytest.param("adgroups_report_daily", id="adgroups_report_daily"),
+        pytest.param("keywords_report_daily", id="keywords_report_daily"),
+        pytest.param("ads", id="ads"),
+        pytest.param("ads_report_daily", id="ads_report_daily"),
+    ],
+)
+def test_streams_reactively_refresh_oauth_token_on_401(manifest, stream_name):
+    """Apple Ads may return 401 before the CDK's tracked token expiry."""
+    stream = _get_stream_def(manifest, stream_name)
+    filters = _get_response_filters(stream)
+
+    refresh_filters = [f for f in filters if f.get("action") == "REFRESH_TOKEN_THEN_RETRY" and 401 in f.get("http_codes", [])]
+
+    assert refresh_filters, f"{stream_name} must reactively refresh the OAuth token and retry on 401"
+    for f in refresh_filters:
+        assert f.get("failure_type") == "transient_error"
+        assert f.get("error_message") == "Access token is expired."
 
 
 def test_ads_report_daily_request_body_slice_keys(manifest):

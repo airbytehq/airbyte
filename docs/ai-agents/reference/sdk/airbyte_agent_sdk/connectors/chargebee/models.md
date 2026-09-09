@@ -73,6 +73,7 @@ Classes
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[PaymentSourceSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[SubscriptionSearchData]
     * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[TransactionSearchData]
+    * airbyte_agent_sdk.connectors.chargebee.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -640,7 +641,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `ChargebeeExecuteResultWithMeta[list[Coupon], CouponListResultMeta](**data: Any)`

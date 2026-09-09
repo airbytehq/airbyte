@@ -102,6 +102,7 @@ Classes
     ### Descendants
 
     * airbyte_agent_sdk.connectors.amazon_ads.models.AirbyteSearchResult[ProfilesSearchData]
+    * airbyte_agent_sdk.connectors.amazon_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -285,7 +286,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `AmazonAdsExecuteResultWithMeta[dict[str, Any], PortfoliosListResultMeta](**data: Any)`

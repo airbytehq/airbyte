@@ -72,6 +72,10 @@ One issue that can happen is the API not having the data available for the perio
 
 Generate/Find all requirements using this [external article](https://leapfin.com/blog/apple-appstore-integration/).
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

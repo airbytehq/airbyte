@@ -36,12 +36,12 @@
   <text x="738" y="97" font-size="14" font-weight="500" fill="#1a1a2e" text-anchor="middle">MCP server</text>
 
   <!-- ============================================================ -->
-  <!-- ROW 2: Airbyte Agents Platform                               -->
+  <!-- ROW 2: Airbyte Agents                                        -->
   <!-- ============================================================ -->
 
   <!-- Platform background -->
   <rect x="120" y="190" width="640" height="330" rx="14" fill="#F8F7FF" stroke="#E5E2F5" stroke-width="1"/>
-  <text x="140" y="218" font-size="11" font-weight="700" fill="#615EFC" letter-spacing="1.2">AIRBYTE AGENTS PLATFORM</text>
+  <text x="140" y="218" font-size="11" font-weight="700" fill="#615EFC" letter-spacing="1.2">AIRBYTE AGENTS</text>
 
   <!-- Authentication & token management -->
   <rect x="220" y="240" width="420" height="52" rx="10" fill="#fff" stroke="#E0E2F5" stroke-width="1" filter="url(#cardShadow)"/>

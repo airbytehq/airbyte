@@ -66,6 +66,7 @@ Classes
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[ListFinancialEventsSearchData]
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[OrderItemsSearchData]
     * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[OrdersSearchData]
+    * airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -364,7 +365,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `AmazonSellerPartnerExecuteResultWithMeta[FinancialEvents, ListFinancialEventsListResultMeta](**data: Any)`

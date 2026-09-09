@@ -168,6 +168,10 @@ SingleStore data types are mapped to the following data types when synchronizing
 | `GEOGRAPHY`           | string                 |       |
 | `VECTOR`              | string                 |       |
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                             |

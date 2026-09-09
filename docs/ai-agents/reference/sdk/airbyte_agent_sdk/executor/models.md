@@ -112,6 +112,39 @@ Classes
     `updated_at: str | None`
     :   The type of the None singleton.
 
+<a id="DownloadChunkResult"></a>
+
+`DownloadChunkResult(content: str, encoding: "Literal['utf-8', 'base64']", bytes_returned: int, range_requested: str, next_range_header: str | None, has_more: bool, content_type: str | None = None)`
+:   JSON-safe result for a bounded download byte range.
+
+    ### Instance variables
+
+    `bytes_returned: int`
+    :   The type of the None singleton.
+
+    `content: str`
+    :   The type of the None singleton.
+
+    `content_type: str | None`
+    :   The type of the None singleton.
+
+    `encoding: Literal['utf-8', 'base64']`
+    :   The type of the None singleton.
+
+    `has_more: bool`
+    :   The type of the None singleton.
+
+    `next_range_header: str | None`
+    :   The type of the None singleton.
+
+    `range_requested: str`
+    :   The type of the None singleton.
+
+    ### Methods
+
+    `to_dict(self) ‑> dict[str, typing.Any]`
+    :
+
 <a id="EntityNotFoundError"></a>
 
 `EntityNotFoundError(*args, **kwargs)`
@@ -126,7 +159,7 @@ Classes
 
 <a id="ExecutionConfig"></a>
 
-`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None)`
+`ExecutionConfig(entity: str, action: str, *, params: dict[str, Any] | None = None, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True, intent: str | None = None)`
 :   Configuration for connector execution.
     
     Used by both LocalExecutor and HostedExecutor to specify the operation to execute.
@@ -140,6 +173,10 @@ Classes
             - For GET: \{"id": "cus_123"\}
             - For LIST: \{"limit": 10\}
             - For CREATE: \{"email": "...", "name": "..."\}
+        select_fields: Optional allowlist of dot-notation fields to include
+        exclude_fields: Optional blocklist of dot-notation fields to remove
+        skip_truncation: Disable long-text truncation for collection actions
+        intent: Optional short description of why this execution is being performed (max 512 chars)
     
     Example:
         config = ExecutionConfig(
@@ -156,7 +193,19 @@ Classes
     `entity: str`
     :   The type of the None singleton.
 
+    `exclude_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `intent: str | None`
+    :   The type of the None singleton.
+
     `params: dict[str, typing.Any] | None`
+    :   The type of the None singleton.
+
+    `select_fields: list[str] | None`
+    :   The type of the None singleton.
+
+    `skip_truncation: bool`
     :   The type of the None singleton.
 
 <a id="ExecutionResult"></a>
@@ -171,7 +220,8 @@ Classes
         success: True if execution completed successfully, False if it failed
         data: Response data from the execution
             - dict[str, Any] for standard operations (GET, LIST, CREATE, etc.)
-            - AsyncIterator[bytes] for download operations (streaming file content)
+            - AsyncIterator[bytes] for streaming download operations
+            - dict[str, Any] for structured download chunks
         error: Error message if success=False, None otherwise
         meta: Optional metadata extracted from response (e.g., pagination info)
     

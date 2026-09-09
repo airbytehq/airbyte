@@ -24,17 +24,30 @@ import io.airbyte.cdk.load.component.DataCoercionTimestampNtzFixtures
 import io.airbyte.cdk.load.component.DataCoercionTimestampTzFixtures
 import io.airbyte.cdk.load.component.OUT_OF_RANGE_TIMESTAMP
 import io.airbyte.cdk.load.component.TableOperationsClient
+import io.airbyte.cdk.load.component.TableOperationsTestHarness
 import io.airbyte.cdk.load.component.TestTableOperationsClient
 import io.airbyte.cdk.load.component.toArgs
 import io.airbyte.cdk.load.data.AirbyteValue
+import io.airbyte.cdk.load.data.FieldType
+import io.airbyte.cdk.load.data.StringType
+import io.airbyte.cdk.load.data.StringValue
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.schema.TableSchemaFactory
+import io.airbyte.cdk.load.util.UUIDGenerator
+import io.airbyte.integrations.destination.snowflake.client.SnowflakeAirbyteClient
 import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeComponentTestFixtures
+import io.airbyte.integrations.destination.snowflake.component.config.SnowflakeTestTableOperationsClient
+import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManager
+import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
+import io.airbyte.integrations.destination.snowflake.write.load.SnowflakeRecordFormatter
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange.Reason
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest
 import java.math.BigDecimal
 import java.math.BigInteger
 import java.time.LocalDateTime
+import javax.sql.DataSource
+import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.parallel.Execution
 import org.junit.jupiter.api.parallel.ExecutionMode
@@ -48,6 +61,10 @@ class SnowflakeDataCoercionTest(
     override val opsClient: TableOperationsClient,
     override val testClient: TestTableOperationsClient,
     override val schemaFactory: TableSchemaFactory,
+    private val dataSource: DataSource,
+    private val snowflakeConfiguration: SnowflakeConfiguration,
+    private val columnManager: SnowflakeColumnManager,
+    private val snowflakeRecordFormatter: SnowflakeRecordFormatter,
 ) : DataCoercionSuite {
     override val columnNameMapping = SnowflakeComponentTestFixtures.testMapping
     override val airbyteMetaColumnMapping = SnowflakeComponentTestFixtures.airbyteMetaColumnMapping
@@ -148,6 +165,62 @@ class SnowflakeDataCoercionTest(
     ) {
         super.`handle string values`(inputValue, expectedValue, expectedChangeReason)
     }
+
+    @Test
+    fun `trim leading and trailing whitespace in string values by default`() = runTest {
+        harness.testValueCoercion(
+            coercer,
+            columnNameMapping,
+            FieldType(StringType, nullable = true),
+            StringValue(" hello   "),
+            "hello",
+            null,
+        )
+    }
+
+    @Test
+    fun `preserve leading and trailing whitespace in string values when trim space is disabled`() =
+        runTest {
+            val trimSpaceDisabledConfig = snowflakeConfiguration.copy(trimSpace = false)
+            val trimSpaceDisabledSqlGenerator =
+                SnowflakeDirectLoadSqlGenerator(
+                    uuidGenerator = UUIDGenerator(),
+                    config = trimSpaceDisabledConfig,
+                    columnManager = columnManager,
+                )
+            val trimSpaceDisabledClient =
+                SnowflakeAirbyteClient(
+                    dataSource = dataSource,
+                    sqlGenerator = trimSpaceDisabledSqlGenerator,
+                    snowflakeConfiguration = trimSpaceDisabledConfig,
+                    columnManager = columnManager,
+                )
+            val trimSpaceDisabledTestClient =
+                SnowflakeTestTableOperationsClient(
+                    client = trimSpaceDisabledClient,
+                    dataSource = dataSource,
+                    sqlGenerator = trimSpaceDisabledSqlGenerator,
+                    snowflakeConfiguration = trimSpaceDisabledConfig,
+                    columnManager = columnManager,
+                    snowflakeRecordFormatter = snowflakeRecordFormatter,
+                )
+            val trimSpaceDisabledHarness =
+                TableOperationsTestHarness(
+                    trimSpaceDisabledClient,
+                    trimSpaceDisabledTestClient,
+                    schemaFactory,
+                    airbyteMetaColumnMapping,
+                )
+
+            trimSpaceDisabledHarness.testValueCoercion(
+                coercer,
+                columnNameMapping,
+                FieldType(StringType, nullable = true),
+                StringValue(" hello   "),
+                " hello   ",
+                null,
+            )
+        }
 
     @ParameterizedTest
     @MethodSource("io.airbyte.cdk.load.component.DataCoercionObjectFixtures#objects")

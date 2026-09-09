@@ -43,6 +43,10 @@ issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
 Goto `https://jina.ai/reader/#apiform` for the complete guide about different pricing and tokens for that.
 The website also provides a free bearer token for testing with its interface.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

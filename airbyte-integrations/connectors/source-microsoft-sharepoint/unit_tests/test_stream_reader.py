@@ -310,7 +310,9 @@ def test_get_file(mock_requests_head, mock_requests_get, mock_get_access_token, 
     expected_staging_file_url = expected_paths["staging_file_url"]
 
     assert file_reference.source_file_relative_path == expected_source_file_relative_path
-    assert file_reference.staging_file_url == expected_staging_file_url
+    # The CDK stages every file under a unique subdirectory of the staging directory
+    assert file_reference.staging_file_url.startswith(f"{TEST_LOCAL_DIRECTORY}/")
+    assert file_reference.staging_file_url.endswith(expected_staging_file_url.replace(f"{TEST_LOCAL_DIRECTORY}/", ""))
     assert file_reference.file_size_bytes == expected_file_bytes
 
     assert os.path.basename(expected_staging_file_url) == file_record_data.file_name

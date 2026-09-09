@@ -25,6 +25,23 @@ Version 2.0.0 represents a complete architectural redesign of the ClickHouse des
 
 Deduplication leverages ClickHouse's [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) table engine. See [Deduplication](#deduplication) below for details.
 
+## Self-managed clusters
+
+By default, the connector stores data only on the node that receives each insert. On a self-managed ClickHouse cluster with multiple replicas, this means reads through a load balancer may return incomplete data because the other nodes are unaware of the inserted rows. Similarly, table definitions (CREATE, ALTER, DROP) are only applied on the connected node.
+
+Two advanced options make the connector cluster-aware. ClickHouse Cloud does not need either of these — it uses `SharedMergeTree` and handles replication automatically.
+
+- **Enable Replication** (`use_replicated_engines`): ensures synced data is [replicated](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replication) across all cluster nodes. The replicated engine is emitted without explicit Keeper path arguments, so the server must be able to derive them — which is the case inside a database using the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated), or when `default_replica_path`/`default_replica_name` macros are configured in the server. Requires ClickHouse Keeper (or ZooKeeper).
+- **Cluster Name** (`cluster_name`): when provided, table definitions are automatically propagated to all cluster nodes. Required for clusters whose databases use the default Atomic engine. Leave empty when the target database uses the [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated) — there, DDL replicates through the database itself and a cluster name is unnecessary. The name is validated against the charset `[A-Za-z0-9_.-]` and the connection is rejected if invalid characters are used.
+
+Typical combinations:
+
+| Topology | Enable Replication | Cluster Name |
+| :--- | :--- | :--- |
+| Single node / ClickHouse Cloud | off | empty |
+| Cluster with [`Replicated` database engine](https://clickhouse.com/docs/engines/database-engines/replicated) | on | empty |
+| Cluster with Atomic databases + `remote_servers` | on | set to your cluster name |
+
 ## Deduplication
 
 For optimal deduplication in Incremental - Append + Deduped sync mode, use a cursor column with one of these types:
@@ -67,8 +84,8 @@ Ensure your ClickHouse database is accessible from Airbyte.
 
 | Airbyte deployment | Clickhouse deployment | Do this                                                                                                                                                                                           |
 | ------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloud              | Cloud                 | Whitelist Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) in your ClickHouse Cloud settings.                                                                             |
-| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                                                                       |
+| Cloud              | Cloud                 | Add Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist) to the allowlist in your ClickHouse Cloud settings.                                                                  |
+| Cloud              | Self-managed          | Configure your firewall to allow inbound connections on port 8443 (HTTPS) or 8123 (HTTP) from Airbyte Cloud's [IP addresses](/platform/operating-airbyte/ip-allowlist).                         |
 | Self-managed       | Cloud                 | Whitelist your Airbyte server's public IP address in ClickHouse Cloud settings.                                                                                                                   |
 | Self-managed       | Self-managed          | Ensure port 8443 (HTTPS) or 8123 (HTTP) is accessible from your Airbyte host. If both are in the same private network, configure security groups or firewall rules to allow traffic between them. |
 
@@ -138,6 +155,8 @@ Replace `{namespace}` with each custom namespace you plan to use.
     - **Password**: The password for the ClickHouse user
     - **Enable JSON**: Whether to use ClickHouse's JSON type for object fields (recommended if your ClickHouse version supports it)
     - **Record Window Size** (advanced): The maximum number of records to write in a single batch. Tuning this parameter can impact performance. The batch size is also limited to 70 MB regardless of this setting. Most users don't need to change this value.
+    - **Enable Replication** (advanced): Enable this for self-managed ClickHouse clusters with multiple replicas to ensure data is synchronized across all nodes. See [Self-managed clusters](#self-managed-clusters) for details.
+    - **Cluster Name** (advanced): Name of your ClickHouse cluster. When provided, table definitions are propagated to all cluster nodes. See [Self-managed clusters](#self-managed-clusters) for details.
 
 ### 4. SSH tunnel (optional)
 
@@ -166,6 +185,12 @@ The connector converts Airbyte data types to ClickHouse types as follows:
 The connector converts arrays and unions to strings for compatibility. If you need to query these as structured data, use ClickHouse's JSON functions to parse the string values.
 :::
 
+## Schema evolution
+
+This connector supports automatic schema evolution. When the source schema changes, the connector automatically adds new columns to destination tables and modifies column types as needed.
+
+**Unlike most other Airbyte destinations, when a column is removed from the source, ClickHouse drops the column and its historical data from the destination table.** Other destinations typically retain removed columns and write `NULL` for subsequent rows. ClickHouse drops columns because its [ReplacingMergeTree](https://clickhouse.com/docs/engines/table-engines/mergetree-family/replacingmergetree) engine handles deduplication by deleting and re-inserting records rather than using MERGE queries like other destinations. This table recreation approach requires dropping obsolete columns.
+
 ## Namespace support
 
 This destination supports [namespaces](https://docs.airbyte.com/platform/using-airbyte/core-concepts/namespaces). The namespace maps to a ClickHouse database.
@@ -179,6 +204,12 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                        |
 |:-----------|:-----------|:-----------------------------------------------------------|:-------------------------------------------------------------------------------|
+| 2.1.29     | 2026-08-25 | [85033](https://github.com/airbytehq/airbyte/pull/85033)   | Support self-managed clusters: optional replicated table engines and ON CLUSTER DDL |
+| 2.1.28     | 2026-08-24 | [84983](https://github.com/airbytehq/airbyte/pull/84983)   | Upgrade to Bulk CDK 1.0.25. |
+| 2.1.27     | 2026-08-05 | [83747](https://github.com/airbytehq/airbyte/pull/83747)   | Upgrade CDK to 1.0.20; document column drop behavior during schema evolution |
+| 2.1.26     | 2026-07-21 | [82684](https://github.com/airbytehq/airbyte/pull/82684)   | fix(destination-clickhouse): avoid failed count for missing temp tables        |
+| 2.1.25     | 2026-07-14 | [81550](https://github.com/airbytehq/airbyte/pull/81550)   | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
+| 2.1.24     | 2026-05-20 | [77673](https://github.com/airbytehq/airbyte/pull/77673)   | Upgrade CDK to 1.0.13. Migrate component tests to Testcontainers. |
 | 2.1.23     | 2026-02-04 | [72857](https://github.com/airbytehq/airbyte/pull/72857)   | No user-facing changes (Upgrade CDK to 0.2.8)                    |
 | 2.1.22     | 2026-01-26 | [71784](https://github.com/airbytehq/airbyte/pull/71784)   | No user-facing changes (internal refactor SSH tunnel logic)                    |
 | 2.1.21     | 2026-01-20 | [72294](https://github.com/airbytehq/airbyte/pull/72294)   | Upgrade CDK to 0.2.0                                                           |

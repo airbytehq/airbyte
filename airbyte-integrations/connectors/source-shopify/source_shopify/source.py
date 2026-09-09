@@ -4,7 +4,9 @@
 
 
 import logging
+import re
 from typing import Any, List, Mapping, Tuple
+from urllib.parse import urlparse
 
 from requests.exceptions import ConnectionError, RequestException, SSLError
 
@@ -31,6 +33,7 @@ from .streams.streams import (
     Customers,
     DeletedProducts,
     DiscountCodes,
+    DiscountCodesSync,
     Disputes,
     DraftOrders,
     FulfillmentOrders,
@@ -67,6 +70,7 @@ from .streams.streams import (
     Transactions,
     TransactionsGraphql,
 )
+from .utils import ShopifyWrongShopNameError
 
 
 class ConnectionCheckTest:
@@ -138,9 +142,45 @@ class SourceShopify(AbstractSource):
 
     @staticmethod
     def get_shop_name(config) -> str:
-        split_pattern = ".myshopify.com"
-        shop_name = config.get("shop")
-        return shop_name.split(split_pattern)[0] if split_pattern in shop_name else shop_name
+        """
+        Normalize the `shop` config value to the bare myshopify subdomain.
+
+        Accepts a bare handle (`my-store`) or a full URL
+        (`https://my-store.myshopify.com/`, scheme and trailing slash optional)
+        and returns `my-store`. Raises `ShopifyWrongShopNameError` (config_error)
+        for malformed input (embedded path, whitespace, invalid characters).
+
+        Idempotent: a value already normalized to a bare handle is returned unchanged.
+        """
+        raw = config.get("shop")
+        if not raw or not isinstance(raw, str) or not raw.strip():
+            raise ShopifyWrongShopNameError(raw)
+
+        value = raw.strip()
+        # If a scheme is present, parse out the host; urlparse only fills netloc
+        # when "://" is present.
+        if "://" in value:
+            parsed = urlparse(value)
+            host = parsed.netloc
+            if parsed.path not in ("", "/") or parsed.params or parsed.query or parsed.fragment:
+                raise ShopifyWrongShopNameError(raw)
+        else:
+            host, _, path = value.partition("/")
+            if path != "":
+                raise ShopifyWrongShopNameError(raw)
+
+        host = host.strip().lower()
+        suffix = ".myshopify.com"
+        if host.endswith(suffix):
+            host = host[: -len(suffix)]
+
+        # Final handle is a single label that must start and end with an alphanumeric,
+        # with hyphens allowed only in between. No dots, underscores, whitespace,
+        # leading/trailing hyphen, or empty string (none of which are valid myshopify handles).
+        if not re.fullmatch(r"[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", host):
+            raise ShopifyWrongShopNameError(raw)
+
+        return host
 
     @staticmethod
     def format_stream_name(name) -> str:
@@ -150,7 +190,12 @@ class SourceShopify(AbstractSource):
         """
         Testing connection availability for the connector.
         """
-        config["shop"] = self.get_shop_name(config)
+        try:
+            config["shop"] = self.get_shop_name(config)
+        except ShopifyWrongShopNameError as error:
+            # Surface the specific, actionable reason at check time instead of letting the
+            # exception escape to the generic top-level handler ("Something went wrong...").
+            return False, error.message
         config["authenticator"] = ShopifyAuthenticator(config)
         return ConnectionCheckTest(config).test_connection()
 
@@ -189,6 +234,7 @@ class SourceShopify(AbstractSource):
             CustomerJourneySummary(config),
             Customers(config),
             DiscountCodes(config),
+            DiscountCodesSync(config),
             Disputes(config),
             DraftOrders(config),
             FulfillmentOrders(config),

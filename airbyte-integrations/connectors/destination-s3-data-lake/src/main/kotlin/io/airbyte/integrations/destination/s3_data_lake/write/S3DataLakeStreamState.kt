@@ -10,4 +10,5 @@ import org.apache.iceberg.Table
 class S3DataLakeStreamState(
     val table: Table,
     val schema: Schema,
+    val stagingBranchName: String,
 )

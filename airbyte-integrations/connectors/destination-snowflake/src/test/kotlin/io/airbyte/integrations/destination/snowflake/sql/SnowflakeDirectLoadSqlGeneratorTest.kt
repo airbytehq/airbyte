@@ -25,7 +25,7 @@ import io.airbyte.integrations.destination.snowflake.write.load.CSV_FIELD_SEPARA
 import io.airbyte.integrations.destination.snowflake.write.load.CSV_LINE_DELIMITER
 import io.mockk.every
 import io.mockk.mockk
-import java.util.UUID
+import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -45,6 +45,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         every { snowflakeConfiguration.cdcDeletionMode } returns CdcDeletionMode.HARD_DELETE
         every { snowflakeConfiguration.database } returns "test-database"
         every { snowflakeConfiguration.legacyRawTablesOnly } returns false
+        every { snowflakeConfiguration.trimSpace } returns true
 
         every { snowflakeColumnManager.getMetaColumns() } returns
             linkedMapOf(
@@ -147,7 +148,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
@@ -279,6 +280,37 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     }
 
     @Test
+    fun testGenerateCopyFromStageWithTrimSpaceDisabled() {
+        every { snowflakeConfiguration.trimSpace } returns false
+
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val targetTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
+        val stagingTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedStageName(tableName)
+        val sql = snowflakeDirectLoadSqlGenerator.copyFromStage(tableName, "test.csv.gz")
+        val expectedSql =
+            """
+            |COPY INTO $targetTableName
+            |FROM '@$stagingTableName'
+            |FILE_FORMAT = (
+            |    TYPE = 'CSV'
+            |    COMPRESSION = GZIP
+            |    FIELD_DELIMITER = '$CSV_FIELD_SEPARATOR'
+            |    RECORD_DELIMITER = '$CSV_LINE_DELIMITER'
+            |    FIELD_OPTIONALLY_ENCLOSED_BY = '"'
+            |    TRIM_SPACE = FALSE
+            |    ERROR_ON_COLUMN_COUNT_MISMATCH = FALSE
+            |    REPLACE_INVALID_CHARACTERS = TRUE
+            |    ESCAPE = NONE
+            |    ESCAPE_UNENCLOSED_FIELD = NONE
+            |)
+            |ON_ERROR = 'ABORT_STATEMENT'
+            |PURGE = TRUE
+            |files = ('test.csv.gz')
+        """.trimMargin()
+        assertEquals(expectedSql, sql)
+    }
+
+    @Test
     fun testGenerateCopyFromStageWithColumnList() {
         val tableName = TableName(namespace = "namespace", name = "name")
         val targetTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
@@ -362,9 +394,9 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
     fun testGenerateSwapTable() {
         val sourceTableName = TableName(namespace = "namespace", name = "source")
         val targetTableName = TableName(namespace = "namespace", name = "target")
-        val sql = snowflakeDirectLoadSqlGenerator.swapTableWith(sourceTableName, targetTableName)
+        val sql = snowflakeDirectLoadSqlGenerator.cloneTableWith(sourceTableName, targetTableName)
         assertEquals(
-            "ALTER TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} SWAP WITH ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)}",
+            "CREATE OR REPLACE TABLE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(targetTableName)} CLONE ${snowflakeDirectLoadSqlGenerator.fullyQualifiedName(sourceTableName)} COPY GRANTS",
             sql
         )
     }
@@ -375,23 +407,16 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         every { uuidGenerator.v4() } returns uuid
         val tableName = TableName(namespace = "namespace", name = "name")
         val addedColumns = mapOf("COL1" to ColumnType("TEXT", true))
-        val deletedColumns = mapOf("COL2" to ColumnType("TEXT", true))
         val modifiedColumns =
             mapOf("COL3" to ColumnTypeChange(ColumnType("NUMBER", true), ColumnType("TEXT", true)))
         val sql =
-            snowflakeDirectLoadSqlGenerator.alterTable(
-                tableName,
-                addedColumns,
-                deletedColumns,
-                modifiedColumns
-            )
+            snowflakeDirectLoadSqlGenerator.alterTable(tableName, addedColumns, modifiedColumns)
         val expectedTableName =
             "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
 
         assertEquals(
             setOf(
                 """ALTER TABLE $expectedTableName ADD COLUMN "COL1" TEXT;""",
-                """ALTER TABLE $expectedTableName DROP COLUMN "COL2";""",
                 """ALTER TABLE $expectedTableName ADD COLUMN "COL3_${uuid}" TEXT;""",
                 """UPDATE $expectedTableName SET "COL3_${uuid}" = CAST("COL3" AS TEXT);""",
                 """
@@ -403,6 +428,144 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
                 """ALTER TABLE $expectedTableName DROP COLUMN "COL3_${uuid}_backup";"""
             ),
             sql
+        )
+    }
+
+    @Test
+    fun testAlterTableToNumericGuardsTheCast() {
+        // FLOAT -> NUMERIC(38,9). Values with more than 29 digits before the decimal point are
+        // set to NULL instead of failing the cast.
+        val uuid = UUID.randomUUID()
+        every { uuidGenerator.v4() } returns uuid
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val modifiedColumns =
+            mapOf(
+                "COL1" to
+                    ColumnTypeChange(
+                        ColumnType("FLOAT", true),
+                        ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
+                    )
+            )
+        val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
+
+        assertEquals(
+            setOf(
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL1_${uuid}" NUMERIC(38,9);""",
+                """UPDATE $expectedTableName SET "COL1_${uuid}" = IFF(ABS("COL1") >= 1e29, NULL, CAST("COL1" AS NUMERIC(38,9)));""",
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+            ),
+            sql
+        )
+    }
+
+    @Test
+    fun testAlterTableNumberToNumericGuardsTheCast() {
+        // NUMBER -> NUMERIC(38,9). Values with more than 29 digits before the decimal point are
+        // set to NULL instead of failing the cast.
+        val uuid = UUID.randomUUID()
+        every { uuidGenerator.v4() } returns uuid
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val modifiedColumns =
+            mapOf(
+                "COL1" to
+                    ColumnTypeChange(
+                        ColumnType("NUMBER", true),
+                        ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
+                    )
+            )
+        val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
+
+        assertEquals(
+            setOf(
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL1_${uuid}" NUMERIC(38,9);""",
+                """UPDATE $expectedTableName SET "COL1_${uuid}" = IFF(ABS("COL1") >= 1e29, NULL, CAST("COL1" AS NUMERIC(38,9)));""",
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+            ),
+            sql
+        )
+    }
+
+    @Test
+    fun testAlterTableTextToNumericUsesPlainCast() {
+        // TEXT -> NUMERIC(38,9). ABS() on a non-numeric column is a type error, so no guard.
+        val uuid = UUID.randomUUID()
+        every { uuidGenerator.v4() } returns uuid
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val modifiedColumns =
+            mapOf(
+                "COL1" to
+                    ColumnTypeChange(
+                        ColumnType("TEXT", true),
+                        ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
+                    )
+            )
+        val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
+
+        assertEquals(
+            setOf(
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL1_${uuid}" NUMERIC(38,9);""",
+                """UPDATE $expectedTableName SET "COL1_${uuid}" = CAST("COL1" AS NUMERIC(38,9));""",
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+            ),
+            sql
+        )
+    }
+
+    @Test
+    fun testAlterTableToFloatUsesPlainCast() {
+        // NUMERIC(38,9) -> FLOAT
+        val uuid = UUID.randomUUID()
+        every { uuidGenerator.v4() } returns uuid
+        val tableName = TableName(namespace = "namespace", name = "name")
+        val modifiedColumns =
+            mapOf(
+                "COL1" to
+                    ColumnTypeChange(
+                        ColumnType(SnowflakeDataType.NUMERIC_38_9.typeName, true),
+                        ColumnType("FLOAT", true),
+                    )
+            )
+        val sql = snowflakeDirectLoadSqlGenerator.alterTable(tableName, emptyMap(), modifiedColumns)
+        val expectedTableName =
+            "${snowflakeConfiguration.database.toSnowflakeCompatibleName().quote()}.${tableName.namespace.quote()}.${tableName.name.quote()}"
+
+        assertEquals(
+            setOf(
+                """ALTER TABLE $expectedTableName ADD COLUMN "COL1_${uuid}" FLOAT;""",
+                """UPDATE $expectedTableName SET "COL1_${uuid}" = CAST("COL1" AS FLOAT);""",
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1" TO "COL1_${uuid}_backup";""".trimIndent(),
+                """
+                ALTER TABLE $expectedTableName
+                RENAME COLUMN "COL1_${uuid}" TO "COL1";""".trimIndent(),
+                """ALTER TABLE $expectedTableName DROP COLUMN "COL1_${uuid}_backup";"""
+            ),
+            sql,
         )
     }
 
@@ -474,7 +637,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
@@ -508,7 +671,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
@@ -543,7 +706,7 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         val expectedTableName = snowflakeDirectLoadSqlGenerator.fullyQualifiedName(tableName)
         val expectedSql =
             """
-            CREATE TABLE $expectedTableName (
+            CREATE TABLE IF NOT EXISTS $expectedTableName (
                 "_AIRBYTE_RAW_ID" VARCHAR NOT NULL,
                 "_AIRBYTE_EXTRACTED_AT" TIMESTAMP_TZ NOT NULL,
                 "_AIRBYTE_META" VARIANT NOT NULL,
@@ -946,6 +1109,62 @@ internal class SnowflakeDirectLoadSqlGeneratorTest {
         """.trimMargin()
 
         assertEquals(expectedSql, sql)
+    }
+
+    @Test
+    fun testGenerateUpsertTableUsesNullSafePrimaryKeyMatching() {
+        // Regression test for oncall#13078: composite primary keys whose component columns can
+        // contain NULLs must still dedupe. The MERGE ON clause must treat two NULL PK-component
+        // values as equal, otherwise the row falls through to INSERT and is duplicated on every
+        // sync (NULL = NULL is UNKNOWN in SQL three-valued logic).
+        val sourceTableName = TableName(namespace = "namespace", name = "source")
+        val targetTableName = TableName(namespace = "namespace", name = "target")
+
+        val tableSchema =
+            StreamTableSchema(
+                tableNames =
+                    TableNames(finalTableName = targetTableName, tempTableName = sourceTableName),
+                columnSchema =
+                    ColumnSchema(
+                        inputToFinalColumnNames =
+                            mapOf(
+                                "id" to "ID",
+                                "org_id" to "ORG_ID",
+                                "value" to "VALUE",
+                            ),
+                        finalSchema =
+                            mapOf(
+                                "ID" to ColumnType("VARCHAR", false),
+                                "ORG_ID" to ColumnType("VARCHAR", true),
+                                "VALUE" to ColumnType("NUMBER", true),
+                            ),
+                        inputSchema =
+                            mapOf(
+                                "id" to FieldType(StringType, nullable = false),
+                                "org_id" to FieldType(StringType, nullable = true),
+                                "value" to FieldType(StringType, nullable = true),
+                            )
+                    ),
+                importType =
+                    Dedupe(
+                        primaryKey = listOf(listOf("id"), listOf("org_id")),
+                        cursor = emptyList()
+                    )
+            )
+
+        val sql =
+            snowflakeDirectLoadSqlGenerator.upsertTable(
+                tableSchema,
+                sourceTableName,
+                targetTableName
+            )
+
+        val expectedOnClause =
+            """ON (target_table."ID" = new_record."ID" OR (target_table."ID" IS NULL AND new_record."ID" IS NULL)) AND (target_table."ORG_ID" = new_record."ORG_ID" OR (target_table."ORG_ID" IS NULL AND new_record."ORG_ID" IS NULL))"""
+        assertTrue(
+            sql.contains(expectedOnClause),
+            "MERGE ON clause must use NULL-safe matching for every composite PK component; got:\n$sql"
+        )
     }
 
     // Tests moved from SnowflakeSqlNameUtilsTest

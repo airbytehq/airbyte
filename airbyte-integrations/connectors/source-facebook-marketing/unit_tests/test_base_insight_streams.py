@@ -9,7 +9,7 @@ import pytest
 from facebook_business.exceptions import FacebookRequestError
 from freezegun import freeze_time
 from source_facebook_marketing.spec import InsightConfig, TimeIncrementPeriod, ValidBreakdowns
-from source_facebook_marketing.streams import AdsInsights
+from source_facebook_marketing.streams import AdsInsights, AdsInsightsAgeAndGender
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.utils import DateInterval
 
@@ -119,6 +119,67 @@ class TestBaseInsightsStream:
             end_date=datetime(2011, 1, 1),
             insights_lookback_window=28,
             include_incrementality=include_incrementality,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
+    @pytest.mark.parametrize(
+        "include_engaged_view,expected_windows",
+        [
+            pytest.param(
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="disabled_uses_default_windows",
+            ),
+            pytest.param(
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "1d_ev"],
+                id="enabled_appends_ev_windows",
+            ),
+        ],
+    )
+    def test_include_engaged_view(self, api, some_config, include_engaged_view, expected_windows):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_engaged_view=include_engaged_view,
+        )
+
+        assert stream.action_attribution_windows == expected_windows
+        assert stream.request_params()["action_attribution_windows"] == expected_windows
+
+    @pytest.mark.parametrize(
+        "include_incrementality,include_engaged_view,expected_windows",
+        [
+            pytest.param(
+                True,
+                True,
+                ["1d_click", "7d_click", "28d_click", "1d_view", "incrementality", "1d_ev"],
+                id="both_enabled",
+            ),
+            pytest.param(
+                False,
+                False,
+                ["1d_click", "7d_click", "28d_click", "1d_view"],
+                id="both_disabled",
+            ),
+        ],
+    )
+    def test_include_incrementality_and_engaged_view(
+        self, api, some_config, include_incrementality, include_engaged_view, expected_windows
+    ):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+            include_incrementality=include_incrementality,
+            include_engaged_view=include_engaged_view,
         )
 
         assert stream.action_attribution_windows == expected_windows
@@ -566,6 +627,85 @@ class TestBaseInsightsStream:
                 "ad_id",
             ]
         )
+
+    def test_fields_exclude_breakdowns_from_configured_json_schema(self, api, some_config):
+        stream = AdsInsightsAgeAndGender(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            insights_lookback_window=28,
+        )
+        stream.configured_json_schema = {
+            "properties": {
+                "account_id": {"type": ["null", "string"]},
+                "age": {"type": ["null", "string"]},
+                "gender": {"type": ["null", "string"]},
+                "impressions": {"type": ["null", "integer"]},
+            }
+        }
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["age", "gender"]
+        assert "age" not in params["fields"]
+        assert "gender" not in params["fields"]
+        assert params["fields"] == ["account_id", "impressions"]
+
+    def test_fields_exclude_breakdowns_from_custom_fields(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "age", "gender", "impressions"],
+            breakdowns=["age", "gender"],
+            insights_lookback_window=28,
+        )
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["age", "gender"]
+        assert params["fields"] == ["account_id", "impressions"]
+
+    def test_fields_exclude_object_breakdown_ids_from_configured_json_schema(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            breakdowns=["body_asset"],
+            insights_lookback_window=28,
+        )
+        stream.configured_json_schema = {
+            "properties": {
+                "account_id": {"type": ["null", "string"]},
+                "body_asset": {"type": ["null", "object"]},
+                "body_asset_id": {"type": ["null", "string"]},
+                "impressions": {"type": ["null", "integer"]},
+            }
+        }
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["body_asset"]
+        assert params["fields"] == ["account_id", "impressions"]
+
+    def test_fields_exclude_object_breakdown_ids_from_custom_fields(self, api, some_config):
+        stream = AdsInsights(
+            api=api,
+            account_ids=some_config["account_ids"],
+            start_date=datetime(2010, 1, 1),
+            end_date=datetime(2011, 1, 1),
+            fields=["account_id", "body_asset", "body_asset_id", "impressions"],
+            breakdowns=["body_asset"],
+            insights_lookback_window=28,
+        )
+
+        params = stream.request_params()
+
+        assert params["breakdowns"] == ["body_asset"]
+        assert params["fields"] == ["account_id", "impressions"]
 
     @pytest.mark.parametrize(
         "custom_fields, expected_in_schema, expected_not_in_schema",

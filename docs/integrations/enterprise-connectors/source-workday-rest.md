@@ -4,6 +4,16 @@ enterprise-connector: true
 ---
 # Source Workday REST
 
+<HideInUI>
+
+:::info We no longer sell this connector
+
+Airbyte no longer sells this connector, but we continue to support it if you purchased it in the past.
+
+:::
+
+</HideInUI>
+
 Airbyte's [Workday](https://workday.com) enterprise source connector currently offers the following features:
 
 - Incremental as well as Full Refresh [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes). Note that incremental syncs are only supported for specific streams.
@@ -36,6 +46,10 @@ Airbyte's [Workday](https://workday.com) enterprise source connector currently o
 6. Enter the access token.
 7. **Start Date (Optional)** is the earliest date for data that will be synced. If a date is not specified, all data from the last 2 years will be synced.
 8. Click Set up source.
+
+## Configuration
+
+You can set **Number of concurrent threads** to control how many worker threads Airbyte uses during the sync. Valid values are `1` through `50`. The default is `20`.
 
 ## Supported sync modes
 

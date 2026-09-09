@@ -775,6 +775,7 @@ Classes
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[MediaSearchData]
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[OrganizationsSearchData]
     * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[SegmentsSearchData]
+    * airbyte_agent_sdk.connectors.snapchat_marketing.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2221,7 +2222,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `SnapchatMarketingExecuteResultWithMeta[list[AdAccount], AdaccountsListResultMeta](**data: Any)`

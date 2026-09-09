@@ -3,7 +3,7 @@
 #
 
 import logging
-from typing import Optional, Union
+from typing import Callable, Optional, Union
 
 import requests
 
@@ -84,38 +84,45 @@ def is_gone_with_feature_disabled(response_or_exception: Optional[Union[requests
     return False
 
 
+def is_rate_limited_response(
+    response: requests.Response, graphql_rate_limit_checker: Callable[[dict], bool], logger: logging.Logger
+) -> bool:
+    # GitHub GraphQL resource limitations:
+    # https://docs.github.com/en/graphql/overview/resource-limitations
+    if response.headers.get("X-RateLimit-Resource") == "graphql":
+        try:
+            body = response.json()
+        except ValueError:
+            logger.warning(
+                "GraphQL rate-limit check received non-JSON response (HTTP %s, first 50 chars: %r).",
+                response.status_code,
+                response.text[:50],
+            )
+            graphql_rate_limited = False
+        else:
+            graphql_rate_limited = graphql_rate_limit_checker(body or {})
+
+        if graphql_rate_limited:
+            return True
+
+    # GitHub REST rate-limit HTTP headers:
+    # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
+    # GitHub secondary rate limits:
+    # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
+    return (response.status_code != 200 and response.headers.get("X-RateLimit-Remaining") == "0") or "Retry-After" in response.headers
+
+
 class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
     def __init__(self, stream: HttpStream, **kwargs):  # type: ignore # noqa
         self.stream = stream
         super().__init__(**kwargs)
 
-    def _safe_json_check_graphql_rate_limited(self, response: requests.Response) -> bool:
-        try:
-            body = response.json()
-        except ValueError:
-            self._logger.warning(
-                "GraphQL rate-limit check received non-JSON response (HTTP %s, first 50 chars: %r).",
-                response.status_code,
-                response.text[:50],
-            )
-            return False
-        return self.stream.check_graphql_rate_limited(body or {})
-
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
-            retry_flag = (
-                # The GitHub GraphQL API has limitations
-                # https://docs.github.com/en/graphql/overview/resource-limitations
-                (
-                    response_or_exception.headers.get("X-RateLimit-Resource") == "graphql"
-                    and self._safe_json_check_graphql_rate_limited(response_or_exception)
-                )
-                # Rate limit HTTP headers
-                # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#rate-limit-http-headers
-                or (response_or_exception.status_code != 200 and response_or_exception.headers.get("X-RateLimit-Remaining") == "0")
-                # Secondary rate limits
-                # https://docs.github.com/en/rest/overview/resources-in-the-rest-api#secondary-rate-limits
-                or "Retry-After" in response_or_exception.headers
+            retry_flag = is_rate_limited_response(
+                response_or_exception,
+                self.stream.check_graphql_rate_limited,
+                self._logger,
             )
             if retry_flag:
                 headers = [
@@ -199,11 +206,25 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
     def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
         if isinstance(response_or_exception, requests.Response):
             if response_or_exception.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT):
-                self.stream.page_size = int(self.stream.page_size / 2)
+                # Halve the page size on every 502/504 to reduce GraphQL query cost,
+                # but never let it drop below 1 — a page_size of 0 would request no
+                # records and cause infinite paging.
+                previous_page_size = self.stream.page_size
+                self.stream.page_size = max(1, int(self.stream.page_size / 2))
+                self._logger.info(
+                    "GitHub GraphQL endpoint returned HTTP %s for stream `%s`; reducing GraphQL page_size from %s to %s and retrying.",
+                    response_or_exception.status_code,
+                    self.stream.name,
+                    previous_page_size,
+                    self.stream.page_size,
+                )
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=(
+                        f"GitHub GraphQL endpoint returned HTTP {response_or_exception.status_code} "
+                        f"for stream `{self.stream.name}`. Reducing GraphQL page size and retrying."
+                    ),
                 )
 
             self.stream.page_size = (
@@ -214,7 +235,10 @@ class GitHubGraphQLErrorHandler(GithubStreamABCErrorHandler):
                 return ErrorResolution(
                     response_action=ResponseAction.RETRY,
                     failure_type=FailureType.transient_error,
-                    error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
+                    error_message=(
+                        f"GitHub GraphQL endpoint returned errors in the response body "
+                        f"for stream `{self.stream.name}` (HTTP {response_or_exception.status_code}). Retrying."
+                    ),
                 )
 
         return super().interpret_response(response_or_exception)

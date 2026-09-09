@@ -71,6 +71,7 @@ Classes
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[TeamsSearchData]
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[TimeTrackingSearchData]
     * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[UserSearchData]
+    * airbyte_agent_sdk.connectors.clickup_api.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -562,7 +563,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `ClickupApiExecuteResultWithMeta[list[Doc], DocsListResultMeta](**data: Any)`

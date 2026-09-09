@@ -76,6 +76,7 @@ Classes
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[ReleasesSearchData]
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[TagsSearchData]
     * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -1057,7 +1058,7 @@ Classes
 
     ### Class variables
 
-    `meta: ~S`
+    `meta: ~S | None`
     :   Metadata about the response (e.g., pagination cursors, record counts).
 
 `GitlabExecuteResultWithMeta[list[Branch], BranchesListResultMeta](**data: Any)`

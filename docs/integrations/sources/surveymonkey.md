@@ -80,6 +80,10 @@ You can stream the following data from SurveyMonkey using the [sync modes](/plat
 
 SurveyMonkey's API has [default rate limits](https://developer.surveymonkey.com/api/v3/#request-and-response-limits) for draft and private apps. Airbyte uses caching to economize its usage of the API. However, if you need a higher quota, SurveyMonkey offers temporary and permanent options to increase your rate limits.
 
+## IP allow list
+
+If you use Airbyte Cloud and your organization restricts access to specific IPs, add the [Airbyte Cloud IP addresses](https://docs.airbyte.com/platform/operating-airbyte/ip-allowlist) to your allow list.
+
 ## Changelog
 
 <details>

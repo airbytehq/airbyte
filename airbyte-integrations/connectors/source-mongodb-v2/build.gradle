@@ -43,7 +43,7 @@ dependencies {
     implementation 'io.debezium:debezium-embedded:2.6.2.Final'
     implementation 'io.debezium:debezium-connector-mongodb:2.6.2.Final'
 
-    testImplementation 'org.testcontainers:mongodb:1.19.0'
+    testImplementation 'org.testcontainers:mongodb:1.21.4'
 
     dataGeneratorImplementation project(':airbyte-integrations:connectors:source-mongodb-v2')
     dataGeneratorImplementation platform('com.fasterxml.jackson:jackson-bom:2.15.2')

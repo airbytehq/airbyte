@@ -4,7 +4,6 @@
 
 import base64
 import binascii
-import re
 import struct
 from abc import ABC, abstractmethod
 from datetime import timedelta, timezone
@@ -15,7 +14,7 @@ import requests
 from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
@@ -45,7 +44,7 @@ from .graphql import (
     get_query_releases,
     get_query_reviews,
 )
-from .utils import GitHubAPILimitException, getter
+from .utils import getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -56,9 +55,14 @@ class GithubStreamABC(HttpStream, ABC):
     max_retries: int = 5
     stream_base_params = {}
 
-    def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
-        if kwargs.get("authenticator"):
-            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
+    def __init__(
+        self,
+        api_url: str = "https://api.github.com",
+        access_token_type: str = "",
+        max_wait_time_seconds: float = 120 * 60,
+        **kwargs,
+    ):
+        self.max_wait_time_seconds = max_wait_time_seconds
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -116,7 +120,7 @@ class GithubStreamABC(HttpStream, ABC):
         )
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return GithubStreamABCBackoffStrategy(stream=self)
+        return GithubStreamABCBackoffStrategy(stream=self, max_wait_time_seconds=self.max_wait_time_seconds)
 
     @staticmethod
     def check_graphql_rate_limited(response_json: dict) -> bool:
@@ -159,13 +163,10 @@ class GithubStreamABC(HttpStream, ABC):
                     )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
                 api_message = (e._exception.response.json() or {}).get("message", "")
-                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
-                if isinstance(self, Repositories):
-                    raise e
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                elif isinstance(self, (Organizations, Teams, Users)):
+                if isinstance(self, (Organizations, Teams, Users)):
                     error_msg = (
                         f"Skipping `{self.name}` for organization `{organisation}`: "
                         f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
@@ -201,17 +202,44 @@ class GithubStreamABC(HttpStream, ABC):
                     f"GitHub returned HTTP 502 Bad Gateway for stream `{self.name}` after exhausting retries. "
                     f"This is usually transient — the next sync attempt should succeed."
                 )
+            elif e._exception.response.status_code == requests.codes.GATEWAY_TIMEOUT:
+                error_msg = (
+                    f"GitHub returned HTTP 504 Gateway Timeout for stream `{self.name}` after exhausting retries "
+                    f"and reducing the GraphQL page size. The next sync attempt should succeed; "
+                    f'if 504s persist, lower "Page size for large streams" in the source configuration.'
+                )
             else:
                 self.logger.error(f"Undefined error while reading records: {e._exception.response.text}")
                 raise e
 
             self.logger.warning(error_msg)
-        except GitHubAPILimitException as e:
-            internal_message = f"Stream: `{self.name}`, slice: `{stream_slice}`. {e}"
-            message = "Rate limit exceeded for all configured GitHub API tokens."
-            raise AirbyteTracedException(
-                internal_message=internal_message, message=message, failure_type=FailureType.transient_error
-            ) from e
+            self._close_slice_after_swallowed_error(stream_slice)
+        # Exhausting every token no longer raises a connector-specific exception here: the
+        # shared authenticator raises AirbyteTracedException(transient_error) itself, which the
+        # `except AirbyteTracedException` branch above re-raises untouched (it carries no
+        # response to classify).
+
+    def _close_slice_after_swallowed_error(self, stream_slice: Optional[Mapping[str, Any]]) -> None:
+        """Mark the slice complete when `read_records` skipped it instead of raising.
+
+        `HttpStream._read_pages` closes a resumable-full-refresh slice only after the last
+        page, so an error swallowed mid-slice leaves the partition's cursor state empty and
+        `CursorBasedCheckpointReader._find_next_slice` hands the same partition back forever
+        — no record, no STATE, and the platform kills the attempt on the source heartbeat.
+        Closing the slice makes a swallowed error terminal, as the warning above implies.
+        """
+        cursor = self.get_cursor()
+        if not isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            return
+        # Only close a partition the slice actually names. Several substreams read their parent
+        # by calling its `read_records` straight from `stream_slices()` with a bare mapping that
+        # has no `partition` key (`TeamMembers`, `IssueTimelineEvents`, `utils.read_full_refresh`,
+        # ...), and those parents are shared instances that emit their own STATE later — closing
+        # `_extract_slice_fields`' `{}` fallback would put a meaningless entry in it.
+        partition = (stream_slice or {}).get("partition")
+        if not partition:
+            return
+        cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
 
 
 class GithubStream(GithubStreamABC):
@@ -232,11 +260,15 @@ class GithubStream(GithubStreamABC):
     def get_error_display_message(self, exception: BaseException) -> Optional[str]:
         if (
             isinstance(exception, DefaultBackoffException)
-            and exception.response.status_code == requests.codes.BAD_GATEWAY
+            and exception.response.status_code in (requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT)
             and self.large_stream
             and self.page_size > 1
         ):
-            return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
+            return (
+                f'Please try to decrease the "Page size for large streams" below {self.page_size}. '
+                f'The stream "{self.name}" is a large stream, such streams can fail with '
+                f'{exception.response.status_code} for high "page_size" values.'
+            )
         return super().get_error_display_message(exception)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
@@ -485,31 +517,6 @@ class Organizations(GithubStreamABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
         return record
-
-
-class Repositories(SemiIncrementalMixin, Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
-    """
-
-    is_sorted = "desc"
-    stream_base_params = {
-        "sort": "updated",
-        "direction": "desc",
-    }
-
-    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
-        self._pattern = re.compile(pattern) if pattern else pattern
-        super().__init__(*args, **kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            record = self.transform(record=record, stream_slice=stream_slice)
-            if not self._pattern or self._pattern.match(record["full_name"]):
-                yield record
 
 
 class Tags(GithubStream):
@@ -850,6 +857,16 @@ class Releases(SemiIncrementalMixin, GitHubGraphQLStream):
 
     cursor_field = "created_at"
     is_sorted = "asc"
+    # The Releases GraphQL query is high-cost on the server side: every node
+    # materializes `description` and `descriptionHTML`, which forces GitHub
+    # to render each release body to HTML. On repositories with long release
+    # notes, a page_size of 100 pushes the resolver past its internal 10s
+    # deadline and returns 504 Gateway Timeout (reproduced deterministically
+    # against nodejs/node: first=100 -> 504 in ~11s; first=10 -> 200 in ~3s).
+    # `releaseAssets` / `reactionGroups` / `mentions` are NOT the cost driver
+    # — stripping them does not fix the timeout, only lowering `first` does.
+    # Mark as large_stream so it picks up the smaller default page size.
+    large_stream = True
 
     GRAPHQL_REACTION_TO_REST = {
         "THUMBS_UP": "plus_one",
@@ -1882,9 +1899,7 @@ class ContributorActivity(GithubStream):
                     # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
                     # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
                     # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
-                    partition_obj = stream_slice.get("partition")
-                    if self.cursor and partition_obj:
-                        self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+                    self._close_slice_after_swallowed_error(stream_slice)
                 else:
                     raise e
             else:
