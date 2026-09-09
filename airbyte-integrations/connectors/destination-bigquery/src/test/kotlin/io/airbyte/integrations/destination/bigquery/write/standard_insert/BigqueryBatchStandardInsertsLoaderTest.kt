@@ -30,7 +30,10 @@ class BigqueryBatchStandardInsertsLoaderTest {
     private val jobId = JobId.of("test-project", "test-job")
     private val writeChannelConfiguration =
         WriteChannelConfiguration.newBuilder(TableId.of("project", "dataset", "table")).build()
-    private val recordFormatter = RecordFormatter { "{\"id\":1}" }
+    private val recordFormatter =
+        object : RecordFormatter {
+            override fun formatRecord(record: DestinationRecordRaw): String = "{\"id\":1}"
+        }
 
     private fun successfulJob(): Job {
         val stats = mockk<JobStatistics.LoadStatistics>()
