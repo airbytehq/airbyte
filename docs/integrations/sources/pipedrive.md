@@ -17,6 +17,8 @@ The connector authenticates with a personal API token. Each token is tied to a P
 1. In the Pipedrive web app, click your account name (top right), then **Company settings** > **Personal preferences** > **API**.
 2. Copy the API token shown on that page. See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for screenshots.
 
+Pipedrive allows one active API token per user. If you regenerate it, update the connector configuration. If you belong to more than one company, each company has its own token.
+
 If the **API** tab isn't visible, your company admin hasn't enabled API access for your permission set. Ask them to follow [Enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users).
 
 ### Step 2: Set up the Pipedrive connector in Airbyte
@@ -37,6 +39,8 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 **Start Date**: A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
+
+When you click **Set up source**, Airbyte tests the connection by calling the [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies) endpoint. Every API token can read it, so the test passes even on an account that has no deals yet.
 
 ## Supported sync modes
 
@@ -156,6 +160,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.4.6 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors, wait on `x-ratelimit-reset` for 429s and skip inaccessible parent records in `deal_products` and `mail` |
 | 2.4.5 | 2026-09-09 | [85767](https://github.com/airbytehq/airbyte/pull/85767) | Restructure the documentation and add contributor guides |
+| 2.4.4 | 2026-09-09 | [85763](https://github.com/airbytehq/airbyte/pull/85763) | Set the heartbeat timeout, add a CODEOWNERS entry and tidy the changelog |
+| 2.4.3 | 2026-09-09 | [85764](https://github.com/airbytehq/airbyte/pull/85764) | Use the `currencies` stream for the connection check and add suggested streams |
 | 2.4.2 | 2026-09-09 | [85766](https://github.com/airbytehq/airbyte/pull/85766) | Make pagination null-safe for responses without `additional_data`, fixing the `mail` stream |
 | 2.4.1 | 2026-09-09 | [85762](https://github.com/airbytehq/airbyte/pull/85762) | Fix `components.py` import failure on Python 3.11+ (use `default_factory` for decoder) and move to SDM 7.28.3 |
 | 2.4.0 | 2025-02-28 | [54716](https://github.com/airbytehq/airbyte/pull/54716) | Refactor: Optimize Parameters, remove redundant code and Improve Manifest Readability |
@@ -169,7 +175,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 2.3.1 | 2024-12-28 | [50288](https://github.com/airbytehq/airbyte/pull/50288) | Update dependencies |
 | 2.3.0 | 2024-12-17 | [48615](https://github.com/airbytehq/airbyte/pull/48615) | Update airbyte-cdk to use concurrency |
 | 2.2.28 | 2024-12-14 | [49692](https://github.com/airbytehq/airbyte/pull/49692) | Update dependencies |
-| 2.2.27 | 2024-12-12 | [49041](https://github.com/airbytehq/airbyte/pull/49041) | Starting with this version, the Docker image is now rootless. Please note that this and future versions will not be compatible with Airbyte versions earlier than 0.64 |
+| 2.2.27 | 2024-12-12 | [49041](https://github.com/airbytehq/airbyte/pull/49041) | Make the Docker image rootless (requires Airbyte platform 0.64 or later) |
 | 2.2.26 | 2024-11-04 | [48293](https://github.com/airbytehq/airbyte/pull/48293) | Update dependencies |
 | 2.2.25 | 2024-10-29 | [47743](https://github.com/airbytehq/airbyte/pull/47743) | Update dependencies |
 | 2.2.24 | 2024-10-28 | [47103](https://github.com/airbytehq/airbyte/pull/47103) | Update dependencies |
@@ -208,7 +214,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.15 | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth |
 | 0.1.14 | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals" |
 | 0.1.13 | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state |
-| 0.1.12 | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas |
+| 0.1.12 | 2022-05-23 | [13082](https://github.com/airbytehq/airbyte/pull/13082) | Remove date-time format from schemas |
+| 0.1.11 | 2022-05-16 | [12867](https://github.com/airbytehq/airbyte/pull/12867) | Add unit tests |
 | 0.1.10 | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields |
 | 0.1.9 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
 | 0.1.8 | 2021-11-16 | [7875](https://github.com/airbytehq/airbyte/pull/7875) | Extend schema for "persons" stream |

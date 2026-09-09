@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - deals
+    - currencies
 
 definitions:
   streams:
