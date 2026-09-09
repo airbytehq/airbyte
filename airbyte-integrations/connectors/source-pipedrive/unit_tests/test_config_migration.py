@@ -2,23 +2,30 @@
 # Copyright (c) 2025 Airbyte, Inc., all rights reserved.
 #
 import json
-import logging
 import re
 
 import pytest
 import yaml
 from conftest import _YAML_FILE_PATH, get_source
 
-from airbyte_cdk.models import SyncMode, Type
+from airbyte_cdk.models import FailureType, SyncMode, Type
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
+from airbyte_cdk.test.entrypoint_wrapper import read
 
 
 DEFAULT_START_DATE = "2010-01-01T00:00:00Z"
+_RECENTS_URL = re.compile(r"https://api\.pipedrive\.com/v1/recents.*")
+_EMPTY_PAGE = {"data": [], "additional_data": {"pagination": {"next_start": None}}}
 
 
 def _spec_start_date_property():
     manifest = yaml.safe_load(_YAML_FILE_PATH.read_text())
     return manifest["spec"]["connection_specification"]["properties"]["replication_start_date"]
+
+
+def _read_deals(config):
+    catalog = CatalogBuilder().with_stream("deals", SyncMode.full_refresh).build()
+    return read(get_source(config), config, catalog)
 
 
 def test_replication_start_date_is_optional_with_default():
@@ -34,8 +41,12 @@ def test_replication_start_date_is_optional_with_default():
         ("2017-01-25T00:00:00Z", True),
         ("2017-01-25 00:00:00Z", True),
         ("2017-01-25", True),
+        ("2017-01-25T00:00:00+00:00", True),
+        ("2017-01-25T00:00:00.000Z", True),
+        ("2017-01-25T00:00:00+02:00", True),
         ("2017/01/25", False),
         ("25-01-2017", False),
+        ("", False),
     ],
 )
 def test_replication_start_date_pattern(value, expected):
@@ -43,15 +54,39 @@ def test_replication_start_date_pattern(value, expected):
     assert bool(re.match(pattern, value)) is expected
 
 
-def test_missing_start_date_falls_back_to_default(requests_mock):
-    requests_mock.get(
-        re.compile(r"https://api\.pipedrive\.com/v1/recents.*"),
-        json={"data": [], "additional_data": {"pagination": {"next_start": None}}},
-    )
-    source = get_source({"api_token": "token"})
-    catalog = CatalogBuilder().with_stream("deals", SyncMode.full_refresh).build()
-    list(source.read(logging.getLogger("airbyte"), source._config, catalog))
-    assert requests_mock.last_request.qs["since_timestamp"] == ["2010-01-01 00:00:00"]
+@pytest.mark.parametrize(
+    "start_date, expected_since_timestamp",
+    [
+        pytest.param(None, "2010-01-01 00:00:00", id="missing_uses_default"),
+        pytest.param("2017-01-25T00:00:00Z", "2017-01-25 00:00:00", id="iso_z"),
+        pytest.param("2017-01-25 00:00:00Z", "2017-01-25 00:00:00", id="space_separator"),
+        pytest.param("2017-01-25", "2017-01-25 00:00:00", id="date_only"),
+        pytest.param("2017-01-25T00:00:00+02:00", "2017-01-24 22:00:00", id="utc_offset"),
+        pytest.param("2017-01-25T00:00:00.000Z", "2017-01-25 00:00:00", id="fractional_seconds"),
+    ],
+)
+def test_start_date_reaches_the_api_as_since_timestamp(requests_mock, start_date, expected_since_timestamp):
+    requests_mock.get(_RECENTS_URL, json=_EMPTY_PAGE)
+    config = {"api_token": "token"}
+    if start_date is not None:
+        config["replication_start_date"] = start_date
+
+    output = _read_deals(config)
+
+    assert output.errors == []
+    assert requests_mock.last_request.qs["since_timestamp"] == [expected_since_timestamp]
+
+
+def test_malformed_start_date_fails_config_validation(requests_mock):
+    requests_mock.get(_RECENTS_URL, json=_EMPTY_PAGE)
+
+    output = _read_deals({"api_token": "token", "replication_start_date": "2017/01/25"})
+
+    assert not requests_mock.called
+    assert len(output.errors) == 1
+    error = output.errors[0].trace.error
+    assert error.failure_type == FailureType.config_error
+    assert "does not match" in error.message
 
 
 def test_legacy_authorization_config_is_migrated(capsys):

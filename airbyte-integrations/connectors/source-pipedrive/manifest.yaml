@@ -1,4 +1,4 @@
-version: 6.49.0
+version: 6.59.0
 
 type: DeclarativeSource
 
@@ -50,7 +50,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -157,7 +157,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -208,7 +208,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -312,7 +312,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -363,7 +363,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -622,7 +622,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -704,7 +704,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -755,7 +755,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -868,7 +868,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -919,7 +919,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date', '2010-01-01T00:00:00Z'), '%Y-%m-%d %H:%M:%S') }}"
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -1155,7 +1155,7 @@ spec:
         default: "2010-01-01T00:00:00Z"
         examples:
           - "2017-01-25T00:00:00Z"
-        pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9]{2}:[0-9]{2}(:[0-9]{2})?Z?)?$"
+        pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]+)?)?(Z|[+-][0-9]{2}:?[0-9]{2})?)?$'
         pattern_descriptor: "YYYY-MM-DDTHH:MM:SSZ"
         order: 1
     additionalProperties: true
