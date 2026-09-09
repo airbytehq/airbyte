@@ -1496,6 +1496,16 @@ class TestFatalReportErrorSurfacing:
     _ERROR_DOCUMENT_ID = "fatal_error_document_id"
     _ERROR_DOCUMENT_URL = "https://test.com/fatal-error-document"
 
+    # Amazon's verbatim wording, captured from a canary prerelease against the affected Vendor
+    # connection. Pinned because the marker matching depends on the exact phrasing: note
+    # "reportOption" is singular, and the "on GitHub" pointer refers to docs Amazon archived in 2024.
+    _AMAZON_REPORT_OPTIONS_REASON = (
+        "Error in report request: This report type requires the reportPeriod, distributorView, "
+        "sellingProgram reportOption to be specified. Please review the document for this report "
+        "type on GitHub, provide a value for this reportOption in your request, and try again."
+    )
+    _DOC_URL = "https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics"
+
     @staticmethod
     def _read(stream_name: str, config_: ConfigBuilder) -> EntrypointOutput:
         return read_output(
@@ -1551,21 +1561,46 @@ class TestFatalReportErrorSurfacing:
 
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
-    def test_given_fatal_report_options_error_when_read_then_config_error_names_required_options(self, http_mocker: HttpMocker) -> None:
-        amazon_reason = "Invalid Report Options provided: reportPeriod is required for this report type."
+    def test_given_fatal_report_options_error_when_read_then_config_error_quotes_amazon_once(self, http_mocker: HttpMocker) -> None:
+        """Amazon's real wording names the options itself, so the message must not restate them."""
         # attempts=1: a config error is breaking, so the sync aborts without burning retries.
+        self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": self._AMAZON_REPORT_OPTIONS_REASON}), attempts=1)
+
+        output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
+
+        # Assert on our own message alone: output.errors also carries the CDK's combined
+        # "streams did not sync successfully" error, which re-embeds the same reason.
+        message = next(error.trace.error.message for error in output.errors if error.trace.error.message.startswith("Amazon rejected"))
+        assert self._AMAZON_REPORT_OPTIONS_REASON in message
+        assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        # Point the user at where to set the options, and past Amazon's retired GitHub reference.
+        assert "Report Options" in message
+        assert self._DOC_URL in message
+        assert "archived in 2024" in message
+        # Amazon already listed the options, so our own list must not be appended alongside it:
+        # each option name appears exactly once, inside Amazon's quote.
+        for option in ("reportPeriod", "distributorView", "sellingProgram"):
+            assert message.count(option) == 1, f"{option} restated alongside Amazon's own list"
+        assert "Amazon documents" not in message
+
+    @freezegun.freeze_time(NOW.isoformat(), tick=True)
+    @HttpMocker()
+    def test_given_fatal_report_options_error_without_names_when_read_then_documented_options_named(
+        self, http_mocker: HttpMocker
+    ) -> None:
+        """When Amazon's reason names no options, fall back to the documented list for the report type."""
+        amazon_reason = "Error in report request: a required reportOption is missing."
         self._mock_fatal_flow(http_mocker, json.dumps({"errorDetails": amazon_reason}), attempts=1)
 
         output = self._read(self._STREAM_NAME, config().with_failed_retry_wait_time_in_seconds(1))
 
         error_messages = " ".join(error.trace.error.message for error in output.errors)
         assert amazon_reason in error_messages
-        # The message must name the options Amazon documents as required for this report type
-        # and point at where to set them.
-        for option in ("reportPeriod", "distributorView", "sellingProgram"):
-            assert option in error_messages
-        assert "Report Options" in error_messages
         assert any(error.trace.error.failure_type == FailureType.config_error for error in output.errors)
+        assert "Amazon documents reportPeriod, distributorView, sellingProgram as required" in error_messages
+        # Amazon said nothing about GitHub here, so the archival note must not appear.
+        assert "archived in 2024" not in error_messages
+        assert self._DOC_URL in error_messages
 
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()
@@ -1578,7 +1613,7 @@ class TestFatalReportErrorSurfacing:
 
         assert_message_in_log_output(amazon_reason, output, log_level=Level.ERROR)
         error_messages = " ".join(error.trace.error.message for error in output.errors)
-        assert "under Report Options in the connector configuration" not in error_messages
+        assert "Add the options under Report Options" not in error_messages
 
     @freezegun.freeze_time(NOW.isoformat(), tick=True)
     @HttpMocker()

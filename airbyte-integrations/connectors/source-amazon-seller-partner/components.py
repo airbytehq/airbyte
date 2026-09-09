@@ -893,8 +893,12 @@ REQUIRED_REPORT_OPTIONS: Mapping[str, Tuple[str, ...]] = {
 # Lower-cased substrings in Amazon's FATAL error document that identify a reportOptions problem.
 # Amazon's wording is not stable, so this is a best-effort match: a miss only means the sync fails
 # with Amazon's message logged rather than as a config error.
+# "reportoption" is singular on purpose: Amazon's observed wording is "requires the <names>
+# reportOption to be specified", and the singular form also matches the plural spelling. Matching
+# only the option names would miss this sentence for any option not listed in
+# REQUIRED_REPORT_OPTIONS.
 _REPORT_OPTIONS_ERROR_MARKERS = (
-    "reportoptions",
+    "reportoption",
     "report options",
     "reportperiod",
     "distributorview",
@@ -902,6 +906,9 @@ _REPORT_OPTIONS_ERROR_MARKERS = (
     "invalid report option",
     "missing required option",
 )
+
+# Amazon's error text still refers users to amzn/selling-partner-api-docs, archived in June 2024.
+_REPORT_OPTIONS_DOC_URL = "https://developer-docs.amazon.com/sp-api/docs/report-type-values-analytics"
 
 # Cap on how much of Amazon's error document is echoed into logs and error messages.
 _MAX_FAILURE_REASON_CHARS = 500
@@ -1096,16 +1103,25 @@ class ReportPollingRequester(HttpRequester):
 
     @staticmethod
     def _report_options_error_message(report_type: str, reason: str) -> str:
-        required = REQUIRED_REPORT_OPTIONS.get(report_type)
-        if required:
-            what_to_set = f"Set {', '.join(required)} for this stream"
+        """
+        Quote Amazon once, then say what to do once. Amazon's reason normally names the options it
+        wants, so REQUIRED_REPORT_OPTIONS is only a fallback for when it does not: restating a
+        hardcoded list alongside Amazon's own would contradict the quote the moment the two diverge.
+        """
+        lowered = reason.lower()
+        documented = REQUIRED_REPORT_OPTIONS.get(report_type, ())
+        if documented and not any(option.lower() in lowered for option in documented):
+            which = f"Amazon documents {', '.join(documented)} as required for this report. "
         else:
-            what_to_set = "Review the report options configured for this stream"
+            which = ""
+        # Amazon's own text may point at its retired GitHub docs, so correct that where it appears.
+        doc_reference = "Amazon's GitHub docs were archived in 2024; see " if "github" in lowered else "See "
         return (
-            f"Amazon could not generate the {report_type} report and reported: {reason} "
-            f"{what_to_set} under Report Options in the connector configuration: add an entry with "
-            f"Report Name and Stream Name set to {report_type}, then one Name/Value pair per option. "
-            f"Option names and values are case-sensitive."
+            f'Amazon rejected the {report_type} report request. Amazon\'s reason: "{reason}" '
+            f"{which}"
+            f"Add the options under Report Options in the source settings: set Report Name and "
+            f"Stream Name to {report_type}, then one Name/Value pair per option. Names and values "
+            f"are case-sensitive. {doc_reference}{_REPORT_OPTIONS_DOC_URL}"
         )
 
 
