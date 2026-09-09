@@ -74,13 +74,10 @@ definitions:
     http_codes: [404]
     action: IGNORE
     error_message: "Syncing this stream isn't available for this organization/repository (HTTP 404). Skipping."
-    # 403 -> FAIL matches legacy behavior for `Repositories` ONLY — streams.py:162
-    # re-raised 403 for that stream, which is what lets `check` catch bad token scopes.
-    # Legacy SKIPPED 403 with a warning for Organizations/Teams/Users and the repo-scoped
-    # streams (streams.py:168-182), so a stream in either of those groups must reference
-    # `error_handler_repo_scoped` below instead of the base handler, or "skip the one
-    # org/repo you can't read" becomes a failed sync.
 
+  # 403 -> FAIL matches legacy for `Repositories` only (streams.py:162), which is what lets
+  # `check` catch bad token scopes. Legacy skipped it with a warning everywhere else
+  # (streams.py:168-182), so org- and repo-scoped streams must use `error_handler_repo_scoped`.
   response_filter_forbidden_fails:
     type: HttpResponseFilter
     http_codes: [403]
@@ -91,9 +88,8 @@ definitions:
       (this connector typically needs: repo, read:org, read:user, read:project, workflow),
       or this organization may require SAML SSO authorization.
       See https://docs.github.com/en/rest/using-the-rest-api/troubleshooting-the-rest-api
+
   # The repo-scoped counterpart of the filter above, kept adjacent so the two cannot drift.
-  # `error_message_contains` is deliberately absent: this must not compete with the
-  # rate-limit filters, which is why every handler below lists it last.
   response_filter_forbidden_skips:
     type: HttpResponseFilter
     http_codes: [403]
@@ -104,12 +100,9 @@ definitions:
       on a classic token, or `Actions: read` on a fine-grained one), or the organization
       may require SAML SSO authorization.
 
-  # `workflow_run_attempts` walks the attempt chain backwards, so a 404 partway through it
-  # is not the same event as a 404 on a whole repository: what is skipped is the remainder
-  # of one run's history, and the run's cursor still advances, so no later sync retries it.
-  # Kept as IGNORE rather than FAIL on purpose - GitHub deletes whole runs, and a run
-  # deleted between the listing and the attempt read would otherwise wedge the stream
-  # permanently - but the message has to name what was lost so it is greppable in logs.
+  # A 404 partway through the attempt chain loses the rest of one run's history, not a whole
+  # repository, and the run's cursor still advances, so no later sync retries it. Still IGNORE:
+  # GitHub deletes runs, and FAIL would wedge the stream. The message names what was lost.
   response_filter_attempt_not_found:
     type: HttpResponseFilter
     http_codes: [404]
@@ -144,12 +137,10 @@ definitions:
   # - plain 403 fails with an actionable scopes/SSO message (matches the legacy
   #   mapping so `check` can catch bad token scopes).
   # Unmatched responses (401, 429, 5xx, ...) fall back to the CDK default mapping.
-  # Three handlers, differing only in their last one or two filters. The rate-limit filters
-  # must stay ahead of the 403 and 404 filters in every one of them: GitHub reports a
-  # secondary rate limit as a 403, and reports an exhausted primary quota as an error
-  # response carrying `X-RateLimit-Remaining: 0`, so a 403 or 404 filter placed first would
-  # swallow a retryable wait. The lists are spelled out rather than composed because a
-  # manifest `$ref` cannot append to a list.
+  # Three handlers differing only in their last filters. The rate-limit filters must stay ahead
+  # of 403 and 404 in all three: GitHub reports a secondary limit as a 403 and an exhausted quota
+  # as an error body with `X-RateLimit-Remaining: 0`, so a 403 or 404 filter placed first would
+  # swallow a retryable wait. The lists are spelled out because a `$ref` cannot append to a list.
   error_handler_base:
     type: DefaultErrorHandler
     backoff_strategies:
@@ -243,8 +234,7 @@ definitions:
       - $ref: "#/definitions/response_filter_not_found"
       - $ref: "#/definitions/response_filter_forbidden_fails"
 
-  # For repo-scoped and org-scoped streams, where legacy skipped a 403 with a warning
-  # instead of failing the sync.
+  # Repo- and org-scoped streams, where legacy skipped a 403 with a warning instead of failing.
   error_handler_repo_scoped:
     $ref: "#/definitions/error_handler_base"
     response_filters:
@@ -256,8 +246,7 @@ definitions:
       - $ref: "#/definitions/response_filter_not_found"
       - $ref: "#/definitions/response_filter_forbidden_skips"
 
-  # For the attempt chain, which needs the repo-scoped 403 handling and a 404 message that
-  # says which records were skipped.
+  # The attempt chain: repo-scoped 403 handling, plus a 404 message naming what was skipped.
   error_handler_attempt_chain:
     $ref: "#/definitions/error_handler_base"
     response_filters:
@@ -1214,12 +1203,9 @@ definitions:
                       - "null"
                       - string
 
-  # The `user.json` schema the Python streams share, hoisted so the inline schema below can
-  # reference it. A JSON-Schema `$ref` to a file does NOT work inside a manifest: the manifest
-  # reference resolver claims every `$ref` key, and for a non-`#/` target it returns the raw
-  # string and discards the sibling keys, so a `{$ref: user.json, description: ...}` property
-  # collapses to the literal string "user.json" and the schema stops being valid JSON Schema. A `#/`
-  # reference resolves to this object and keeps the sibling `description`.
+  # `schemas/shared/user.json`, hoisted so the inline schema below can reference it. A
+  # JSON-Schema `$ref` to a *file* does not work in a manifest - it resolves to the bare string
+  # and drops the sibling keys. See AGENTS.md; shared sub-schemas belong here, under `#/`.
   github_user_schema:
     type:
       - "null"
@@ -1298,26 +1284,12 @@ definitions:
           - "null"
           - boolean
 
-  # `workflow_runs_for_attempts` is the parent listing behind `workflow_run_attempts`, not a catalog
-  # stream: the exposed `workflow_runs` stream is still Python (streams.py::WorkflowRuns) and stays
-  # there until the workflow family is migrated. Both read the same endpoint, so this definition
-  # deliberately mirrors WorkflowRuns' incremental contract instead of inventing a second one.
-  #
-  # Four differences from WorkflowRuns, all forced by what the declarative components can express:
-  #  - the 32-day pagination break is anchored on `start_date` rather than on the cursor,
-  #    because a stop condition cannot see the cursor, so an incremental sync pages back further
-  #    than legacy did (see the paginator below);
-  #  - the run listing is fetched a second time when both streams are selected, because a manifest
-  #    stream and a Python stream cannot share a read - `use_cache` would not help, the two build
-  #    separate cache backends and only this one sends `created`;
-  #  - the cursor boundary is inclusive. `ConcurrentCursor.should_be_synced` is
-  #    `start <= value <= end` where `SemiIncrementalMixin` used a strict `>`, so the newest run of
-  #    each repository is re-read once per sync. Deduplicating destinations absorb it;
-  #  - a repository added to `repositories` after the first sync starts from the global cursor,
-  #    not from `start_date`. ConcurrentPerPartitionCursor seeds an unknown partition from the
-  #    global cursor (its own docstring: "The history data added after the initial sync will be
-  #    missing"), where legacy backfilled it. The `repositories` stream above carries the same
-  #    caveat for the same reason.
+  # The parent listing behind `workflow_run_attempts`, not a catalog stream: the exposed
+  # `workflow_runs` is still Python (streams.py::WorkflowRuns) until the workflow family migrates,
+  # so this mirrors its incremental contract rather than inventing a second one. It diverges from
+  # it in four ways forced by the declarative components - deeper paging, a second read of the
+  # listing, an inclusive cursor boundary, and how a newly added repository is seeded. AGENTS.md,
+  # "Where the declarative run listing diverges from WorkflowRuns", has the detail.
   workflow_runs_for_attempts_stream:
     type: DeclarativeStream
     name: workflow_runs_for_attempts
@@ -1328,23 +1300,17 @@ definitions:
         $ref: "#/definitions/requester_base"
         path: "repos/{{ stream_partition.repository }}/actions/runs"
         http_method: GET
-        # Legacy skipped a 403 on a repo-scoped stream with a warning rather than failing the
-        # sync (streams.py:176-183), and one repository the token cannot read Actions for must
-        # not take the other repositories down with it.
+        # Legacy skipped a repo-scoped 403 with a warning (streams.py:176-183): one repository
+        # whose Actions the token cannot read must not take the other repositories down with it.
         error_handler:
           $ref: "#/definitions/error_handler_repo_scoped"
         request_parameters:
           # WorkflowRuns is not a `large_stream`, so it pages at constants.DEFAULT_PAGE_SIZE.
           per_page: "100"
-          # Deliberately no `created` filter, however tempting it is as a server-side form of the
-          # legacy pagination break. GitHub caps this endpoint at 1000 results whenever `actor`,
-          # `branch`, `check_suite_id`, `created`, `event`, `head_sha` or `status` is present, and
-          # the truncation is invisible. Measured on a 23352-run repository:
-          # `created=>=1970-01-01` served pages 1-10 with `total_count: 23352`, then answered page
-          # 11 with an empty array, `total_count: 0` and no `rel="next"` link; the unfiltered
-          # listing returned 100 records on page 20 of the same repository. A filtered listing
-          # would silently drop every run past the newest 1000 while the cursor advanced past
-          # them, so no later sync would go back for them.
+          # Deliberately no `created` filter, tempting though it is as a server-side form of the
+          # legacy pagination break: GitHub caps this endpoint at 1000 results whenever a filter
+          # parameter is present, and truncates invisibly. Measured, and why the 32-day window is
+          # a paginator stop condition instead - see AGENTS.md.
       record_selector:
         type: RecordSelector
         extractor:
@@ -1354,42 +1320,21 @@ definitions:
         $ref: "#/definitions/page_link_paginator"
         pagination_strategy:
           $ref: "#/definitions/page_link_paginator/pagination_strategy"
-          # The legacy pagination break (streams.py::WorkflowRuns.read_records), as far as a
-          # declarative stop condition can carry it. The listing is ordered by `created_at`
-          # descending, and GitHub stops allowing a workflow to be re-run 30 days after it was
-          # created; 32 is the margin legacy chose (`WorkflowRuns.re_run_period`) and this keeps
-          # it. So once a page ends below `start_date - 32 days` nothing further down can have
-          # been updated after `start_date` - and the cursor is never below `start_date`.
+          # The legacy pagination break (streams.py::WorkflowRuns.read_records). The listing is
+          # `created_at` descending and GitHub stops allowing a re-run 30 days after creation - 32
+          # is legacy's margin (`WorkflowRuns.re_run_period`) - so once a page ends below
+          # `start_date - 32 days`, nothing below it can have been updated after `start_date`.
+          # `[-1]` is the page's oldest run; the head says nothing about the next page.
           #
-          # Anchored on `start_date` rather than on the cursor because a `stop_condition` is
-          # evaluated with `config`, `response`, `headers`, `last_record` and `last_page_size`
-          # only. An incremental sync therefore pages back to `start_date - 32 days` instead of
-          # to `cursor - 32 days`: more pages than legacy spent on an incremental sync, exactly
-          # what legacy spent on its first sync, and exactly what legacy spent on every sync of a
-          # config with no `start_date` (`break_point` stayed None and it paged the whole
-          # history).
+          # Anchored on `start_date`, not the cursor, because a stop condition can only see
+          # `config`, `response`, `headers`, `last_record` and `last_page_size`. An incremental
+          # sync therefore pages back as deep as legacy's *first* sync did.
           #
-          # Anchored on the raw page tail rather than on `last_record`, which is the wrong value
-          # here twice over: `SimpleRetriever._read_pages` assigns it from records that survived
-          # the record selector, and this stream's selector is the `is_client_side_incremental`
-          # decorator. A page of runs that are all older than the cursor - which is exactly what
-          # the deep pages of an old listing are - leaves `last_record` at None and never breaks,
-          # and a record that does survive the filter has `updated_at >= cursor >= start_date`,
-          # so by the same 32-day rule its `created_at` is inside the window and the comparison
-          # can never be true. `response` is the decoded body, which the filter cannot touch.
-          #
-          # `(config.get('start_date') or '') != ''` rather than a bare `config.get('start_date')`:
-          # InterpolatedBoolean compares the *rendered* string against a fixed false-values list
-          # that does not include "None", so a present-but-null `start_date` would render "None",
-          # read as true, and stop pagination after the first page. `is string` for the same class
-          # of reason: `JinjaInterpolation._eval` swallows a TypeError and returns the raw
-          # template, which reads as true, so comparing a null `created_at` with `<` would stop
-          # the walk and lose every page behind it. The `length` test beside it is belt and braces
-          # by comparison: indexing an empty list raises UndefinedError, which
-          # `JinjaInterpolation.eval` already resolves to this expression's False default.
-          #
-          # `[-1]` is the oldest run on the page. The listing is `created_at` descending, so the
-          # head of a page says nothing about whether the next page is still inside the window.
+          # It reads the raw page tail rather than `last_record`, which is assigned after the
+          # record selector - here the `is_client_side_incremental` filter - and so is None on
+          # exactly the deep pages a break has to fire on. The guards are not decoration either:
+          # a null renders as "None" and reads as true, and a comparison that raises also reads
+          # as true, so either would truncate the listing silently. Both are in AGENTS.md.
           stop_condition: >-
             {{ (config.get('start_date') or '') != ''
             and (response.get('workflow_runs') or []) | length > 0
@@ -1405,22 +1350,19 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        # Same `or` guard as the `repositories` stream: a present-but-null `start_date` would
-        # otherwise reach MinMaxDatetime as the literal string "None" and abort the stream.
+        # Same `or` guard as `repositories`: a null `start_date` would otherwise reach
+        # MinMaxDatetime as the literal string "None" and abort the stream.
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      # Filters the listing on `updated_at` exactly as the legacy SemiIncrementalMixin did. Not
-      # `is_data_feed`: that stops paginating once a page ends at or below the cursor, and this
-      # listing is ordered by `created_at`, not by `updated_at` - a run created long ago and
-      # re-run yesterday sits far down the listing, so a cursor-field stop condition would cut
-      # the sync short of exactly the records this stream exists for.
+      # Filters on `updated_at` exactly as legacy's SemiIncrementalMixin did. Not `is_data_feed`:
+      # that stops paginating once a page ends at or below the cursor, but the listing is ordered
+      # by `created_at`, so an old run re-run yesterday sits deep and would be cut off.
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
-      # Only the fields this stream is read for: the cursor, the run URL and the attempt count
-      # the child slices on. `created_at` is listed for documentation - the paginator's stop
-      # condition compares it against the re-run window, but it reads the decoded body directly,
-      # so the schema is not what makes it available. The records are never emitted anywhere.
+      # Only what this stream is read for: the cursor, the run URL, and the attempt count the
+      # child slices on. `created_at` is documentation - the stop condition reads the decoded
+      # body, not the schema. These records are never emitted anywhere.
       schema:
         $schema: https://json-schema.org/draft-07/schema#
         type: object
@@ -1447,10 +1389,9 @@ definitions:
               - string
 
   # The stream oncall#8827 asked for. `GET /repos/{owner}/{repo}/actions/runs` returns one record
-  # per run - the latest attempt - so when a workflow is re-run every earlier attempt disappears
-  # from `workflow_runs`, and no amount of primary-key surgery on that stream brings them back
-  # because they were never emitted. They are only reachable through the per-attempt endpoint, one
-  # attempt per request, which is what this stream reads.
+  # per run - the latest attempt - so a re-run erases every earlier attempt from `workflow_runs`,
+  # and no primary-key surgery there brings them back: they were never emitted. Only the
+  # per-attempt endpoint has them, one attempt per request.
   # https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt
   workflow_run_attempts_stream:
     type: DeclarativeStream
@@ -1463,15 +1404,12 @@ definitions:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester_base"
-        # `run_url` is the parent record's `url`, an absolute URL. HttpRequester._join_url urljoins
-        # the path onto `url_base` and an absolute path wins, so this stays on whatever host the
-        # config names - GitHub Enterprise Server included - without repeating `url_base` here.
-        # The first request of each partition targets the latest attempt; the paginator below walks
-        # back from there, so this stream costs `run_attempt` requests per run.
-        # `or 1` because `run_attempt` is not required by GitHub's workflow-run schema and
-        # SubstreamPartitionRouter._extract_extra_fields yields None for a missing field, which
-        # Jinja renders as the literal "None" - the request would 404 and the run would be
-        # dropped in full. A run without `run_attempt` has exactly one attempt.
+        # `run_url` is the parent's absolute `url`, and HttpRequester._join_url lets an absolute
+        # path win, so this follows the configured host - GitHub Enterprise Server included.
+        # The first request targets the latest attempt and the paginator walks back from there,
+        # so the stream costs `run_attempt` requests per run. `or 1` because `run_attempt` is not
+        # required by GitHub's schema and a missing extra field renders as the literal "None",
+        # which would 404 and drop the run in full. A run without one has exactly one attempt.
         path: "{{ stream_partition.run_url }}/attempts/{{ stream_slice.extra_fields.run_attempt or 1 }}"
         http_method: GET
         error_handler:
@@ -1482,22 +1420,18 @@ definitions:
           # Unlike the listing, the attempt endpoint returns a single workflow run object.
           type: DpathExtractor
           field_path: []
-        # `field_path: []` emits whatever the body is, so a 200 carrying an envelope rather than
-        # a run - GitHub answers `{"message": ...}` with 200 on some redirect and deprecation
-        # paths - would otherwise land in the destination as a row whose whole primary key is
-        # null. Both key fields are required, and deliberately nothing invents a missing
-        # `run_attempt`: the attempt number is only knowable from the request path, which a
-        # transformation cannot see, so defaulting it to 1 would label a mid-chain attempt as
-        # attempt 1 and collide with the real one. Skipping the unkeyable record loses that one
-        # attempt; mislabelling it silently overwrites a good one on a deduplicating destination.
-        # The walk itself continues either way - the paginator only stops on proven non-descent.
+        # `field_path: []` emits the body as-is, so a 200 carrying an envelope instead of a run
+        # (GitHub answers `{"message": ...}` with 200 on some redirect and deprecation paths)
+        # would land as a row with a null primary key. Both key fields are therefore required,
+        # and nothing invents a missing `run_attempt`: the attempt number is only knowable from
+        # the request path, so defaulting it to 1 would mislabel a mid-chain attempt and
+        # overwrite a good row. Skipping loses one attempt; the walk itself continues.
         record_filter:
           type: RecordFilter
           condition: "{{ record.get('id') is integer and record.get('run_attempt') is integer }}"
       paginator:
-        # `previous_attempt_url` is the documented back-link from an attempt to the one before it,
-        # and null on the first attempt - so the attempt chain is literally a cursor pagination and
-        # needs no attempt arithmetic. There is no "list attempts" endpoint to page instead.
+        # `previous_attempt_url` is the documented back-link, null on attempt 1, so the chain is
+        # literally a cursor pagination. There is no "list attempts" endpoint to page instead.
         type: DefaultPaginator
         page_token_option:
           type: RequestPath
@@ -1505,29 +1439,19 @@ definitions:
           type: CursorPagination
           cursor_value: "{{ response['previous_attempt_url'] }}"
           # First clause is the normal end of the walk: attempt 1 reports a null
-          # `previous_attempt_url`. The rest is a loop guard, because `DefaultPaginator` has no
-          # page cap and `last_page_token_value` is not passed to `stop_condition`
-          # (cursor_pagination_strategy.py), so a link that points at the current attempt, or
-          # oscillates between two, would page until the sync is killed.
+          # `previous_attempt_url`. The rest is a loop guard - `DefaultPaginator` has no page cap
+          # and the page token is not passed to `stop_condition`, so a link pointing at the
+          # current attempt, or oscillating between two, would page until the sync is killed.
           #
-          # It stops only on positive proof that the chain failed to descend - a link whose
-          # attempt number is not below the attempt just read. Everything else keeps walking:
-          # a missing or non-integer `run_attempt` makes `is number` false and the guard yields
-          # False rather than truncating the chain, and it never evaluates `<` on mismatched
-          # types. That matters because `JinjaInterpolation._eval` swallows a `TypeError` and
-          # returns the raw template, which `InterpolatedBoolean` then reads as true - so an
-          # expression that can raise is an expression that silently stops the walk.
-          # A same-run link carrying no attempt number the regex can read is itself proof: there
-          # is nothing to descend to, so that case stops rather than spending a request that 404s.
-          # Which is why the regex is not end-anchored - `.../attempts/1/` and `.../attempts/1?x=1`
-          # descend perfectly well, and an anchored pattern would read them as unreadable and stop
-          # a legitimate walk one attempt in.
+          # It stops only on proof the chain failed to descend. Everything else keeps walking: a
+          # missing or non-integer `run_attempt` yields False rather than truncating, and `<` is
+          # never evaluated on mismatched types, because an expression that raises reads as true
+          # and would silently end the walk (AGENTS.md). The regex is deliberately not
+          # end-anchored - `.../attempts/1/` and `.../attempts/1?x=1` descend perfectly well.
           #
-          # One shape stays unbounded: an attempt payload with no usable `run_attempt` AND a
-          # same-run link with a numeric segment satisfies no clause, so the walk would continue
-          # until the platform stops it. Bounding it would mean stopping on a payload this
-          # connector cannot reason about, which is the trade the rest of this expression refuses
-          # to make - and GitHub has never omitted `run_attempt` from a run object.
+          # One shape stays unbounded: no usable `run_attempt` plus a same-run link with a numeric
+          # segment. Bounding it would mean stopping on a payload this connector cannot reason
+          # about, and GitHub has never omitted `run_attempt` from a run object.
           stop_condition: >-
             {{ not response.get('previous_attempt_url')
             or (response.get('url') is string
@@ -1547,20 +1471,16 @@ definitions:
             # listing already carries it, so it costs no extra call.
             extra_fields:
               - - run_attempt
-            # This is what makes the stream incremental. The parent decides which runs are new by
-            # filtering on the run's own `updated_at`; every attempt of a run it yields is emitted
-            # whatever that attempt's `updated_at` says. Filtering the attempts themselves would
-            # drop precisely the records this stream exists for - a sync landing between the first
-            # attempt finishing and the re-run starting leaves the cursor above attempt 1's
-            # `updated_at`, and attempt 1 would then never be emitted by any sync.
+            # What makes the stream incremental: the parent picks new runs by the run's own
+            # `updated_at`, and every attempt of a run it yields is emitted whatever that
+            # attempt's `updated_at` says. Filtering the attempts would drop exactly the records
+            # this stream exists for - see AGENTS.md, which is emphatic about it.
             incremental_dependency: true
     incremental_sync:
       # Required for `incremental_dependency` to take effect: the CDK only persists parent state
-      # inside the child's state, and only for a child that declares a cursor of its own
-      # (model_to_component_factory::_warn_on_ineffective_incremental_dependency). This cursor
-      # deliberately does no filtering - no `is_client_side_incremental`, no request options - so
-      # it tracks the high-water mark and nothing else, and the parent state next to it is what
-      # actually narrows the next sync.
+      # inside a child that declares a cursor of its own. This one deliberately filters nothing -
+      # no `is_client_side_incremental`, no request options - so it tracks the high-water mark
+      # and the parent state beside it is what narrows the next sync.
       type: DatetimeBasedCursor
       cursor_field: "updated_at"
       cursor_datetime_formats:
@@ -1570,10 +1490,9 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      # One partition per workflow run, so per-partition state would grow by an entry per run and
-      # be dropped again at ConcurrentPerPartitionCursor.DEFAULT_MAX_PARTITIONS_NUMBER. A run is
-      # never revisited once its attempts are read, so there is nothing per-partition worth
-      # keeping; the parent's per-repository state carries the resumption point.
+      # One partition per run, so per-partition state would grow by an entry per run and be
+      # dropped again at ConcurrentPerPartitionCursor.DEFAULT_MAX_PARTITIONS_NUMBER. A run is
+      # never revisited, so the parent's per-repository state is the resumption point.
       global_substream_cursor: true
     schema_loader:
       type: InlineSchemaLoader
@@ -2289,15 +2208,12 @@ definitions:
             description: The user or entity that triggered the workflow run.
             $ref: "#/definitions/github_user_schema"
 
-# Deliberately one global budget rather than one per token. GitHub scopes the 900 points/min
-# secondary limit per *account*, not per token — see the authenticator's `quotas` comment above,
-# which is why rotating to another token of the same account does not escape one — so a global
-# budget is the correct shape for the common single-account config, and conservative only when
-# the tokens span several accounts. Left global in either case, because the CDK budget has no
-# notion of which credential a request will be signed with, and under-spending a secondary limit
-# is much cheaper than tripping one. It also only covers declarative requesters: the Python streams, and the
-# authenticator's own /rate_limit probes (RateLimitedMultipleTokenAuthenticator builds its
-# quota client without an api_budget), spend the same GitHub budget outside it.
+# Deliberately one global budget rather than one per token: GitHub scopes the 900 points/min
+# secondary limit per *account*, so rotating to another token of the same account does not escape
+# one. That makes a global budget right for the common single-account config and merely
+# conservative otherwise — and the CDK budget cannot know which credential will sign a request
+# anyway. It covers declarative requesters only; the Python streams and the authenticator's own
+# /rate_limit probes spend the same GitHub budget outside it.
 api_budget:
   type: HTTPAPIBudget
   policies:

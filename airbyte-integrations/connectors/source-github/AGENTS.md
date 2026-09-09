@@ -116,6 +116,28 @@ keys — so a property copied from `schemas/*.json` as `{$ref: user.json, descri
 to the literal string `"user.json"` and the published schema stops being valid JSON Schema. Shared
 sub-schemas belong in `definitions` and are referenced with `#/definitions/...`.
 
+### Where the declarative run listing diverges from WorkflowRuns
+
+`workflow_runs_for_attempts` is an internal parent reading the same endpoint as the Python
+`WorkflowRuns`, and mirrors its incremental contract, but four behaviours could not be reproduced
+exactly with declarative components:
+
+- **The 32-day pagination break is anchored on `start_date`, not on the cursor**, because a
+  `stop_condition` cannot see the cursor. An incremental sync therefore pages back to
+  `start_date - 32 days` rather than `cursor - 32 days` — more pages than legacy spent
+  incrementally, and exactly what legacy spent on its first sync, or on every sync of a config
+  with no `start_date`.
+- **The run listing is read a second time when `workflow_runs` is also selected.** A manifest
+  stream and a Python stream cannot share a read; `use_cache` does not help, as the two build
+  separate cache backends.
+- **The cursor boundary is inclusive.** `ConcurrentCursor.should_be_synced` is
+  `start <= value <= end` where `SemiIncrementalMixin` used a strict `>`, so the newest run of each
+  repository is re-read once per sync. Deduplicating destinations absorb it.
+- **A repository added after the first sync starts from the global cursor, not from
+  `start_date`.** `ConcurrentPerPartitionCursor` seeds an unknown partition from the global cursor
+  — its own docstring: "The history data added after the initial sync will be missing" — where
+  legacy backfilled it. The `repositories` stream carries the same caveat for the same reason.
+
 Two more things that bite when reading that stream's manifest. A paginator `stop_condition` is
 evaluated with `config`, `response`, `headers`, `last_record` and `last_page_size` only — never the
 cursor or the slice — and `last_record` is assigned *after* the record selector has run, so on a
