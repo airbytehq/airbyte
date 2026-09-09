@@ -106,7 +106,27 @@ Apart from `Fields` streams, all other streams support incremental.
 
 ## Performance considerations
 
-The Pipedrive connector will gracefully handle rate limits. For more information, see [the Pipedrive docs for rate limitations](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+Pipedrive enforces two independent [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) per API token:
+
+- **Burst limit:** a rolling 2-second window of 20, 40, 100, or 120 requests depending on your plan (Lite, Growth, Premium, Ultimate). When exceeded, Pipedrive returns HTTP 429 with an `x-ratelimit-reset` header. The connector waits for the reported window (capped at 5 minutes), then falls back to exponential backoff, and retries up to 10 times.
+- **Daily token budget:** 30,000 requests × plan multiplier × seats per day. Once exhausted, **every** request returns 429 until the budget resets at midnight (Pipedrive server time). Waiting does not help here; the sync fails after exhausting its retries with a message that points to the daily budget. Reduce sync frequency, disable high-volume streams such as `deal_products` (one request per deal), or upgrade the plan. Proactive request throttling to stay within the daily budget is tracked separately.
+
+Repeated rate-limit violations can cause Pipedrive's Cloudflare protection to block the token with an HTTP 403 (HTML body). The connector reports this as a configuration error.
+
+## Limitations & Troubleshooting
+
+The connector classifies Pipedrive HTTP errors as follows:
+
+| HTTP status | Behavior |
+|:------------|:---------|
+| 401 | Fails with a configuration error: the API token is invalid, revoked, or API access is disabled for the user. Copy a fresh token from **Company settings > Personal preferences > API** in Pipedrive. |
+| 402 | Fails with a configuration error: the Pipedrive company account is not active (trial expired or billing details missing). |
+| 403 | Fails with a configuration error: the token owner lacks permission, the plan does not include the data, or Cloudflare blocked the token after repeated rate-limit violations. For the `deal_products` and `mail` streams, a 403 for a single parent record is skipped and the sync continues. |
+| 404 / 410 | For the `deal_products` and `mail` streams, a parent deal or mail thread that was deleted after the parent stream was read is skipped and the sync continues. On other streams these fail the sync. |
+| 429 | Rate limited; retried with header-aware backoff as described above. |
+| 500, 502, 503, 504 | Temporary Pipedrive server errors; retried with backoff. |
+
+Error messages include the `error` text returned by Pipedrive when available.
 
 ## IP allow list
 
@@ -116,6 +136,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.1 | 2026-09-09 | [TBD](https://github.com/airbytehq/airbyte/pull/TBD) | Classify Pipedrive HTTP errors (401/402/403 as configuration errors), honor `x-ratelimit-reset` on 429, and skip deleted or inaccessible parent records in `deal_products` and `mail` |
 | 2.4.0 | 2025-02-28 | [54716](https://github.com/airbytehq/airbyte/pull/54716) | Refactor: Optimize Parameters, remove redundant code and Improve Manifest Readability |
 | 2.3.8 | 2025-02-22 | [47292](https://github.com/airbytehq/airbyte/pull/47292) | Migrate to manifest only format |
 | 2.3.7 | 2025-02-08 | [53488](https://github.com/airbytehq/airbyte/pull/53488) | Update dependencies |
