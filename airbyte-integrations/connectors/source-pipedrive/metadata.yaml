@@ -17,7 +17,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.4.2
+  dockerImageTag: 2.4.3
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
@@ -33,6 +33,16 @@ data:
           stream. Config has changed to only use API key. Please update your config."
   releaseDate: 2021-07-19
   releaseStage: alpha
+  suggestedStreams:
+    streams:
+      - deals
+      - persons
+      - organizations
+      - activities
+      - leads
+      - pipelines
+      - stages
+      - users
   supportLevel: community
   tags:
     - cdk:low-code
