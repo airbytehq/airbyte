@@ -328,10 +328,11 @@ definitions:
                     # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
                     # non-member channels, which poisons the per-partition cursor. The
                     # top-level channels stream and channel_members still see every channel.
-                    # Every lookup has an explicit default so a missing key (e.g. `join_channels`
-                    # omitted from the config) evaluates to false rather than None, which the
-                    # CDK boolean evaluator would otherwise treat as truthy.
-                    condition: "{{ (not config.get('channel_filter') or record.get('name') in config.get('channel_filter', [])) and (record.get('is_member', false) == true or config.get('join_channels', false) == true) }}"
+                    # A non-member channel is only eligible when ChannelsRetriever.should_join_to_channel
+                    # would join it (join_channels enabled and not archived). Every lookup has an
+                    # explicit default so a missing key evaluates to false rather than None, which
+                    # the CDK boolean evaluator would otherwise treat as truthy.
+                    condition: "{{ (not config.get('channel_filter') or record.get('name') in config.get('channel_filter', [])) and (record.get('is_member', false) == true or (config.get('join_channels', false) == true and not record.get('is_archived', false))) }}"
             parent_key: id
             partition_field: channel
             request_option:

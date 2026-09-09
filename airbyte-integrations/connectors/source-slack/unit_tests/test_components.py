@@ -223,6 +223,9 @@ def test_read_records_joins_channels_when_channel_filter_is_absent(token_config,
 _MEMBER_CHANNEL = {"id": "C_MEMBER", "name": "member-channel", "is_member": True, "is_archived": False}
 _NON_MEMBER_CHANNEL = {"id": "C_NON_MEMBER", "name": "non-member-channel", "is_member": False, "is_archived": False}
 _UNKNOWN_MEMBERSHIP_CHANNEL = {"id": "C_UNKNOWN", "name": "unknown-membership-channel"}
+_ARCHIVED_MEMBER_CHANNEL = {"id": "C_ARCHIVED_MEMBER", "name": "archived-member-channel", "is_member": True, "is_archived": True}
+_ARCHIVED_NON_MEMBER_CHANNEL = {"id": "C_ARCHIVED", "name": "archived-channel", "is_member": False, "is_archived": True}
+_ALL_CHANNELS = [_MEMBER_CHANNEL, _NON_MEMBER_CHANNEL, _UNKNOWN_MEMBERSHIP_CHANNEL, _ARCHIVED_MEMBER_CHANNEL, _ARCHIVED_NON_MEMBER_CHANNEL]
 
 
 def _channel_messages_partition_channels(config, channels, requests_mock):
@@ -235,15 +238,24 @@ def _channel_messages_partition_channels(config, channels, requests_mock):
 @pytest.mark.parametrize(
     "config_overrides, drop_keys, expected_channel_ids",
     [
-        pytest.param({"channel_filter": []}, ["join_channels"], {"C_MEMBER"}, id="join_channels_absent_excludes_non_member"),
-        pytest.param({"channel_filter": [], "join_channels": False}, [], {"C_MEMBER"}, id="join_channels_false_excludes_non_member"),
+        pytest.param(
+            {"channel_filter": []}, ["join_channels"], {"C_MEMBER", "C_ARCHIVED_MEMBER"}, id="join_channels_absent_excludes_non_member"
+        ),
+        pytest.param(
+            {"channel_filter": [], "join_channels": False},
+            [],
+            {"C_MEMBER", "C_ARCHIVED_MEMBER"},
+            id="join_channels_false_excludes_non_member",
+        ),
         pytest.param(
             {"channel_filter": [], "join_channels": True},
             [],
-            {"C_MEMBER", "C_NON_MEMBER", "C_UNKNOWN"},
-            id="join_channels_true_keeps_non_member",
+            {"C_MEMBER", "C_NON_MEMBER", "C_UNKNOWN", "C_ARCHIVED_MEMBER"},
+            id="join_channels_true_keeps_joinable_non_member_but_not_archived",
         ),
-        pytest.param({"channel_filter": []}, ["join_channels", "channel_filter"], {"C_MEMBER"}, id="channel_filter_absent"),
+        pytest.param(
+            {"channel_filter": []}, ["join_channels", "channel_filter"], {"C_MEMBER", "C_ARCHIVED_MEMBER"}, id="channel_filter_absent"
+        ),
         pytest.param(
             {"channel_filter": ["non-member-channel"]},
             ["join_channels"],
@@ -266,8 +278,7 @@ def test_channel_messages_partitions_respect_join_channels(token_config, request
     partitions unless the connector is going to join them.
     """
     config = {key: value for key, value in {**token_config, **config_overrides}.items() if key not in drop_keys}
-    channels = [_MEMBER_CHANNEL, _NON_MEMBER_CHANNEL, _UNKNOWN_MEMBERSHIP_CHANNEL]
-    assert _channel_messages_partition_channels(config, channels, requests_mock) == expected_channel_ids
+    assert _channel_messages_partition_channels(config, _ALL_CHANNELS, requests_mock) == expected_channel_ids
 
 
 @pytest.mark.parametrize("join_channels", [None, False, True], ids=["absent", "false", "true"])
@@ -280,16 +291,23 @@ def test_channel_messages_partitions_always_include_member_channels(token_config
 
 
 @pytest.mark.parametrize("join_channels", [None, False, True], ids=["absent", "false", "true"])
-def test_channel_messages_partition_filter_matches_should_join_to_channel(token_config, components_module, requests_mock, join_channels):
+@pytest.mark.parametrize(
+    "channel",
+    [_NON_MEMBER_CHANNEL, _UNKNOWN_MEMBERSHIP_CHANNEL, _ARCHIVED_NON_MEMBER_CHANNEL],
+    ids=["non_member", "unknown_membership", "archived"],
+)
+def test_channel_messages_partition_filter_matches_should_join_to_channel(
+    token_config, components_module, requests_mock, join_channels, channel
+):
     """A non-member channel is a partition if and only if the retriever would join it."""
     config = {key: value for key, value in token_config.items() if key != "join_channels"}
     config["channel_filter"] = []
     if join_channels is not None:
         config["join_channels"] = join_channels
     retriever = get_channels_retriever_instance(config, components_module)
-    would_join = retriever.should_join_to_channel(config, _NON_MEMBER_CHANNEL)
-    partitions = _channel_messages_partition_channels(config, [_NON_MEMBER_CHANNEL], requests_mock)
-    assert ("C_NON_MEMBER" in partitions) is would_join
+    would_join = retriever.should_join_to_channel(config, channel)
+    partitions = _channel_messages_partition_channels(config, [channel], requests_mock)
+    assert (channel["id"] in partitions) is would_join
 
 
 @pytest.mark.parametrize(
