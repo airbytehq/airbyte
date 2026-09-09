@@ -108,8 +108,11 @@ class BigqueryBatchStandardInsertsLoader(
     }
 
     override fun close() {
-        spillOutput.close()
-        Files.deleteIfExists(spillFile)
+        try {
+            spillOutput.close()
+        } finally {
+            Files.deleteIfExists(spillFile)
+        }
     }
 
     /**
@@ -125,16 +128,16 @@ class BigqueryBatchStandardInsertsLoader(
         var retryDelayMs = initialRetryDelayMs
         var lastException: BigQueryException? = null
         for (attempt in 1..maxUploadAttempts) {
-            if (attempt > 1) {
-                val existingJob = bigquery.getJob(job)
-                if (existingJob != null) {
-                    logger.info {
-                        "Load job ${job.job} already exists after a failed upload attempt; waiting for it instead of re-uploading."
-                    }
-                    return existingJob
-                }
-            }
             try {
+                if (attempt > 1) {
+                    val existingJob = bigquery.getJob(job)
+                    if (existingJob != null) {
+                        logger.info {
+                            "Load job ${job.job} already exists after a failed upload attempt; waiting for it instead of re-uploading."
+                        }
+                        return existingJob
+                    }
+                }
                 return uploadOnce()
             } catch (e: BigQueryException) {
                 if (!isRetryableUploadError(e)) {
@@ -168,13 +171,24 @@ class BigqueryBatchStandardInsertsLoader(
                     throw e
                 }
             }
-        Files.newInputStream(spillFile).use { input ->
-            val chunk = ByteArray(UPLOAD_CHUNK_SIZE_BYTES)
-            while (true) {
-                val read = input.read(chunk)
-                if (read < 0) break
-                writer.write(ByteBuffer.wrap(chunk, 0, read))
+        try {
+            Files.newInputStream(spillFile).use { input ->
+                val chunk = ByteArray(UPLOAD_CHUNK_SIZE_BYTES)
+                while (true) {
+                    val read = input.read(chunk)
+                    if (read < 0) break
+                    writer.write(ByteBuffer.wrap(chunk, 0, read))
+                }
             }
+        } catch (e: Exception) {
+            try {
+                writer.close()
+            } catch (closeException: Exception) {
+                logger.warn(closeException) {
+                    "Failed to close BigQuery write channel after upload error; suppressing."
+                }
+            }
+            throw e
         }
         writer.close()
         return writer.job
