@@ -1,6 +1,5 @@
 # Copyright (c) 2024 Airbyte, Inc., all rights reserved.
 
-import os
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -13,7 +12,6 @@ from airbyte_cdk.test.state_builder import StateBuilder
 
 
 pytest_plugins = ["airbyte_cdk.test.utils.manifest_only_fixtures"]
-os.environ["REQUEST_CACHE_PATH"] = "REQUEST_CACHE_PATH"
 
 
 def _get_manifest_path() -> Path:
@@ -37,10 +35,12 @@ def get_source(config: Mapping[str, Any], state=None) -> YamlDeclarativeSource:
 
 
 @fixture(autouse=True)
-def clear_cache_before_each_test():
-    """Clear the HTTP request cache (sqlite plus its -wal/-shm companions) between tests to ensure isolation."""
-    cache_dir = Path(os.getenv("REQUEST_CACHE_PATH"))
-    if cache_dir.exists() and cache_dir.is_dir():
-        for file_path in cache_dir.glob("*.sqlite*"):
-            file_path.unlink()
+def in_memory_request_cache(monkeypatch):
+    """Keep the CDK's HTTP request cache in memory during tests.
+
+    With REQUEST_CACHE_PATH set, every stream opens a shared sqlite file that concurrent partitions
+    (for example the four mailbox folders of `mailThreads`) write at the same time, which intermittently
+    fails with `sqlite3.DatabaseError: file is not a database`. Unset, the cache is per-session and in memory.
+    """
+    monkeypatch.delenv("REQUEST_CACHE_PATH", raising=False)
     yield
