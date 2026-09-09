@@ -2,7 +2,7 @@
 # Copyright (c) 2026 Airbyte, Inc., all rights reserved.
 #
 
-"""Unit tests for `ReportsStateMigration`.
+"""Unit tests for `ReportsStateMigration` and `ReportsCreateTimeStateMigration`.
 
 End-to-end coverage of the migration lives in `test_incremental_reports.py`, which proves it is
 wired into the stream. These tests cover the state shapes that are awkward to reach through a
@@ -19,9 +19,42 @@ _API_TIMESTAMP = "2026-09-03T00:00:00Z"
 _API_TIMESTAMP_AS_CURSOR = "2026-09-03T00:00:00.000000Z"
 
 
+class _MigrationChain:
+    """Applies the manifest's `state_migrations` the way the CDK does: in order, each gated on its own `should_migrate`."""
+
+    def __init__(self, components_module):
+        self.migrations = [components_module.ReportsStateMigration(), components_module.ReportsCreateTimeStateMigration()]
+        self._to_cursor_value = self.migrations[1]._to_cursor_value
+
+    def should_migrate(self, stream_state):
+        return any(migration.should_migrate(stream_state) for migration in self.migrations)
+
+    def migrate(self, stream_state):
+        for migration in self.migrations:
+            if migration.should_migrate(stream_state):
+                stream_state = dict(migration.migrate(stream_state))
+        return stream_state
+
+
 @pytest.fixture
 def migration(components_module):
-    return components_module.ReportsStateMigration()
+    return _MigrationChain(components_module)
+
+
+def test_pre_low_code_migration_only_rebuilds_the_shape(components_module):
+    """The first migration is the original one: it knows nothing about `createTime`."""
+    migration = components_module.ReportsStateMigration()
+
+    assert migration.should_migrate({"date": 20251107}) is True
+    assert migration.should_migrate({"state": {"date": _LEGACY_DAY}}) is False
+    assert migration.migrate({"date": 20251107}) == {
+        "state": {"date": _LEGACY_DAY},
+        "parent_state": {"report": {"state": {"date": _LEGACY_DAY}}},
+    }
+
+
+def test_create_time_migration_ignores_pre_low_code_state(components_module):
+    assert components_module.ReportsCreateTimeStateMigration().should_migrate({"date": 20251107}) is False
 
 
 def test_pre_low_code_state_is_rebuilt_and_seeds_the_parent(migration):

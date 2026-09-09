@@ -42,9 +42,6 @@ definitions:
             type: DpathExtractor
             field_path:
               - reports
-          record_filter:
-            type: RecordFilter
-            condition: "{{ timestamp(record['createTime']) > timestamp(stream_interval['start_time']) }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -55,20 +52,9 @@ definitions:
                 $ref: "#/definitions/streams/jobs"
       incremental_sync:
         type: DatetimeBasedCursor
-        # The cursor is the report *file's* creation time, not a date the data is about.
-        # YouTube re-issues corrected reports with a new id and a newer createTime but the SAME
-        # startTime, so a startTime cursor silently drops every correction -- and startTime is
-        # not monotonic, so it also loses any file that arrives out of order.
-        # https://developers.google.com/youtube/reporting/v1/reports (Backfill data)
-        #
-        # Through 1.3.4 this cursor was named `date`, a field that does not exist on a report
-        # listing, so it never observed a value and stayed pinned at the 1990 default.
-        # `ReportsStateMigration` re-keys saved state onto `createTime`; see components.py.
         cursor_field: createTime
         cursor_datetime_formats:
-          # What the API returns.
           - "%Y-%m-%dT%H:%M:%SZ"
-          # What `start_datetime` and `ReportsStateMigration` write.
           - "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         global_substream_cursor: true
@@ -89,7 +75,6 @@ definitions:
         requester:
           $ref: "#/definitions/base_requester"
           path: reportTypes
-          # Handled by ContentOwnerRequester (static values only). See components.py.
           extra_request_parameters:
             includeSystemManaged: "true"
         record_selector:
@@ -136,6 +121,8 @@ definitions:
       state_migrations:
         - type: CustomStateMigration
           class_name: source_declarative_manifest.components.ReportsStateMigration
+        - type: CustomStateMigration
+          class_name: source_declarative_manifest.components.ReportsCreateTimeStateMigration
     
     channel_annotations_a1:
       $ref: "#/definitions/streams/base_report_stream"

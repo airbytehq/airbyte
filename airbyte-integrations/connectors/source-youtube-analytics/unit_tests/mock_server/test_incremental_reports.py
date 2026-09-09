@@ -208,7 +208,7 @@ class TestIncrementalReports(TestCase):
         `createTime` is newer, so a `createTime` cursor picks it up.
         """
         cursor = "2026-03-03T00:00:00.000000Z"  # `_NEW`'s createTime: everything through `_NEW` is synced.
-        _given_reports(http_mocker, cursor, _ALL_REPORTS + [_BACKFILL])
+        _given_reports(http_mocker, cursor, [_BACKFILL])
         _given_downloads(http_mocker, [_BACKFILL])
 
         output = _read(_state({"state": {"date": "20260301"}, "parent_state": {"report": {"state": {"createTime": cursor}}}}))

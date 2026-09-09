@@ -149,26 +149,46 @@ class JobRequester(ContentOwnerRequester):
 
 
 class ReportsStateMigration(StateMigration):
+    """Rebuilds pre-1.1.0 (Python connector) state, ``{"date": 20251107}``, into the low-code shape.
+
+    The child keeps its `date` cursor: it is a real column in the downloaded CSV and part of
+    every child stream's primary key. The parent is seeded with the same value under the same
+    key so that `ReportsCreateTimeStateMigration` can re-key it like any other legacy state.
+    """
+
+    _CURSOR_FIELD = "date"
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        return bool(stream_state) and self._CURSOR_FIELD in stream_state and "state" not in stream_state
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_value = str(stream_state[self._CURSOR_FIELD])
+        return {
+            "state": {self._CURSOR_FIELD: cursor_value},
+            "parent_state": {"report": {"state": {self._CURSOR_FIELD: cursor_value}}},
+        }
+
+
+class ReportsCreateTimeStateMigration(StateMigration):
     """Re-keys the `report` parent cursor from `date` onto `createTime`.
 
-    Three saved-state shapes exist in the wild:
+    Two low-code saved-state shapes exist in the wild (pre-low-code state is rebuilt into the
+    first by `ReportsStateMigration` beforehand):
 
-    1. pre-1.1.0 (the Python connector):
-       ``{"date": 20251107}``
-    2. 1.1.0 through 1.3.4:
+    1. 1.1.0 through 1.3.4:
        ``{"state": {"date": "20251107"},
           "parent_state": {"report": {"state": {"date": "20251107"}, ...}}}``
-       The parent's `date` holds a `%Y%m%d` data day this migration used to copy off the child.
-       The parent's declared cursor field did not exist on a report listing, so it never
-       advanced on its own and many connections have no parent cursor at all.
-    3. 1.3.5, if it reached any connection: as (2), but the parent's `date` holds a `createTime`
+       The parent's `date` holds a `%Y%m%d` data day copied off the child. The parent's declared
+       cursor field did not exist on a report listing, so it never advanced on its own and many
+       connections have no parent cursor at all.
+    2. 1.3.5, if it reached any connection: as (1), but the parent's `date` holds a `createTime`
        timestamp under the old key name.
 
-    All three convert to `parent_state.report.state.createTime`. The conversion can only move
-    the cursor backwards: for any report file `createTime > endTime > startTime >= midnight of
-    the data day`, so every legacy value is at or before the true `createTime`. A migrated
-    connection re-lists at most a day or two of report files once, and can never skip one --
-    which is why re-keying the cursor is not a breaking change.
+    Both convert to `parent_state.report.state.createTime`. The conversion can only move the
+    cursor backwards: for any report file `createTime > endTime > startTime >= midnight of the
+    data day`, so every legacy value is at or before the true `createTime`. A migrated connection
+    re-lists at most a day or two of report files once, and can never skip one -- which is why
+    re-keying the cursor is not a breaking change.
 
     The child streams' own `state.date` is deliberately left alone: it is a real column in the
     downloaded CSV and part of every child stream's primary key.
@@ -181,10 +201,8 @@ class ReportsStateMigration(StateMigration):
     _INPUT_FORMATS = ("%Y-%m-%dT%H:%M:%S.%fZ", "%Y-%m-%dT%H:%M:%SZ", "%Y%m%d")
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
-        if not stream_state:
+        if not stream_state or "state" not in stream_state:
             return False
-        if self._is_pre_low_code(stream_state):
-            return True
         report_state = stream_state.get("parent_state", {}).get("report", {})
         if any(self._LEGACY_CURSOR_FIELD in cursor for cursor in self._cursor_dicts(report_state)):
             return True
@@ -194,14 +212,6 @@ class ReportsStateMigration(StateMigration):
         return not self._has_cursor(report_state) and bool(stream_state.get("state", {}).get(self._LEGACY_CURSOR_FIELD))
 
     def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
-        if self._is_pre_low_code(stream_state):
-            child_cursor_value = str(stream_state[self._LEGACY_CURSOR_FIELD])
-            migrated: MutableMapping[str, Any] = {"state": {self._LEGACY_CURSOR_FIELD: child_cursor_value}}
-            seed = self._to_cursor_value(child_cursor_value)
-            if seed:
-                migrated["parent_state"] = {"report": {"state": {self._CURSOR_FIELD: seed}}}
-            return migrated
-
         migrated = deepcopy(dict(stream_state))
         child_state = migrated.get("state")
         if isinstance(child_state, dict) and self._LEGACY_CURSOR_FIELD in child_state:
@@ -218,11 +228,13 @@ class ReportsStateMigration(StateMigration):
             seed = self._to_cursor_value(child_state[self._LEGACY_CURSOR_FIELD])
             if seed:
                 report_state["state"] = {self._CURSOR_FIELD: seed}
+        if report_state.get("state") == {}:
+            del report_state["state"]
+        if not report_state:
+            del migrated["parent_state"]["report"]
+            if not migrated["parent_state"]:
+                del migrated["parent_state"]
         return migrated
-
-    @classmethod
-    def _is_pre_low_code(cls, stream_state: Mapping[str, Any]) -> bool:
-        return cls._LEGACY_CURSOR_FIELD in stream_state and "state" not in stream_state
 
     @staticmethod
     def _cursor_dicts(report_state: Mapping[str, Any]) -> List[MutableMapping[str, Any]]:
