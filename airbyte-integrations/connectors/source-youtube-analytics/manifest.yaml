@@ -55,16 +55,21 @@ definitions:
                 $ref: "#/definitions/streams/jobs"
       incremental_sync:
         type: DatetimeBasedCursor
-        # The cursor is the newest report file's `createTime`, NOT a data date. The key is
-        # named `date` only to keep existing saved state working. YouTube re-issues corrected
-        # reports with a new id and createTime but the SAME startTime, so keying on startTime
-        # silently drops every correction.
+        # The cursor is the report *file's* creation time, not a date the data is about.
+        # YouTube re-issues corrected reports with a new id and a newer createTime but the SAME
+        # startTime, so a startTime cursor silently drops every correction -- and startTime is
+        # not monotonic, so it also loses any file that arrives out of order.
         # https://developers.google.com/youtube/reporting/v1/reports (Backfill data)
-        cursor_field: date
+        #
+        # Through 1.3.4 this cursor was named `date`, a field that does not exist on a report
+        # listing, so it never observed a value and stayed pinned at the 1990 default.
+        # `ReportsStateMigration` re-keys saved state onto `createTime`; see components.py.
+        cursor_field: createTime
         cursor_datetime_formats:
-          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          # What the API returns.
           - "%Y-%m-%dT%H:%M:%SZ"
-          - "%Y%m%d"
+          # What `start_datetime` and `ReportsStateMigration` write.
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         global_substream_cursor: true
         start_datetime:
@@ -73,12 +78,6 @@ definitions:
           type: RequestOption
           inject_into: request_parameter
           field_name: createdAfter
-      transformations:
-        - type: AddFields
-          fields:
-            - path:
-                - date
-              value: "{{ record['createTime'] }}"
 
     report_types:
       type: DeclarativeStream
