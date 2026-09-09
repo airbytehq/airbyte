@@ -1675,9 +1675,8 @@ spec:
         description: >-
           The number of worker threads to use for the sync. Higher values can
           improve sync throughput on large workspaces; lower values reduce load
-          on the source. The minimum is 2: with a single thread every stream
-          waits behind the long `tickets` read, so no other stream can emit
-          data during it and Airbyte cancels the sync on the heartbeat timeout.
+          on the source. The minimum is 2, because a single thread stalls the
+          sync while the `tickets` stream reads.
         order: 3
       page_size:
         type: integer
