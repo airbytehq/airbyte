@@ -150,9 +150,14 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ## Performance considerations
 
-The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. TikTok enforces rate limits per access token, so if you see error 40100 ("rate limit exceeded"), check that only one Airbyte connection is running with the same TikTok credentials at a time. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-The connector automatically retries transient TikTok API errors, including service maintenance periods (error 60001). If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
+TikTok returns most errors with an HTTP 200 status and an error code in the response body. The connector automatically retries the following transient TikTok API errors, waiting 60 seconds between attempts, up to 9 times per request:
+
+- 60001: service maintenance. If the sync still fails after retrying, TikTok's maintenance window may be longer than the retry budget. Try the sync again after 30 minutes to a few hours.
+- 50000, 51002, 51004, 51041: transient internal server errors.
+
+If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
 
 For daily report streams, if the TikTok API returns error 40067 ("query too large"), the connector surfaces a configuration error directing you to reduce the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. Reduce the value to 7 or 1 and retry the sync.
 
