@@ -494,16 +494,23 @@ definitions:
             Authorization failed. Please ensure you have the correct
             permissions.
         - type: HttpResponseFilter
+          action: FAIL
+          failure_type: transient_error
+          predicate: >-
+            {{ response.get('error', {}).get('code') == 429 and
+            'FreeQuotaRequestsPerDayPerProject' in response|string }}
+          error_message: Daily YouTube API project quota is exhausted.
+        - type: HttpResponseFilter
           action: RETRY
           http_codes: []
           predicate: >-
-            {{ 'code' in response and response['error']['code'] >= 500 and
-            response['error']['code'] < 600 }}
+            {{ response.get('error', {}).get('code', 0) >= 500 and
+            response.get('error', {}).get('code', 0) < 600 }}
         - type: HttpResponseFilter
-          action: RETRY
+          action: RATE_LIMITED
           predicate: >-
-            {{ 'code' in response and response['error']['code'] == 429 and
-            'FreeQuotaRequestsPerDayPerProject' not in response }}
+            {{ response.get('error', {}).get('code') == 429 and
+            'FreeQuotaRequestsPerDayPerProject' not in response|string }}
       backoff_strategies:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 30

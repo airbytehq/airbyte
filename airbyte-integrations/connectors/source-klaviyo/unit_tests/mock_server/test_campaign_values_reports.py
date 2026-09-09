@@ -4,6 +4,7 @@ import json
 from datetime import date, datetime, time, timedelta, timezone
 from typing import Any, Dict, List, NamedTuple, Optional
 from unittest import TestCase
+from unittest.mock import patch
 
 import freezegun
 import requests_mock as rm
@@ -12,7 +13,7 @@ from unit_tests.conftest import get_source
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
-from airbyte_cdk.test.mock_http import HttpMocker
+from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
 from airbyte_cdk.test.state_builder import StateBuilder
 from mock_server.config import ConfigBuilder
 from mock_server.request_builder import KlaviyoRequestBuilder
@@ -214,3 +215,78 @@ class TestCampaignValuesReportsRecords(TestCase):
         # The period ran to the end of 2024-06-14, and `date` is the midnight that closes it, so
         # the row says "everything up to, and not including, 2024-06-15".
         assert record["date"] == "2024-06-15T00:00:00+00:00"
+
+    @HttpMocker()
+    def test_daily_quota_retry_after_fails_fast(self, http_mocker: HttpMocker):
+        config = _config()
+        http_mocker.get(KlaviyoRequestBuilder.metrics_endpoint(_API_KEY).build(), metrics_response([_METRIC_ID]))
+        report_request = HttpRequest(
+            f"{_BASE_URL}/campaign-values-reports",
+            body={
+                "data": {
+                    "type": "campaign-values-report",
+                    "attributes": {
+                        "statistics": [
+                            "average_order_value",
+                            "bounce_rate",
+                            "bounced",
+                            "bounced_or_failed",
+                            "bounced_or_failed_rate",
+                            "click_rate",
+                            "click_to_open_rate",
+                            "clicks",
+                            "clicks_unique",
+                            "conversion_rate",
+                            "conversion_uniques",
+                            "conversion_value",
+                            "conversions",
+                            "delivered",
+                            "delivery_rate",
+                            "failed",
+                            "failed_rate",
+                            "message_segment_count_sum",
+                            "open_rate",
+                            "opens",
+                            "opens_unique",
+                            "recipients",
+                            "revenue_per_recipient",
+                            "spam_complaint_rate",
+                            "spam_complaints",
+                            "text_message_credit_usage_amount",
+                            "text_message_roi",
+                            "text_message_spend",
+                            "unsubscribe_rate",
+                            "unsubscribe_uniques",
+                            "unsubscribes",
+                        ],
+                        "timeframe": {
+                            "start": "2024-06-01T00:00:00+0000",
+                            "end": "2024-06-14T23:59:59+0000",
+                        },
+                        "conversion_metric_id": _METRIC_ID,
+                    },
+                }
+            },
+        )
+        http_mocker.post(
+            report_request,
+            HttpResponse(
+                json.dumps({"errors": [{"detail": "Rate limit exceeded"}]}),
+                429,
+                {"Retry-After": "73473"},
+            ),
+        )
+
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.incremental).build()
+        with (
+            patch("airbyte_cdk.sources.streams.http.rate_limiting.time") as rate_limiting_time,
+            patch("airbyte_cdk.sources.streams.call_rate.time") as call_rate_time,
+        ):
+            output = read(get_source(config=config), config=config, catalog=catalog)
+
+        assert output.records == []
+        assert output.errors
+        assert "greater than max waiting time" in output.get_formatted_error_message()
+        rate_limiting_time.sleep.assert_not_called()
+        call_rate_time.sleep.assert_not_called()
+        http_mocker.assert_number_of_calls(report_request, 1)

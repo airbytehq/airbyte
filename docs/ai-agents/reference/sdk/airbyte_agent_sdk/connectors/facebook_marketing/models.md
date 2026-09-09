@@ -1745,6 +1745,7 @@ Classes
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[CustomConversionsSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[ImagesSearchData]
     * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[VideosSearchData]
+    * airbyte_agent_sdk.connectors.facebook_marketing.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

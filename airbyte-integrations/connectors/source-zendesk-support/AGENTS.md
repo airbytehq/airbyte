@@ -35,6 +35,17 @@ The `ticket_events` stream uses Zendesk's [Incremental Ticket Event Export](http
 
 **Why this matters:** This stream is distinct from `ticket_comments` — both use the same API endpoint but extract different data. `ticket_comments` uses a custom extractor (`ZendeskSupportExtractorEvents`) to drill into `child_events` and filter for Comment events. `ticket_events` uses the default `DpathExtractor` to return the raw ticket event envelope, giving users access to all event types and metadata.
 
+## 5. Per-Ticket Substreams Must Key Error Handling on the Status Code, Not the Response Body
+
+`side_conversations` and the stateful `ticket_metrics` path both request one URL per parent ticket (`GET /tickets/{ticket_id}/side_conversations`, `GET /tickets/{ticket_id}/metrics`). Both use IGNORE filters keyed exclusively on `http_codes`, and that is deliberate on two counts:
+
+1. **Zendesk does not guarantee a response body.** Permission denials from the `collaboration-api` service arrive as a `403` with an empty `text/html` body. `HttpResponseFilter._response_contains_error_message` parses the body with `JsonErrorMessageParser`, which yields nothing for a non-JSON body, so an `error_message_contains` filter silently never matches. The same emptiness makes `{{ response.get('error') }}` render as `None` in any error message template.
+2. **Denial is scoped to the ticket, not to the stream.** Side conversations require the Collaboration add-on and can be restricted per brand and per group, and the `tickets` incremental export also returns deleted tickets. So individual tickets are refused (`403`) or gone (`404`) while the rest of the stream reads normally. Failing the sync on one refused ticket blocks the whole stream.
+
+There is a second-order trap here. Because these are substreams with `incremental_dependency: true`, the parent cursor is only checkpointed once the substream finishes. A refusal that fails the stream therefore prevents `parent_state` from ever advancing, so the next sync restarts the parent walk from the same position and fails on the same ticket forever — no self-healing, and heavy rate-limit pressure from re-walking the parent every run.
+
+**Why this matters:** the shared `definitions.retriever.requester.error_handler` treats `403`/`404` as a whole-stream configuration error, which is correct for stream-level endpoints and wrong for per-partition ones. Any new substream that requests one URL per parent record needs its own status-code-keyed handler; inheriting the shared one lets a single unreachable parent record fail the sync. Note that `error_message_contains` is also unreliable in the shared handler for the same body-shape reason.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

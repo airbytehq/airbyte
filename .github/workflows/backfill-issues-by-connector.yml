@@ -21,6 +21,15 @@ on:
         description: Maximum number of issues to process (blank means no limit)
         required: false
         type: string
+      state:
+        description: Filter issues by their current state
+        required: true
+        default: all
+        type: choice
+        options:
+          - open
+          - closed
+          - all
 
 permissions:
   contents: read
@@ -80,9 +89,10 @@ jobs:
           GH_TOKEN: ${{ steps.get-app-token.outputs.token }}
           SINCE: ${{ steps.resolve-vars.outputs.since }}
           UNTIL: ${{ steps.resolve-vars.outputs.until }}
+          STATE: ${{ inputs.state }}
         run: |
           gh api --paginate \
-            "repos/$GITHUB_REPOSITORY/issues?state=all&since=${SINCE}T00:00:00Z&per_page=100" \
+            "repos/$GITHUB_REPOSITORY/issues?state=${STATE}&since=${SINCE}T00:00:00Z&per_page=100" \
             --jq '.[] | select(.pull_request == null)' > issues.jsonl
           jq -c --arg since "$SINCE" --arg until "$UNTIL" \
             'select(.created_at >= ($since + "T00:00:00Z") and .created_at <= ($until + "T23:59:59Z"))' \
