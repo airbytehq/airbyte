@@ -56,7 +56,7 @@ The Pipedrive source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-The connector uses the [Pipedrive API v1](https://developers.pipedrive.com/docs/api/v1). Eleven streams support incremental sync; the rest are full refresh only. Stream names below match the names shown in Airbyte.
+Most streams read the [Pipedrive API v1](https://developers.pipedrive.com/docs/api/v1); `projects`, `tasks` and `deal_installments` read [API v2](https://developers.pipedrive.com/docs/api/v2). Eleven streams support incremental sync; the rest are full refresh only. Stream names below match the names shown in Airbyte.
 
 | Stream                | Sync modes                | Notes                                                                                                                                                                                                                                       |
 | :-------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -137,8 +137,8 @@ How the connector treats Pipedrive HTTP errors:
 
 | HTTP status | Behavior |
 |:------------|:---------|
-| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products` and `mail`, a 403 on a single parent record is skipped and the sync continues. |
-| 404, 410 | For `deal_products` and `mail`, a parent deal or mail thread deleted after the parent stream was read is skipped. On other streams these fail the sync. |
+| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products`, `deal_flow` and `mail`, a 403 on a single parent record is skipped and the sync continues. `legacy_teams`, `projects`, `tasks`, `deal_installments` and `permission_set_assignments` treat a 402 or 403 on the whole endpoint as a feature that isn't available on the account and return no records instead of failing. |
+| 404, 410 | For `deal_products`, `deal_flow` and `mail`, a parent deal or mail thread deleted after the parent stream was read is skipped. `legacy_teams` returns no records on 404 or 410, and `projects` and `tasks` on 404. On other streams these fail the sync. |
 | 429 | Rate limited; retried as described under Performance considerations. |
 | 500, 502, 503, 504 | Temporary Pipedrive errors; retried with backoff. |
 
@@ -149,7 +149,7 @@ How the connector treats Pipedrive HTTP errors:
 - The incremental streams read Pipedrive's Recents endpoint, which returns at most one month of history. Records last modified more than a month before a sync are not backfilled, whatever the Start Date.
 - `organizations` and `deal_products` call v1 endpoints that Pipedrive stopped supporting on 2026-08-01. They may stop working until the connector moves to API v2.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
-- The connector uses Pipedrive API v1. Newer fields that only exist in API v2 aren't available.
+- Only `projects`, `tasks` and `deal_installments` read Pipedrive API v2. Every other stream reads API v1, so newer fields that only exist in API v2 aren't available for them.
 
 ### Troubleshooting
 
