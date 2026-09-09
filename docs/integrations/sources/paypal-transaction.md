@@ -30,12 +30,12 @@ In the [Apps & Credentials page](https://developer.paypal.com/dashboard/applicat
 3. Set the name for your source.
 4. Enter your `Client ID`.
 5. Enter your `Client secret`.
-6. `Start Date`: Use the datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. PayPal only keeps three years of transaction history, so the `transactions` and `balances` streams never request data older than three years before the sync, even if you enter an earlier date. The `search_invoices` and `list_payments` streams use this date as-is.
+6. `Start Date`: Use the date picker or enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. PayPal only keeps three years of transaction history, so the `transactions` and `balances` streams never request data older than three years before the sync, even if you enter an earlier date. The `search_invoices` and `list_payments` streams use this date as-is.
 7. `Sandbox`: Turn the toggle on to sync a Sandbox account. By default the toggle is off and the connector reads from the production (`api-m.paypal.com`) environment. Use credentials from the matching environment.
-8. _(Optional)_ `Dispute Start Date Range`: Use the datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SS.sssZ`. Milliseconds are required.
+8. _(Optional)_ `Dispute Start Date Range`: Use the date picker or enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SS.sssZ`. Milliseconds are required.
    - This option only affects the `list_disputes` stream.
    - PayPal only returns disputes updated in the last 180 days. If you leave this empty, or enter a date more than 180 days in the past, the stream starts 180 days before the sync.
-9. _(Optional)_ `End Date`: Use the datepicker or enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Only the `transactions`, `search_invoices`, and `list_payments` streams use it. The `balances` stream doesn't: it requests balances as of a single point in time and never sends an end date. If you leave it empty, those streams sync up to the time of the sync.
+9. _(Optional)_ `End Date`: Use the date picker or enter a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`. Only the `transactions`, `search_invoices`, and `list_payments` streams use it. The `balances` stream doesn't: it requests balances as of a single point in time and never sends an end date. If you leave it empty, those streams sync up to the time of the sync.
 10. _(Optional)_ `Refresh Token`: Leave this empty. The connector obtains and refreshes its access token from the client ID and client secret and doesn't use this field.
 11. _(Optional)_ `Number of days per request`: The date range, in days, that the `transactions`, `list_disputes`, and `list_payments` streams request from PayPal in each call. The default is 7 and the maximum is 31, which is the largest range PayPal's Transaction Search API accepts.
 12. Click **Set up source**.
