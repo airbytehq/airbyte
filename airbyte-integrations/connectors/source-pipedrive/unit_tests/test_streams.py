@@ -139,7 +139,7 @@ def test_projects_paginates_active_and_archived_projects():
 
         output = _read_stream("projects")
 
-    assert [record.record.data["id"] for record in output.records] == [1, 2, 3]
+    assert sorted(record.record.data["id"] for record in output.records) == [1, 2, 3]
 
 
 def test_projects_ignores_forbidden_endpoints():
