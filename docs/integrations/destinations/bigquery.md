@@ -262,6 +262,21 @@ concurrent script queries per project.
 - Alternatively, reduce the number of concurrently syncing streams or connections targeting the
   project.
 
+### Custom quota exceeded
+
+If your sync fails with a `BigQueryException` whose message contains `Custom quota exceeded`:
+
+- A BigQuery administrator has set a
+  [custom query quota](https://cloud.google.com/bigquery/docs/custom-quotas) on the project that
+  runs the connector's jobs. Custom quotas cap the query bytes processed per day, either for the
+  whole project (`QueryUsagePerDay`) or per user, including service accounts
+  (`QueryUsagePerUserPerDay`). This differs from the generic `Quota exceeded` errors described in the
+  previous section, which come from BigQuery's own limits and are often transient.
+- Airbyte reports this failure as a configuration error rather than a system error, because the
+  connector can't resolve it by retrying. Custom quotas reset at midnight Pacific Time.
+- Ask the project's administrator to raise or remove the custom quota, or set
+  **Job Execution Project ID** to a project without one.
+
 ### Load job timeouts
 
 If your sync fails with `Fail to complete a load job in big query`:
@@ -295,14 +310,8 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                                           |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-<<<<<<< HEAD
 | 3.1.1 | 2026-09-09 | [79178](https://github.com/airbytehq/airbyte/pull/79178) | Classify BigQuery custom quota exceeded errors as config errors instead of system errors. |
-| 3.1.0 | 2026-08-25 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
-||||||| parent of 8dace4bcbba (docs(destination-bigquery): place job project step in setup list, fix 3.1.0 changelog date)
-| 3.1.0 | 2026-08-25 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
-=======
 | 3.1.0 | 2026-09-03 | [85041](https://github.com/airbytehq/airbyte/pull/85041) | Add optional `job_project_id` field for BigQuery job quota isolation |
->>>>>>> 8dace4bcbba (docs(destination-bigquery): place job project step in setup list, fix 3.1.0 changelog date)
 | 3.0.24 | 2026-08-24 | [84985](https://github.com/airbytehq/airbyte/pull/84985) | Upgrade to Bulk CDK 1.0.25. |
 | 3.0.23 | 2026-07-15 | [82102](https://github.com/airbytehq/airbyte/pull/82102) | Use CREATE TABLE IF NOT EXISTS for non-replace table creation to prevent accidental data loss |
 | 3.0.22 | 2026-07-10 | [81635](https://github.com/airbytehq/airbyte/pull/81635) | Restore PK NULL equality checks |
