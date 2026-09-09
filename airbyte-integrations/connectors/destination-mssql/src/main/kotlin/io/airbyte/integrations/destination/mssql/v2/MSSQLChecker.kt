@@ -133,7 +133,7 @@ class MSSQLChecker(
     /** Creates a CSV file with headers matching the required table structure and one test record */
     private fun createTestCsvData(stream: DestinationStream): ByteArray {
         return ByteArrayOutputStream().use { outputStream ->
-            MSSQLCSVFormattingWriter(stream, outputStream, true).use { csvWriter ->
+            MSSQLCSVFormattingWriter(stream, outputStream).use { csvWriter ->
                 // TODO this is kind of dumb
                 val destinationRecord =
                     AirbyteMessage()

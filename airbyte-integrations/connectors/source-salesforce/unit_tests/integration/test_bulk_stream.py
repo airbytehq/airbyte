@@ -225,6 +225,76 @@ class BulkStreamTest(TestCase):
         assert len(output.records) == 3
 
     @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_preserve_na_values_when_read_then_na_strings_are_kept(self) -> None:
+        given_stream(
+            self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME)
+        )
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        data = [
+            {_A_FIELD_NAME: "NA", _ANOTHER_FIELD_NAME: "North America"},
+            {_A_FIELD_NAME: "N/A", _ANOTHER_FIELD_NAME: "not applicable"},
+            {_A_FIELD_NAME: "NULL", _ANOTHER_FIELD_NAME: "null-ish"},
+            {_A_FIELD_NAME: "", _ANOTHER_FIELD_NAME: "empty stays null"},
+        ]
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(self._create_csv([_A_FIELD_NAME, _ANOTHER_FIELD_NAME], data, "unix")),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config.preserve_na_values(True))
+
+        assert len(output.records) == 4
+        assert output.records[0].record.data[_A_FIELD_NAME] == "NA"
+        assert output.records[1].record.data[_A_FIELD_NAME] == "N/A"
+        assert output.records[2].record.data[_A_FIELD_NAME] == "NULL"
+        # empty cells remain null even when preserving NA-like strings
+        assert _A_FIELD_NAME not in output.records[3].record.data or output.records[3].record.data[_A_FIELD_NAME] is None
+
+    @freezegun.freeze_time(_NOW.isoformat())
+    def test_given_preserve_na_values_disabled_when_read_then_na_strings_become_null(self) -> None:
+        given_stream(
+            self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME)
+        )
+        self._http_mocker.post(
+            _make_full_job_request([_A_FIELD_NAME, _ANOTHER_FIELD_NAME]),
+            JobCreateResponseBuilder().with_id(_JOB_ID).build(),
+        )
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}"),
+            [
+                JobInfoResponseBuilder().with_id(_JOB_ID).with_state("JobComplete").build(),
+            ],
+        )
+        data = [
+            {_A_FIELD_NAME: "NA", _ANOTHER_FIELD_NAME: "North America"},
+            {_A_FIELD_NAME: "N/A", _ANOTHER_FIELD_NAME: "not applicable"},
+        ]
+        self._http_mocker.get(
+            HttpRequest(f"{_BASE_URL}/jobs/query/{_JOB_ID}/results"),
+            HttpResponse(self._create_csv([_A_FIELD_NAME, _ANOTHER_FIELD_NAME], data, "unix")),
+        )
+        self._mock_delete_job(_JOB_ID)
+
+        # default config does not set preserve_na_values -> historical behavior (NA-like strings -> null)
+        output = read(_STREAM_NAME, SyncMode.full_refresh, self._config)
+
+        assert len(output.records) == 2
+        for record in output.records:
+            assert _A_FIELD_NAME not in record.record.data or record.record.data[_A_FIELD_NAME] is None
+            # non-NA values are unaffected
+            assert record.record.data[_ANOTHER_FIELD_NAME] in ("North America", "not applicable")
+
+    @freezegun.freeze_time(_NOW.isoformat())
     def test_given_specific_encoding_when_read_then_parse_csv_properly(self) -> None:
         given_stream(
             self._http_mocker, _BASE_URL, _STREAM_NAME, SalesforceDescribeResponseBuilder().field(_A_FIELD_NAME).field(_ANOTHER_FIELD_NAME)

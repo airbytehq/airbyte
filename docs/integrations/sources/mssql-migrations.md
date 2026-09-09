@@ -1,5 +1,31 @@
 # Microsoft SQL Server (MSSQL) Migration Guide
 
+## Upgrading to 5.0.0
+
+`NUMERIC` and `DECIMAL` columns with **scale 0** (for example `DECIMAL(10,0)` or `NUMERIC(18,0)`) are now mapped to the Airbyte `integer` type instead of `number`. SQL Server stores these columns as whole numbers, and the new mapping lets downstream destinations preserve their integral semantics (for example, Snowflake materializes them as `NUMBER` rather than `FLOAT`). Columns with a non-zero scale (for example `DECIMAL(10,2)`) are unchanged and continue to map to `number`.
+
+| MSSQL type                         | Current Airbyte Type | New Airbyte Type |
+| ---------------------------------- | -------------------- | ---------------- |
+| `NUMERIC` / `DECIMAL` with scale 0 | number               | integer          |
+
+### How to tell whether you are affected
+
+Before upgrading, you can confirm whether any of your streams contain an affected column. Version 4.4.12 (and any later 4.4.x) logs a line at discovery/schema-refresh time for every `NUMERIC`/`DECIMAL` column with scale 0:
+
+```
+Discovered DECIMAL column with scale 0 (precision=10). A future connector version will map such columns to Airbyte integer instead of number.
+```
+
+- If this line does **not** appear in your connector logs, none of your synced streams contain an affected column and the upgrade requires no action.
+- If it does appear, the named column(s) will change from `number` to `integer` in 5.0.0.
+
+### For current source-mssql users
+
+- If your streams do not contain any `NUMERIC`/`DECIMAL` column with scale 0, your connection will be unaffected. No further action is required from you.
+- If your streams contain at least one affected column, opt in and refresh your schema so the new `integer` type propagates to your destination tables. You generally do _not_ need to reset your stream data. _Note:_ in the case that your sync fails after the type change, please refresh the affected stream's data and rerun the sync. This will drop and recreate the necessary destination tables and reread the source data from the beginning.
+
+If clearing your stream data is an issue, please reach out to Airbyte Cloud support for assistance.
+
 ## Upgrading to 4.0.0
 
 Source MSSQL provides incremental sync that can read unlimited sized tables and can resume if the initial read has failed.

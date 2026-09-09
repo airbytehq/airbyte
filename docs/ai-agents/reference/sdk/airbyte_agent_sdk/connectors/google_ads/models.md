@@ -1791,6 +1791,7 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignLabelsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignsSearchData]
+    * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2142,7 +2143,7 @@ Classes
     `campaign_budget: str | None`
     :   Campaign budget resource name
 
-    `end_date: str | None`
+    `end_date_time: str | None`
     :   Campaign end date
 
     `id: str | None`
@@ -2166,7 +2167,7 @@ Classes
     `serving_status: str | None`
     :   The type of the None singleton.
 
-    `start_date: str | None`
+    `start_date_time: str | None`
     :   Campaign start date
 
     `status: str | None`
@@ -2856,6 +2857,9 @@ Classes
     `campaign_campaign_budget: str | None`
     :   Campaign budget resource name
 
+    `campaign_end_date_time: str | None`
+    :   Campaign end date
+
     `campaign_id: int | None`
     :   Campaign ID
 
@@ -2882,6 +2886,9 @@ Classes
 
     `campaign_serving_status: str | None`
     :   Campaign serving status
+
+    `campaign_start_date_time: str | None`
+    :   Campaign start date
 
     `campaign_status: str | None`
     :   Campaign status (ENABLED, PAUSED, REMOVED)

@@ -137,6 +137,7 @@ Classes
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[SettingsScorecardsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[StatsActivityScorecardsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 
@@ -2539,7 +2540,7 @@ Classes
 
     ### Class variables
 
-    `access_token: str | None`
+    `access_token: str`
     :   Your Gong OAuth2 Access Token.
 
     `client_id: str | None`
