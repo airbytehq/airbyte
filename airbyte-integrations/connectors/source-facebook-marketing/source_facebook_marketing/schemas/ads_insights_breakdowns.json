@@ -116,12 +116,12 @@
       "description": "The ID of additional descriptive text accompanying the ad content.",
       "type": ["null", "string"]
     },
-    "existing_post_id": {
-      "description": "",
-      "type": ["null", "string"]
-    },
     "device_platform": {
       "description": "The device platform (e.g., mobile, desktop) targeted by the ad.",
+      "type": ["null", "string"]
+    },
+    "existing_post_id": {
+      "description": "",
       "type": ["null", "string"]
     },
     "fidelity_type": {
@@ -277,12 +277,12 @@
       "description": "The identifier of the Facebook Page associated with the ad.",
       "type": ["null", "string"]
     },
-    "platform_position": {
-      "description": "The position where the ad appears on the platform (e.g., News Feed, right column).",
-      "type": ["null", "string"]
-    },
     "placement_path": {
       "description": "",
+      "type": ["null", "string"]
+    },
+    "platform_position": {
+      "description": "The position where the ad appears on the platform (e.g., News Feed, right column).",
       "type": ["null", "string"]
     },
     "postback_sequence_index": {

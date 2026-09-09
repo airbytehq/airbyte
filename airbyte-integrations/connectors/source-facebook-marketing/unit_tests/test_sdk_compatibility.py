@@ -29,6 +29,13 @@ _FIELDS_REMOVED_IN_V25 = [
     "product_name",
 ]
 
+_FIELDS_REMOVED_IN_V26 = [
+    "marketing_messages_website_add_to_cart",
+    "marketing_messages_website_initiate_checkout",
+    "marketing_messages_website_purchase",
+    "marketing_messages_website_purchase_values",
+]
+
 
 def test_sdk_targets_api_v26():
     """Verify the SDK is targeting Marketing API v26.0."""
@@ -45,6 +52,15 @@ def test_sdk_targets_api_v26():
 def test_removed_fields_not_in_sdk(field_name):
     """Verify that fields removed in v25 are no longer present in AdsInsights.Field."""
     assert not hasattr(AdsInsights.Field, field_name), f"Field '{field_name}' was expected to be removed in SDK v25 but is still present."
+
+
+@pytest.mark.parametrize(
+    "field_name",
+    [pytest.param(f, id=f) for f in _FIELDS_REMOVED_IN_V26],
+)
+def test_v26_removed_fields_not_in_sdk(field_name):
+    """Verify that fields removed in v26 are no longer present in AdsInsights.Field."""
+    assert not hasattr(AdsInsights.Field, field_name), f"Field '{field_name}' was expected to be removed in SDK v26 but is still present."
 
 
 def test_valid_fields_enum_excludes_removed_fields():
