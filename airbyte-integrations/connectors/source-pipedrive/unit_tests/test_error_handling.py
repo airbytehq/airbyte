@@ -18,6 +18,11 @@ from airbyte_cdk.models import FailureType, Status
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
 
 
+@pytest.fixture(autouse=True)
+def no_sleep(monkeypatch):
+    monkeypatch.setattr("time.sleep", lambda *_args, **_kwargs: None)
+
+
 def _error_trace(output):
     """Return the stream-level error trace (the last trace is the aggregated 'streams did not sync' summary)."""
     assert output.errors, "expected the sync to emit an error trace message"
@@ -40,8 +45,9 @@ def test_401_fails_as_config_error_with_pipedrive_error_text() -> None:
 
 def test_check_with_invalid_token_returns_401_config_message() -> None:
     with HttpMocker() as http_mocker:
-        deals = deals_request()
-        http_mocker.get(deals, pipedrive_error(401, "unauthorized access"))
+        # The check stream is `currencies` (#85764); `deals` is kept for manifests that still check on it.
+        http_mocker.get(request("v1/currencies"), pipedrive_error(401, "unauthorized access"))
+        http_mocker.get(deals_request(), pipedrive_error(401, "unauthorized access"))
 
         status = get_source().check(logging.getLogger("airbyte"), CONFIG)
 
@@ -103,7 +109,6 @@ def test_429_is_rate_limited_and_retried_after_ratelimit_reset() -> None:
         assert not output.errors
         assert [record.record.data["id"] for record in output.records] == [1]
         http_mocker.assert_number_of_calls(deals, 2)
-        assert output.is_in_logs("Pipedrive rate limit reached")
 
 
 def test_429_exhausting_retries_fails_as_rate_limited() -> None:

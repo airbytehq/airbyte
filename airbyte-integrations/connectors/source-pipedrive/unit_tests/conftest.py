@@ -38,9 +38,9 @@ def get_source(config: Mapping[str, Any], state=None) -> YamlDeclarativeSource:
 
 @fixture(autouse=True)
 def clear_cache_before_each_test():
-    """CRITICAL: Clear HTTP request cache between tests to ensure isolation."""
+    """Clear the HTTP request cache (sqlite plus its -wal/-shm companions) between tests to ensure isolation."""
     cache_dir = Path(os.getenv("REQUEST_CACHE_PATH"))
     if cache_dir.exists() and cache_dir.is_dir():
-        for file_path in cache_dir.glob("*.sqlite"):
+        for file_path in cache_dir.glob("*.sqlite*"):
             file_path.unlink()
     yield

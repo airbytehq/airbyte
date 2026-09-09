@@ -5,14 +5,13 @@
 import json
 from typing import Any, Mapping, Optional
 
-from conftest import MANIFEST_PATH
+from conftest import get_source as _shared_get_source
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import EntrypointOutput, read
 from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
-from airbyte_cdk.test.state_builder import StateBuilder
 
 
 API_TOKEN = "test_api_token"
@@ -22,12 +21,7 @@ BASE_URL = "https://api.pipedrive.com/"
 
 
 def get_source(config: Mapping[str, Any] = CONFIG, catalog=None) -> YamlDeclarativeSource:
-    return YamlDeclarativeSource(
-        path_to_yaml=str(MANIFEST_PATH),
-        catalog=catalog or CatalogBuilder().build(),
-        config=config,
-        state=StateBuilder().build(),
-    )
+    return _shared_get_source(config)
 
 
 def read_stream(stream_name: str, config: Mapping[str, Any] = CONFIG, expecting_exception: bool = False) -> EntrypointOutput:

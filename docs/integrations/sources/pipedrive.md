@@ -101,7 +101,7 @@ Pipedrive lets you add custom fields to deals, persons, organizations, products,
 
 ## Performance considerations
 
-Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. The connector doesn't configure any Pipedrive-specific rate limit handling. It relies on the default retry behavior of the Airbyte CDK, which retries HTTP 429 and 5xx responses with exponential backoff up to five times before failing the sync. If your account is close to its limit, run fewer streams per connection or schedule syncs less often.
+Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. When Pipedrive answers with HTTP 429, the connector waits for the window reported in the `x-ratelimit-reset` header, falls back to exponential backoff when the header is missing, and retries up to ten times before failing the sync. Two limits apply per API token: a rolling 2-second burst window (20 to 120 requests depending on your plan) that recovers after a short wait, and a daily token budget (30,000 tokens times the plan multiplier and the number of seats) that, once exhausted, rejects every request until midnight in Pipedrive's server timezone. Waiting does not help in the second case; the failure message says so. If your account is close to its limits, run fewer streams per connection or schedule syncs less often.
 
 Two streams make one request per parent record and can be slow on large accounts:
 
@@ -117,6 +117,16 @@ Consider leaving these streams disabled unless you need them.
 
 ### Connector limitations
 
+How the connector treats Pipedrive HTTP errors:
+
+| HTTP status | Behavior |
+|:------------|:---------|
+| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products` and `mail`, a 403 on a single parent record is skipped and the sync continues. |
+| 404, 410 | For `deal_products` and `mail`, a parent deal or mail thread deleted after the parent stream was read is skipped. On other streams these fail the sync. |
+| 429 | Rate limited; retried as described under Performance considerations. |
+| 500, 502, 503, 504 | Temporary Pipedrive errors; retried with backoff. |
+
+
 - The connector doesn't replicate deletes. A record deleted in Pipedrive stays in your destination until you clear and resync the stream.
 - Only the ten streams marked Incremental above track state. The other sixteen streams are re-read in full on every sync.
 - Full refresh streams ignore the Start Date, except `deal_products`, which only expands the deals returned by the `deals` stream.
@@ -131,7 +141,8 @@ Consider leaving these streams disabled unless you need them.
 - **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin. `mail` and `mailThreads` are empty unless that user has a mailbox connected in Pipedrive.
 - **Records missing from incremental streams**: The Recents endpoint only returns records modified within the last month, so older records are not backfilled even with an earlier Start Date. Records that haven't been modified since the Start Date are excluded as well.
 - **Custom fields appear as hash keys**: This is expected. See [Custom fields](#custom-fields).
-- **Syncs fail with HTTP 429**: You have exceeded Pipedrive's rate limit. Reduce the number of enabled streams or increase the interval between syncs.
+- **Syncs fail with HTTP 429**: The retries were exhausted, which usually means the daily token budget is spent. Reduce the number of enabled streams, increase the interval between syncs, or upgrade the plan.
+- **Syncs fail with HTTP 401, 402 or 403**: The message carries Pipedrive's own error text. 401 means the token is invalid or API access is disabled for the user, 402 means the company account is not active, 403 means the token owner lacks permission for that data (or Cloudflare blocked the token after repeated rate-limit violations).
 
 </details>
 
