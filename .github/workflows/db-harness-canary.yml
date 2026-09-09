@@ -1,0 +1,113 @@
+name: Database Harness Canary
+
+on:
+  workflow_call:
+    inputs:
+      connector:
+        description: "Connector. Database connector directory, for example source-mssql."
+        required: true
+        type: string
+      # `latest` is intentional for CI; local runs default to `dev`, which needs a local `:dev` build.
+      test-version:
+        description: "Test version. Connector image tag to run."
+        required: false
+        default: latest
+        type: string
+      control-version:
+        description: "Control version. Optional image tag for a fixture-reset comparison."
+        required: false
+        default: ""
+        type: string
+      extra-args:
+        description: "Extra args. Additional arguments forwarded to poe e2e-local."
+        required: false
+        default: ""
+        type: string
+  workflow_dispatch:
+    inputs:
+      connector:
+        description: "Connector. Database connector directory, for example source-mssql."
+        required: true
+        type: string
+      # `latest` is intentional for CI; local runs default to `dev`, which needs a local `:dev` build.
+      test-version:
+        description: "Test version. Connector image tag to run."
+        required: false
+        default: latest
+        type: string
+      control-version:
+        description: "Control version. Optional image tag for a fixture-reset comparison."
+        required: false
+        default: ""
+        type: string
+      extra-args:
+        description: "Extra args. Additional arguments forwarded to poe e2e-local."
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  run-canary:
+    name: Run database harness canary
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate inputs
+        id: validate-inputs
+        env:
+          CONNECTOR: ${{ inputs.connector }}
+          TEST_VERSION: ${{ inputs.test-version }}
+          CONTROL_VERSION: ${{ inputs.control-version }}
+          EXTRA_ARGS: ${{ inputs.extra-args }}
+        run: |
+          set -euo pipefail
+          [[ "$CONNECTOR" =~ ^[a-z0-9][a-z0-9-]*$ ]] || {
+            echo "Invalid connector: $CONNECTOR" >&2
+            exit 1
+          }
+          [[ -n "$TEST_VERSION" ]] || {
+            echo "test-version must not be empty" >&2
+            exit 1
+          }
+          {
+            printf "connector=%s\n" "$CONNECTOR"
+            printf "test-version=%s\n" "$TEST_VERSION"
+            printf "control-version=%s\n" "$CONTROL_VERSION"
+            printf "extra-args=%s\n" "$EXTRA_ARGS"
+          } | tee -a "$GITHUB_OUTPUT"
+
+      - name: Check out repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+
+      - name: Install Airbyte tools
+        run: |
+          uv tool install airbyte-internal-ops
+          uv tool install poethepoet
+
+      - name: Run database harness canary
+        env:
+          CONNECTOR: ${{ steps.validate-inputs.outputs.connector }}
+          TEST_VERSION: ${{ steps.validate-inputs.outputs.test-version }}
+          CONTROL_VERSION: ${{ steps.validate-inputs.outputs.control-version }}
+          EXTRA_ARGS: ${{ steps.validate-inputs.outputs.extra-args }}
+        run: |
+          set -euo pipefail
+          cd "airbyte-integrations/connectors/$CONNECTOR"
+          # EXTRA_ARGS is intentionally split into additional CLI arguments.
+          # shellcheck disable=SC2086
+          poe e2e-local --test-version="$TEST_VERSION" \
+            ${CONTROL_VERSION:+--control-version=$CONTROL_VERSION --reset=fixture} \
+            $EXTRA_ARGS
+
+      - name: Upload harness artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ${{ inputs.connector }}-repro
+          path: /tmp/${{ inputs.connector }}-repro
+          if-no-files-found: ignore

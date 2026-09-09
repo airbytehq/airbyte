@@ -76,8 +76,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -88,6 +89,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against accounts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, name: str, account_number: str | None = None, type: str | None = None, industry: str | None = None, phone: str | None = None, website: str | None = None, billing_street: str | None = None, billing_city: str | None = None, billing_state: str | None = None, billing_postal_code: str | None = None, billing_country: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, description: str | None = None, owner_id: str | None = None, parent_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create an account
@@ -585,8 +601,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -597,6 +614,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against contacts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, last_name: str, first_name: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, title: str | None = None, department: str | None = None, account_id: str | None = None, mailing_street: str | None = None, mailing_city: str | None = None, mailing_state: str | None = None, mailing_postal_code: str | None = None, mailing_country: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a contact
@@ -965,8 +997,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -977,6 +1010,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against leads records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, last_name: str, company: str, first_name: str | None = None, title: str | None = None, email: str | None = None, phone: str | None = None, mobile_phone: str | None = None, website: str | None = None, status: str | None = None, lead_source: str | None = None, industry: str | None = None, rating: str | None = None, annual_revenue: float | None = None, number_of_employees: int | None = None, street: str | None = None, city: str | None = None, state: str | None = None, postal_code: str | None = None, country: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a lead
@@ -1248,8 +1296,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1260,6 +1309,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against opportunities records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, name: str, stage_name: str, close_date: str, account_id: str | None = None, amount: float | None = None, probability: float | None = None, type: str | None = None, lead_source: str | None = None, next_step: str | None = None, campaign_id: str | None = None, forecast_category_name: str | None = None, description: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create an opportunity
@@ -1392,8 +1456,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1404,6 +1469,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against opportunity_stages records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, fields: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.OpportunityStage`
     :   Get a single opportunity stage by ID. Returns all accessible fields by default.
@@ -1737,7 +1817,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -1929,8 +2009,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1941,6 +2022,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tasks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, subject: str, status: str | None = None, priority: str | None = None, activity_date: str | None = None, who_id: str | None = None, what_id: str | None = None, description: str | None = None, type: str | None = None, is_reminder_set: bool | None = None, reminder_date_time: str | None = None, owner_id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a task
@@ -2081,8 +2177,9 @@ Classes
         - system_modstamp: System timestamp when the record was last modified
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -2093,6 +2190,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, username: str, last_name: str, email: str, alias: str, profile_id: str, time_zone_sid_key: str, locale_sid_key: str, email_encoding_key: str, language_locale_key: str, first_name: str | None = None, user_role_id: str | None = None, manager_id: str | None = None, is_active: bool | None = None, title: str | None = None, department: str | None = None, phone: str | None = None, mobile_phone: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.salesforce.models.SObjectCreateResponse`
     :   Create a Salesforce User. Consumes a paid user-license seat. Requires the

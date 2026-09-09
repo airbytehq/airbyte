@@ -116,7 +116,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignActionsAnyCondition"></a>
@@ -233,10 +233,24 @@ Classes
     `url: Any`
     :   Webhook URL (for webhook actions)
 
+<a id="CampaignActionsArrayContainsCondition"></a>
+
+`CampaignActionsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignActionsContainsCondition"></a>
 
 `CampaignActionsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -245,6 +259,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CampaignActionsEndswithCondition"></a>
+
+`CampaignActionsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignActionsEqCondition"></a>
@@ -448,20 +476,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignActionsLikeCondition"></a>
-
-`CampaignActionsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignActionsListParams"></a>
 
 `CampaignActionsListParams(*args, **kwargs)`
@@ -540,7 +554,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignActionsOrCondition"></a>
@@ -562,7 +576,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignActionsSearchFilter"></a>
@@ -668,7 +682,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsSortFilter]`
@@ -766,10 +780,24 @@ Classes
     `url: Literal['asc', 'desc']`
     :   Webhook URL (for webhook actions)
 
+<a id="CampaignActionsStartswithCondition"></a>
+
+`CampaignActionsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.customer_io.types.CampaignActionsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignActionsStringFilter"></a>
 
 `CampaignActionsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -877,7 +905,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsAnyCondition"></a>
@@ -976,10 +1004,24 @@ Classes
     `use_customer_timezone: Any`
     :   Whether to use the customer's timezone
 
+<a id="CampaignsArrayContainsCondition"></a>
+
+`CampaignsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsContainsCondition"></a>
 
 `CampaignsContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -988,6 +1030,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="CampaignsEndswithCondition"></a>
+
+`CampaignsEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.customer_io.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
 <a id="CampaignsEqCondition"></a>
@@ -1170,20 +1226,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.customer_io.types.CampaignsStringFilter`
     :   The type of the None singleton.
 
-<a id="CampaignsLikeCondition"></a>
-
-`CampaignsLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.customer_io.types.CampaignsStringFilter`
-    :   The type of the None singleton.
-
 <a id="CampaignsListParams"></a>
 
 `CampaignsListParams(*args, **kwargs)`
@@ -1254,7 +1296,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
 <a id="CampaignsOrCondition"></a>
@@ -1276,7 +1318,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CampaignsSearchFilter"></a>
@@ -1364,7 +1406,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.customer_io.types.CampaignsEqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsGteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLtCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsLteCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsInCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsNotCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAndCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsOrCondition | airbyte_agent_sdk.connectors.customer_io.types.CampaignsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.customer_io.types.CampaignsSortFilter]`
@@ -1444,10 +1486,24 @@ Classes
     `use_customer_timezone: Literal['asc', 'desc']`
     :   Whether to use the customer's timezone
 
+<a id="CampaignsStartswithCondition"></a>
+
+`CampaignsStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.customer_io.types.CampaignsStringFilter`
+    :   The type of the None singleton.
+
 <a id="CampaignsStringFilter"></a>
 
 `CampaignsStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
@@ -1683,7 +1739,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="NewslettersAnyCondition"></a>
@@ -1746,10 +1802,24 @@ Classes
     `updated: Any`
     :   Last update timestamp (Unix)
 
+<a id="NewslettersArrayContainsCondition"></a>
+
+`NewslettersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="NewslettersContainsCondition"></a>
 
 `NewslettersContainsCondition(*args, **kwargs)`
-:   Check if value exists in array field. Example: \{"contains": \{"tags": "premium"\}\}
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1758,6 +1828,20 @@ Classes
     ### Class variables
 
     `contains: airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyValueFilter`
+    :   The type of the None singleton.
+
+<a id="NewslettersEndswithCondition"></a>
+
+`NewslettersEndswithCondition(*args, **kwargs)`
+:   Literal case-insensitive suffix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `endswith: airbyte_agent_sdk.connectors.customer_io.types.NewslettersStringFilter`
     :   The type of the None singleton.
 
 <a id="NewslettersEqCondition"></a>
@@ -1904,20 +1988,6 @@ Classes
     `keyword: airbyte_agent_sdk.connectors.customer_io.types.NewslettersStringFilter`
     :   The type of the None singleton.
 
-<a id="NewslettersLikeCondition"></a>
-
-`NewslettersLikeCondition(*args, **kwargs)`
-:   Partial string match with % wildcards.
-
-    ### Ancestors (in MRO)
-
-    * builtins.dict
-
-    ### Class variables
-
-    `like: airbyte_agent_sdk.connectors.customer_io.types.NewslettersStringFilter`
-    :   The type of the None singleton.
-
 <a id="NewslettersListParams"></a>
 
 `NewslettersListParams(*args, **kwargs)`
@@ -1999,7 +2069,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition`
     :   The type of the None singleton.
 
 <a id="NewslettersOrCondition"></a>
@@ -2021,7 +2091,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="NewslettersSearchFilter"></a>
@@ -2073,7 +2143,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLikeCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.customer_io.types.NewslettersEqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNeqCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersGteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLtCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersLteCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersInCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersStartswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersEndswithCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersFuzzyCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersKeywordCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersArrayContainsCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersNotCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAndCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersOrCondition | airbyte_agent_sdk.connectors.customer_io.types.NewslettersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.customer_io.types.NewslettersSortFilter]`
@@ -2117,10 +2187,24 @@ Classes
     `updated: Literal['asc', 'desc']`
     :   Last update timestamp (Unix)
 
+<a id="NewslettersStartswithCondition"></a>
+
+`NewslettersStartswithCondition(*args, **kwargs)`
+:   Literal case-insensitive prefix match.
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `startswith: airbyte_agent_sdk.connectors.customer_io.types.NewslettersStringFilter`
+    :   The type of the None singleton.
+
 <a id="NewslettersStringFilter"></a>
 
 `NewslettersStringFilter(*args, **kwargs)`
-:   String fields for text search conditions (like, fuzzy, keyword).
+:   String fields for text search conditions (startswith, endswith, fuzzy, keyword).
 
     ### Ancestors (in MRO)
 
