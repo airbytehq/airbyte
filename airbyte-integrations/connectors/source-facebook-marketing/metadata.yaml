@@ -10,7 +10,7 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
-  dockerImageTag: 6.1.1
+  dockerImageTag: 7.0.0
   dockerRepository: airbyte/source-facebook-marketing
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   externalDocumentationUrls:
@@ -57,6 +57,9 @@ data:
         autoPromoteStages: true
         strategy: fast
     breakingChanges:
+      7.0.0:
+        message: "Users whose Custom Insights streams select the `marketing_messages_website_*` fields must remove those fields from the Custom Insights configuration before upgrading. Meta removed these fields from Marketing API v26.0, and there is no replacement. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)."
+        upgradeDeadline: "2026-10-27"
       2.0.0:
         message: "All Ads-Insights-* streams now have updated schemas. Users will need to retest source configuration, refresh the source schema and reset affected streams after upgrading. Please pay attention that data older than 37 months will become unavailable due to FaceBook limitations. For more information [visit](https://docs.airbyte.com/integrations/sources/facebook-marketing-migrations)"
         upgradeDeadline: "2024-03-17"

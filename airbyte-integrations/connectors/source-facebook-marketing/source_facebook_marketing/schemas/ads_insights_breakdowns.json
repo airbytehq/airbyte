@@ -12,6 +12,14 @@
       "description": "The format of the ad asset used in the campaign.",
       "type": ["null", "string"]
     },
+    "affiliate_click_region": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "affiliate_link_url": {
+      "description": "",
+      "type": ["null", "string"]
+    },
     "age": {
       "description": "The age group targeted by the ad campaign.",
       "type": ["null", "string"]
@@ -108,6 +116,10 @@
       "description": "The ID of additional descriptive text accompanying the ad content.",
       "type": ["null", "string"]
     },
+    "existing_post_id": {
+      "description": "",
+      "type": ["null", "string"]
+    },
     "device_platform": {
       "description": "The device platform (e.g., mobile, desktop) targeted by the ad.",
       "type": ["null", "string"]
@@ -164,6 +176,22 @@
     "impression_view_time_advertiser_hour_v2": {
       "type": ["null", "string"],
       "description": ""
+    },
+    "instagram_ads_follow_type": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "instagram_ads_instagram_media_product_type": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "instagram_ads_time_since_creation_bucket": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "internal_campaign_id": {
+      "description": "",
+      "type": ["null", "string"]
     },
     "is_auto_advance": {
       "type": ["null", "boolean"],
@@ -233,12 +261,28 @@
       "description": "The Marketing Mix Model (MMM) used to measure the ad campaign.",
       "type": ["null", "string"]
     },
+    "msa_seller_name": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "overlap_segment": {
+      "description": "",
+      "type": ["null", "string"]
+    },
+    "pa_creator_ig_handle": {
+      "description": "",
+      "type": ["null", "string"]
+    },
     "place_page_id": {
       "description": "The identifier of the Facebook Page associated with the ad.",
       "type": ["null", "string"]
     },
     "platform_position": {
       "description": "The position where the ad appears on the platform (e.g., News Feed, right column).",
+      "type": ["null", "string"]
+    },
+    "placement_path": {
+      "description": "",
       "type": ["null", "string"]
     },
     "postback_sequence_index": {
@@ -390,6 +434,10 @@
     },
     "user_segment_key": {
       "description": "User segment (ex: new, existing) of Advantage+ Shopping Campaigns (ASC). Existing user is specified by the custom audience in ASC settings.",
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "description": "",
       "type": ["null", "string"]
     }
   }

@@ -1,4 +1,35 @@
+import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
+
 # Facebook Marketing Migration Guide
+
+## Upgrading to 7.0.0
+
+Version 7.0.0 upgrades the connector to `facebook-business` 26.x and Marketing API v26.0. Meta removed the following Custom Insights fields, and there is no replacement:
+
+- `marketing_messages_website_add_to_cart`
+- `marketing_messages_website_initiate_checkout`
+- `marketing_messages_website_purchase`
+- `marketing_messages_website_purchase_values`
+
+### Why this changed
+
+This migration moves the connector to Marketing API v26.0 ahead of the v25.0 deprecation wave tracked in [oncall issue #13324](https://github.com/airbytehq/oncall/issues/13324).
+
+### Who is affected
+
+Only connections whose Custom Insights streams select one or more of these fields are affected. All other connections and streams are unaffected.
+
+### Steps to upgrade
+
+Before upgrading to version 7.0.0:
+
+1. Edit each affected Custom Insights entry and remove the deprecated fields from its field selection.
+2. Upgrade the Facebook Marketing source to version 7.0.0.
+3. Refresh the source schema for each affected connection and save the updated schema.
+
+## Connector upgrade guide
+
+<MigrationGuide />
 
 ## Upgrading to 6.0.0
 

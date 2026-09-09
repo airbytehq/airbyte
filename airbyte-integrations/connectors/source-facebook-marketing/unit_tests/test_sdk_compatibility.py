@@ -2,11 +2,11 @@
 # Copyright (c) 2023 Airbyte, Inc., all rights reserved.
 #
 
-"""Tests verifying facebook-business SDK v25 compatibility.
+"""Tests verifying facebook-business SDK v26 compatibility.
 
 These tests ensure that the connector's dynamic enum generation from SDK objects,
 monkey-patching of the Cursor class, and key imports all work correctly after
-bumping the facebook-business SDK from v23 to v25.
+bumping the facebook-business SDK from v25 to v26.
 """
 
 import pytest
@@ -30,10 +30,10 @@ _FIELDS_REMOVED_IN_V25 = [
 ]
 
 
-def test_sdk_targets_api_v25():
-    """Verify the SDK is targeting Marketing API v25.0."""
-    assert FacebookAdsApi.API_VERSION == "v25.0", (
-        f"Expected SDK to target API v25.0, but got {FacebookAdsApi.API_VERSION}. "
+def test_sdk_targets_api_v26():
+    """Verify the SDK is targeting Marketing API v26.0."""
+    assert FacebookAdsApi.API_VERSION == "v26.0", (
+        f"Expected SDK to target API v26.0, but got {FacebookAdsApi.API_VERSION}. "
         "The facebook-business dependency may not have been bumped correctly."
     )
 
@@ -67,7 +67,7 @@ def test_valid_fields_enum_contains_expected_fields():
 
 
 def test_valid_breakdowns_enum_loads():
-    """Verify that the ValidBreakdowns enum loads correctly from SDK v25."""
+    """Verify that the ValidBreakdowns enum loads correctly from SDK v26."""
     from source_facebook_marketing.spec import ValidBreakdowns
 
     breakdown_names = {member.name for member in ValidBreakdowns}
@@ -79,7 +79,7 @@ def test_valid_breakdowns_enum_loads():
 
 
 def test_valid_action_breakdowns_enum_loads():
-    """Verify that the ValidActionBreakdowns enum loads correctly from SDK v25."""
+    """Verify that the ValidActionBreakdowns enum loads correctly from SDK v26."""
     from source_facebook_marketing.spec import ValidActionBreakdowns
 
     action_breakdown_names = {member.name for member in ValidActionBreakdowns}
@@ -97,7 +97,7 @@ def test_status_enums_load():
 
 
 def test_cursor_monkey_patch_applies():
-    """Verify that the CursorPatch monkey-patch still works with SDK v25."""
+    """Verify that the CursorPatch monkey-patch still works with SDK v26."""
     # Import the connector module which applies the monkey-patch
     import source_facebook_marketing  # noqa: F401
     from facebook_business import api
@@ -107,7 +107,7 @@ def test_cursor_monkey_patch_applies():
 
 
 def test_key_sdk_imports():
-    """Verify that all key SDK classes used by the connector are importable from v25."""
+    """Verify that all key SDK classes used by the connector are importable from v26."""
     # These imports would fail if the SDK removed or renamed any of these classes
     from facebook_business.adobjects.adaccount import AdAccount  # noqa: F401
     from facebook_business.adobjects.adcreative import AdCreative  # noqa: F401

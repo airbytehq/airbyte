@@ -245,22 +245,6 @@
       "description": "Currency for marketing messages spend",
       "type": ["null", "string"]
     },
-    "marketing_messages_website_add_to_cart": {
-      "description": "Marketing messages website add to cart",
-      "type": ["null", "number"]
-    },
-    "marketing_messages_website_initiate_checkout": {
-      "description": "Marketing messages website initiate checkout",
-      "type": ["null", "number"]
-    },
-    "marketing_messages_website_purchase": {
-      "description": "Marketing messages website purchase",
-      "type": ["null", "number"]
-    },
-    "marketing_messages_website_purchase_values": {
-      "description": "Marketing messages website purchase values",
-      "type": ["null", "number"]
-    },
     "objective_result_rate": {
       "description": "Objective result rate",
       "$ref": "ads_insights_result.json"

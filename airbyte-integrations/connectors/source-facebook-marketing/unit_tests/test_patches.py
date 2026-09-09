@@ -95,7 +95,7 @@ class TestCursorPatchPagingTypeGuard:
     def test_valid_paging_extracts_next_url(self):
         response = {
             "data": [{"id": "1"}],
-            "paging": {"next": "https://graph.facebook.com/v25.0/act_123/ads?after=cursor123&limit=25"},
+            "paging": {"next": "https://graph.facebook.com/v26.0/act_123/ads?after=cursor123&limit=25"},
         }
         cursor = _make_cursor_patch(response)
         cursor.load_next_page()
@@ -184,7 +184,7 @@ class TestCursorPatchNormalOperation:
     def test_normal_response_with_data_and_paging(self):
         response = {
             "data": [{"id": "1"}, {"id": "2"}],
-            "paging": {"next": "https://graph.facebook.com/v25.0/act_123/ads?after=xyz&limit=50"},
+            "paging": {"next": "https://graph.facebook.com/v26.0/act_123/ads?after=xyz&limit=50"},
         }
         cursor = _make_cursor_patch(response)
         cursor._object_parser.parse_multiple.return_value = [MagicMock(), MagicMock()]
