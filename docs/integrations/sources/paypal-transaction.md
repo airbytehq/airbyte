@@ -1,4 +1,4 @@
-# PayPal
+# PayPal Transaction
 
 This page contains the setup guide and reference information for the PayPal Transaction source connector.
 
