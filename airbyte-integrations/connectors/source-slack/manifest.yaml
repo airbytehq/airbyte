@@ -218,7 +218,7 @@ definitions:
         $ref: "#/definitions/selector"
         record_filter:
           type: RecordFilter
-          condition: "{{ record.name in config.channel_filter or not config.channel_filter }}"
+          condition: "{{ not config.get('channel_filter') or record.get('name') in config.get('channel_filter', []) }}"
       paginator:
         $ref: "#/definitions/default_paginator"
         pagination_strategy:
@@ -328,7 +328,10 @@ definitions:
                     # conversations.history returns ok:false/"not_in_channel" with HTTP 200 for
                     # non-member channels, which poisons the per-partition cursor. The
                     # top-level channels stream and channel_members still see every channel.
-                    condition: "{{ (record.name in config.channel_filter or not config.channel_filter) and (record.is_member or config.get('join_channels')) }}"
+                    # Every lookup has an explicit default so a missing key (e.g. `join_channels`
+                    # omitted from the config) evaluates to false rather than None, which the
+                    # CDK boolean evaluator would otherwise treat as truthy.
+                    condition: "{{ (not config.get('channel_filter') or record.get('name') in config.get('channel_filter', [])) and (record.get('is_member', false) == true or config.get('join_channels', false) == true) }}"
             parent_key: id
             partition_field: channel
             request_option:

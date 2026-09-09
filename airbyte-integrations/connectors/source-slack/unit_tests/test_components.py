@@ -220,6 +220,99 @@ def test_read_records_joins_channels_when_channel_filter_is_absent(token_config,
     assert join_request.called
 
 
+_MEMBER_CHANNEL = {"id": "C_MEMBER", "name": "member-channel", "is_member": True, "is_archived": False}
+_NON_MEMBER_CHANNEL = {"id": "C_NON_MEMBER", "name": "non-member-channel", "is_member": False, "is_archived": False}
+_UNKNOWN_MEMBERSHIP_CHANNEL = {"id": "C_UNKNOWN", "name": "unknown-membership-channel"}
+
+
+def _channel_messages_partition_channels(config, channels, requests_mock):
+    requests_mock.get(url="https://slack.com/api/conversations.list", json={"channels": channels})
+    requests_mock.post(url="https://slack.com/api/conversations.join", json={"ok": True, "channel": {}})
+    stream = get_stream_by_name("channel_messages", config)
+    return {partition.to_slice().partition["channel"] for partition in stream.generate_partitions()}
+
+
+@pytest.mark.parametrize(
+    "config_overrides, drop_keys, expected_channel_ids",
+    [
+        pytest.param({"channel_filter": []}, ["join_channels"], {"C_MEMBER"}, id="join_channels_absent_excludes_non_member"),
+        pytest.param({"channel_filter": [], "join_channels": False}, [], {"C_MEMBER"}, id="join_channels_false_excludes_non_member"),
+        pytest.param(
+            {"channel_filter": [], "join_channels": True},
+            [],
+            {"C_MEMBER", "C_NON_MEMBER", "C_UNKNOWN"},
+            id="join_channels_true_keeps_non_member",
+        ),
+        pytest.param({"channel_filter": []}, ["join_channels", "channel_filter"], {"C_MEMBER"}, id="channel_filter_absent"),
+        pytest.param(
+            {"channel_filter": ["non-member-channel"]},
+            ["join_channels"],
+            set(),
+            id="channel_filter_matches_only_non_member_and_join_absent",
+        ),
+        pytest.param(
+            {"channel_filter": ["non-member-channel"], "join_channels": True},
+            [],
+            {"C_NON_MEMBER"},
+            id="channel_filter_matches_non_member_and_join_true",
+        ),
+    ],
+)
+def test_channel_messages_partitions_respect_join_channels(token_config, requests_mock, config_overrides, drop_keys, expected_channel_ids):
+    """
+    The manifest-level RecordFilter on the channel_messages partition router must treat a
+    missing ``join_channels`` exactly like ``join_channels: false`` (matching
+    ``ChannelsRetriever.should_join_to_channel``), so non-member channels never become
+    partitions unless the connector is going to join them.
+    """
+    config = {key: value for key, value in {**token_config, **config_overrides}.items() if key not in drop_keys}
+    channels = [_MEMBER_CHANNEL, _NON_MEMBER_CHANNEL, _UNKNOWN_MEMBERSHIP_CHANNEL]
+    assert _channel_messages_partition_channels(config, channels, requests_mock) == expected_channel_ids
+
+
+@pytest.mark.parametrize("join_channels", [None, False, True], ids=["absent", "false", "true"])
+def test_channel_messages_partitions_always_include_member_channels(token_config, requests_mock, join_channels):
+    config = {key: value for key, value in token_config.items() if key != "join_channels"}
+    config["channel_filter"] = []
+    if join_channels is not None:
+        config["join_channels"] = join_channels
+    assert _channel_messages_partition_channels(config, [_MEMBER_CHANNEL], requests_mock) == {"C_MEMBER"}
+
+
+@pytest.mark.parametrize("join_channels", [None, False, True], ids=["absent", "false", "true"])
+def test_channel_messages_partition_filter_matches_should_join_to_channel(token_config, components_module, requests_mock, join_channels):
+    """A non-member channel is a partition if and only if the retriever would join it."""
+    config = {key: value for key, value in token_config.items() if key != "join_channels"}
+    config["channel_filter"] = []
+    if join_channels is not None:
+        config["join_channels"] = join_channels
+    retriever = get_channels_retriever_instance(config, components_module)
+    would_join = retriever.should_join_to_channel(config, _NON_MEMBER_CHANNEL)
+    partitions = _channel_messages_partition_channels(config, [_NON_MEMBER_CHANNEL], requests_mock)
+    assert ("C_NON_MEMBER" in partitions) is would_join
+
+
+@pytest.mark.parametrize(
+    "config_overrides, drop_keys, expected_channel_ids",
+    [
+        pytest.param({}, ["channel_filter"], {"C_MEMBER", "C_NON_MEMBER", "C_UNKNOWN"}, id="channel_filter_absent_keeps_all"),
+        pytest.param({"channel_filter": []}, [], {"C_MEMBER", "C_NON_MEMBER", "C_UNKNOWN"}, id="empty_channel_filter_keeps_all"),
+        pytest.param({"channel_filter": ["member-channel"]}, [], {"C_MEMBER"}, id="channel_filter_applied"),
+    ],
+)
+def test_channels_stream_filter_ignores_membership(token_config, requests_mock, config_overrides, drop_keys, expected_channel_ids):
+    """The top-level channels stream only applies channel_filter, never the membership check."""
+    config = {key: value for key, value in {**token_config, **config_overrides}.items() if key not in drop_keys}
+    config.pop("join_channels", None)
+    requests_mock.get(
+        url="https://slack.com/api/conversations.list",
+        json={"channels": [_MEMBER_CHANNEL, _NON_MEMBER_CHANNEL, _UNKNOWN_MEMBERSHIP_CHANNEL]},
+    )
+    stream = get_stream_by_name("channels", config)
+    records = [record.data for partition in stream.generate_partitions() for record in partition.read()]
+    assert {record["id"] for record in records} == expected_channel_ids
+
+
 @pytest.mark.parametrize(
     "response_status_code, api_response, config, expected_policy",
     (
