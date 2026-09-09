@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "source-pipedrive-tests"
-version = "2.4.1"
+version = "0.0.0"
 description = "Unit tests for source-pipedrive"
 authors = ["Airbyte <contact@airbyte.io>"]
 
