@@ -32,7 +32,7 @@ After creating your account you will be able to get your `Client ID` and `Secret
 4. Enter your `Client ID`
 5. Enter your `Client secret`
 6. `Start Date`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`.
-7. Switch ON/Off the Sandbox toggle. By default the toggle is OFF, meaning it work only in a production environment.
+7. Switch ON/Off the Sandbox toggle. By default the toggle is OFF, meaning it works only in a production environment.
 8. \_(Optional) `Dispute Start Date Range`: Use the provided datepicker or enter manually a UTC date and time in the format `YYYY-MM-DDTHH:MM:SS.sssZ`. - If you don't add a date and you sync the `lists_disputes stream`, it will use the default value of 180 days in the past to retrieve data - It is mandatory to add the milliseconds is you enter a datetime. - This option only works for `lists_disputes stream`
 
 9. _(Optional)`Refresh Token`:_ You can enter manually a refresh token. Right now the stream does this automatically.

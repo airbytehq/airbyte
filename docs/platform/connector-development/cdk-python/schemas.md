@@ -81,7 +81,7 @@ And objects inside array of referenced by $ref attribute.
 
 If the value cannot be cast \(e.g. string "asdf" cannot be casted to integer\), the field would retain its original value. Schema type transformation support any jsonschema types, nested objects/arrays and reference types. Types described as array of more than one type \(except "null"\), types under oneOf/anyOf keyword won't be transformed.
 
-_Note:_ This transformation is done by the source, not the stream itself. I.e. if you have overridden "read_records" method in your stream it won't affect object transformation. All transformation are done in-place by modifying output object before passing it to "get_updated_state" method, so "get_updated_state" would receive the transformed object.
+_Note:_ This transformation is done by the source, not the stream itself. I.e. if you have overridden "read_records" method in your stream it won't affect object transformation. All transformations are done in-place by modifying output object before passing it to "get_updated_state" method, so "get_updated_state" would receive the transformed object.
 
 ### Custom schema type transformation
 

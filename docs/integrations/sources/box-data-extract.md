@@ -26,7 +26,7 @@ Decide on what account is going to login to Box:
 - `Box Subject Type`: Represents the type of user to login as ("user" or "enterprise"). Enterprise will login with the application service account. User will login with the user if app can impersonate users.
 - `Box Subject ID`: If subject type is "enterprise", use your enterprise ID If subject type is "user", use the user id to login as.
 
-Choose the which Box folder contains the files you want to process:
+Choose which Box folder contains the files you want to process:
 - `Folder ID`: Folder to retrieve data from.
 - `Recursive`: Read the folders recursively.
 
