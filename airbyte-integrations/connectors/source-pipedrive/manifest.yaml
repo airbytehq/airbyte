@@ -1066,8 +1066,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
-            stop_condition: "{{ not response['additional_data']['pagination']['more_items_in_collection'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1109,14 +1108,18 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 404
-                  - 410
-                error_message: The legacy Teams endpoint is not available for this Pipedrive account; skipping legacy_teams.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 404
+                      - 410
+                    error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ response.get('error', 'not available') }}); skipping legacy_teams."
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1140,16 +1143,20 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "100"
+            limit: "500"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 403
-                  - 404
-                error_message: Projects is not enabled for this Pipedrive account or the token lacks the projects:read scope; skipping projects.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 403
+                      - 404
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ response.get('error', 'not available') }}); skipping projects."
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1181,16 +1188,20 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "100"
+            limit: "500"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 403
-                  - 404
-                error_message: Projects is not enabled for this Pipedrive account or the token lacks the projects:read scope; skipping tasks.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 403
+                      - 404
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ response.get('error', 'not available') }}); skipping tasks."
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1216,16 +1227,20 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            deal_ids: "{{ stream_slice['parent_id'] }}"
-            limit: "100"
+            deal_ids: "{{ stream_slice['parent_id'] | join(',') }}"
+            limit: "500"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 403
-                error_message: Deal installments require a Growth plan or higher and the deals:read scope; skipping deal_installments.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 403
+                    error_message: "Installments are not included in this Pipedrive plan or the token cannot read deals ({{ response.get('error', 'not available') }}); skipping deal_installments."
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1235,13 +1250,18 @@ definitions:
         paginator:
           $ref: "#/definitions/v2_cursor_paginator"
         partition_router:
-          type: SubstreamPartitionRouter
-          parent_stream_configs:
-            - type: ParentStreamConfig
-              parent_key: id
-              partition_field: parent_id
-              stream:
-                $ref: "#/definitions/streams/deals"
+          # GET /api/v2/deals/installments accepts up to 100 deal ids per request.
+          type: GroupingPartitionRouter
+          group_size: 100
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: parent_id
+                stream:
+                  $ref: "#/definitions/streams/deals"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1259,9 +1279,14 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            limit: "500"
             items: dealChange
             all_changes: "1"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - $ref: "#/definitions/substream_missing_parent_error_handler"
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1278,14 +1303,14 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
-            stop_condition: "{{ not response['additional_data']['pagination']['more_items_in_collection'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
             - type: ParentStreamConfig
               parent_key: id
               partition_field: parent_id
+              incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/deals"
       incremental_sync:
@@ -1296,9 +1321,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         is_client_side_incremental: true
       schema_loader:
@@ -1319,15 +1342,18 @@ definitions:
           http_method: GET
           request_parameters:
             api_token: "{{ config['api_token'] }}"
-            limit: "50"
+            limit: "500"
           error_handler:
-            type: DefaultErrorHandler
-            response_filters:
-              - type: HttpResponseFilter
-                action: IGNORE
-                http_codes:
-                  - 403
-                error_message: Permission set assignments require an admin API token; skipping permission_set_assignments.
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: "Permission set assignments require an admin API token ({{ response.get('error', 'forbidden') }}); skipping permission_set_assignments."
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -1342,8 +1368,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
-            stop_condition: "{{ not response['additional_data']['pagination']['more_items_in_collection'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1442,7 +1467,7 @@ definitions:
       field_name: cursor
     pagination_strategy:
       type: CursorPagination
-      cursor_value: "{{ response['additional_data']['next_cursor'] }}"
+      cursor_value: "{{ (response.get('additional_data') or {}).get('next_cursor') }}"
 
 streams:
   - $ref: "#/definitions/streams/deals"
@@ -4779,8 +4804,8 @@ schemas:
       additional_data:
         type:
           - "null"
+          - array
           - object
-        additionalProperties: true
       change_source:
         type:
           - "null"
@@ -4801,6 +4826,7 @@ schemas:
         type:
           - "null"
           - boolean
+          - integer
       item_id:
         type:
           - "null"
@@ -4813,10 +4839,23 @@ schemas:
         type:
           - "null"
           - string
+          - number
+          - boolean
+      origin:
+        type:
+          - "null"
+          - string
+      origin_id:
+        type:
+          - "null"
+          - integer
+          - string
       old_value:
         type:
           - "null"
           - string
+          - number
+          - boolean
       user_id:
         type:
           - "null"
@@ -4909,7 +4948,15 @@ schemas:
         type:
           - "null"
           - string
+      permission_set_app:
+        type:
+          - "null"
+          - string
       permission_set_id:
+        type:
+          - "null"
+          - string
+      permission_set_type:
         type:
           - "null"
           - string

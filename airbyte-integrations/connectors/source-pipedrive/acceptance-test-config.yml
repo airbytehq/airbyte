@@ -33,21 +33,17 @@ acceptance_tests:
           - name: deal_products
           - name: mail
           - name: call_logs
-            bypass_reason: "Sandbox account has no call logs (requires a phone integration)."
-          - name: lead_sources
-            bypass_reason: "Sandbox account has no leads / lead sources."
+            bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
-            bypass_reason: "Sandbox account has no legacy teams (deprecated feature)."
+            bypass_reason: "Sandbox company has the Teams feature disabled: GET /v1/legacyTeams answers 403, which the stream ignores."
           - name: projects
-            bypass_reason: "Sandbox account does not have the Projects add-on."
+            bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/projects answers 402, which the stream ignores."
           - name: tasks
-            bypass_reason: "Sandbox account does not have the Projects add-on."
+            bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/tasks answers 402, which the stream ignores."
           - name: deal_installments
-            bypass_reason: "Sandbox account plan does not include deal installments."
+            bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
           - name: deal_flow
-            bypass_reason: "Sandbox account has no deals, so no deal change history."
-          - name: permission_set_assignments
-            bypass_reason: "Sandbox account token is not an admin token."
+            bypass_reason: "No sandbox deal changed inside the Recents window read by the parent deals stream, so no deal is visited."
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -69,21 +65,17 @@ acceptance_tests:
           - name: users
           - name: persons
           - name: call_logs
-            bypass_reason: "Sandbox account has no call logs (requires a phone integration)."
-          - name: lead_sources
-            bypass_reason: "Sandbox account has no leads / lead sources."
+            bypass_reason: "Sandbox company has no phone integration, so GET /v1/callLogs returns no rows."
           - name: legacy_teams
-            bypass_reason: "Sandbox account has no legacy teams (deprecated feature)."
+            bypass_reason: "Sandbox company has the Teams feature disabled: GET /v1/legacyTeams answers 403, which the stream ignores."
           - name: projects
-            bypass_reason: "Sandbox account does not have the Projects add-on."
+            bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/projects answers 402, which the stream ignores."
           - name: tasks
-            bypass_reason: "Sandbox account does not have the Projects add-on."
+            bypass_reason: "Sandbox plan lacks the Projects suite: GET /api/v2/tasks answers 402, which the stream ignores."
           - name: deal_installments
-            bypass_reason: "Sandbox account plan does not include deal installments."
+            bypass_reason: "Sandbox plan has no access to installments: GET /api/v2/deals/installments answers 403, which the stream ignores."
           - name: deal_flow
-            bypass_reason: "Sandbox account has no deals, so no deal change history."
-          - name: permission_set_assignments
-            bypass_reason: "Sandbox account token is not an admin token."
+            bypass_reason: "No sandbox deal changed inside the Recents window read by the parent deals stream, so no deal is visited."
 
   incremental:
     bypass_reason: "All incremental streams are empty in sandbox account."
