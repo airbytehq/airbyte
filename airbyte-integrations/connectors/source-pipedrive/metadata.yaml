@@ -4,7 +4,7 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-      - api.pipedrive.com # Please change to the hostname of the source.
+      - api.pipedrive.com
   remoteRegistries:
     pypi:
       enabled: false
@@ -17,12 +17,13 @@ data:
   connectorSubtype: api
   connectorType: source
   definitionId: d8286229-c680-4063-8c59-23b9b391c700
-  dockerImageTag: 2.4.3
+  dockerImageTag: 2.4.4
   dockerRepository: airbyte/source-pipedrive
   documentationUrl: https://docs.airbyte.com/integrations/sources/pipedrive
   githubIssueLabel: source-pipedrive
   icon: pipedrive.svg
   license: ELv2
+  maxSecondsBetweenMessages: 10800
   name: Pipedrive
   releases:
     breakingChanges:
@@ -57,16 +58,6 @@ data:
     - suite: unitTests
     - suite: acceptanceTests
       testSecrets:
-        - name: SECRET_SOURCE-PIPEDRIVE_OAUTH__CREDS
-          fileName: oauth_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
-        - name: SECRET_SOURCE-PIPEDRIVE_OLD__CREDS
-          fileName: old_config.json
-          secretStore:
-            type: GSM
-            alias: airbyte-connector-testing-secret-store
         - name: SECRET_SOURCE-PIPEDRIVE__CREDS
           fileName: config.json
           secretStore:
