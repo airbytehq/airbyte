@@ -12,7 +12,7 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 <!-- env:oss -->
 
-- **For Airbyte Open Source**: Private App with Access Token
+- **For Airbyte Open Source**: a Private App access token or a Service Key
 <!-- /env:oss -->
 
 ## Setup guide
@@ -25,7 +25,7 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 **- OAuth** (Recommended). We highly recommend you use OAuth rather than Private App authentication, as it significantly simplifies the setup process.
 
-**- Private App:** If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) to learn how to obtain the access token.
+**- Private App:** If you are using a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/apps/legacy-apps/private-apps/overview) to learn how to obtain the access token. If your HubSpot account can no longer create Private Apps, create a [Service Key](#service-keys) instead and enter it in the same **Access token** field.
 
 <!-- /env:cloud -->
 
@@ -33,7 +33,7 @@ This page contains the setup guide and reference information for the [HubSpot](h
 
 **For Airbyte Open Source:**
 
-**- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/api/private-apps) to learn how to obtain the access token.
+**- Private App setup** (Recommended): If you are authenticating via a Private App, you will need to use your Access Token to set up the connector. Please refer to the [official HubSpot documentation](https://developers.hubspot.com/docs/apps/legacy-apps/private-apps/overview) to learn how to obtain the access token. If your HubSpot account can no longer create Private Apps, create a [Service Key](#service-keys) instead and enter it in the same **Access token** field.
 
 **- OAuth setup:** If you are using OAuth to authenticate on Airbyte Open Source, please refer to [HubSpot's detailed walkthrough](https://developers.hubspot.com/docs/api/working-with-oauth). To set up the connector, you will need to acquire your:
 
@@ -42,13 +42,28 @@ This page contains the setup guide and reference information for the [HubSpot](h
 - Refresh Token
 <!-- /env:oss -->
 
-For more details, refer to [HubSpot's authentication documentation](https://developers.hubspot.com/docs/api/intro-to-auth).
+For more details, refer to [HubSpot's authentication documentation](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/overview).
 
-### Step 2: Configure the scopes for your streams (Private App only)
+#### Service keys
 
-These instructions are only relevant if you are using a **Private App** for authentication. You can ignore this if you are authenticating via OAuth.
+HubSpot is [retiring the creation of legacy Private Apps](https://developers.hubspot.com/changelog/legacy-private-app-creation-sunset): accounts created on or after September 28, 2026 can't create new Private Apps from that date, and all other accounts lose the ability on October 26, 2026. Existing Private Apps and their access tokens keep working.
 
-To set up a Private App, you must manually configure scopes to ensure Airbyte can sync all available data. Each scope relates to a specific stream or streams. Refer to [HubSpot's documentation on scopes](https://developers.hubspot.com/docs/api/working-with-oauth#scopes) for instructions.
+For accounts that can't create a Private App, use a HubSpot [Service Key](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/account-service-keys) (public beta). A Service Key is a static bearer token with the same `pat-` format and the same per-object scopes as a Private App access token, so the connector accepts it without any special configuration:
+
+1. In HubSpot, go to **Development**, then **Keys** > **Service keys**, and click **Create service key**.
+2. Add the scopes for the streams you want to sync (see [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-and-service-key-only)). HubSpot has deprecated the legacy `tickets` and `e-commerce` scopes, so the Service Key scope picker might not offer them; Step 2 lists their granular replacements.
+3. Create the key, click **Show**, and copy it.
+4. In Airbyte, choose the **Private App** authentication method and paste the Service Key into the **Access token** field.
+
+A Service Key can only carry scopes that your HubSpot account and user already have. If HubSpot returns `403` for a stream even though you added its scope, your account's subscription tier doesn't include that object (for example, the `leads` stream needs the Leads object, which requires Sales Hub Professional or Enterprise).
+
+### Step 2: Configure the scopes for your streams (Private App and Service Key only)
+
+These instructions are only relevant if you are using a **Private App** or a **Service Key** for authentication. You can ignore this if you are authenticating via OAuth.
+
+To set up a Private App or Service Key, you must manually configure scopes to ensure Airbyte can sync all available data. Each scope relates to a specific stream or streams. Refer to [HubSpot's documentation on scopes](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes) for instructions.
+
+The legacy `tickets` and `e-commerce` scopes are deprecated and might not be available when you create a Service Key. Where the table lists `tickets`, grant `crm.objects.tickets.read` (and `crm.schemas.tickets.read` for ticket properties and pipelines). Where it lists `e-commerce`, grant `crm.objects.products.read`, `crm.objects.line_items.read`, and `crm.schemas.line_items.read`.
 
 <details>
   <summary>Expand to review scopes</summary>
@@ -119,7 +134,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
      :::note HubSpot Authentication issues
      You may encounter an error during the authentication process in the popup window with the message `An invalid scope name was provided`. To resolve this, close the window and retry authentication.
      :::
-   - (Not Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+   - (Not Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account. A [Service Key](#service-keys) goes in the same field.
 
 <FieldAnchor field="start_date">
 
@@ -145,7 +160,7 @@ To set up a Private App, you must manually configure scopes to ensure Airbyte ca
 2. From the Airbyte UI, click **Sources**, then click on **+ New Source** and select **HubSpot** from the list of available sources.
 3. Enter a **Source name** of your choosing.
 4. From the **Authentication** dropdown, select your chosen authentication method:
-   - (Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account.
+   - (Recommended) To authenticate using a Private App, select **Private App** and enter the Access Token for your HubSpot account. A [Service Key](#service-keys) goes in the same field.
    - (Not Recommended:) To authenticate using OAuth, select **OAuth** and enter your Client ID, Client Secret, and Refresh Token.
 5. (Optional) For **Start date**, use the provided datepicker or enter the date in the following format:
    `yyyy-mm-ddThh:mm:ssZ`. The data added on and after this date will be replicated. If not set, "2006-06-01T00:00:00Z" (HubSpot creation date) will be used as start date. It's recommended to provide a start date relevant to your data to optimize synchronization.
@@ -173,7 +188,7 @@ Enable the **Enable experimental streams** toggle to sync the Web Analytics stre
 - `line_items_web_analytics`
 - `products_web_analytics`
 
-These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-only)). They begin syncing from the configured **Start date** with fresh state.
+These streams require HubSpot Marketing Hub Enterprise and the `business-intelligence` scope in addition to each stream's parent-object read scope (see the scopes table in [Step 2](#step-2-configure-the-scopes-for-your-streams-private-app-and-service-key-only)). They begin syncing from the configured **Start date** with fresh state.
 
 </FieldAnchor>
 
@@ -201,7 +216,7 @@ Association stream records include:
 
 Association streams sync incrementally. Only associations for records modified since the last sync are fetched.
 
-If you authenticate with a Private App, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` and `crm.objects.companies.read` scopes.
+If you authenticate with a Private App or Service Key, grant read scopes for both selected objects. For example, a tickets-to-companies association stream needs the `tickets` (or, for a Service Key, `crm.objects.tickets.read`) and `crm.objects.companies.read` scopes.
 
 </FieldAnchor>
 
@@ -228,7 +243,7 @@ You can use standard object names, such as `contacts`, `companies`, or `deals`, 
 
 Custom object association streams emit the same fields as standard association streams: `from_id`, `to_id`, `association_type_id`, `category`, and `label`. They also sync incrementally, the same way as standard association streams.
 
-If you authenticate with a Private App, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
+If you authenticate with a Private App or Service Key, grant `crm.objects.custom.read` and the read scope for any standard object in the relationship.
 
 </FieldAnchor>
 
@@ -344,7 +359,7 @@ First you need to give the connector some additional permissions:
 
 - **If you are using OAuth on Airbyte Cloud** go to the HubSpot source settings page in the Airbyte UI and re-authenticate via OAuth to allow Airbyte the permissions to access custom objects.
 
-- **If you are using OAuth on OSS or Private App auth** go into the HubSpot UI where you created your Private App or OAuth application and add the `crm.objects.custom.read` scope to your app's scopes. See [HubSpot's scopes documentation](https://developers.hubspot.com/docs/api/working-with-oauth#scopes).
+- **If you are using OAuth on OSS, Private App, or Service Key auth** go into the HubSpot UI where you created your Private App, Service Key, or OAuth application and add the `crm.objects.custom.read` scope to its scopes. See [HubSpot's scopes documentation](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/scopes).
 
 Then, go to the schema tab of your connection and click **refresh source schema** to pull in those new streams for syncing.
 
@@ -406,9 +421,9 @@ If you use [custom properties](https://knowledge.hubspot.com/properties/create-a
   }
   ```
 
-- **401 Unauthorized Error (Private App Token)**
+- **401 Unauthorized Error (Private App Token or Service Key)**
 
-  If you authenticate using a Private App access token and receive a 401 Unauthorized error, the connector fails immediately with a configuration error asking you to update your token. Private App tokens are static and cannot be refreshed, so retrying won't help. To resolve this, generate a new access token in your [HubSpot Private App settings](https://developers.hubspot.com/docs/api/private-apps) and update the connector configuration.
+  If you authenticate using a Private App access token or a Service Key and receive a 401 Unauthorized error, the connector fails immediately with a configuration error asking you to update your token. These tokens are static and cannot be refreshed, so retrying won't help. To resolve this, generate a new access token in your [HubSpot Private App settings](https://developers.hubspot.com/docs/apps/legacy-apps/private-apps/overview) or [rotate your Service Key](https://developers.hubspot.com/docs/apps/developer-platform/build-apps/authentication/account-service-keys) and update the connector configuration.
 
   If you authenticate using OAuth, the connector automatically refreshes expired tokens and retries the request. No action is needed unless the error persists, in which case you should re-authenticate the connector.
 
