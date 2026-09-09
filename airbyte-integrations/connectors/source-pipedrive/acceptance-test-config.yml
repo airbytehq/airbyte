@@ -30,6 +30,22 @@ acceptance_tests:
           - name: stages
           - name: deal_products
           - name: mail
+          - name: call_logs
+            bypass_reason: "Sandbox account has no call logs (requires a phone integration)."
+          - name: lead_sources
+            bypass_reason: "Sandbox account has no leads / lead sources."
+          - name: legacy_teams
+            bypass_reason: "Sandbox account has no legacy teams (deprecated feature)."
+          - name: projects
+            bypass_reason: "Sandbox account does not have the Projects add-on."
+          - name: tasks
+            bypass_reason: "Sandbox account does not have the Projects add-on."
+          - name: deal_installments
+            bypass_reason: "Sandbox account plan does not include deal installments."
+          - name: deal_flow
+            bypass_reason: "Sandbox account has no deals, so no deal change history."
+          - name: permission_set_assignments
+            bypass_reason: "Sandbox account token is not an admin token."
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.jsonl"
@@ -50,6 +66,22 @@ acceptance_tests:
           - name: deals
           - name: users
           - name: persons
+          - name: call_logs
+            bypass_reason: "Sandbox account has no call logs (requires a phone integration)."
+          - name: lead_sources
+            bypass_reason: "Sandbox account has no leads / lead sources."
+          - name: legacy_teams
+            bypass_reason: "Sandbox account has no legacy teams (deprecated feature)."
+          - name: projects
+            bypass_reason: "Sandbox account does not have the Projects add-on."
+          - name: tasks
+            bypass_reason: "Sandbox account does not have the Projects add-on."
+          - name: deal_installments
+            bypass_reason: "Sandbox account plan does not include deal installments."
+          - name: deal_flow
+            bypass_reason: "Sandbox account has no deals, so no deal change history."
+          - name: permission_set_assignments
+            bypass_reason: "Sandbox account token is not an admin token."
 
   incremental:
     bypass_reason: "All incremental streams are empty in sandbox account."

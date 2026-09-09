@@ -54,7 +54,7 @@ The Pipedrive connector supports the following sync modes:
 
 ## Supported Streams
 
-Apart from `Fields` streams, all other streams support incremental.
+Incremental sync is supported except for the `Fields` streams and the full-refresh streams noted below.
 
 - [Activities](https://developers.pipedrive.com/docs/api/v1/Activities#getActivities)
 
@@ -103,6 +103,22 @@ Apart from `Fields` streams, all other streams support incremental.
 - [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
 
 - [Users](https://developers.pipedrive.com/docs/api/v1/Users#getUsers)
+
+- `call_logs` — Call logs visible to the API token's owner (`GET /v1/callLogs`). Requires a phone integration; OAuth apps need the `phone-integration` scope. Full refresh only.
+
+- `lead_sources` — Lead sources (`GET /v1/leadSources`). Requires the `leads:read` scope. Full refresh only.
+
+- `legacy_teams` — Legacy teams (`GET /v1/legacyTeams`). Deprecated Pipedrive endpoint; the stream is skipped (empty) when the endpoint returns 404/410. Full refresh only.
+
+- `projects` — Active and archived projects (`GET /api/v2/projects`, `GET /api/v2/projects/archived`). Requires the Projects add-on and the `projects:read` scope; skipped when the account returns 403/404. Full refresh only.
+
+- `tasks` — Project tasks (`GET /api/v2/tasks`). Requires the Projects add-on and the `projects:read` scope; skipped when the account returns 403/404. Full refresh only.
+
+- `deal_installments` — Installments per deal (`GET /api/v2/deals/installments`), one request per deal. Requires a Growth plan or higher and the `deals:read` scope; skipped on 403. Full refresh only.
+
+- `deal_flow` — Deal field change history (`GET /v1/deals/{id}/flow?items=dealChange&all_changes=1`), one request per deal, so it is expensive on large accounts. Requires the `recents:read` scope. Incremental on `log_time`.
+
+- `permission_set_assignments` — Users assigned to each permission set (`GET /v1/permissionSets/{id}/assignments`). Requires an admin API token; skipped on 403. Full refresh only.
 
 ## Performance considerations
 
