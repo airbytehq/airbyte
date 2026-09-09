@@ -4,7 +4,9 @@ data:
     sl: 100
   allowedHosts:
     hosts:
-      - api.pipedrive.com # Please change to the hostname of the source.
+      - api.pipedrive.com
+      - oauth.pipedrive.com
+      - "*.pipedrive.com"
   remoteRegistries:
     pypi:
       enabled: false
