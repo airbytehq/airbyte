@@ -157,6 +157,7 @@ Classes
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[UpdatesSearchData]
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[UsersSearchData]
     * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[WorkspacesSearchData]
+    * airbyte_agent_sdk.connectors.monday.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

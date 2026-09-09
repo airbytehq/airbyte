@@ -366,6 +366,7 @@ Classes
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[OpportunityStagesSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[TasksSearchData]
     * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.salesforce.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

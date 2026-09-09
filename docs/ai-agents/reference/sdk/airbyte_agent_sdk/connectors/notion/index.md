@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.notion.connector
-* airbyte_agent_sdk.connectors.notion.connector_model
-* airbyte_agent_sdk.connectors.notion.models
-* airbyte_agent_sdk.connectors.notion.types
+* [airbyte_agent_sdk.connectors.notion.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-connector)
+* [airbyte_agent_sdk.connectors.notion.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-connector_model)
+* [airbyte_agent_sdk.connectors.notion.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-models)
+* [airbyte_agent_sdk.connectors.notion.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/notion/airbyte_agent_sdk-connectors-notion-types)
 
 Classes
 -------
@@ -738,7 +738,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'create', 'update', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

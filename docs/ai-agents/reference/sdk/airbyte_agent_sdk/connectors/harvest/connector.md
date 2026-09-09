@@ -49,6 +49,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against clients records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Client`
     :   Get a single client by ID
         
@@ -108,6 +123,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against company records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Company`
     :   Returns the company information for the authenticated account
         
@@ -153,6 +183,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against contacts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Contact`
     :   Get a single contact by ID
@@ -209,6 +254,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against estimate_item_categories records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.EstimateItemCategory`
     :   Get a single estimate item category by ID
@@ -272,6 +332,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against estimates records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Estimate`
     :   Get a single estimate by ID
         
@@ -330,6 +405,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against expense_categories records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.ExpenseCategory`
     :   Get a single expense category by ID
@@ -394,6 +484,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against expenses records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Expense`
     :   Get a single expense by ID
@@ -644,7 +749,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -745,6 +850,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against invoice_item_categories records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.InvoiceItemCategory`
     :   Get a single invoice item category by ID
         
@@ -809,6 +929,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against invoices records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Invoice`
     :   Get a single invoice by ID
         
@@ -872,6 +1007,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against projects records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Project`
     :   Get a single project by ID
         
@@ -928,6 +1078,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against roles records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Role`
     :   Get a single role by ID
@@ -989,6 +1154,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against task_assignments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.HarvestExecuteResultWithMeta[list[TaskAssignment], TaskAssignmentsListResultMeta]`
     :   Returns a paginated list of task assignments across all projects
         
@@ -1037,6 +1217,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tasks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.Task`
     :   Get a single task by ID
@@ -1102,6 +1297,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against time_entries records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.TimeEntry`
     :   Get a single time entry by ID
         
@@ -1162,6 +1372,21 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against time_projects records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
     `list(self, from_: str, to: str, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.HarvestExecuteResultWithMeta[list[TimeProject], TimeProjectsListResultMeta]`
     :   Returns time report data grouped by project for a given date range
         
@@ -1211,6 +1436,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against time_tasks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, from_: str, to: str, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.HarvestExecuteResultWithMeta[list[TimeTask], TimeTasksListResultMeta]`
     :   Returns time report data grouped by task for a given date range
@@ -1264,6 +1504,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against user_assignments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, per_page: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.HarvestExecuteResultWithMeta[list[UserAssignment], UserAssignmentsListResultMeta]`
     :   Returns a paginated list of user assignments across all projects
@@ -1321,6 +1576,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.harvest.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.harvest.models.User`
     :   Get a single user by ID
