@@ -5,7 +5,7 @@ type: DeclarativeSource
 check:
   type: CheckStream
   stream_names:
-    - deals
+    - currencies
 
 definitions:
   streams:
@@ -41,7 +41,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -88,7 +88,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -150,7 +150,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -203,7 +203,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -272,7 +272,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -309,7 +309,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -362,7 +362,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -431,7 +431,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -486,7 +486,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -528,7 +528,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -559,7 +559,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -618,7 +618,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -665,7 +665,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -702,7 +702,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -755,7 +755,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -802,7 +802,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -833,7 +833,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -870,7 +870,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -923,7 +923,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified
@@ -970,7 +970,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -1011,7 +1011,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: ListPartitionRouter
           values:
