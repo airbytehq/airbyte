@@ -30,11 +30,27 @@ There is no `authenticator` in the manifest. Every stream injects `api_token: "{
 
 **Why this matters:** The same thread can be emitted from more than one folder, so `mailThreads` can contain duplicate `id` values within a sync, and `mail` issues one request per thread, which dominates request volume on busy mailboxes. Neither stream can see other users' mail regardless of admin rights.
 
-## 6. No Manifest-Level Error Handling; CDK Defaults Apply
+## 6. HTTP Errors Are Classified on the Shared Base Requester
 
-None of the requesters define an `error_handler`, so the declarative CDK falls back to `DefaultErrorHandler` with the default response filters: 429 and 5xx are retried with the CDK's exponential backoff for five retries (six attempts), 401/403 fail the stream, and 4xx like 404 fail the stream rather than being ignored. Pipedrive's rate-limit headers (`x-ratelimit-*`, `Retry-After`) are not read.
+Every stream `$ref`s `definitions.base_requester`, which carries `definitions.base_error_handler` (a `DefaultErrorHandler`). Pipedrive returns a JSON envelope `{"success": false, "error": "...", "errorCode": N}` for most failures; the filters interpolate `response.get('error')` into the user-facing message so the vendor text is preserved, and fall back to plain text when the body is not JSON (Cloudflare returns an HTML 403 after repeated rate-limit abuse).
 
-**Why this matters:** A single `429` storm on a large `deal_products` or `mail` sync burns through five retries quickly and fails the whole sync. Do not add stream-specific `error_handler` blocks piecemeal; issue [airbyte-internal-issues#17198](https://github.com/airbytehq/airbyte-internal-issues/issues/17198) owns error classification and rate-limit handling for the connector as a whole.
+| Status | Action | Failure type | Meaning |
+|---|---|---|---|
+| 401 | FAIL | `config_error` | API token invalid, revoked, or API access disabled for the user |
+| 402 | FAIL | `config_error` | Company account inactive (trial expired or billing missing) |
+| 403 | FAIL | `config_error` | Token owner lacks permission, the plan does not include the data, or Cloudflare blocked the token |
+| 410 | FAIL | `system_error` | Endpoint permanently removed by Pipedrive |
+| 429 | RATE_LIMITED | transient | Burst or daily budget exceeded; retried with backoff |
+| 500, 502, 503, 504 | RETRY | transient | Temporary server error |
+| other | CDK default mapping | | e.g. 404 on a top-level stream fails as `system_error` |
+
+Backoff for RETRY and RATE_LIMITED (`max_retries: 10`): `WaitTimeFromHeader` on `x-ratelimit-reset` (Pipedrive reports a relative number of seconds; there is no `Retry-After`), then `ExponentialBackoffStrategy` with factor 5 when the header is absent. `max_waiting_time_in_seconds: 300` is a kill-switch, not a cap: if the header reports 300 s or more the stream stops with a transient error instead of waiting. Header-less retries are bounded by the CDK's 600 s `max_time`, so they get about seven attempts, not eleven.
+
+`deal_products` and `mail` issue one request per parent record and override `error_handler` with a `CompositeErrorHandler`: `definitions.substream_missing_parent_error_handler` IGNOREs 403, 404 and 410 for a single parent (deleted or merged after the parent stream was read, or not visible to the token owner) with an INFO log line, then falls through to the shared handler. A parent-list 403 still fails the sync; a token-wide 403 on the child endpoint leaves the child stream silently empty.
+
+Pipedrive enforces two independent limits per API token ([docs](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting)): a rolling 2-second burst window (20/40/100/120 requests by plan) that recovers after a short wait, and a daily token budget (30,000 tokens x plan multiplier x seats) that, once exhausted, returns 429 on every request until midnight in Pipedrive's server timezone. Backoff cannot fix the second case; the 429 message says so.
+
+**Why this matters:** Keep the filters on `base_requester` so new endpoints (including the API v2 migration) inherit them; do not add per-stream copies. Do not extend the IGNORE list to top-level streams. Tests must not assert on retry log text, which comes from the CDK or the backoff library and changes between versions.
 
 ## 7. No API Budget or Concurrency Tuning
 
