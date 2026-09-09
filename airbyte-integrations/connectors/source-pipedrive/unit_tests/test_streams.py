@@ -3,12 +3,12 @@
 import json
 import logging
 
+from conftest import get_source
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest, HttpResponse
-
-from conftest import get_source
 
 
 BASE_URL = "https://api.pipedrive.com/"
@@ -61,9 +61,7 @@ def test_call_logs_paginates():
             _response(
                 {
                     "data": [{"id": "call-1"}, {"id": "call-2"}],
-                    "additional_data": {
-                        "pagination": {"more_items_in_collection": True, "next_start": 50}
-                    },
+                    "additional_data": {"pagination": {"more_items_in_collection": True, "next_start": 50}},
                 }
             ),
         )
@@ -224,7 +222,7 @@ def test_deal_flow_flattens_and_filters_records():
                         "field_key": "value",
                         "log_time": "2024-03-01 10:00:00",
                     },
-                }
+                },
             ],
             "additional_data": {"pagination": {"more_items_in_collection": False}},
         }
