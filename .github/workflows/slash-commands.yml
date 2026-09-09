@@ -49,7 +49,7 @@ jobs:
 
       - name: Slash Command Dispatch (Workflow)
         id: scd
-        uses: peter-evans/slash-command-dispatch@f996d7b7aae9059759ac55e978cff76d91853301 # v3.0.2
+        uses: peter-evans/slash-command-dispatch@9bdcd7914ec1b75590b790b844aa3b8eee7c683a # v5.0.2
         with:
           token: ${{ steps.get-app-token.outputs.token }}
           permission: write
