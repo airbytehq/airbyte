@@ -166,7 +166,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | 0.1.15 | 2023-03-02 | [23705](https://github.com/airbytehq/airbyte/pull/23705) | Disable OAuth |
 | 0.1.14 | 2023-03-01 | [23539](https://github.com/airbytehq/airbyte/pull/23539) | Fix schema for "activities", "check" works if empty "deals" |
 | 0.1.13 | 2022-09-16 | [16799](https://github.com/airbytehq/airbyte/pull/16799) | Migrate to per-stream state |
-| 0.1.12 | 2022-05-12 | [12806](https://github.com/airbytehq/airbyte/pull/12806) | Remove date-time format from schemas |
+| 0.1.12 | 2022-05-23 | [13082](https://github.com/airbytehq/airbyte/pull/13082) | Remove date-time format from schemas |
 | 0.1.11 | 2022-05-16 | [12867](https://github.com/airbytehq/airbyte/pull/12867) | Add unit tests |
 | 0.1.10 | 2022-04-26 | [11870](https://github.com/airbytehq/airbyte/pull/11870) | Add 3 streams: DealFields, OrganizationFields and PersonFields |
 | 0.1.9 | 2021-12-07 | [8582](https://github.com/airbytehq/airbyte/pull/8582) | Update connector fields title/description |
