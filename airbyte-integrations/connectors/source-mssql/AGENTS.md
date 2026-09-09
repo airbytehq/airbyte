@@ -160,7 +160,7 @@ directly.
 - **`config.cdc.json` uses `ssl_method: unencrypted`.** Fine for a local
   throwaway container, never for a real source.
 - **`Incumbent CDC state is invalid ... Saved offset no longer present`
-  on both control and target with a fresh backend.** The derived
+  with a fresh backend** (single-version or comparison mode). The derived
   catalog was `full_refresh`, so no CDC streams were configured. Pass
   `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users`
   or `--catalog=PATH`; see the
