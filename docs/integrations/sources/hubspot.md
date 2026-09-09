@@ -55,7 +55,7 @@ For accounts that can't create a Private App, use a HubSpot [Service Key](https:
 3. Create the key, click **Show**, and copy it.
 4. In Airbyte, choose the **Private App** authentication method and paste the Service Key into the **Access token** field.
 
-A Service Key can only carry scopes that your HubSpot account and user already have. If HubSpot returns `403` for a stream even though you added its scope, your account's subscription tier doesn't include that object (for example, the `leads` stream needs the Leads object, which requires Sales Hub Professional or Enterprise).
+A Service Key can only carry scopes that your HubSpot account and user already have. If HubSpot returns `403` for a stream, first confirm that the key has the scope listed in Step 2. If the scope is present, your account's subscription tier most likely doesn't include that object (for example, the `leads` stream needs the Leads object, which requires Sales Hub Professional or Enterprise).
 
 ### Step 2: Configure the scopes for your streams (Private App and Service Key only) {#step-2-configure-the-scopes-for-your-streams-private-app-only}
 
