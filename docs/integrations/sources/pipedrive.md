@@ -143,6 +143,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.6 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors, wait on `x-ratelimit-reset` for 429s and skip inaccessible parent records in `deal_products` and `mail` |
 | 2.4.5 | 2026-09-09 | [85767](https://github.com/airbytehq/airbyte/pull/85767) | Restructure the documentation and add contributor guides |
 | 2.4.2 | 2026-09-09 | [85766](https://github.com/airbytehq/airbyte/pull/85766) | Make pagination null-safe for responses without `additional_data`, fixing the `mail` stream |
 | 2.4.1 | 2026-09-09 | [85762](https://github.com/airbytehq/airbyte/pull/85762) | Fix `components.py` import failure on Python 3.11+ (use `default_factory` for decoder) and move to SDM 7.28.3 |
