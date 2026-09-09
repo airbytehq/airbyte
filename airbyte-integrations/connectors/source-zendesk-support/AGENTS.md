@@ -46,6 +46,16 @@ There is a second-order trap here. Because these are substreams with `incrementa
 
 **Why this matters:** the shared `definitions.retriever.requester.error_handler` treats `403`/`404` as a whole-stream configuration error, which is correct for stream-level endpoints and wrong for per-partition ones. Any new substream that requests one URL per parent record needs its own status-code-keyed handler; inheriting the shared one lets a single unreachable parent record fail the sync. Note that `error_message_contains` is also unreliable in the shared handler for the same body-shape reason.
 
+## 6. `num_workers` Minimum Is 2 — One Thread Deadlocks the Heartbeat
+
+The spec pins `num_workers` to `minimum: 2`, and `spec.config_normalization_rules` carries a `ConfigMigration` that rewrites a stored `num_workers: 1` to `2` on the next sync. Both are load-bearing; do not lower the minimum or drop the migration.
+
+`concurrency_level.default_concurrency` is `{{ config.get('num_workers', 4) }}`, so `num_workers: 1` makes the concurrent framework run a single worker thread and every stream is processed strictly one at a time. The `tickets` stream is the problem case: it reads the Incremental Ticket Export endpoint, which the `api_budget` limits to 10 requests per minute, and it uses `cursor_incremental_sync` with no `step` and no `end_datetime`, so the whole date range is a single partition. The concurrent cursor only emits state when a partition closes, so a long `tickets` walk produces no state message until it finishes.
+
+The platform heartbeat resets on a RECORD **or** a STATE message. With two or more workers, a sibling stream keeps emitting during the walk and the sync stays alive. With one worker there is no sibling: once `tickets` is past its first pages, nothing is emitted at all, and the platform cancels the attempt at the `heartbeat-max-seconds-between-messages` threshold (5400s by default). Because the partition never closes, no cursor is checkpointed, so every retry re-enters the identical state and the connection is wedged permanently rather than making partial progress.
+
+**Why this matters:** the failure looks unrelated to concurrency — the heartbeat error names whichever stream happens to be queued (often `group_memberships`), not `tickets`, and the sync logs carry no source stdout. Adding a `step` to `tickets` is not an alternative fix: the endpoint accepts `start_time` with no end bound, so each slice re-walks to the present and duplicates records. See `airbytehq/oncall#13250`.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.

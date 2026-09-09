@@ -1665,18 +1665,19 @@ spec:
       num_workers:
         type: integer
         title: Number of concurrent threads
-        minimum: 1
+        minimum: 2
         maximum: 40
         default: 4
         examples:
-          - 1
           - 2
           - 4
           - 10
         description: >-
           The number of worker threads to use for the sync. Higher values can
           improve sync throughput on large workspaces; lower values reduce load
-          on the source.
+          on the source. The minimum is 2: with a single thread every stream
+          waits behind the long `tickets` read, so no other stream can emit
+          data during it and Airbyte cancels the sync on the heartbeat timeout.
         order: 3
       page_size:
         type: integer
@@ -1773,6 +1774,23 @@ spec:
           - access_token
           - refresh_token
           - expires_in
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: >-
+          Raise `num_workers` from 1 to the new minimum of 2. A single worker
+          serializes every stream behind the long-running `tickets` walk, so no
+          sibling stream can emit a record while it runs and the sync is killed
+          on the heartbeat timeout.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["num_workers"]
+                value: "2"
+                value_type: integer
+            condition: "{{ config.get('num_workers', 4) < 2 }}"
 
 schemas:
   article_attachments:
