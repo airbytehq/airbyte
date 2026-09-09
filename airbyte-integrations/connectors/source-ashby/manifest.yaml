@@ -27,7 +27,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /application.list
         http_method: POST
         request_body_json:
@@ -253,7 +253,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /applicationFeedback.list
         http_method: POST
         request_body_json:
@@ -470,7 +470,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /archiveReason.list
         http_method: POST
       record_selector:
@@ -528,7 +528,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /candidateTag.list
         http_method: POST
       record_selector:
@@ -582,7 +582,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /candidate.list
         http_method: POST
       record_selector:
@@ -886,7 +886,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /customField.list
         http_method: POST
       record_selector:
@@ -966,7 +966,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /department.list
         http_method: POST
       record_selector:
@@ -1042,7 +1042,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /feedbackFormDefinition.list
         http_method: POST
       record_selector:
@@ -1119,7 +1119,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /interviewSchedule.list
         http_method: POST
         request_body_json:
@@ -1264,7 +1264,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /interview.list
         http_method: POST
         request_body_json:
@@ -1413,7 +1413,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /interviewStage.list
         http_method: POST
       record_selector:
@@ -1483,7 +1483,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /jobPosting.list
         http_method: POST
       record_selector:
@@ -1611,7 +1611,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /job.list
         http_method: POST
       record_selector:
@@ -1784,7 +1784,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /location.list
         http_method: POST
       record_selector:
@@ -1871,7 +1871,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /offer.list
         http_method: POST
       record_selector:
@@ -1991,7 +1991,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /source.list
         http_method: POST
       record_selector:
@@ -2062,7 +2062,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /user.list
         http_method: POST
       record_selector:
@@ -2142,7 +2142,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /application.listCriteriaEvaluations
         http_method: POST
         request_body_json:
@@ -2172,7 +2172,7 @@ streams:
                   authenticator:
                     type: BasicHttpAuthenticator
                     username: "{{ config['api_key'] }}"
-                    password: "{{ config['api_key'] }}"
+                    password: ""
                   path: /application.list
                   http_method: POST
                   request_body_json:
@@ -2311,7 +2311,7 @@ streams:
         authenticator:
           type: BasicHttpAuthenticator
           username: "{{ config['api_key'] }}"
-          password: "{{ config['api_key'] }}"
+          password: ""
         path: /application.listHistory
         http_method: POST
         request_body_json:
@@ -2386,7 +2386,7 @@ streams:
                   authenticator:
                     type: BasicHttpAuthenticator
                     username: "{{ config['api_key'] }}"
-                    password: "{{ config['api_key'] }}"
+                    password: ""
                   path: /application.list
                   http_method: POST
                   request_body_json:

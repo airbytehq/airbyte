@@ -36,8 +36,8 @@ class AshbyRequestBuilder:
         return cls("/applicationFeedback.list")
 
     def with_api_key(self, api_key: str) -> "AshbyRequestBuilder":
-        """Set the Basic auth header the manifest's BasicHttpAuthenticator sends (key as user and password)."""
-        token = base64.b64encode(f"{api_key}:{api_key}".encode()).decode()
+        """Set the Basic auth header the manifest's BasicHttpAuthenticator sends (key as username, blank password)."""
+        token = base64.b64encode(f"{api_key}:".encode()).decode()
         self._headers["Authorization"] = f"Basic {token}"
         return self
 
