@@ -125,12 +125,36 @@ day-aligned, and the full-refresh snapshot and forecast streams (`GET_VENDOR_INV
 `GET_VENDOR_FORECASTING_FRESH_REPORT`, `GET_VENDOR_FORECASTING_RETAIL_REPORT`) have no cursor and
 intentionally send no window at all.
 
-## 8. Vendor retail analytics reports require reportOptions
+## 8. Vendor retail analytics reports forward report options but supply no defaults
 
-Amazon requires `reportPeriod`, `distributorView`, and `sellingProgram` for vendor sales and inventory reports.
-Traffic and net pure product margin reports require `reportPeriod`; real-time inventory has no documented options.
-The daily streams use `DAY` for `reportPeriod`, and configured `distributorView`/`sellingProgram` values override
-their `MANUFACTURING`/`RETAIL` defaults.
+Amazon documents `reportPeriod`, `distributorView`, and `sellingProgram` as required for the vendor sales and
+inventory reports, and `reportPeriod` for traffic and net pure product margin. Real-time inventory has no
+documented options.
+
+Because each of these streams declares its own `request_body_json`, which replaces rather than merges with
+`creation_requester_with_report_options`, configured options used to be validated and then silently dropped
+(issue #77617). They now forward configured options using the same Jinja block as the shared requester.
+
+Do not add default values for these options. Amazon does not reject a request that omits them - it applies its
+own account-specific defaults - so hardcoding `MANUFACTURING`/`RETAIL` or a fixed `reportPeriod` would silently
+change which numbers existing connections receive, with no error and no schema change to signal it. The block
+ends in `{{ opts if opts else None }}` so an unconfigured connection sends no `reportOptions` key at all and its
+request body is byte-identical to previous versions. `ReportPollingRequester` surfaces Amazon's rejection when
+options really are required for an account.
+
+## 9. FATAL reports must surface Amazon's reason
+
+When `getReport` returns `processingStatus: FATAL`, Amazon accepted `createReport` but could not produce the
+report, and the reason lives in a separate document referenced by `reportDocumentId`. The CDK never fetches it:
+it retries and then fails with "Async job failed after exhausting all retry attempts.", which tells the user
+nothing. `ReportPollingRequester` (wired as the `basic_async_retriever.polling_requester`) fetches that document,
+logs Amazon's reason at ERROR, and raises a `config_error` when the reason points at report options.
+
+`AsyncJobOrchestrator._is_breaking_exception` treats a `config_error` as breaking, so that path aborts the sync
+immediately rather than waiting out `failed_retry_wait_time_in_seconds` (default 1800s) per retry. Every other
+case - no document, a fetch failure, an unrecognised payload - must leave the response untouched so the existing
+retry and `status_mapping` behaviour is unchanged. This is a diagnostic path: it must never turn a report Amazon
+accepted into a failure.
 
 ## Incremental Stream Considerations
 
