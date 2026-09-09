@@ -20,7 +20,7 @@ Classes
     ### Methods
 
     `list(self, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResult[list[dict[str, Any]]]`
-    :   Returns resource names of customers directly accessible by the user authenticating the call. No customer_id is required for this endpoint.
+    :   Returns resource names of customers directly accessible by the user authenticating the call. This does not traverse customer_client manager hierarchies and therefore does not establish access to manager-only client accounts. No customer_id is required for this endpoint, and Google ignores login-customer-id for this call.
         
         Returns:
             AccessibleCustomersListResult
@@ -64,8 +64,9 @@ Classes
         - segments_date: Date segment for the report row
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -77,13 +78,27 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta]`
-    :   Retrieves customer account details using GAQL query.
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against accounts records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[Account], AccountsListResultMeta]`
+    :   Generic GAQL search carrier. Use accounts.list for any supported GAQL FROM resource, including views without a dedicated modeled entity; the entity name describes this connector action, not the GAQL resource. The customer must be directly accessible to the OAuth identity. This connector exposes no login-customer-id input or header, so do not use it for client accounts reachable only through a manager. Google Ads API v19+ fixes search pages at 10,000 rows and does not accept pageSize. When meta.next_page_token is non-null, repeat the same customer_id and byte-for-byte identical query with that token in pageToken.
         
         Args:
             query: Google Ads Query Language (GAQL) query
-            page_token: Token for pagination
-            page_size: Number of results per page (max 10000)
+            page_token: Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical.
             customer_id: Google Ads customer ID (10 digits, no dashes)
             **kwargs: Additional parameters
         
@@ -113,8 +128,9 @@ Classes
         - label_resource_name: Resource name of the label
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -126,13 +142,27 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupAdLabel], AdGroupAdLabelsListResultMeta]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_group_ad_labels records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupAdLabel], AdGroupAdLabelsListResultMeta]`
     :   Retrieves ad group ad label associations using GAQL query.
         
         Args:
             query: GAQL query for ad group ad labels
-            page_token: Token for pagination
-            page_size: Number of results per page (max 10000)
+            page_token: Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical.
             customer_id: Google Ads customer ID (10 digits, no dashes)
             **kwargs: Additional parameters
         
@@ -175,8 +205,9 @@ Classes
         - segments_date: Date segment for the report row
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -188,13 +219,27 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupAd], AdGroupAdsListResultMeta]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_group_ads records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupAd], AdGroupAdsListResultMeta]`
     :   Retrieves ad group ad data using GAQL query.
         
         Args:
             query: GAQL query for ad group ads
-            page_token: Token for pagination
-            page_size: Number of results per page (max 10000)
+            page_token: Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical.
             customer_id: Google Ads customer ID (10 digits, no dashes)
             **kwargs: Additional parameters
         
@@ -224,8 +269,9 @@ Classes
         - label_resource_name: Resource name of the label
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -236,6 +282,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_group_labels records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, operations: list[AdGroupLabelsCreateParamsOperationsItem], customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.AdGroupLabelMutateResponse`
     :   Creates an ad group-label association, applying an existing label to an ad group for organization and filtering.
@@ -248,13 +309,12 @@ Classes
         Returns:
             AdGroupLabelMutateResponse
 
-    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupLabel], AdGroupLabelsListResultMeta]`
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroupLabel], AdGroupLabelsListResultMeta]`
     :   Retrieves ad group label associations using GAQL query.
         
         Args:
             query: GAQL query for ad group labels
-            page_token: Token for pagination
-            page_size: Number of results per page (max 10000)
+            page_token: Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical.
             customer_id: Google Ads customer ID (10 digits, no dashes)
             **kwargs: Additional parameters
         
@@ -301,8 +361,9 @@ Classes
         - segments_date: Date segment for the report row
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -314,13 +375,27 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroup], AdGroupsListResultMeta]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against ad_groups records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[AdGroup], AdGroupsListResultMeta]`
     :   Retrieves ad group data using GAQL query.
         
         Args:
             query: GAQL query for ad groups
-            page_token: Token for pagination
-            page_size: Number of results per page (max 10000)
+            page_token: Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical.
             customer_id: Google Ads customer ID (10 digits, no dashes)
             **kwargs: Additional parameters
         
@@ -361,8 +436,9 @@ Classes
         - label_resource_name: Resource name of the label
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -373,6 +449,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against campaign_labels records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, operations: list[CampaignLabelsCreateParamsOperationsItem], customer_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.CampaignLabelMutateResponse`
     :   Creates a campaign-label association, applying an existing label to a campaign for organization and filtering.
@@ -385,13 +476,12 @@ Classes
         Returns:
             CampaignLabelMutateResponse
 
-    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[CampaignLabel], CampaignLabelsListResultMeta]`
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[CampaignLabel], CampaignLabelsListResultMeta]`
     :   Retrieves campaign label associations using GAQL query.
         
         Args:
             query: GAQL query for campaign labels
-            page_token: Token for pagination
-            page_size: Number of results per page (max 10000)
+            page_token: Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical.
             customer_id: Google Ads customer ID (10 digits, no dashes)
             **kwargs: Additional parameters
         
@@ -446,8 +536,9 @@ Classes
         - segments_ad_network_type: Ad network type segment
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -459,13 +550,27 @@ Classes
         Raises:
             NotImplementedError: If called in local execution mode
 
-    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, page_size: int | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]`
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against campaigns records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
+
+    `list(self, customer_id: str, query: str | None = None, page_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.google_ads.models.GoogleAdsExecuteResultWithMeta[list[Campaign], CampaignsListResultMeta]`
     :   Retrieves campaign data using GAQL query.
         
         Args:
             query: GAQL query for campaigns
-            page_token: Token for pagination
-            page_size: Number of results per page (max 10000)
+            page_token: Pass response metadata next_page_token ($.nextPageToken) to retrieve the next fixed-size page; keep the GAQL query identical.
             customer_id: Google Ads customer ID (10 digits, no dashes)
             **kwargs: Additional parameters
         
@@ -712,7 +817,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'update', 'create', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'update', 'create', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

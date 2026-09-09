@@ -8,8 +8,6 @@ import io.airbyte.cdk.load.data.AirbyteValue
 import io.airbyte.cdk.load.data.NullValue
 import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.message.Meta
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_AB_LOADED_AT
-import io.airbyte.cdk.load.message.Meta.Companion.COLUMN_NAME_DATA
 import io.airbyte.cdk.load.util.Jsons
 
 internal val RAW_META_COLUMNS =
@@ -46,8 +44,7 @@ class PostgresRawRecordFormatter(
         // Do not output null values in the JSON raw output
         val filteredRecord =
             record.filter { (k, v) -> v !is NullValue && !RAW_META_COLUMNS.contains(k) }
-        // Sanitize null bytes from JSON data — PostgreSQL TEXT columns do not support \u0000
-        val jsonData = Jsons.writeValueAsString(filteredRecord).replace("\u0000", "")
+        val jsonData = Jsons.writeValueAsString(filteredRecord)
 
         // Iterate through columns in the exact order they appear in the table
         columns.forEach { column ->

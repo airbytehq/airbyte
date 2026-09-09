@@ -243,7 +243,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -372,8 +372,9 @@ Classes
         - trace_id: Unique identifier for tracing
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -384,6 +385,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against list_financial_event_groups records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, financial_event_group_started_after: str | None = None, financial_event_group_started_before: str | None = None, max_results_per_page: int | None = None, next_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.amazon_seller_partner.models.AmazonSellerPartnerExecuteResultWithMeta[list[FinancialEventGroup], ListFinancialEventGroupsListResultMeta]`
     :   Returns financial event groups for a given date range.
@@ -451,8 +467,9 @@ Classes
         - value_added_service_charge_event_list: List of value-added service charge events
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -463,6 +480,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against list_financial_events records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, posted_after: str | None = None, posted_before: str | None = None, max_results_per_page: int | None = None, next_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.amazon_seller_partner.models.AmazonSellerPartnerExecuteResultWithMeta[FinancialEvents, ListFinancialEventsListResultMeta]`
     :   Returns financial events for a given date range.
@@ -532,8 +564,9 @@ Classes
         - title: Title of the product
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -544,6 +577,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against order_items records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `list(self, order_id: str, next_token: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.amazon_seller_partner.models.AmazonSellerPartnerExecuteResultWithMeta[list[OrderItem], OrderItemsListResultMeta]`
     :   Returns detailed order item information for the order indicated by the specified order ID.
@@ -608,8 +656,9 @@ Classes
         - seller_id: Identifier for the seller associated with the order
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -620,6 +669,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.amazon_seller_partner.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against orders records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, order_id: str, **kwargs) ‑> dict[str, typing.Any]`
     :   Returns the order indicated by the specified order ID.

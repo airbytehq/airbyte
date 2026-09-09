@@ -4,7 +4,6 @@
 
 import base64
 import binascii
-import re
 import struct
 from abc import ABC, abstractmethod
 from datetime import timedelta, timezone
@@ -15,7 +14,7 @@ import requests
 from dateutil.parser import parse as date_parse
 
 from airbyte_cdk import BackoffStrategy, StreamSlice
-from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, FailureType, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.checkpoint.substream_resumable_full_refresh_cursor import SubstreamResumableFullRefreshCursor
@@ -45,7 +44,7 @@ from .graphql import (
     get_query_releases,
     get_query_reviews,
 )
-from .utils import GitHubAPILimitException, getter
+from .utils import getter
 
 
 class GithubStreamABC(HttpStream, ABC):
@@ -56,9 +55,14 @@ class GithubStreamABC(HttpStream, ABC):
     max_retries: int = 5
     stream_base_params = {}
 
-    def __init__(self, api_url: str = "https://api.github.com", access_token_type: str = "", **kwargs):
-        if kwargs.get("authenticator"):
-            kwargs["authenticator"].max_time = kwargs.pop("max_waiting_time", self.max_time)
+    def __init__(
+        self,
+        api_url: str = "https://api.github.com",
+        access_token_type: str = "",
+        max_wait_time_seconds: float = 120 * 60,
+        **kwargs,
+    ):
+        self.max_wait_time_seconds = max_wait_time_seconds
         super().__init__(**kwargs)
 
         self.access_token_type = access_token_type
@@ -116,7 +120,7 @@ class GithubStreamABC(HttpStream, ABC):
         )
 
     def get_backoff_strategy(self) -> Optional[Union[BackoffStrategy, List[BackoffStrategy]]]:
-        return GithubStreamABCBackoffStrategy(stream=self)
+        return GithubStreamABCBackoffStrategy(stream=self, max_wait_time_seconds=self.max_wait_time_seconds)
 
     @staticmethod
     def check_graphql_rate_limited(response_json: dict) -> bool:
@@ -147,7 +151,7 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
             if e._exception.response.status_code == requests.codes.NOT_FOUND:
                 # A lot of streams are not available for repositories owned by a user instead of an organization.
-                if isinstance(self, Organizations):
+                if isinstance(self, Teams):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{organisation}`."
                 elif isinstance(self, TeamMemberships):
                     error_msg = f"Syncing `{self.__class__.__name__}` stream for organization `{organisation}`, team `{stream_slice.get('team_slug')}` and user `{stream_slice.get('username')}` isn't available: User has no team membership. Skipping..."
@@ -159,13 +163,10 @@ class GithubStreamABC(HttpStream, ABC):
                     )
             elif e._exception.response.status_code == requests.codes.FORBIDDEN:
                 api_message = (e._exception.response.json() or {}).get("message", "")
-                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
-                if isinstance(self, Repositories):
-                    raise e
                 # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
                 # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
                 # For all `Organisation` based streams
-                elif isinstance(self, (Organizations, Teams, Users)):
+                if isinstance(self, Teams):
                     error_msg = (
                         f"Skipping `{self.name}` for organization `{organisation}`: "
                         f"GitHub denied access (HTTP 403). Your token may be missing the `read:org` scope, "
@@ -212,12 +213,33 @@ class GithubStreamABC(HttpStream, ABC):
                 raise e
 
             self.logger.warning(error_msg)
-        except GitHubAPILimitException as e:
-            internal_message = f"Stream: `{self.name}`, slice: `{stream_slice}`. {e}"
-            message = "Rate limit exceeded for all configured GitHub API tokens."
-            raise AirbyteTracedException(
-                internal_message=internal_message, message=message, failure_type=FailureType.transient_error
-            ) from e
+            self._close_slice_after_swallowed_error(stream_slice)
+        # Exhausting every token no longer raises a connector-specific exception here: the
+        # shared authenticator raises AirbyteTracedException(transient_error) itself, which the
+        # `except AirbyteTracedException` branch above re-raises untouched (it carries no
+        # response to classify).
+
+    def _close_slice_after_swallowed_error(self, stream_slice: Optional[Mapping[str, Any]]) -> None:
+        """Mark the slice complete when `read_records` skipped it instead of raising.
+
+        `HttpStream._read_pages` closes a resumable-full-refresh slice only after the last
+        page, so an error swallowed mid-slice leaves the partition's cursor state empty and
+        `CursorBasedCheckpointReader._find_next_slice` hands the same partition back forever
+        — no record, no STATE, and the platform kills the attempt on the source heartbeat.
+        Closing the slice makes a swallowed error terminal, as the warning above implies.
+        """
+        cursor = self.get_cursor()
+        if not isinstance(cursor, SubstreamResumableFullRefreshCursor):
+            return
+        # Only close a partition the slice actually names. Several substreams read their parent
+        # by calling its `read_records` straight from `stream_slices()` with a bare mapping that
+        # has no `partition` key (`TeamMembers`, `IssueTimelineEvents`, `utils.read_full_refresh`,
+        # ...), and those parents are shared instances that emit their own STATE later — closing
+        # `_extract_slice_fields`' `{}` fallback would put a meaningless entry in it.
+        partition = (stream_slice or {}).get("partition")
+        if not partition:
+            return
+        cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition))
 
 
 class GithubStream(GithubStreamABC):
@@ -437,14 +459,17 @@ class RepositoryStats(GithubStream):
         yield response.json()
 
 
-class Assignees(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/assignees?apiVersion=2022-11-28#list-assignees
-    """
-
-
 class Branches(GithubStream):
     """
+    The user-facing `branches` stream is served by the manifest. This class stays behind as a
+    technical stream (like `RepositoryStats` above): `Commits` reads it to discover which
+    branches exist per repository before slicing. It is not returned by
+    `SourceGithub.streams()` and is not part of the catalog.
+
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
+    `schemas/branches.json`; `get_json_schema` is overridden below so the class stays usable
+    (the base implementation would raise `FileNotFoundError`).
+
     API docs: https://docs.github.com/en/rest/branches/branches?apiVersion=2022-11-28#list-branches
     """
 
@@ -453,26 +478,41 @@ class Branches(GithubStream):
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"repos/{stream_slice['repository']}/branches"
 
-
-class Collaborators(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/collaborators/collaborators?apiVersion=2022-11-28#list-repository-collaborators
-    """
-
-
-class IssueLabels(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/issues/labels?apiVersion=2022-11-28#list-labels-for-a-repository
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/labels"
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `Commits` only reads `repository` and `name` off these records, and this stream is
+        # never discovered or validated against a schema. The user-facing schema is the inline
+        # one in `manifest.yaml`, so duplicating it here would only give it a chance to drift.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "repository": {"type": "string"},
+                "name": {"type": ["null", "string"]},
+            },
+        }
 
 
-class Organizations(GithubStreamABC):
+class Teams(GithubStreamABC):
     """
-    API docs: https://docs.github.com/en/rest/orgs/orgs?apiVersion=2022-11-28#list-organizations
+    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams
+
+    Retained only as the parent of `TeamMembers`, which is in turn the parent of
+    `TeamMemberships`; both stay Python until Step 7 migrates the parent-child group.
+    The catalog's `teams` stream comes from `manifest.yaml` — this class is not returned by
+    `SourceGithub.streams()` and must stay in step with the manifest definition until it can be
+    deleted. `use_cache` here and `use_cache: true` on `organization_scoped_requester` make both
+    sides name their cache `teams.sqlite`, so the parent read and the declarative stream share one
+    entry and keeping this class costs no extra quota. Drop either one and `orgs/{org}/teams` is
+    fetched twice per organization.
+
+    Because it is not in the catalog, its schema lives inline in `manifest.yaml` and there is no
+    `schemas/teams.json`; `get_json_schema` is overridden below so the class stays usable (the
+    base implementation would raise `FileNotFoundError`), following what `Branches` does.
+
+    TODO(https://github.com/airbytehq/airbyte-internal-issues/issues/16517): delete with Step 7.
     """
+
+    use_cache = True
 
     # GitHub pagination could be from 1 to 100.
     page_size = 100
@@ -487,78 +527,28 @@ class Organizations(GithubStreamABC):
             yield {"organization": organization}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}"
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        yield response.json()
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
-        record["organization"] = stream_slice["organization"]
-        return record
-
-
-class Repositories(SemiIncrementalMixin, Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-organization-repositories
-    """
-
-    is_sorted = "desc"
-    stream_base_params = {
-        "sort": "updated",
-        "direction": "desc",
-    }
-
-    def __init__(self, *args, pattern: Optional[str] = None, **kwargs):
-        self._pattern = re.compile(pattern) if pattern else pattern
-        super().__init__(*args, **kwargs)
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/repos"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():  # GitHub puts records in an array.
-            record = self.transform(record=record, stream_slice=stream_slice)
-            if not self._pattern or self._pattern.match(record["full_name"]):
-                yield record
-
-
-class Tags(GithubStream):
-    """
-    API docs: https://docs.github.com/en/rest/repos/repos?apiVersion=2022-11-28#list-repository-tags
-    """
-
-    primary_key = ["repository", "name"]
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"repos/{stream_slice['repository']}/tags"
-
-
-class Teams(Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/teams/teams?apiVersion=2022-11-28#list-teams
-    """
-
-    use_cache = True
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
         return f"orgs/{stream_slice['organization']}/teams"
 
     def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
         for record in response.json():
             yield self.transform(record=record, stream_slice=stream_slice)
 
+    def get_json_schema(self) -> Mapping[str, Any]:
+        # `TeamMembers` only reads `organization` and `slug` off these records, and this stream is
+        # never discovered or validated against a schema. The user-facing schema is the inline one
+        # in `manifest.yaml`, so duplicating it here would only give it a chance to drift.
+        return {
+            "$schema": "https://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "organization": {"type": "string"},
+                "slug": {"type": ["null", "string"]},
+            },
+        }
 
-class Users(Organizations):
-    """
-    API docs: https://docs.github.com/en/rest/orgs/members?apiVersion=2022-11-28#list-organization-members
-    """
-
-    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
-        return f"orgs/{stream_slice['organization']}/members"
-
-    def parse_response(self, response: requests.Response, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping]:
-        for record in response.json():
-            yield self.transform(record=record, stream_slice=stream_slice)
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
+        record["organization"] = stream_slice["organization"]
+        return record
 
 
 # Below are semi incremental streams
@@ -1902,9 +1892,7 @@ class ContributorActivity(GithubStream):
                     # In order to retain the existing stream behavior before we added RFR to this stream, we need to close out the
                     # partition after we give up the maximum number of retries on the 202 response. This does lead to the question
                     # of if we should prematurely exit in the first place, but for now we're going to aim for feature parity
-                    partition_obj = stream_slice.get("partition")
-                    if self.cursor and partition_obj:
-                        self.cursor.close_slice(StreamSlice(cursor_slice={}, partition=partition_obj))
+                    self._close_slice_after_swallowed_error(stream_slice)
                 else:
                     raise e
             else:

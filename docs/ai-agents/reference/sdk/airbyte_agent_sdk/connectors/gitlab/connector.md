@@ -39,8 +39,9 @@ Classes
         - commit: Head commit details
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -51,6 +52,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against branches records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, branch: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Branch`
     :   Get a single project repository branch.
@@ -110,8 +126,9 @@ Classes
         - stats: Commit statistics
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -122,6 +139,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against commits records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, sha: str, stats: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Commit`
     :   Get a specific commit identified by the commit hash or name of a branch or tag.
@@ -380,7 +412,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -474,8 +506,9 @@ Classes
         - locked: Whether the member account is locked
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -486,6 +519,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against group_members records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, group_id: str, user_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Member`
     :   Get a member of a group.
@@ -541,8 +589,9 @@ Classes
         - web_url: Web URL of the milestone
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -553,6 +602,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against group_milestones records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, group_id: str, milestone_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Milestone`
     :   Get a single group milestone.
@@ -622,8 +686,9 @@ Classes
         - projects: Projects in the group
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -634,6 +699,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against groups records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Group`
     :   Get all details of a group.
@@ -715,8 +795,9 @@ Classes
         - severity: Severity level of the issue
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -727,6 +808,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against issues records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, issue_iid: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Issue`
     :   Get a single project issue.
@@ -827,8 +923,9 @@ Classes
         - merge_user: User who performed the merge
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -839,6 +936,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against merge_requests records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, merge_request_iid: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.MergeRequest`
     :   Get information about a single merge request.
@@ -900,8 +1012,9 @@ Classes
         - name: Name of the pipeline
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -912,6 +1025,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against pipelines records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, pipeline_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Pipeline`
     :   Get one pipeline of a project.
@@ -971,8 +1099,9 @@ Classes
         - locked: Whether the member account is locked
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -983,6 +1112,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against project_members records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, user_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Member`
     :   Get a member of a project.
@@ -1038,8 +1182,9 @@ Classes
         - web_url: Web URL of the milestone
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1050,6 +1195,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against project_milestones records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, milestone_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Milestone`
     :   Get a single project milestone.
@@ -1173,8 +1333,9 @@ Classes
         - keep_latest_artifact: Whether the latest artifact is kept
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1185,6 +1346,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against projects records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, statistics: bool | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Project`
     :   Get a specific project by ID.
@@ -1248,8 +1424,9 @@ Classes
         - project_id: ID of the project
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1260,6 +1437,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against releases records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, tag_name: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Release`
     :   Get a release for the given tag.
@@ -1312,8 +1504,9 @@ Classes
         - project_id: ID of the project
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1324,6 +1517,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tags records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, project_id: str, tag_name: str, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.Tag`
     :   Get a specific repository tag determined by its name.
@@ -1376,8 +1584,9 @@ Classes
         - locked: Whether the user account is locked
         
         Args:
-            query: Filter and sort conditions. Supports operators like eq, neq, gt, gte, lt, lte,
-                   in, like, fuzzy, keyword, not, and, or. Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
+            query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
+                   Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
             fields: Field paths to include in results. Each path is a list of keys for nested access.
@@ -1388,6 +1597,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.gitlab.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, id: str | None = None, **kwargs) ‑> airbyte_agent_sdk.connectors.gitlab.models.User`
     :   Get a single user by ID.
