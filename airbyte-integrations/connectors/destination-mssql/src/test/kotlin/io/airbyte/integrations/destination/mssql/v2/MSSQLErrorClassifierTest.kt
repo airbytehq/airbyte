@@ -49,7 +49,11 @@ class MSSQLErrorClassifierTest {
         val exception =
             assertThrows(ConfigErrorException::class.java) {
                 MSSQLErrorClassifier.rethrowClassified(
-                    SQLException("The INSERT permission was denied on the object 'unit_info'.", "42000", 0)
+                    SQLException(
+                        "The INSERT permission was denied on the object 'unit_info'.",
+                        "42000",
+                        0
+                    )
                 )
             }
 
@@ -81,6 +85,21 @@ class MSSQLErrorClassifierTest {
         val original =
             BatchUpdateException("batch failed", null, 0, intArrayOf()).also {
                 it.initCause(SQLException("The INSERT permission was denied.", "42000", 229))
+            }
+
+        val exception =
+            assertThrows(ConfigErrorException::class.java) {
+                MSSQLErrorClassifier.rethrowClassified(original)
+            }
+
+        assertSame(original, exception.cause)
+    }
+
+    @Test
+    fun `wrapped permission denied message is a config error without matching codes`() {
+        val original =
+            SQLException("batch failed").also {
+                it.initCause(SQLException("The INSERT permission was denied on the object 'x'."))
             }
 
         val exception =

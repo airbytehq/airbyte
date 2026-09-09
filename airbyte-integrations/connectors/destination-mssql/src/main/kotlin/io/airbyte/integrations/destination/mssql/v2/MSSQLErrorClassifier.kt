@@ -11,22 +11,23 @@ object MSSQLErrorClassifier {
     private val PERMISSION_DENIED_ERROR_CODES = setOf(229, 230, 262, 297)
     private val STRING_TRUNCATION_ERROR_CODES = setOf(2628, 8152)
 
-    /** Rethrows [e] as a ConfigErrorException when it is a known user-fixable SQL Server error, otherwise rethrows it unchanged. */
+    /**
+     * Rethrows [e] as a ConfigErrorException when it is a known user-fixable SQL Server error,
+     * otherwise rethrows it unchanged.
+     */
     fun rethrowClassified(e: SQLException): Nothing {
-        val codes =
-            generateSequence<Throwable>(e) { it.cause }
-                .filterIsInstance<SQLException>()
-                .map { it.errorCode }
-        val message = e.message ?: ""
+        val chain = generateSequence<Throwable>(e) { it.cause }.toList()
+        val codes = chain.filterIsInstance<SQLException>().map { it.errorCode }
+        val messages = chain.mapNotNull { it.message }
         when {
             codes.any { it in PERMISSION_DENIED_ERROR_CODES } ||
-                message.contains("permission was denied", ignoreCase = true) ->
+                messages.any { it.contains("permission was denied", ignoreCase = true) } ->
                 throw ConfigErrorException(
                     "Database user lacks permission on the destination table.",
                     e
                 )
             codes.any { it in STRING_TRUNCATION_ERROR_CODES } ||
-                message.contains("would be truncated", ignoreCase = true) ->
+                messages.any { it.contains("would be truncated", ignoreCase = true) } ->
                 throw ConfigErrorException(
                     "Record value exceeds the length of a destination table column.",
                     e
