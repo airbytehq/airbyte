@@ -53,9 +53,9 @@ class DestinationStreamFactory(
         return DestinationStream(
             unmappedNamespace = stream.stream.namespace,
             unmappedName = stream.stream.name,
-            generationId = stream.generationId,
-            minimumGenerationId = stream.minimumGenerationId,
-            syncId = stream.syncId,
+            generationId = stream.generationId ?: 0L,
+            minimumGenerationId = stream.minimumGenerationId ?: 0L,
+            syncId = stream.syncId ?: 0L,
             namespaceMapper = namespaceMapper,
             tableSchema = tableSchema,
         )
