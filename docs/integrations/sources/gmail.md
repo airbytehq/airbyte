@@ -147,6 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version          | Date              | Pull Request | Subject        |
 |------------------|-------------------|--------------|----------------|
+| 0.1.15 | 2026-09-09 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Fix config migration copying empty or incomplete legacy OAuth fields into nested `credentials` |
 | 0.1.14 | 2026-09-08 | [85497](https://github.com/airbytehq/airbyte/pull/85497) | Update dependencies |
 | 0.1.13 | 2026-08-18 | [84554](https://github.com/airbytehq/airbyte/pull/84554) | Update dependencies |
 | 0.1.12 | 2026-08-11 | [83951](https://github.com/airbytehq/airbyte/pull/83951) | Update dependencies |
