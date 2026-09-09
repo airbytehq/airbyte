@@ -1507,12 +1507,12 @@ streams:
 # exploit higher Zendesk plans.
 # `num_workers` is floored at 2 here as well as in the spec. The config migration
 # that rewrites a stored `1` to `2` only takes effect on the sync *after* the one
-# that emits the control message, because CDK 7.23.8 builds this ConcurrencyLevel
-# from the pre-migration config. Clamping here makes the floor apply immediately,
-# on the first sync after the upgrade. A single worker serializes every stream
-# behind the single-partition `tickets` walk, so nothing emits a record or a state
-# message while it runs and the platform cancels the attempt on the heartbeat
-# timeout (airbytehq/oncall#13250).
+# that emits the control message, because the CDK (7.23.8 and later) builds this
+# ConcurrencyLevel from the pre-migration config. Clamping here makes the floor
+# apply immediately, on the first sync after the upgrade. A single worker
+# serializes every stream behind the single-partition `tickets` walk, so nothing
+# emits a record or a state message while it runs and the platform can cancel the
+# attempt on the heartbeat timeout (airbytehq/oncall#13250).
 concurrency_level:
   type: ConcurrencyLevel
   default_concurrency: "{{ [config.get('num_workers', 4), 2] | max }}"
@@ -1683,8 +1683,8 @@ spec:
         description: >-
           The number of worker threads to use for the sync. Higher values can
           improve sync throughput on large workspaces; lower values reduce load
-          on the source. The minimum is 2, because a single thread stalls the
-          sync while the `tickets` stream reads.
+          on the source. The minimum is 2 so that another stream keeps emitting
+          while the `tickets` stream reads.
         order: 3
       page_size:
         type: integer
@@ -1788,8 +1788,8 @@ spec:
         description: >-
           Raise `num_workers` from 1 to the new minimum of 2. A single worker
           serializes every stream behind the long-running `tickets` walk, so no
-          sibling stream can emit a record while it runs and the sync is killed
-          on the heartbeat timeout.
+          sibling stream can emit a record while it runs and the attempt risks
+          the heartbeat timeout.
         transformations:
           - type: ConfigAddFields
             fields:

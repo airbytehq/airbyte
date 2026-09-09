@@ -4,6 +4,8 @@ from typing import Any, Mapping
 
 import pytest
 
+from airbyte_cdk.sources.utils.schema_helpers import check_config_against_spec_or_exit
+
 from .conftest import get_source
 
 
@@ -40,6 +42,14 @@ def test_unset_num_workers_is_not_added(tmp_path):
     assert "num_workers" not in migrated
 
 
+def test_migrated_config_passes_the_new_spec(tmp_path):
+    """The `minimum: 2` bump is only safe because spec validation runs after the migration."""
+    config = {**BASE_CONFIG, "num_workers": 1}
+    source = get_source(config=dict(config))
+
+    check_config_against_spec_or_exit(source.configure(config=dict(config), temp_dir=str(tmp_path)), source.spec(None))
+
+
 def test_spec_declares_two_as_the_minimum():
     spec = get_source(config=dict(BASE_CONFIG)).spec(None)
 
@@ -54,7 +64,7 @@ def test_spec_declares_two_as_the_minimum():
 def test_concurrency_never_drops_below_two(stored_num_workers, expected_threads):
     """`concurrency_level` clamps as well as the migration.
 
-    The migration alone is not enough on the first sync after an upgrade: CDK 7.23.8 builds the
+    The migration alone is not enough on the first sync after an upgrade: the CDK (7.23.8 and later) builds the
     ConcurrencyLevel from the pre-migration config, so a stored `1` would still run one worker for
     exactly the sync that needs two. Reaching into the thread pool is the only way to observe the
     effective value.
