@@ -14,7 +14,6 @@ import json
 import logging
 from pathlib import Path
 
-import pytest
 import requests_mock
 import yaml
 from conftest import get_source
