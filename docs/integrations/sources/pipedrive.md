@@ -1,48 +1,46 @@
 # Pipedrive
 
-This page contains the setup guide and reference information for the Pipedrive connector.
+This page contains the setup guide and reference information for the Pipedrive source connector.
 
 ## Prerequisites
 
-- A Pipedrive account;
-- An `API token`;
-- A `client_id`, `client_secret`, and `refresh_token`.
+- A Pipedrive account with API access enabled for your user
+- Your Pipedrive API Token
+- A Start Date (in UTC) from which to begin replicating data
 
 ## Setup guide
 
-The Pipedrive connector accepts two authentication flows:
+### Step 1: Set up Pipedrive
 
-### Via API Token Authentication
+The connector authenticates with a personal API token. Each token is tied to a Pipedrive user, so the connector can only read data that user is allowed to see.
 
-Step 1 - Enable API Token:
+1. In the Pipedrive web app, click your account name (top right), then **Company settings** > **Personal preferences** > **API**.
+2. Copy the API token shown on that page. See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for screenshots.
 
-If you don't see API next to the `Your companies` section, it's due to the permission sets handled by the company's admin. The company's admin can give you access to your API token by enabling it for you from the Settings in Pipedrive web app.
+If the **API** tab isn't visible, your company admin hasn't enabled API access for your permission set. Ask them to follow [Enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users).
 
-For more information, access [enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users).
+### Step 2: Set up the Pipedrive connector in Airbyte
 
-Step 2 - Find the API Token:
+1. In the Airbyte UI, go to **Sources** and click **+ New source**.
+2. Select **Pipedrive** from the list.
+3. Enter a name for the source.
+4. Fill in the fields below, then click **Set up source**.
 
-You can get the API Token manually from the Pipedrive web app by going to account name (on the top right) > Company settings > Personal preferences > API.
+<FieldAnchor field="api_token">
 
-See [How to find the API Token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for detailed information.
+**API Token**: The personal API token you copied in Step 1. Airbyte sends it as the `api_token` query parameter on every request.
 
-### Via OAuth
+</FieldAnchor>
 
-Step 1 - Register a Pipedrive app:
+<FieldAnchor field="replication_start_date">
 
-Pipedrive allows integrations with its API through **registered apps**. So, to authenticate Airbyte, first you need to create a Pipedrive private app in the marketplace. Follow these [instructions](https://pipedrive.readme.io/docs/marketplace-registering-the-app) to register your integration.
+**Start Date**: A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
-Step 2 - Follow the Oauth Authorization flow:
-
-With the registered app, you can follow the authorization flow to obtain the `client_id`, `client_secret`, and `refresh_token` secrets. Pipedrive has documentation about it: https://pipedrive.readme.io/docs/marketplace-oauth-authorization.
-
-Step 3 - Configure Airbyte:
-
-Now you can fill the fields Client ID, Client Secret, and Refresh Token. Your Pipedrive connector is set up to work with the OAuth authentication.
+</FieldAnchor>
 
 ## Supported sync modes
 
-The Pipedrive connector supports the following sync modes:
+The Pipedrive source connector supports the following [sync modes](https://docs.airbyte.com/platform/using-airbyte/core-concepts/sync-modes):
 
 | Feature                       | Supported? |
 | :---------------------------- | :--------- |
@@ -54,59 +52,84 @@ The Pipedrive connector supports the following sync modes:
 
 ## Supported Streams
 
-Apart from `Fields` streams, all other streams support incremental.
+The connector uses the [Pipedrive API v1](https://developers.pipedrive.com/docs/api/v1). Ten streams support incremental sync; the rest are full refresh only. Stream names below match the names shown in Airbyte.
 
-- [Activities](https://developers.pipedrive.com/docs/api/v1/Activities#getActivities)
+| Stream                | Sync modes                | Notes                                                                                                                                                                                                                                       |
+| :-------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `activities`          | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=activity`. Cursor: `update_time`.                                                                                                            |
+| `activity_fields`     | Full Refresh              | [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)                                                                                                                                              |
+| `activity_types`      | Full Refresh              | [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)                                                                                                                                                 |
+| `currencies`          | Full Refresh              | [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)                                                                                                                                                          |
+| `deal_fields`         | Full Refresh              | [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)                                                                                                                                                          |
+| `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal ([DealProducts](https://developers.pipedrive.com/docs/api/v1/DealProducts#getDealProducts); the connector calls the v1 path `GET /v1/deals/{id}/products`). |
+| `deals`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=deal`. Cursor: `update_time`.                                                                                                                |
+| `files`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=file`. Cursor: `update_time`.                                                                                                                |
+| `filters`             | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=filter`. Cursor: `update_time`.                                                                                                              |
+| `goals`               | Full Refresh              | [Goals](https://developers.pipedrive.com/docs/api/v1/Goals#getGoals)                                                                                                                                                                         |
+| `lead_labels`         | Full Refresh              | [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)                                                                                                                                                          |
+| `leads`               | Full Refresh              | [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)                                                                                                                                                                         |
+| `mail`                | Full Refresh              | Messages in each mail thread, fetched with one request per thread ([Mailbox getMailThreadMessages](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreadMessages)). See [Mail streams](#mail-streams).                          |
+| `mailThreads`         | Full Refresh              | Mail threads from the `inbox`, `drafts`, `sent`, and `archive` folders ([Mailbox getMailThreads](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreads)). See [Mail streams](#mail-streams).                                    |
+| `notes`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=note`. Cursor: `update_time`.                                                                                                                |
+| `organization_fields` | Full Refresh              | [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)                                                                                                                                  |
+| `organizations`       | Full Refresh              | [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations); the connector calls the v1 path `GET /v1/organizations`. |
+| `permission_sets`     | Full Refresh              | [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)                                                                                                                                              |
+| `person_fields`       | Full Refresh              | [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)                                                                                                                                                    |
+| `persons`             | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=person`. Cursor: `update_time`.                                                                                                              |
+| `pipelines`           | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=pipeline`. Cursor: `update_time`.                                                                                                            |
+| `product_fields`      | Full Refresh              | [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)                                                                                                                                                 |
+| `products`            | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=product`. Cursor: `update_time`.                                                                                                             |
+| `roles`               | Full Refresh              | [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)                                                                                                                                                                         |
+| `stages`              | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=stage`. Cursor: `update_time`.                                                                                                               |
+| `users`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=user`. Cursor: `modified`.                                                                                                                   |
 
-- [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)
+### Incremental sync and Start Date
 
-- [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)
+The ten incremental streams read from the Pipedrive [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) endpoint, which returns items changed since a given timestamp. On the first sync, Airbyte passes your Start Date as `since_timestamp`. On later incremental syncs, it passes the latest cursor value it saw (`update_time`, or `modified` for `users`). Records modified before the Start Date are never replicated by these streams, and the Start Date has no effect on the full refresh streams.
 
-- [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)
+Because these streams use the Recents endpoint, they return records that changed in the window, not only records that were created in it. For example, a deal created years before your Start Date shows up in `deals` as soon as anyone edits it.
 
-- [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)
+### Custom fields
 
-- [DealProducts](https://developers.pipedrive.com/docs/api/v1/Deals#getDealProducts)
+Pipedrive lets you add custom fields to deals, persons, organizations, products, and activities. The API returns each custom field as a 40-character hash key (for example `dcf558aac1ae4e8c4f849ba5e668430d8df9be12`) rather than a readable name. The `deals`, `persons`, `organizations`, `products`, and `activities` streams pass these keys through as additional top-level properties on each record. To map a hash key to its label and type, sync the matching `*_fields` stream (`deal_fields`, `person_fields`, `organization_fields`, `product_fields`, or `activity_fields`) and join on the `key` column.
 
-- [Deals](https://developers.pipedrive.com/docs/api/v1/Deals#getDeals)
+### Mail streams
 
-- [Files](https://developers.pipedrive.com/docs/api/v1/Files#getFiles)
-
-- [Filters](https://developers.pipedrive.com/docs/api/v1/Filters#getFilters)
-
-- [Goals](https://developers.pipedrive.com/docs/api/v1/Goals#getGoals)
-
-- [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)
-
-- [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)
-
-- [Notes](https://developers.pipedrive.com/docs/api/v1/Notes#getNotes)
-
-- [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)
-
-- [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations)
-
-- [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)
-
-- [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)
-
-- [Persons](https://developers.pipedrive.com/docs/api/v1/Persons#getPersons)
-
-- [Pipelines](https://developers.pipedrive.com/docs/api/v1/Pipelines#getPipelines)
-
-- [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)
-
-- [Products](https://developers.pipedrive.com/docs/api/v1/Products#getProducts)
-
-- [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)
-
-- [Stages](https://developers.pipedrive.com/docs/api/v1/Stages#getStages)
-
-- [Users](https://developers.pipedrive.com/docs/api/v1/Users#getUsers)
+`mailThreads` lists threads from the mailbox of the user who owns the API token. It queries each of the `inbox`, `drafts`, `sent`, and `archive` folders separately, so a thread that appears in more than one folder can be returned more than once. `mail` then requests the messages of every thread returned by `mailThreads`, one request per thread. Both streams are full refresh only, and you only see mail for the user whose token you configured, not for the whole company.
 
 ## Performance considerations
 
-The Pipedrive connector will gracefully handle rate limits. For more information, see [the Pipedrive docs for rate limitations](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting).
+Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. The connector doesn't configure any Pipedrive-specific rate limit handling. It relies on the default retry behavior of the Airbyte CDK, which retries HTTP 429 and 5xx responses with exponential backoff up to five times before failing the sync. If your account is close to its limit, run fewer streams per connection or schedule syncs less often.
+
+Two streams make one request per parent record and can be slow on large accounts:
+
+- `deal_products` makes one request per deal.
+- `mail` makes one request per mail thread.
+
+Consider leaving these streams disabled unless you need them.
+
+## Limitations & Troubleshooting
+
+<details>
+<summary>Expand to see details about Pipedrive connector limitations and troubleshooting.</summary>
+
+### Connector limitations
+
+- The connector doesn't replicate deletes. A record deleted in Pipedrive stays in your destination until you clear and resync the stream.
+- Only the ten streams marked Incremental above track state. The other sixteen streams are re-read in full on every sync.
+- Full refresh streams ignore the Start Date.
+- The connector authenticates with a personal API token only. It doesn't support OAuth.
+- The connector uses Pipedrive API v1. Newer fields that only exist in API v2 aren't available.
+
+### Troubleshooting
+
+- **401 Unauthorized during setup**: Check that the API token was copied in full and that API access is enabled for your user (see Step 1).
+- **Missing streams or empty streams**: Records are limited to what the token's user can see in Pipedrive. Use a token from a user with broader visibility, or from an admin.
+- **Records missing from incremental streams**: Move the Start Date earlier and clear the stream, or run a full refresh. Records that haven't been modified since the Start Date are excluded.
+- **Custom fields appear as hash keys**: This is expected. See [Custom fields](#custom-fields).
+- **Syncs fail with HTTP 429**: You have exceeded Pipedrive's rate limit. Reduce the number of enabled streams or increase the interval between syncs.
+
+</details>
 
 ## IP allow list
 
