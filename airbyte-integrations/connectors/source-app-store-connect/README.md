@@ -17,16 +17,27 @@ notes.
 
 ## Local development
 
-Install `airbyte-ci`, then run these commands from the repository root.
+Build the connector image from this directory:
 
 ```bash
-airbyte-ci connectors --name=source-app-store-connect build
-airbyte-ci connectors --name=source-app-store-connect test
+airbyte-cdk image build
 ```
 
-The manifest mock-server tests can also be run directly:
+Run connector commands through the resulting Docker image. For commands that
+require credentials, place a development config at `secrets/config.json`.
 
 ```bash
-cd airbyte-integrations/connectors/source-app-store-connect/unit_tests
+docker run --rm airbyte/source-app-store-connect:dev spec
+
+docker run --rm \
+  --volume "$PWD/secrets:/secrets:ro" \
+  airbyte/source-app-store-connect:dev \
+  check --config /secrets/config.json
+```
+
+Run the mock-server tests with `uv`:
+
+```bash
+cd unit_tests
 uv run pytest .
 ```
