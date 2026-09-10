@@ -9,13 +9,13 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 The Gong API exposes incremental filtering via `fromDateTime` on the calls and scorecards endpoints. The `users` endpoint does not support date-based filtering. Child streams (e.g. `answered_scorecards`) are partitioned via `SubstreamPartitionRouter`.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
-|---|---|---|---|---|---|---|
-| answeredScorecards | medium | top-level parent | reviewTime | reviewTime | incremental |  |
-| calls | medium | top-level parent | started | started | incremental |  |
-| extensiveCalls | medium | top-level parent | startdatetime | startdatetime | incremental |  |
+| --- | --- | --- | --- | --- | --- | --- |
+| answeredScorecards | medium | top-level parent | reviewTime | reviewTime | incremental | |
+| calls | medium | top-level parent | started | started | incremental | |
+| extensiveCalls | medium | top-level parent | startdatetime | startdatetime | incremental | |
 | scorecards | small | top-level parent | none | none | deferred_no_api_support | No date filter on list endpoint; config-style lookup |
 | users | small | top-level parent | none | none | deferred_no_api_support | No date filter on list endpoint |
-| callTranscripts | medium | child | started | started | incremental |  |
+| callTranscripts | medium | child | started | started | incremental | |
 
 ### Future incremental stream candidates
 
@@ -26,7 +26,7 @@ The Gong API exposes incremental filtering via `fromDateTime` on the calls and s
 All requesters share the same response mappings, defined in `manifest.yaml` (`definitions.auth_error_filter`, `definitions.rate_limit_filter`, `definitions.transient_error_filter`) and appended to each stream's error handler:
 
 | Response | Action | Failure type | Rationale |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | 404 with "… found corresponding to the provided filters" | IGNORE (empty stream) | — | Gong signals an empty result set as a 404 with this message; only that 404 is treated as empty. Warning: a key whose user lacks call visibility gets a byte-identical 404, so a misconfigured key looks like an empty source; this is indistinguishable server-side. |
 | Any other 404 | FAIL (terminal) | `system_error` | CDK default mapping ("Not found. The requested resource was not found on the server."). Catches bad paths and removed resources instead of silently emptying the stream. |
 | 401, 403 | FAIL | `config_error` | Invalid, expired, or scope-limited credentials. Surfaced with an actionable message instead of a raw exception. |
@@ -39,7 +39,7 @@ All requesters share the same response mappings, defined in `manifest.yaml` (`de
 The stream inventory is deliberately unchanged at 6 streams. Everything Fivetran normalizes into child tables ships here as nested fields, mostly on `extensiveCalls`:
 
 | Fivetran table | Verdict | Our stream / field |
-|---|---|---|
+| --- | --- | --- |
 | CALL | covered | `calls`, `extensiveCalls` |
 | USER | covered | `users` |
 | SCORECARD | covered | `scorecards` |
@@ -61,7 +61,7 @@ The stream inventory is deliberately unchanged at 6 streams. Everything Fivetran
 Five Fivetran tables are intentionally not replicated. Justifications:
 
 | Fivetran table | Justification |
-|---|---|
+| --- | --- |
 | TRACKER_LANGUAGE | Tracker *occurrences* ship on `extensiveCalls.content.trackers[]`; per-tracker language configuration is workspace settings metadata, not sales-activity data. Candidate future stream (`/v2/settings/trackers`) if requested. |
 | LANGUAGE_KEYWORDS | Keyword/language configuration metadata, same category as above — settings, not activity data. |
 | ENGAGE_FLOW | Gong Engage is a separate product with its own API surface; out of scope for this connector. |
