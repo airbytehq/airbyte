@@ -1,6 +1,9 @@
 # BigQuery load-input copies for Fusion
 
-Status: proposed implementation; no BigQuery connector changes accompany this plan.
+Status: implemented for GCS staging on `johnny/bigquery-fusion-sync-copy`; standard inserts remain
+unsupported when copying is enabled. Copying defaults off. No deployment-specific settings or
+credentials are embedded in the connector. The sections below describe the implementation contract
+and rollout requirements.
 Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
 The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
 `legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits.
@@ -167,8 +170,8 @@ BigQuery writer to patch. Wrap the chosen writer with one connector-local delega
 The BigQuery checker calls a write operation internally; operation gating must still make archive
 preparation a no-op for `check`. Test this wiring explicitly.
 
-For an empty catalog resolve assumed-role credentials but create no synthetic stream object. For
-zero-row catalog streams, upload schema and cutoff as usual. No event requires seeing a record.
+The current legacy CDK rejects empty catalogs before connector setup. For zero-row catalog streams,
+upload schema and cutoff as usual. No event requires seeing a record.
 Validate minimum generation zero or equal to current generation, preserving the direct/raw
 loaders' unsupported-hybrid behavior. A cutoff event records `generation_cutoff_requested`, a
 unique event ID, identities, run/sync/current/minimum generation IDs, and a strictly-less-than
@@ -241,6 +244,12 @@ when reader shutdown cannot be proved; then prevent new work from making retaine
 unbounded. Propagate cancellation. Provide idempotent close, normal teardown, a JVM shutdown
 fallback, and explicit test cleanup for owned clients/providers/executors.
 
+Implementation detail: SDK automatic multipart splitting of an arbitrary streaming body was not
+retryable after a partially consumed part. `ArchiveFileBody` supplies seekable file ranges through
+`splitCloseable`, reopening the same range on retries. Each subscription owns a bounded range and
+closes on completion/cancellation; root cleanup drains readers and stream closers before unlinking.
+Local HTTP tests exercise the real SDK/Netty multipart protocol, including partial-part retry and abort.
+
 ## 6. Schema descriptor
 
 Use a versioned `bigquery-gcs-load-csv-gzip-v1` format, distinct from Snowflake's CSV contract.
@@ -266,6 +275,11 @@ paths inside `_airbyte_data`, not nonexistent top-level CSV columns. Empty array
 configured key/cursor. Record CDC mode where it affects consumers; distinguish configured cursor
 from any extracted-at fallback used during deduplication. This explicitly supplies information
 missing from the current Snowflake preview descriptor.
+
+The legacy CDK drops configured keys/cursors from its `DestinationStream` for append streams.
+Read these fields from the original `ConfiguredAirbyteCatalog` and match by original stream identity.
+Descriptor serialization preserves explicit nulls with the same Jackson mapper used for hashing;
+the CDK's default null-omitting serialization would change the published layout's hash.
 
 Describe UTF-8, gzip, one header row, separator, quote/escape behavior, line separator, and null
 representation from actual formatter fixtures. The writer uses the shared Apache Commons CSV
@@ -296,6 +310,13 @@ The relevant CDK sources under `airbyte-cdk/bulk/toolkits` are:
 Thus the common `load()` hook is the intended completion gate, but confirm with a real pipeline
 test: a mock loader unit test alone is insufficient. Check EOF and the ordinary table loader's
 empty finish output cannot publish counts from a failed/incomplete archive.
+
+Zero-record checkpoints are already eligible in the legacy checkpoint manager before setup finishes.
+`BigqueryCopyCheckpointConsumer` therefore gates actual checkpoint emission on metadata readiness.
+On failed/cancelled setup it frees reservations without acknowledging state, including the failure
+task's final checkpoint flush. Normal records still use the existing per-batch completion accounting.
+Failed-sync teardown logs secondary cleanup errors and returns so the legacy launcher can receive
+its failure-completion signal. A client constructed concurrently with close is closed before use.
 
 | Failure point | Outcome |
 | --- | --- |
@@ -344,7 +365,7 @@ AWS role trust and expired credentials, forced multipart and abort, and a run sp
 refresh. Use separate consumer credentials to inspect S3. Load-test disabled/enabled throughput,
 cross-cloud bytes, peak spool size, heap, throttling/backpressure, and checkpoint latency.
 
-Commands from the repository root (not yet run for this plan):
+Commands from the repository root:
 
 ```sh
 ./gradlew :airbyte-integrations:connectors:destination-bigquery:test
@@ -354,6 +375,15 @@ Commands from the repository root (not yet run for this plan):
 
 Service integration checks need configured test accounts/resources. Compare both spec snapshots
 unchanged. Verify strict compilation using local CI-equivalent configuration before publishing.
+
+Validation performed during implementation: deterministic unit/pipeline tests, SDK multipart tests
+against a local HTTP fixture, and live GCS-to-BigQuery-to-S3 writes for direct JSON/STDIO, direct
+protobuf/socket, and raw JSON/STDIO. S3 inspection verified gzip/header/row-count metadata and
+recomputed each schema hash. A live empty truncate refresh produced a durable schema/cutoff with no
+batch object and completed successfully. OSS and Cloud spec snapshots were unchanged. Test settings were
+provided only through the local environment using a validation prefix. Long-duration credential
+refresh, production-scale throughput/disk budgets, and the full service failure matrix remain
+pre-rollout checks; a small successful smoke test does not establish them.
 
 ## 9. Delivery sequence and rollout
 

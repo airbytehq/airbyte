@@ -26,6 +26,8 @@ import io.airbyte.cdk.load.write.DestinationWriter
 import io.airbyte.cdk.load.write.StreamStateStore
 import io.airbyte.cdk.load.write.WriteOperation
 import io.airbyte.integrations.destination.bigquery.check.BigqueryCheckCleaner
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryCopyWriter
+import io.airbyte.integrations.destination.bigquery.copy.BigqueryS3Copy
 import io.airbyte.integrations.destination.bigquery.spec.BigqueryConfiguration
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploader
 import io.airbyte.integrations.destination.bigquery.write.bulk_loader.BigQueryBulkOneShotUploaderStep
@@ -71,7 +73,7 @@ class BigqueryBeansFactory {
         return BigQueryBulkOneShotUploaderStep(
             bigQueryOneShotUploader,
             taskFactory,
-            numInputPartitions
+            numInputPartitions,
         )
     }
 
@@ -104,6 +106,8 @@ class BigqueryBeansFactory {
         // we use a different type depending on whether we're in legacy raw tables vs
         // direct-load tables mode.
         streamStateStore: StreamStateStore<*>,
+        catalog: DestinationCatalog,
+        archive: BigqueryS3Copy,
     ): DestinationWriter {
         val destinationHandler =
             BigQueryDatabaseHandler(
@@ -116,17 +120,21 @@ class BigqueryBeansFactory {
             // force smart cast
             @Suppress("UNCHECKED_CAST")
             streamStateStore as StreamStateStore<TypingDedupingExecutionConfig>
-            return TypingDedupingWriter(
-                names,
-                BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
-                destinationHandler,
-                BigqueryRawTableOperations(bigquery),
-                TypingDedupingFinalTableOperations(
-                    NoopTypingDedupingSqlGenerator,
+            return BigqueryCopyWriter(
+                TypingDedupingWriter(
+                    names,
+                    BigqueryTypingDedupingDatabaseInitialStatusGatherer(bigquery),
                     destinationHandler,
+                    BigqueryRawTableOperations(bigquery),
+                    TypingDedupingFinalTableOperations(
+                        NoopTypingDedupingSqlGenerator,
+                        destinationHandler,
+                    ),
+                    disableTypeDedupe = true,
+                    streamStateStore = streamStateStore,
                 ),
-                disableTypeDedupe = true,
-                streamStateStore = streamStateStore,
+                catalog,
+                archive,
             )
         } else {
             val sqlTableOperations =
@@ -148,26 +156,30 @@ class BigqueryBeansFactory {
             val tempTableNameGenerator =
                 DefaultTempTableNameGenerator(internalNamespace = config.internalTableDataset)
 
-            return DirectLoadTableWriter(
-                internalNamespace = config.internalTableDataset,
-                names = names,
-                stateGatherer =
-                    BigqueryDirectLoadDatabaseInitialStatusGatherer(
-                        bigquery,
-                        tempTableNameGenerator
-                    ),
-                destinationHandler = destinationHandler,
-                nativeTableOperations =
-                    BigqueryDirectLoadNativeTableOperations(
-                        bigquery,
-                        sqlTableOperations,
-                        destinationHandler,
-                        projectId = config.projectId,
-                        tempTableNameGenerator,
-                    ),
-                sqlTableOperations = sqlTableOperations,
-                streamStateStore = streamStateStore,
-                tempTableNameGenerator,
+            return BigqueryCopyWriter(
+                DirectLoadTableWriter(
+                    internalNamespace = config.internalTableDataset,
+                    names = names,
+                    stateGatherer =
+                        BigqueryDirectLoadDatabaseInitialStatusGatherer(
+                            bigquery,
+                            tempTableNameGenerator,
+                        ),
+                    destinationHandler = destinationHandler,
+                    nativeTableOperations =
+                        BigqueryDirectLoadNativeTableOperations(
+                            bigquery,
+                            sqlTableOperations,
+                            destinationHandler,
+                            projectId = config.projectId,
+                            tempTableNameGenerator,
+                        ),
+                    sqlTableOperations = sqlTableOperations,
+                    streamStateStore = streamStateStore,
+                    tempTableNameGenerator,
+                ),
+                catalog,
+                archive,
             )
         }
     }
@@ -187,9 +199,7 @@ class BigqueryBeansFactory {
             } else {
                 // The JSON credential can either be a raw JSON object, or a serialized JSON object.
                 GoogleCredentials.fromStream(
-                    ByteArrayInputStream(
-                        config.credentialsJson.toByteArray(StandardCharsets.UTF_8)
-                    ),
+                    ByteArrayInputStream(config.credentialsJson.toByteArray(StandardCharsets.UTF_8))
                 )
             }
         return BigQueryOptions.newBuilder()
@@ -216,10 +226,7 @@ class BigqueryBeansFactory {
 
     @Singleton
     @Named("jobProjectBigquery")
-    fun getJobProjectBigqueryClient(
-        config: BigqueryConfiguration,
-        bigquery: BigQuery,
-    ): BigQuery =
+    fun getJobProjectBigqueryClient(config: BigqueryConfiguration, bigquery: BigQuery): BigQuery =
         if (config.jobProjectId == config.projectId) {
             bigquery
         } else {
