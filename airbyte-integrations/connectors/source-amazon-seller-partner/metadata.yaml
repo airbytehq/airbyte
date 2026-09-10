@@ -67,7 +67,7 @@ data:
               - GET_FBA_SNS_FORECAST_DATA
               - GET_FBA_SNS_PERFORMANCE_DATA
       6.0.0:
-        message: "The primary key of streams `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` has been removed. These reports contain one row per order item, so deduplicating on `amazon-order-id` silently dropped all but one item of every multi-item order in Incremental | Append + Deduped mode. Users of these streams should refresh the source schema and clear the streams after upgrading."
+        message: "The primary key of streams `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` and `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` has been removed. These reports contain one row per order item, so deduplicating on `amazon-order-id` silently dropped all but one item of every multi-item order in deduplicated sync modes (Incremental | Append + Deduped and Full Refresh | Overwrite + Deduped). Users of these streams should refresh the source schema and clear the streams after upgrading."
         upgradeDeadline: "2026-09-24"
         deadlineAction: "auto_upgrade"
         scopedImpact:

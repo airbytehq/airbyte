@@ -7,9 +7,9 @@ The primary key has been removed from two streams:
 - `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_ORDER_DATE_GENERAL` (All Orders report by order date)
 - `GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL` (All Orders report by last update)
 
-These reports contain **one row per order item**, but the connector previously declared `amazon-order-id` as the primary key. In **Incremental | Append + Deduped** sync mode, this caused the destination to keep only one row per order, silently dropping every additional item of multi-item orders and under-reporting quantities and revenue.
+These reports contain **one row per order item**, but the connector previously declared `amazon-order-id` as the primary key. In deduplicated sync modes (**Incremental | Append + Deduped** and **Full Refresh | Overwrite + Deduped**), this caused the destination to keep only one row per order, silently dropping every additional item of multi-item orders and under-reporting quantities and revenue.
 
-No other column or combination of columns can serve as a reliable primary key: Amazon does not include `order-item-id` in the delivered report, and rows for different items of the same order can be fully identical. Removing the primary key is the only correct option. These streams now sync in **Incremental | Append** (or Full Refresh) mode; if you need deduplication, apply it downstream.
+No other column or combination of columns can serve as a reliable primary key: Amazon does not include `order-item-id` in the delivered report, and rows for different items of the same order can be fully identical. Removing the primary key is the only correct option. These streams now sync in **Incremental | Append** or **Full Refresh | Overwrite** mode; if you need deduplication, apply it downstream.
 
 To check whether you were affected, compare the record count in the source report against the record count in your destination table — fewer destination rows means multi-item orders were collapsed.
 
@@ -18,7 +18,7 @@ To check whether you were affected, compare the record count in the source repor
 If you have either of these streams enabled in your connection:
 
 1. **Refresh the source schema** to pick up the change.
-2. **Clear or reset the affected streams** if they were synced in Incremental | Append + Deduped mode, so previously dropped order items are backfilled.
+2. **Clear or reset the affected streams** if they were synced in a deduplicated mode, so previously dropped order items are backfilled.
 
 ### Steps to Update
 
