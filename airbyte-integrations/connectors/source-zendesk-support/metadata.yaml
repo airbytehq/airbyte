@@ -132,4 +132,7 @@ data:
     - title: Zendesk feature removal announcements
       url: https://support.zendesk.com/hc/en-us/articles/4408843026714-What-is-being-removed-updated-April-2026
       type: api_deprecations
+    - title: API token removal announcement
+      url: https://support.zendesk.com/hc/en-us/articles/10851263566234
+      type: api_deprecations
 metadataSpecVersion: "1.0"
