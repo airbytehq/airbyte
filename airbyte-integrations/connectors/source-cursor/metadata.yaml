@@ -29,6 +29,8 @@ data:
   tags:
     - language:manifest-only
     - cdk:low-code
+  connectorTestSuitesOptions:
+    - suite: unitTests
   ab_internal:
     ql: 100
     sl: 100

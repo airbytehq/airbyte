@@ -32,6 +32,8 @@ definitions:
               - 503
               - 504
         backoff_strategies:
+          - type: WaitTimeFromHeader
+            header: Retry-After
           - type: ExponentialBackoffStrategy
             factor: 5
       request_body:
@@ -110,6 +112,17 @@ streams:
     name: daily_usage
     retriever:
       type: SimpleRetriever
+      paginator:
+        type: DefaultPaginator
+        page_size_option:
+          type: RequestOption
+          field_name: pageSize
+          inject_into: body_json
+        pagination_strategy:
+          type: CursorPagination
+          page_size: 100
+          cursor_value: "{{ response['pagination']['page'] + 1 }}"
+          stop_condition: "{{ not response['pagination']['hasNextPage'] }}"
       requester:
         type: HttpRequester
         authenticator:
@@ -119,7 +132,11 @@ streams:
         http_method: POST
         url: https://api.cursor.com/teams/daily-usage-data
         request_body:
-          $ref: "#/definitions/linked/HttpRequester/request_body"
+          type: RequestBodyJsonObject
+          value:
+            endDate: "{{ stream_interval.end_time | int }}"
+            startDate: "{{ stream_interval.start_time | int }}"
+            page: "{{ next_page_token['next_page_token'] if next_page_token else 1 }}"
       record_selector:
         type: RecordSelector
         extractor:
@@ -145,7 +162,7 @@ streams:
             type: string
           userId:
             type:
-              - string
+              - number
               - "null"
           isActive:
             type:
@@ -306,6 +323,10 @@ streams:
             type:
               - number
               - "null"
+          overallSpendCents:
+            type:
+              - number
+              - "null"
           billingTier:
             type:
               - string
@@ -336,7 +357,7 @@ streams:
               - "null"
           monthlyLimitDollars:
             type:
-              - integer
+              - number
               - "null"
           usagePromoExpiresAt:
             type:
@@ -344,11 +365,11 @@ streams:
               - "null"
           hardLimitOverrideDollars:
             type:
-              - integer
+              - number
               - "null"
           effectivePerUserLimitDollars:
             type:
-              - integer
+              - number
               - "null"
         additionalProperties: true
   - type: DeclarativeStream
