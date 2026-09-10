@@ -3,17 +3,17 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "source-youtube-analytics-tests"
+name = "source-metricool-tests"
 version = "0.0.1"
-description = "Unit tests for source-youtube-analytics"
+description = "Unit tests for source-metricool"
 authors = ["Airbyte <contact@airbyte.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.13"
 airbyte-cdk = "^7"
-freezegun = "^1"
 pytest = "^8"
 requests-mock = "^1"
+jsonschema = "^4"
 
 [tool.pytest.ini_options]
 filterwarnings = [
