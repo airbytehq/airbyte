@@ -148,7 +148,7 @@ def test_5xx_is_retried(status_code: int) -> None:
 
 
 def _deal_products_request(deal_id: int):
-    return request(f"v2/deals/{deal_id}/products", {"limit": "500"})
+    return request(f"api/v2/deals/{deal_id}/products", {"limit": "500"})
 
 
 @pytest.mark.parametrize(

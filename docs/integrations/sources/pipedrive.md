@@ -61,11 +61,11 @@ The Pipedrive source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, and `deal_products` use API v2. Five core entity streams support server-side incremental sync; `notes` and `files` use client-side incremental filtering; the remaining streams are full refresh. Stream names below match the names shown in Airbyte.
+Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, and `deal_products` use API v2 `api/v2/...` paths. Five core entity streams support server-side incremental sync; `notes` and `files` use client-side incremental filtering; the remaining streams are full refresh. The connector uses the bare `https://api.pipedrive.com/` base because v1 leads, lead labels, lead sources, goals, and mailbox endpoints are unavailable under `/api/`. Stream names below match the names shown in Airbyte.
 
 | Stream                | Sync modes                | Notes                                                                                                                                                                                                                                       |
 | :-------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `activities`          | Full Refresh, Incremental | API v2 `/activities`, cursor: `update_time`. |
+| `activities`          | Full Refresh, Incremental | API v2 `api/v2/activities`, cursor: `update_time`. |
 | `activity_fields`     | Full Refresh              | [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)                                                                                                                                              |
 | `activity_types`      | Full Refresh              | [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)                                                                                                                                                 |
 | `call_logs`           | Full Refresh              | Call logs of the token's user ([CallLogs](https://developers.pipedrive.com/docs/api/v1/CallLogs#getUserCallLogs)). Empty unless a phone integration is connected in Pipedrive. |
@@ -74,7 +74,7 @@ Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `
 | `deal_flow`           | Full Refresh, Incremental | Field change history of each deal returned by the `deals` stream ([Deals getDealUpdates](https://developers.pipedrive.com/docs/api/v1/Deals#getDealUpdates)), one request per deal, so it is slow on large accounts. Cursor: `log_time`. Only deals returned by the `deals` parent stream are visited. |
 | `deal_installments`   | Full Refresh              | Payment installments of the deals returned by the `deals` stream ([DealInstallments](https://developers.pipedrive.com/docs/api/v1/DealInstallments#getInstallments)), 100 deals per request. Requires a Pipedrive plan with installments; the stream is empty otherwise. Only deals that the `deals` stream returns are visited. |
 | `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal from API v2 `GET /deals/{id}/products`, and only expands deals returned by the `deals` stream. |
-| `deals`               | Full Refresh, Incremental | API v2 `/deals`, cursor: `update_time`; includes deleted records. |
+| `deals`               | Full Refresh, Incremental | API v2 `api/v2/deals`, cursor: `update_time`; includes deleted records. |
 | `files`               | Full Refresh, Incremental | API v1 `/files`, client-side `update_time` filtering. |
 | `filters`             | Full Refresh              | API v1 `/filters`. |
 | `goals`               | Full Refresh              | [Goals](https://developers.pipedrive.com/docs/api/v1/Goals#getGoals)                                                                                                                                                                         |
@@ -86,17 +86,17 @@ Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `
 | `mailThreads`         | Full Refresh              | Mail threads from the `inbox`, `drafts`, `sent`, and `archive` folders ([Mailbox getMailThreads](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreads)). See [Mail streams](#mail-streams).                                    |
 | `notes`               | Full Refresh, Incremental | API v1 `/notes`, client-side `update_time` filtering. |
 | `organization_fields` | Full Refresh              | [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)                                                                                                                                  |
-| `organizations`       | Full Refresh, Incremental | API v2 `/organizations`, cursor: `update_time`. |
+| `organizations`       | Full Refresh, Incremental | API v2 `api/v2/organizations`, cursor: `update_time`. |
 | `permission_set_assignments` | Full Refresh       | Users assigned to each permission set ([PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSetAssignments)). Requires an admin API token; the stream is empty otherwise. |
 | `permission_sets`     | Full Refresh              | [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)                                                                                                                                              |
 | `person_fields`       | Full Refresh              | [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)                                                                                                                                                    |
-| `persons`             | Full Refresh, Incremental | API v2 `/persons`, cursor: `update_time`. |
-| `pipelines`           | Full Refresh              | API v2 `/pipelines`. |
+| `persons`             | Full Refresh, Incremental | API v2 `api/v2/persons`, cursor: `update_time`. |
+| `pipelines`           | Full Refresh              | API v2 `api/v2/pipelines`. |
 | `product_fields`      | Full Refresh              | [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)                                                                                                                                                 |
-| `products`            | Full Refresh, Incremental | API v2 `/products`, cursor: `update_time`. |
+| `products`            | Full Refresh, Incremental | API v2 `api/v2/products`, cursor: `update_time`. |
 | `projects`            | Full Refresh              | Active and archived projects ([Projects](https://developers.pipedrive.com/docs/api/v1/Projects#getProjects)). Requires the Projects add-on; the stream is empty otherwise. |
 | `roles`               | Full Refresh              | [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)                                                                                                                                                                         |
-| `stages`              | Full Refresh              | API v2 `/stages`. |
+| `stages`              | Full Refresh              | API v2 `api/v2/stages`. |
 | `tasks`               | Full Refresh              | Project tasks ([Tasks](https://developers.pipedrive.com/docs/api/v1/Tasks#getTasks)). Requires the Projects add-on; the stream is empty otherwise. Pipedrive marks the Tasks API as beta. |
 | `users`               | Full Refresh              | API v1 `/users`. |
 
@@ -146,9 +146,9 @@ How the connector treats Pipedrive HTTP errors:
 - Deleted deals are replicated with `is_deleted: true` for up to 30 days after deletion. Other streams do not replicate deletion markers.
 - The five API v2 entity streams and notes/files track state; pipelines, stages, filters, and users are full refresh.
 - Full refresh streams ignore the Start Date, except `deal_products`, which only expands the deals returned by the `deals` stream.
-- `organizations` and `deal_products` call v1 endpoints that Pipedrive stopped supporting on 2026-08-01. They may stop working until the connector moves to API v2.
+- API v2 entity streams use explicit `api/v2/...` paths on the shared bare-host base. v1 leads, lead labels, lead sources, goals, and mailbox endpoints also require the bare host.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
-- Only `projects`, `tasks` and `deal_installments` read Pipedrive API v2. Every other stream reads API v1, so newer fields that only exist in API v2 aren't available for them.
+- The core entity streams and deal-products use Pipedrive API v2; the remaining streams use API v1.
 
 ### Troubleshooting
 

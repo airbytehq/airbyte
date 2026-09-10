@@ -17,7 +17,7 @@ from airbyte_cdk.test.mock_http import HttpRequest, HttpResponse
 API_TOKEN = "test_api_token"
 START_DATE = "2024-01-01T00:00:00Z"
 CONFIG: Mapping[str, Any] = {"api_token": API_TOKEN, "replication_start_date": START_DATE}
-BASE_URL = "https://api.pipedrive.com/api/"
+BASE_URL = "https://api.pipedrive.com/"
 
 
 def get_source(config: Mapping[str, Any] = CONFIG, catalog=None) -> YamlDeclarativeSource:
@@ -36,7 +36,7 @@ def request(path: str, params: Optional[Mapping[str, str]] = None) -> HttpReques
 
 
 def deals_request() -> HttpRequest:
-    return request("v2/deals", {"limit": "500", "sort_by": "update_time", "sort_direction": "asc", "status": "open,won,lost,deleted", "updated_since": "2024-01-01T00:00:00Z"})
+    return request("api/v2/deals", {"limit": "500", "sort_by": "update_time", "sort_direction": "asc", "status": "open,won,lost,deleted", "updated_since": "2024-01-01T00:00:00Z"})
 
 
 def pipedrive_error(status_code: int, error: Optional[str], headers: Optional[Mapping[str, str]] = None) -> HttpResponse:

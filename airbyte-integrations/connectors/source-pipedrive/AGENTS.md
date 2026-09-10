@@ -2,7 +2,9 @@
 
 ## 1. Incremental Streams Use API v2 Entity Endpoints
 
-The incremental core streams (`activities`, `deals`, `organizations`, `persons`, and `products`) call their API v2 entity endpoints with cursor pagination and an inclusive `updated_since` filter. `notes` and `files` use v1 list endpoints and filter records client-side by `update_time`. Pipelines, stages, filters, and users are full refresh. `deal_flow` remains a child stream of `deals`.
+The incremental core streams (`activities`, `deals`, `organizations`, `persons`, and `products`) call `api/v2/...` entity endpoints with cursor pagination and an inclusive `updated_since` filter. `notes` and `files` use `v1/...` list endpoints and filter records client-side by `update_time`. Pipelines, stages, filters, and users are full refresh. `deal_flow` remains a child stream of `deals`.
+
+The shared base URL is `https://api.pipedrive.com/`, not `/api/`: v1 leads, lead labels, lead sources, goals, and mailbox endpoints are only available on the bare host. API v2 requests therefore include the `api/` path explicitly.
 
 ## 2. API v2 Records and Custom Fields
 
@@ -20,7 +22,7 @@ There is no `authenticator` in the manifest. Every stream injects `api_token: "{
 
 ## 5. Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread
 
-`mailThreads` calls [`GET /v1/mailbox/mailThreads`](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreads) once per folder using a `ListPartitionRouter` over `inbox`, `drafts`, `sent`, and `archive`. `mail` is a substream that calls [`GET /v1/mailbox/mailThreads/{id}/mailMessages`](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreadMessages) for every thread `mailThreads` returns. Pipedrive's mailbox endpoints only return the mailbox of the token's user.
+`mailThreads` calls [`GET /v1/mailbox/mailThreads`](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreads) once per folder using a `ListPartitionRouter` over `inbox`, `drafts`, `sent`, and `archive`. `mail` is a substream that calls [`GET /v1/mailbox/mailThreads/{id}/mailMessages`](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreadMessages) for every thread `mailThreads` returns. These v1 mailbox endpoints are only available under the bare `https://api.pipedrive.com/` host. Pipedrive's mailbox endpoints only return the mailbox of the token's user.
 
 **Why this matters:** The same thread can be emitted from more than one folder, so `mailThreads` can contain duplicate `id` values within a sync, and `mail` issues one request per thread, which dominates request volume on busy mailboxes. Neither stream can see other users' mail regardless of admin rights.
 

@@ -6,8 +6,10 @@ For general guidance on contributing to Airbyte connectors, see the
 ## Unique behaviors (summary)
 
 1. **Core entities use API v2** -- `deals`, `persons`, `organizations`, `activities`, and `products`
-   use inclusive server-side `updated_since` and cursor pagination. `notes` and `files` use v1 list
-   endpoints with client-side filtering; pipelines, stages, filters, and users are full refresh.
+   use `api/v2/...` paths on the bare `https://api.pipedrive.com/` base, with inclusive server-side
+   `updated_since` and cursor pagination. `notes` and `files` use v1 list endpoints with client-side
+   filtering; pipelines, stages, filters, and users are full refresh. v1 leads, lead labels, lead
+   sources, goals, and mailbox endpoints only work under the bare host; do not move the base to `/api/`.
 2. **API v2 custom fields are nested** -- custom fields are under `custom_fields`, and schemas retain
    `additionalProperties: true` for account-specific hash keys.
 3. **Authentication is a query parameter, not an authenticator** -- every stream injects

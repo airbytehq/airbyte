@@ -29,12 +29,12 @@ def _prepared(url):
 def test_every_request_goes_through_the_budget(mocker):
     acquire = mocker.spy(MovingWindowCallRatePolicy, "try_acquire")
     with requests_mock.Mocker() as http:
-        http.get("https://api.pipedrive.com/api/v1/currencies", complete_qs=False, json={"success": True, "data": [{"id": 1, "code": "USD"}]})
+        http.get("https://api.pipedrive.com/v1/currencies", complete_qs=False, json={"success": True, "data": [{"id": 1, "code": "USD"}]})
         status = get_source(_CONFIG).check(logging.getLogger("airbyte"), _CONFIG)
 
     assert status.status == Status.SUCCEEDED
     assert acquire.call_count == 1
-    assert acquire.call_args.args[1].url.startswith("https://api.pipedrive.com/api/v1/currencies")
+    assert acquire.call_args.args[1].url.startswith("https://api.pipedrive.com/v1/currencies")
 
 
 @pytest.mark.parametrize(
@@ -58,17 +58,17 @@ def test_twenty_first_call_in_the_window_is_blocked():
     assert isinstance(api_budget, HttpAPIBudget)
 
     for _ in range(20):
-        api_budget.acquire_call(_prepared("https://api.pipedrive.com/api/v1/deals"), block=False)
+        api_budget.acquire_call(_prepared("https://api.pipedrive.com/v1/deals"), block=False)
 
     with pytest.raises(CallRateLimitHit) as limit_hit:
-        api_budget.acquire_call(_prepared("https://api.pipedrive.com/api/v1/deals"), block=False)
+        api_budget.acquire_call(_prepared("https://api.pipedrive.com/v1/deals"), block=False)
     assert 0 < limit_hit.value.time_to_wait.total_seconds() <= 2
 
 
 @pytest.mark.parametrize(
     "url",
     [
-        "https://api.pipedrive.com/api/v1/deals",
+        "https://api.pipedrive.com/v1/deals",
         "https://api.pipedrive.com/api/v2/deals",
         "https://acme.pipedrive.com/api/v1/deals",
     ],
@@ -83,7 +83,7 @@ def test_requests_outside_pipedrive_are_not_throttled():
 
 def test_rate_limit_response_does_not_break_the_budget():
     api_budget = _get_api_budget()
-    request = _prepared("https://api.pipedrive.com/api/v1/deals")
+    request = _prepared("https://api.pipedrive.com/v1/deals")
     response = requests.Response()
     response.status_code = 429
     response.headers["x-ratelimit-remaining"] = "0"
