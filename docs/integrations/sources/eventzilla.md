@@ -10,12 +10,12 @@ The Airbyte connector for Eventzilla enables seamless integration between Eventz
 ## Streams
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
 |-------------|-------------|------------|---------------------|----------------------|
-| events | id | DefaultPaginator | ✅ |  ❌  |
-| attendees | id | DefaultPaginator | ✅ |  ❌  |
-| categories |  | DefaultPaginator | ✅ |  ❌  |
-| tickets | id | DefaultPaginator | ✅ |  ❌  |
-| users | id | DefaultPaginator | ✅ |  ❌  |
-| transactions | refno | DefaultPaginator | ✅ |  ❌  |
+| events | id | DefaultPaginator | Supported | Not supported |
+| attendees | id | DefaultPaginator | Supported | Not supported |
+| categories |  | DefaultPaginator | Supported | Not supported |
+| tickets | id | DefaultPaginator | Supported | Not supported |
+| users | id | DefaultPaginator | Supported | Not supported |
+| transactions | refno | DefaultPaginator | Supported | Not supported |
 
 ## IP allow list
 

@@ -241,52 +241,52 @@ Oracle data types are mapped to the following data types when synchronizing data
 | Oracle Type                      | Airbyte Type            | Notes                       | CDC |
 | :------------------------------- |:------------------------|:----------------------------|-----|
 | `BFILE`                          | string                  | base-64 encoded binary data |     |
-| `BINARY_FLOAT`                   | number                  |                             | ✓   |
-| `BINARY_DOUBLE`                  | number                  |                             | ✓   |
+| `BINARY_FLOAT`                   | number                  |                             | Yes |
+| `BINARY_DOUBLE`                  | number                  |                             | Yes |
 | `BLOB`                           | string                  | base-64 encoded binary data |     |
 | `BOOL`                           | boolean                 |                             |     |
 | `BOOLEAN`                        | boolean                 |                             |     |
-| `CHAR`                           | string                  |                             | ✓   |
-| `CHAR VARYING`                   | string                  |                             | ✓   |
-| `CHARACTER`                      | string                  |                             | ✓   |
-| `CHARACTER VARYING`              | string                  |                             | ✓   |
+| `CHAR`                           | string                  |                             | Yes |
+| `CHAR VARYING`                   | string                  |                             | Yes |
+| `CHARACTER`                      | string                  |                             | Yes |
+| `CHARACTER VARYING`              | string                  |                             | Yes |
 | `CLOB`                           | string                  |                             |     |
-| `DATE`                           | timestamp               | surprisingly, not a date    | ✓   |
-| `DEC`                            | number                  | integer when scale is 0     | ✓   |
-| `DECIMAL`                        | number                  | integer when scale is 0     | ✓   |
-| `FLOAT`                          | number                  |                             | ✓   |
-| `DOUBLE PRECISION`               | number                  |                             | ✓   |
-| `REAL`                           | number                  |                             | ✓   |
-| `INT`                            | number                  | integer                     | ✓   |
-| `INTEGER`                        | number                  | integer                     | ✓   |
-| `INTERVAL YEAR TO MONTH`         | string                  |                             | ✓   |
-| `INTERVAL DAY TO SECOND`         | string                  |                             | ✓   |
-| `INTERVALDS`                     | string                  |                             | ✓   |
-| `INTERVALYM`                     | string                  |                             | ✓   |
+| `DATE`                           | timestamp               | surprisingly, not a date    | Yes |
+| `DEC`                            | number                  | integer when scale is 0     | Yes |
+| `DECIMAL`                        | number                  | integer when scale is 0     | Yes |
+| `FLOAT`                           | number                  |                             | Yes |
+| `DOUBLE PRECISION`               | number                  |                             | Yes |
+| `REAL`                           | number                  |                             | Yes |
+| `INT`                            | number                  | integer                     | Yes |
+| `INTEGER`                        | number                  | integer                     | Yes |
+| `INTERVAL YEAR TO MONTH`         | string                  |                             | Yes |
+| `INTERVAL DAY TO SECOND`         | string                  |                             | Yes |
+| `INTERVALDS`                     | string                  |                             | Yes |
+| `INTERVALYM`                     | string                  |                             | Yes |
 | `JSON`                           | object                  |                             |     |
 | `LONG`                           | string                  | base-64 encoded binary data |     |
 | `LONG RAW`                       | string                  | base-64 encoded binary data |     |
-| `NATIONAL CHAR`                  | string                  |                             | ✓   |
-| `NATIONAL CHAR VARYING`          | string                  |                             | ✓   |
-| `NATIONAL CHARACTER`             | string                  |                             | ✓   |
-| `NATIONAL CHARACTER VARYING`     | string                  |                             | ✓   |
-| `NCHAR`                          | string                  |                             | ✓   |
-| `NCHAR VARYING`                  | string                  |                             | ✓   |
+| `NATIONAL CHAR`                  | string                  |                             | Yes |
+| `NATIONAL CHAR VARYING`          | string                  |                             | Yes |
+| `NATIONAL CHARACTER`             | string                  |                             | Yes |
+| `NATIONAL CHARACTER VARYING`     | string                  |                             | Yes |
+| `NCHAR`                          | string                  |                             | Yes |
+| `NCHAR VARYING`                  | string                  |                             | Yes |
 | `NCLOB`                          | string                  |                             |     |
-| `NUMBER`                         | number                  | integer when scale is 0     | ✓   |
-| `NUMERIC`                        | number                  | integer when scale is 0     | ✓   |
-| `NVARCHAR2`                      | string                  |                             | ✓   |
+| `NUMBER`                         | number                  | integer when scale is 0     | Yes |
+| `NUMERIC`                        | number                  | integer when scale is 0     | Yes |
+| `NVARCHAR2`                      | string                  |                             | Yes |
 | `RAW`                            | string                  | base-64 encoded binary data |     |
 | `ROWID`                          | string                  | base-64 encoded binary data |     |
-| `SMALLINT`                       | number                  | integer                     | ✓   |
-| `TIMESTAMP`                      | timestamp               |                             | ✓   |
-| `TIMESTAMP WITH LOCAL TIME ZONE` | timestamp               |                             | ✓   |
-| `TIMESTAMP WITH LOCAL TZ`        | timestamp               |                             | ✓   |
-| `TIMESTAMP WITH TIME ZONE`       | timestamp with timezone |                             | ✓   |
-| `TIMESTAMP WITH TZ`              | timestamp with timezone |                             | ✓   |
+| `SMALLINT`                       | number                  | integer                     | Yes |
+| `TIMESTAMP`                      | timestamp               |                             | Yes |
+| `TIMESTAMP WITH LOCAL TIME ZONE` | timestamp               |                             | Yes |
+| `TIMESTAMP WITH LOCAL TZ`        | timestamp               |                             | Yes |
+| `TIMESTAMP WITH TIME ZONE`       | timestamp with timezone |                             | Yes |
+| `TIMESTAMP WITH TZ`              | timestamp with timezone |                             | Yes |
 | `UROWID`                         | string                  | base-64 encoded binary data |     |
-| `VARCHAR`                        | string                  |                             | ✓   |
-| `VARCHAR2`                       | string                  |                             | ✓   |
+| `VARCHAR`                        | string                  |                             | Yes |
+| `VARCHAR2`                       | string                  |                             | Yes |
 
 Varray types are mapped to the corresponding Airbyte array type.
 This applies also to multiple levels of nesting, i.e. VARRAYs of VARRAYs, and so forth.
