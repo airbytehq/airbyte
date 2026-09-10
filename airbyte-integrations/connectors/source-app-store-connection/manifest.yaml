@@ -26,7 +26,7 @@ definitions:
           aud: appstoreconnect-v1
           iss: "{{ config['iss'] }}"
         header_prefix: Bearer
-        token_duration: 1200
+        token_duration: 900
       error_handler:
         type: DefaultErrorHandler
         max_retries: 3
@@ -43,6 +43,7 @@ definitions:
           - type: HttpResponseFilter
             action: RETRY
             http_codes:
+              - 401
               - 429
               - 500
               - 502
@@ -104,6 +105,7 @@ definitions:
         - type: HttpResponseFilter
           action: RETRY
           http_codes:
+            - 401
             - 429
             - 500
             - 502
@@ -181,6 +183,7 @@ definitions:
         - type: HttpResponseFilter
           action: RETRY
           http_codes:
+            - 401
             - 403
         - type: HttpResponseFilter
           action: IGNORE
@@ -191,6 +194,7 @@ definitions:
         - type: HttpResponseFilter
           action: RETRY
           http_codes:
+            - 401
             - 429
             - 500
             - 502
@@ -257,6 +261,8 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
       record_selector:
         type: RecordSelector
         extractor:
@@ -1372,6 +1378,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -1456,6 +1463,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -1552,6 +1560,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -1682,6 +1691,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -1814,6 +1824,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -1982,6 +1993,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2012,6 +2024,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2033,6 +2046,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 403
             - type: HttpResponseFilter
               action: IGNORE
@@ -2043,6 +2057,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2073,6 +2088,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 403
             - type: HttpResponseFilter
               action: IGNORE
@@ -2083,6 +2099,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2241,6 +2258,8 @@ streams:
         http_method: GET
         authenticator:
           $ref: "#/definitions/linked/HttpRequester/authenticator"
+        error_handler:
+          $ref: "#/definitions/linked/HttpRequester/error_handler"
         request_parameters:
           sort: "-createdDate"
           limit: "200"
@@ -2388,6 +2407,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2472,6 +2492,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2568,6 +2589,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2677,6 +2699,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2790,6 +2813,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2954,6 +2978,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -2984,6 +3009,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3011,6 +3037,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3041,6 +3068,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 403
             - type: HttpResponseFilter
               action: IGNORE
@@ -3050,6 +3078,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3202,6 +3231,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3298,6 +3328,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3428,6 +3459,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3560,6 +3592,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3728,6 +3761,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3758,6 +3792,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3779,6 +3814,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 403
             - type: HttpResponseFilter
               action: IGNORE
@@ -3789,6 +3825,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3819,6 +3856,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 403
             - type: HttpResponseFilter
               action: IGNORE
@@ -3829,6 +3867,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -3993,6 +4032,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -4089,6 +4129,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -4198,6 +4239,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -4311,6 +4353,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -4478,6 +4521,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -4508,6 +4552,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -4535,6 +4580,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
@@ -4565,6 +4611,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 403
             - type: HttpResponseFilter
               action: IGNORE
@@ -4574,6 +4621,7 @@ streams:
             - type: HttpResponseFilter
               action: RETRY
               http_codes:
+                - 401
                 - 429
                 - 500
                 - 502
