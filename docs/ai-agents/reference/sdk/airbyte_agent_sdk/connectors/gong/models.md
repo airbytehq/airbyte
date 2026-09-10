@@ -137,6 +137,7 @@ Classes
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[SettingsScorecardsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[StatsActivityScorecardsSearchData]
     * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[UsersSearchData]
+    * airbyte_agent_sdk.connectors.gong.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

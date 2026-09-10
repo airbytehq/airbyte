@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.mailchimp.connector
-* airbyte_agent_sdk.connectors.mailchimp.connector_model
-* airbyte_agent_sdk.connectors.mailchimp.models
-* airbyte_agent_sdk.connectors.mailchimp.types
+* [airbyte_agent_sdk.connectors.mailchimp.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-connector)
+* [airbyte_agent_sdk.connectors.mailchimp.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-connector_model)
+* [airbyte_agent_sdk.connectors.mailchimp.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-models)
+* [airbyte_agent_sdk.connectors.mailchimp.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/mailchimp/airbyte_agent_sdk-connectors-mailchimp-types)
 
 Classes
 -------
@@ -869,7 +869,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            data_center: The data center for your Mailchimp account (e.g., us1, us2, us6)
     Examples:
         # Local mode (direct API calls)
-        connector = MailchimpConnector(auth_config=MailchimpAuthConfig(api_key="..."))
+        connector = MailchimpConnector(auth_config=MailchimpAuthConfig(api_key="..."), data_center="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = MailchimpConnector(
             auth_config=AirbyteAuthConfig(
@@ -1078,7 +1078,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

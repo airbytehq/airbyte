@@ -22,8 +22,11 @@ Test fixtures use `org.testcontainers:mssqlserver` — see
 ## Reproducing bugs locally
 
 Most reported bugs against `source-mssql` are CDC-mode bugs, but the same
-local-harness pattern is useful for non-CDC bugs too. Two co-located agent
-skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
+local-harness pattern is useful for non-CDC bugs too. The
+engine-independent orchestration now lives in
+[`airbyte-integrations/db-harness-lib/`](../../db-harness-lib/), while the
+co-located agent skills under [`.agents/skills/`](.agents/skills/) keep the
+MSSQL backend lifecycle, fixtures, and config templates:
 
 - [`source-mssql-e2e-tests`](.agents/skills/source-mssql-e2e-tests/SKILL.md) —
   the generic harness. Stands up a SQL Server 2022 container
@@ -52,6 +55,14 @@ skills under [`.agents/skills/`](.agents/skills/) own the actual harness:
 **Never** repro against a customer connection or against an Airbyte Cloud
 instance.
 
+### Getting a target image
+
+Follow the shared
+[Getting a target image](../../db-harness-lib/README.md#getting-a-target-image)
+guidance. Build locally with
+`./gradlew :airbyte-integrations:connectors:source-mssql:dockerBuildx` only
+for code that is not on a pushed PR branch.
+
 ### Quickstart
 
 ```bash
@@ -72,7 +83,8 @@ CDC_SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mss
 "$CDC_SKILL/scripts/repro-13433.sh"
 
 # Cleanup
-"$SKILL/scripts/stop-backend.sh"
+BACKEND_NAME=source-mssql-db-backend \
+  airbyte-integrations/db-harness-lib/scripts/stop-backend.sh
 ```
 
 To investigate a new bug, write the smallest SQL fixture that produces
@@ -80,7 +92,8 @@ the reported symptom (drop into
 [`source-mssql-e2e-cdc-tests/fixtures/sql/`](.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/)),
 add a driver script alongside (`repro-<oncall-id>.sh`), and assert on the
 relevant `stdout.txt` / `stderr.txt` / exit-code shape. Each driver
-script wraps the generic skill's `run-protocol-cmd.sh`, so the connector
+script invokes the engine shim, which delegates orchestration to
+`airbyte-integrations/db-harness-lib/scripts/run.sh`, so the connector
 lifecycle (image pull, AirbyteMessage parsing, exit-code surfacing) is
 already handled.
 
@@ -105,18 +118,20 @@ directly.
   `--network` (tracked in
   [`airbytehq/airbyte-ops-mcp#765`](https://github.com/airbytehq/airbyte-ops-mcp/issues/765)).
   Until it does, both containers share Docker's default `bridge` network
-  and the connector resolves the source by IP. The `render-config.sh`
-  script in the generic skill handles this: it inspects the backend's
-  bridge IP and substitutes it into the config template before each
-  invocation.
+  and the connector resolves the source by IP. The shared library's
+  [`render-config.sh`](../../db-harness-lib/scripts/render-config.sh)
+  handles this: it inspects the backend's bridge IP and substitutes it
+  into the config template before each invocation.
 - **A connector run rejects the catalog with `Validation error(s)`.**
   Bulk-CDK requires `is_file_based`, `cursor_field`, `generation_id`,
   `minimum_generation_id`, `sync_id`, `destination_object_name`, and
   `include_files` on every configured stream, and rejects them as null
   with `code: 1021`. This is not limited to `4.3.x` — `4.4.12` and
-  `5.0.0` reject them too. `discover` never emits `is_file_based`, so
-  `make-catalog.sh` fills it in; the catalog fixtures shipped with the
-  CDC skill populate all of them.
+  `5.0.0` reject them too. `discover` never emits `is_file_based`, so the
+  shared library's
+  [`make-catalog.sh`](../../db-harness-lib/scripts/make-catalog.sh) fills
+  it in; the catalog fixtures shipped with the CDC skill populate all of
+  them.
 - **A `check` that fails still exits 0 in single-version mode.** The CDK
   emits `CONNECTION_STATUS` with `status: FAILED` and exits 0, so the
   harness cannot surface it as a non-zero exit. Assert on the status
@@ -148,6 +163,12 @@ directly.
   a row to the changelog when you touch any of them.
 - **`config.cdc.json` uses `ssl_method: unencrypted`.** Fine for a local
   throwaway container, never for a real source.
+- **`Incumbent CDC state is invalid ... Saved offset no longer present`
+  with a fresh backend** (single-version or comparison mode). The derived
+  catalog was `full_refresh`, so no CDC streams were configured. Pass
+  `--sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users`
+  or `--catalog=PATH`; see the
+  [db-harness-lib README](../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
 
 ## Comparison-mode regression testing
 
@@ -170,9 +191,17 @@ poe e2e-local --test-version=dev --control-version=5.0.0 \
 # CDC. Two single-version sweeps with a fixture reset between them, so
 # the target does not read against the control's warm capture instance.
 poe e2e-local --test-version=dev --control-version=5.0.0 --reset=fixture \
+  --config-template=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/configs/cdc.template.json \
+  --sync-mode=incremental --cursor-field=_ab_cdc_cursor --streams=users \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/00-init-cdc.sql \
   --fixture=.agents/skills/source-mssql-e2e-cdc-tests/fixtures/sql/<per-bug>.sql
 ```
+
+For CDC the catalog must be incremental — see
+[CDC config templates need an incremental catalog](../../db-harness-lib/README.md#cdc-config-templates-need-an-incremental-catalog).
+MSSQL specifics: the cursor is `_ab_cdc_cursor`, and `--streams` must
+exclude `dbo.systranschemas`, a CDC system table `discover` lists
+that has no capture instance.
 
 Both runs must observe equivalent backend state. Under
 `--reset=none` (the default) the two images share the backend, which is

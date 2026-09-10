@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.zendesk_support.connector
-* airbyte_agent_sdk.connectors.zendesk_support.connector_model
-* airbyte_agent_sdk.connectors.zendesk_support.models
-* airbyte_agent_sdk.connectors.zendesk_support.types
+* [airbyte_agent_sdk.connectors.zendesk_support.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-connector)
+* [airbyte_agent_sdk.connectors.zendesk_support.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-connector_model)
+* [airbyte_agent_sdk.connectors.zendesk_support.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-models)
+* [airbyte_agent_sdk.connectors.zendesk_support.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/zendesk_support/airbyte_agent_sdk-connectors-zendesk_support-types)
 
 Classes
 -------
@@ -1976,7 +1976,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            subdomain: Your Zendesk subdomain
     Examples:
         # Local mode (direct API calls)
-        connector = ZendeskSupportConnector(auth_config=ZendeskSupportAuthConfig(access_token="...", refresh_token="..."))
+        connector = ZendeskSupportConnector(auth_config=ZendeskSupportAuthConfig(access_token="...", refresh_token="..."), subdomain="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ZendeskSupportConnector(
             auth_config=AirbyteAuthConfig(
@@ -2185,7 +2185,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
