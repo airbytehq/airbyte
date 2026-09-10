@@ -29,7 +29,8 @@ All five streams share the error handler defined on `definitions.base_requester`
 | 401 | FAIL | `config_error` | Expired or revoked OAuth grant; re-authenticate. |
 | `keyInvalid` / `API_KEY_INVALID`, `accessNotConfigured` / `SERVICE_DISABLED`, `channelNotFound`, `ACCESS_TOKEN_SCOPE_INSUFFICIENT` | FAIL | `config_error` | User-correctable: invalid key, YouTube Data API v3 not enabled in the Google Cloud project, wrong Channel IDs, or missing OAuth scope. Surfaces Google's own message plus remediation steps. |
 | `quotaExceeded`, `dailyLimitExceeded`, `rateLimitExceeded`, `userRateLimitExceeded` / `RATE_LIMIT_EXCEEDED`, `QUOTA_EXCEEDED` (all arrive as 403, not 429) | RETRY | `transient_error` | Quota-metered API: per-minute limits recover within the retry budget; the daily quota does not, and the sync fails as transient after retries are exhausted (quota resets midnight Pacific). |
-| 429, 500, 502, 503, 504 | RETRY | `transient_error` | Standard transient classification with exponential backoff. |
+| 429 | RATE_LIMITED | `transient_error` | Retried with the same backoff as 5xx, but the CDK also emits a `RUNNING` stream status with reason `RATE_LIMITED`, so the platform reports the stream as rate limited instead of stalled. |
+| 500, 502, 503, 504 | RETRY | `transient_error` | Standard transient classification with exponential backoff. |
 | Any other error response | FAIL (terminal) | `system_error` | CDK `DefaultErrorHandler` fallback. An explicit catch-all filter is deliberately omitted because `HttpResponseFilter` predicates are evaluated against every response, including HTTP 200s. |
 
 ## Quota model

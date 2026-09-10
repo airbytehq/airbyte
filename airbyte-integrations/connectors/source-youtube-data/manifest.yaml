@@ -323,10 +323,14 @@ definitions:
               failure_type: transient_error
               predicate: "{{ response.get('error', {}).get('errors', [{}])[0].get('reason') in ['quotaExceeded', 'dailyLimitExceeded', 'rateLimitExceeded', 'userRateLimitExceeded'] or response.get('error', {}).get('details', [{}])[0].get('reason') in ['RATE_LIMIT_EXCEEDED', 'QUOTA_EXCEEDED'] }}"
             - type: HttpResponseFilter
-              action: RETRY
+              action: RATE_LIMITED
               failure_type: transient_error
               http_codes:
                 - 429
+            - type: HttpResponseFilter
+              action: RETRY
+              failure_type: transient_error
+              http_codes:
                 - 500
                 - 502
                 - 503
