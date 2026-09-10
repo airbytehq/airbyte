@@ -164,8 +164,9 @@ def test_given_start_date_not_available_when_read_then_transient_error_without_r
 
     output = _read(_config(end_date=_FIRST_WINDOW[1]), expecting_exception=True)
 
-    assert output.errors
-    assert output.is_in_logs("PayPal transaction data for the requested start date is not available yet")
+    stream_error = output.errors[0].trace.error
+    assert stream_error.failure_type == FailureType.transient_error
+    assert "PayPal transaction data for the requested start date is not available yet" in stream_error.message
     http_mocker.assert_number_of_calls(transactions_request, 1)
 
 
