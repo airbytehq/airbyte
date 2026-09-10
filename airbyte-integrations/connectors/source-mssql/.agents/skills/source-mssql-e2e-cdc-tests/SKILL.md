@@ -217,7 +217,9 @@ still present. Investigation lives at
 backlog of transactions outside the catalog to exercise progressing heartbeats
 without records across two reads. Use `EXPECT=bug|fixed|fixed-unbounded`;
 after a local image build, run `VERSION=dev EXPECT=fixed "$SKILL/cases/13433.sh"`,
-or set `MAX_ITERATION_TRANSACTIONS=0` for the unbounded iteration case.
+or set `MAX_ITERATION_TRANSACTIONS=0` for the unbounded iteration case. The
+default 250k noise transactions outlast the 120s heartbeat window; lower
+`NOISE_TRANSACTIONS` only for a quick smoke run, since the fixed path will not fire.
 
 #### Invalid-state case for LSN-availability fixes
 

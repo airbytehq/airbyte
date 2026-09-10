@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # airbytehq/oncall#13433 — CDC heartbeats advance through an expensive
 # backlog without records for the configured streams.
+# Env: NOISE_TRANSACTIONS defaults to 250000 and must keep the backlog longer
+#      than INITIAL_WAITING_SECONDS; 20000 drains in ~30s. INCLUDED_TABLES,
+#      EXPECT, MAX_ITERATION_TRANSACTIONS, and VERSION are also configurable.
 set -euo pipefail
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -12,22 +15,23 @@ LIB="$REPO_ROOT/airbyte-integrations/db-harness-lib"
 IMAGE_TAG="${VERSION:-${IMAGE_TAG:-${1:-5.0.1}}}"
 EXPECT="${EXPECT:-bug}"
 INCLUDED_TABLES="${INCLUDED_TABLES:-350}"
-NOISE_TRANSACTIONS="${NOISE_TRANSACTIONS:-20000}"
+NOISE_TRANSACTIONS="${NOISE_TRANSACTIONS:-250000}"
 INITIAL_WAITING_SECONDS="${INITIAL_WAITING_SECONDS:-120}"
 MAX_ITERATION_TRANSACTIONS="${MAX_ITERATION_TRANSACTIONS:-}"
+FIXTURE_TABLES=350
+FIXTURE_TRANSACTIONS=20000
 export INITIAL_WAITING_SECONDS MAX_ITERATION_TRANSACTIONS
 REPRO_OUT="${REPRO_OUT:-/tmp/source-mssql-repro/13433/$EXPECT}"
 export REPRO_OUT
 mkdir -p "$REPRO_OUT"
 
-if [[ "$INCLUDED_TABLES" != 350 || "$NOISE_TRANSACTIONS" != 20000 ]]; then
+if [[ "$INCLUDED_TABLES" != "$FIXTURE_TABLES" || "$NOISE_TRANSACTIONS" != "$FIXTURE_TRANSACTIONS" ]]; then
   sed \
-    -e "s/<= 350/<= $INCLUDED_TABLES/g" \
-    -e "s/<= 20000/<= $NOISE_TRANSACTIONS/g" \
+    -e "s/<= $FIXTURE_TABLES/<= $INCLUDED_TABLES/g" \
+    -e "s/<= $FIXTURE_TRANSACTIONS/<= $NOISE_TRANSACTIONS/g" \
     "$SKILL/fixtures/sql/13433-progressing-heartbeats-part1.sql" \
     > "$REPRO_OUT/part1.sql"
-  sed \
-    -e "s/<= 20000/<= $NOISE_TRANSACTIONS/g" \
+  sed -e "s/<= $FIXTURE_TRANSACTIONS/<= $NOISE_TRANSACTIONS/g" \
     "$SKILL/fixtures/sql/13433-progressing-heartbeats-part2.sql" \
     > "$REPRO_OUT/part2.sql"
   PART1="$REPRO_OUT/part1.sql"
