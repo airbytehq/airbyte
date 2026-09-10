@@ -17,11 +17,16 @@ import io.airbyte.cdk.load.data.csv.toCsvValue
 import io.airbyte.cdk.load.dataflow.transform.ValidationResult
 import io.airbyte.cdk.load.dataflow.transform.ValueCoercer
 import io.airbyte.cdk.load.util.serializeToString
+import io.airbyte.integrations.destination.snowflake.spec.NumberDataType
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.protocol.models.v0.AirbyteRecordMessageMetaChange
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.inject.Singleton
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.math.RoundingMode
+
+private val logger = KotlinLogging.logger {}
 
 /*
  * Limits defined for datatypes in Snowflake.
@@ -37,6 +42,10 @@ internal val INT_RANGE = INT_MIN..INT_MAX
 internal val FLOAT_MAX = BigDecimal.valueOf(Double.MAX_VALUE)
 internal val FLOAT_MIN = BigDecimal.valueOf(-Double.MAX_VALUE)
 internal val FLOAT_RANGE = FLOAT_MIN..FLOAT_MAX
+
+// NUMBER(38, 9) holds at most 29 digits left of the decimal point and 9 to the right.
+internal val NUMERIC_38_9_ABS_LIMIT = BigDecimal("1E+29")
+internal const val NUMERIC_38_9_SCALE = 9
 
 // https://docs.snowflake.com/en/sql-reference/data-types-semistructured#characteristics-of-a-variant-value
 internal const val VARIANT_LIMIT_BYTES = 128 * 1024 * 1024
@@ -65,6 +74,16 @@ fun isVarcharValid(s: String): Boolean {
 
 @Singleton
 class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
+    // Legacy raw tables use VARIANT, so NUMBER(38, 9) limits don't apply; keep FLOAT validation.
+    private val useDecimalNumbers =
+        config.numberDataTypeConversion == NumberDataType.NUMBER_38_9 && !config.legacyRawTablesOnly
+
+    init {
+        logger.info {
+            "Number data type conversion mode: ${config.numberDataTypeConversion.numberDataType}"
+        }
+    }
+
     override fun map(value: EnrichedAirbyteValue): EnrichedAirbyteValue {
         value.abValue =
             if (
@@ -81,22 +100,10 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
     override fun validate(value: EnrichedAirbyteValue): ValidationResult {
         return when (val abValue = value.abValue) {
             is NumberValue -> {
-                if (abValue.value in FLOAT_RANGE) {
-                    val targetValue = BigDecimal.valueOf(abValue.value.toDouble())
-                    // This is done because BigDecimal is stupid and if we don't use compareTo, we
-                    // end up with 0 != 0.0
-                    if (targetValue.compareTo(abValue.value) == 0) {
-                        ValidationResult.Valid
-                    } else {
-                        ValidationResult.ShouldTruncate(
-                            NumberValue(targetValue),
-                            AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                        )
-                    }
+                if (useDecimalNumbers) {
+                    validateDecimalNumber(abValue)
                 } else {
-                    ValidationResult.ShouldNullify(
-                        AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
-                    )
+                    validateFloatNumber(abValue)
                 }
             }
             is IntegerValue -> {
@@ -128,6 +135,48 @@ class SnowflakeValueCoercer(val config: SnowflakeConfiguration) : ValueCoercer {
                 }
             }
             else -> ValidationResult.Valid
+        }
+    }
+
+    private fun validateFloatNumber(abValue: NumberValue): ValidationResult =
+        if (abValue.value in FLOAT_RANGE) {
+            val targetValue = BigDecimal.valueOf(abValue.value.toDouble())
+            // This is done because BigDecimal is stupid and if we don't use compareTo, we
+            // end up with 0 != 0.0
+            if (targetValue.compareTo(abValue.value) == 0) {
+                ValidationResult.Valid
+            } else {
+                ValidationResult.ShouldTruncate(
+                    NumberValue(targetValue),
+                    AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+                )
+            }
+        } else {
+            ValidationResult.ShouldNullify(
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            )
+        }
+
+    private fun validateDecimalNumber(abValue: NumberValue): ValidationResult {
+        // HALF_UP = round half away from zero, the same rule Snowflake applies when casting.
+        val targetValue =
+            if (abValue.value.scale() > NUMERIC_38_9_SCALE) {
+                abValue.value.setScale(NUMERIC_38_9_SCALE, RoundingMode.HALF_UP)
+            } else {
+                abValue.value
+            }
+        // Range-check after rounding: rounding can carry into a 30th integer digit.
+        return if (targetValue.abs() >= NUMERIC_38_9_ABS_LIMIT) {
+            ValidationResult.ShouldNullify(
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            )
+        } else if (targetValue.compareTo(abValue.value) != 0) {
+            ValidationResult.ShouldTruncate(
+                NumberValue(targetValue),
+                AirbyteRecordMessageMetaChange.Reason.DESTINATION_FIELD_SIZE_LIMITATION
+            )
+        } else {
+            ValidationResult.Valid
         }
     }
 }

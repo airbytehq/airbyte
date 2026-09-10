@@ -10,8 +10,8 @@ The Slack connector supports the following entities and actions.
 |--------|---------|
 | Users | [List](#users-list), [Get](#users-get), [Context Store Search](#users-context-store-search) |
 | Channels | [List](#channels-list), [Get](#channels-get), [Create](#channels-create), [Update](#channels-update), [Context Store Search](#channels-context-store-search) |
-| Channel Messages | [List](#channel-messages-list), [Context Store Search](#channel-messages-context-store-search) |
-| Threads | [List](#threads-list), [Context Store Search](#threads-context-store-search) |
+| Channel Messages | [List](#channel-messages-list), [Context Store Search](#channel-messages-context-store-search), [Semantic Search](#channel-messages-semantic-search) |
+| Threads | [List](#threads-list), [Context Store Search](#threads-context-store-search), [Semantic Search](#threads-semantic-search) |
 | Messages | [Create](#messages-create), [Update](#messages-update), [Delete](#messages-delete) |
 | Channel Topics | [Create](#channel-topics-create) |
 | Channel Purposes | [Create](#channel-purposes-create) |
@@ -237,7 +237,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -734,7 +734,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1005,7 +1005,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1019,6 +1019,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `type` | `string` | Message type. |
 | `subtype` | `string` | Message subtype. |
 | `ts` | `string` | Message timestamp (unique identifier). |
+| `float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `user` | `string` | User ID who sent the message. |
 | `text` | `string` | Message text content. |
 | `thread_ts` | `string` | Thread parent timestamp. |
@@ -1033,7 +1034,9 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `blocks` | `array` | Block kit blocks. |
 | `bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `bot_profile` | `object` | Bot profile information. |
+| `username` | `string` | Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead. |
 | `team` | `string` | Team ID. |
+| `channel_id` | `string` | Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API. |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1048,6 +1051,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].type` | `string` | Message type. |
 | `data[].subtype` | `string` | Message subtype. |
 | `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `data[].user` | `string` | User ID who sent the message. |
 | `data[].text` | `string` | Message text content. |
 | `data[].thread_ts` | `string` | Thread parent timestamp. |
@@ -1062,7 +1066,103 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].blocks` | `array` | Block kit blocks. |
 | `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `data[].bot_profile` | `object` | Bot profile information. |
+| `data[].username` | `string` | Display name stamped on the message by incoming webhooks and legacy bot posts; absent on ordinary user messages and on most modern app messages, which carry bot_profile instead. |
 | `data[].team` | `string` | Team ID. |
+| `data[].channel_id` | `string` | Channel ID the message was posted in. Added by the Airbyte Slack source; not returned by the Slack API. |
+
+</details>
+
+### Channel Messages Semantic Search
+
+Search channel messages records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "channel_messages",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `channel_messages.context_store_search` helper only accepts `query`.
+
+```python
+await slack.execute(
+    "channel_messages",
+    "context_store_search",
+    {"semantic": {"field": "text", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "channel_messages",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `text` | 2048 | Message text content. |
+
+Each result is also enriched with the following related fields (returned only; not filterable): `authorName`, `authorDisplayName`, `channelName`.
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.ts` | `string` | Source record field |
+| `data[].entity.float_ts` | `string` | Source record field |
+| `data[].entity.channel_id` | `string` | Source record field |
+| `data[].entity.thread_ts` | `string` | Source record field |
+| `data[].entity.user` | `string` | Source record field |
+| `data[].entity.subtype` | `string` | Source record field |
+| `data[].entity.botName` | `string` | Source record field |
+| `data[].entity.webhookName` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `data[].metadata.authorName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.authorDisplayName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.channelName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 
@@ -1252,7 +1352,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 
 | Parameter Name | Type | Required | Description |
 |----------------|------|----------|-------------|
-| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, like, fuzzy, keyword, not, and, or |
+| `query` | `object` | Yes | Filter and sort conditions. Supports operators: eq, neq, gt, gte, lt, lte, in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or |
 | `query.filter` | `object` | No | Filter conditions |
 | `query.sort` | `array` | No | Sort conditions |
 | `limit` | `integer` | No | Maximum results to return (default 1000) |
@@ -1266,6 +1366,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `type` | `string` | Message type. |
 | `subtype` | `string` | Message subtype. |
 | `ts` | `string` | Message timestamp (unique identifier). |
+| `float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `user` | `string` | User ID who sent the message. |
 | `text` | `string` | Message text content. |
 | `thread_ts` | `string` | Thread parent timestamp. |
@@ -1279,6 +1380,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `blocks` | `array` | Block kit blocks. |
 | `bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `team` | `string` | Team ID. |
+| `channel_id` | `string` | Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API. |
 
 <details>
 <summary><b>Response Schema</b></summary>
@@ -1293,6 +1395,7 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].type` | `string` | Message type. |
 | `data[].subtype` | `string` | Message subtype. |
 | `data[].ts` | `string` | Message timestamp (unique identifier). |
+| `data[].float_ts` | `number` | Message timestamp as a float. Computed by the Airbyte Slack source as its stream cursor field; not returned by the Slack API. |
 | `data[].user` | `string` | User ID who sent the message. |
 | `data[].text` | `string` | Message text content. |
 | `data[].thread_ts` | `string` | Thread parent timestamp. |
@@ -1306,6 +1409,99 @@ curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_con
 | `data[].blocks` | `array` | Block kit blocks. |
 | `data[].bot_id` | `string` | Bot ID if message was sent by a bot. |
 | `data[].team` | `string` | Team ID. |
+| `data[].channel_id` | `string` | Channel ID the thread lives in. Added by the Airbyte Slack source; not returned by the Slack API. |
+
+</details>
+
+### Threads Semantic Search
+
+Search threads records by meaning rather than by exact or fuzzy field values. Semantic search embeds a natural-language `prompt` and returns the most similar passages, ranked by relevance. Pass `semantic={field, prompt, filter?, context_size?, min_similarity?, dedup?}` to `context_store_search` instead of `query`. Only available in hosted mode.
+
+#### CLI
+
+```bash
+airbyte-agent connectors execute --json '{
+  "workspace": "<your_workspace_name>",
+  "name": "slack",
+  "entity": "threads",
+  "action": "context_store_search",
+  "params": {
+    "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+  }
+}'
+```
+
+#### Python SDK
+
+Semantic search is passed through the generic `execute` method — the typed `threads.context_store_search` helper only accepts `query`.
+
+```python
+await slack.execute(
+    "threads",
+    "context_store_search",
+    {"semantic": {"field": "text", "prompt": "<your natural-language query>"}},
+)
+```
+
+#### API
+
+```bash
+curl --location 'https://api.airbyte.ai/api/v1/integrations/connectors/{your_connector_id}/execute' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer {your_auth_token}' \
+--data '{
+    "entity": "threads",
+    "action": "context_store_search",
+    "params": {
+        "semantic": {"field": "text", "prompt": "<your natural-language query>"}
+    }
+}'
+```
+
+#### Semantic Parameters
+
+| Parameter Name | Type | Required | Description |
+|----------------|------|----------|-------------|
+| `semantic.field` | `string` | Yes | Field to search semantically. Mutually exclusive with `query`. |
+| `semantic.prompt` | `string` | Yes | Natural-language query that is embedded and compared against stored passages. |
+| `semantic.filter` | `object` | No | Filter conditions (same shape/operators as `query.filter`). `sort` is not supported — results are ranked by similarity. |
+| `semantic.context_size` | `integer` | No | Characters of surrounding context to return per hit, up to the field's configured window. Omit to return the full configured window. |
+| `semantic.min_similarity` | `number` | No | Minimum similarity score in [-1.0, 1.0]. Omit for 0.25; scores below the threshold are discarded before deduplication and top-k selection. Use -1.0 to disable the cutoff. |
+| `semantic.dedup` | `string` | No | `max` (default) returns the single best-scoring passage per record; `none` returns multiple passages per record, still ranked by similarity and capped by `limit`. |
+| `fields` | `array` | No | Field paths to include in results (dot notation for nested fields). Applied to each hit's `entity`. |
+| `limit` | `integer` | No | Maximum results to return (default 10, maximum 100). |
+
+#### Semantically Searchable Fields
+
+| Field Name | Max Context (chars) | Description |
+|------------|---------------------|-------------|
+| `text` | 2048 | Message text content. |
+
+Each result is also enriched with the following related fields (returned only; not filterable): `authorName`, `authorDisplayName`, `channelName`.
+
+<details>
+<summary><b>Response Schema</b></summary>
+
+| Field Name | Type | Description |
+|------------|------|-------------|
+| `data` | `array` | List of matching passages |
+| `data[].entity` | `object` | The matched source record |
+| `data[].entity.ts` | `string` | Source record field |
+| `data[].entity.float_ts` | `string` | Source record field |
+| `data[].entity.channel_id` | `string` | Source record field |
+| `data[].entity.thread_ts` | `string` | Source record field |
+| `data[].entity.user` | `string` | Source record field |
+| `data[].entity.subtype` | `string` | Source record field |
+| `data[].metadata` | `object` | Match metadata |
+| `data[].metadata.score` | `number` | Similarity score |
+| `data[].metadata.context` | `string` | The matched passage text |
+| `data[].metadata.authorName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.authorDisplayName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `data[].metadata.channelName` | `string` | Enriched from a related entity at read time (returned only; not filterable) |
+| `meta` | `object` | Pagination metadata |
+| `meta.has_more` | `boolean` | Whether additional pages are available |
+| `meta.cursor` | `string \| null` | Cursor for next page of results |
+| `meta.took_ms` | `number \| null` | Query execution time in milliseconds |
 
 </details>
 

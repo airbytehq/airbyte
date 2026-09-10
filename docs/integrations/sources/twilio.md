@@ -79,7 +79,9 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [Keys](https://www.twilio.com/docs/usage/api/keys#read-a-key-resource) | Full refresh |
 | [Message Media](https://www.twilio.com/docs/sms/api/media-resource#read-multiple-media-resources) | Full refresh, incremental |
 | [Messages](https://www.twilio.com/docs/sms/api/message-resource#read-multiple-message-resources) | Full refresh, incremental |
+| [Messaging Pricing Countries](https://www.twilio.com/docs/messaging/api/pricing#fetch-a-countries-resource) | Full refresh |
 | [Outgoing Caller IDs](https://www.twilio.com/docs/voice/api/outgoing-caller-ids#outgoingcallerids-list-resource) | Full refresh |
+| [Phone Number Pricing Countries](https://www.twilio.com/docs/phone-numbers/pricing#pricing-phone-numbers-country-instance-resource) | Full refresh |
 | [Queues](https://www.twilio.com/docs/voice/api/queue-resource#read-multiple-queue-resources) | Full refresh |
 | [Recordings](https://www.twilio.com/docs/voice/api/recording#read-multiple-recording-resources) | Full refresh, incremental |
 | [Roles](https://www.twilio.com/docs/conversations/api/role-resource#read-multiple-role-resources) | Full refresh |
@@ -92,6 +94,11 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 | [User Conversations](https://www.twilio.com/docs/conversations/api/user-conversation-resource#list-all-of-a-users-conversations) | Full refresh |
 | [Users](https://www.twilio.com/docs/conversations/api/user-resource) | Full refresh |
 | [Verify Services](https://www.twilio.com/docs/verify/api/service#maincontent) | Full refresh |
+| [Voice Pricing Countries](https://www.twilio.com/docs/voice/pricing#pricing-voice-country-instance-resource) | Full refresh |
+
+### Pricing streams
+
+The `voice_pricing_countries`, `messaging_pricing_countries`, and `phone_number_pricing_countries` streams return per-country price lists from Twilio's Pricing API. Each stream first pages through the list of supported countries, then makes one additional request per country to fetch that country's prices, so a sync of these streams makes more API requests than there are supported countries. Prices are specific to the account you authenticate with: `base_price` is Twilio's list price and `current_price` includes any volume or custom discounts on your account. Each record is keyed by `iso_country`.
 
 ## Upgrading to 1.0.0
 
@@ -140,7 +147,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 ## Reference
 
-This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, and `https://verify.twilio.com/v2` API endpoints.
+This connector uses REST APIs, including the `https://api.twilio.com/2010-04-01`, `https://monitor.twilio.com/v1`, `https://conversations.twilio.com/v1`, `https://studio.twilio.com/v1`, `https://trunking.twilio.com/v1`, `https://verify.twilio.com/v2`, `https://pricing.twilio.com/v1`, and `https://pricing.twilio.com/v2` API endpoints.
 
 For programmatic configuration, use these parameter names:
 
@@ -160,6 +167,8 @@ For programmatic configuration, use these parameter names:
 
 | Version | Date | Pull Request | Subject |
 | :------ | :--- | :----------- | :------ |
+| 1.1.0 | 2026-09-08 | [85748](https://github.com/airbytehq/airbyte/pull/85748) | Promoting release candidate 1.1.0-rc.1 to a main version. |
+| 1.1.0-rc.1 | 2026-08-13 | [84203](https://github.com/airbytehq/airbyte/pull/84203) | Add voice, messaging, and phone number pricing country streams |
 | 1.0.13 | 2026-08-11 | [84128](https://github.com/airbytehq/airbyte/pull/84128) | Update dependencies |
 | 1.0.12 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |
 | 1.0.11 | 2026-07-28 | [1082](https://github.com/airbytehq/airbyte-python-cdk/issues/1082) | Roll Cloud back to 1.0.9 — 1.0.10 is built on SDM 7.23.7, which breaks bundled custom components |

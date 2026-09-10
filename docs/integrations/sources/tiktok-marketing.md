@@ -150,9 +150,14 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 ## Performance considerations
 
-The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The connector is restricted by the TikTok Marketing API [rate limits](https://business-api.tiktok.com/portal/docs?rid=fgvgaumno25&id=1740029171730433). This connector should not run into TikTok Marketing API limitations under normal usage. TikTok enforces rate limits per access token, so if you see error 40100 ("rate limit exceeded"), check that only one Airbyte connection is running with the same TikTok credentials at a time. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
 
-The connector automatically retries transient TikTok API errors, including service maintenance periods (error 60001). If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
+TikTok returns most errors with an HTTP 200 status and an error code in the response body. The connector automatically retries the following transient TikTok API errors, retrying a failed request up to 9 times with a 60-second wait before each retry:
+
+- 60001: service maintenance. If the sync still fails after all retries, wait for the maintenance period to end and run the sync again.
+- 50000, 51002, 51004, 51041: transient server-side errors.
+
+If a resource is inaccessible or no longer exists (error 40002), the connector skips that resource and continues syncing.
 
 For daily report streams, if the TikTok API returns error 40067 ("query too large"), the connector surfaces a configuration error directing you to reduce the **Daily Reports Date Step** setting. This typically affects accounts with many ads or ad groups. Reduce the value to 7 or 1 and retry the sync.
 
@@ -171,6 +176,10 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version    | Date       | Pull Request                                              | Subject                                                                                                                                                                |
 |:-----------|:-----------|:----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 5.1.14 | 2026-09-09 | [85187](https://github.com/airbytehq/airbyte/pull/85187) | Retry transient TikTok API error 51002 |
+| 5.1.13 | 2026-09-08 | [85704](https://github.com/airbytehq/airbyte/pull/85704) | Update dependencies |
+| 5.1.12 | 2026-08-18 | [84765](https://github.com/airbytehq/airbyte/pull/84765) | Update dependencies |
+| 5.1.11 | 2026-08-12 | [84290](https://github.com/airbytehq/airbyte/pull/84290) | Widen retry budget and retry transient TikTok API errors 51041 and 51004 |
 | 5.1.10 | 2026-08-11 | [84199](https://github.com/airbytehq/airbyte/pull/84199) | Retry transient TikTok API error 50000 |
 | 5.1.9 | 2026-08-11 | [84132](https://github.com/airbytehq/airbyte/pull/84132) | Update dependencies |
 | 5.1.8 | 2026-07-28 | [83194](https://github.com/airbytehq/airbyte/pull/83194) | Update to CDK 7.23.8 (fixes AirbyteCustomCodeNotPermittedError for bundled custom components) and remove the temporary Cloud version override |

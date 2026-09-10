@@ -49,7 +49,7 @@ This connector supports the following entities and actions. For more details, se
 |--------|---------|
 | Accounts | [List](./REFERENCE.md#accounts-list), [Get](./REFERENCE.md#accounts-get), [Context Store Search](./REFERENCE.md#accounts-context-store-search) |
 | Calls | [List](./REFERENCE.md#calls-list), [Create](./REFERENCE.md#calls-create), [Get](./REFERENCE.md#calls-get), [Context Store Search](./REFERENCE.md#calls-context-store-search) |
-| Messages | [List](./REFERENCE.md#messages-list), [Create](./REFERENCE.md#messages-create), [Get](./REFERENCE.md#messages-get), [Context Store Search](./REFERENCE.md#messages-context-store-search) |
+| Messages | [List](./REFERENCE.md#messages-list), [Create](./REFERENCE.md#messages-create), [Get](./REFERENCE.md#messages-get), [Context Store Search](./REFERENCE.md#messages-context-store-search), [Semantic Search](./REFERENCE.md#messages-semantic-search) |
 | Incoming Phone Numbers | [List](./REFERENCE.md#incoming-phone-numbers-list), [Create](./REFERENCE.md#incoming-phone-numbers-create), [Get](./REFERENCE.md#incoming-phone-numbers-get), [Context Store Search](./REFERENCE.md#incoming-phone-numbers-context-store-search) |
 | Recordings | [List](./REFERENCE.md#recordings-list), [Get](./REFERENCE.md#recordings-get), [Context Store Search](./REFERENCE.md#recordings-context-store-search) |
 | Conferences | [List](./REFERENCE.md#conferences-list), [Get](./REFERENCE.md#conferences-get), [Context Store Search](./REFERENCE.md#conferences-context-store-search) |

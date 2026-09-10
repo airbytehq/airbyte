@@ -20,6 +20,8 @@ import io.airbyte.integrations.destination.snowflake.schema.SnowflakeColumnManag
 import io.airbyte.integrations.destination.snowflake.schema.toSnowflakeCompatibleName
 import io.airbyte.integrations.destination.snowflake.spec.SnowflakeConfiguration
 import io.airbyte.integrations.destination.snowflake.sql.COUNT_TOTAL_ALIAS
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType.NUMBER
+import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDataType.NUMERIC_38_9
 import io.airbyte.integrations.destination.snowflake.sql.SnowflakeDirectLoadSqlGenerator
 import io.airbyte.integrations.destination.snowflake.sql.andLog
 import io.airbyte.integrations.destination.snowflake.sql.escapeJsonIdentifier
@@ -258,7 +260,7 @@ class SnowflakeAirbyteClient(
                         if (columnManager.getMetaColumnNames().contains(columnName)) {
                             continue
                         }
-                        val dataType = rs.getString("type").takeWhile { char -> char != '(' }
+                        val dataType = toCanonicalDataType(rs.getString("type"))
                         // yes, this is how we live. The value is, in fact "Y" or "N".
                         val nullable = rs.getString("null?") == "Y"
 
@@ -375,3 +377,21 @@ fun DataSource.execute(query: String): ResultSet =
     this.connection.use { connection ->
         connection.createStatement().use { it.executeQuery(query) }
     }
+
+/** NUMBER, NUMERIC and DECIMAL are synonyms in Snowflake */
+private val NUMBER_TYPE_SYNONYMS = setOf("NUMBER", "NUMERIC", "DECIMAL")
+private val SCALE_REGEX = Regex("""\(\s*\d+\s*,\s*(\d+)\s*\)""")
+
+/** Reduces a data type (e.g. `VARCHAR(16777216)`) to the canonical type name (VARCHAR) */
+internal fun toCanonicalDataType(dataType: String): String {
+    val baseName = dataType.takeWhile { char -> char != '(' }
+    if (baseName.uppercase() !in NUMBER_TYPE_SYNONYMS) {
+        return baseName
+    }
+    val scale =
+        SCALE_REGEX.find(dataType)?.groupValues?.get(1)?.toIntOrNull()
+            ?: throw IllegalArgumentException(
+                "Expected NUMBER type with explicit precision and scale, but got: $dataType",
+            )
+    return if (scale > 0) NUMERIC_38_9.typeName else NUMBER.typeName
+}

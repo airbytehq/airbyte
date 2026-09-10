@@ -8,6 +8,7 @@ from typing import Dict, List, Union
 import pytest
 import yaml
 
+from airbyte_cdk.sources.declarative.concurrent_declarative_source import ConcurrentDeclarativeSource
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.transformations.config_transformations.add_fields import ConfigAddFields
 
@@ -127,6 +128,23 @@ def test_no_custom_report_dimension_filter_config_transformation(components_modu
     dimension_filter_config_transformation.transform(config)
 
     assert "custom_reports_array" not in config
+
+
+def test_dynamic_stream_naming_preserves_nested_name(manifest_path):
+    manifest = yaml.safe_load(manifest_path.read_text())
+    manifest["definitions"]["streams"]["google_analytics_stream_template"]["retriever"]["requester"]["request_parameters"] = {
+        "name": "keep-me"
+    }
+    config = {"property_ids": ["111", "222"]}
+
+    source = ConcurrentDeclarativeSource(source_config=manifest, config=config)
+    resolved_streams = source._dynamic_stream_configs(source._source_config)
+
+    assert all(stream["retriever"]["requester"]["request_parameters"]["name"] == "keep-me" for stream in resolved_streams)
+    assert [stream["name"] for stream in resolved_streams[:2]] == [
+        "daily_active_users",
+        "daily_active_usersProperty222",
+    ]
 
 
 @pytest.mark.parametrize(
