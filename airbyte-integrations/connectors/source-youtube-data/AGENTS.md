@@ -9,7 +9,7 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 All five streams are currently full-refresh-only. The YouTube Data API v3 exposes usable cursors on only part of the surface, and where they exist the stream's current record shape does not yet carry the cursor field. The table records the per-stream reasoning.
 
 | Stream | Volume Tier | Relationship | Cursor Field | API Incremental Support | Current Status | Notes |
-|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- |
 | channels | small | top-level parent (config `channel_ids`) | none | none | full_refresh_only | `channels.list` by ID has no date filter; channel records are mutable config-style lookups. |
 | videos | medium | top-level parent | none in record | `publishedAfter` on `search.list` | deferred_needs_record_reshape | The endpoint supports `publishedAfter`, but the extractor keeps only `items[].id` (`kind`, `videoId`) — the record carries no date to cursor on. Incremental requires first reshaping records to include `snippet.publishedAt` (tracked as the thin-record investigation), then a `DatetimeBasedCursor` on it. Note `publishedAt` is creation-time only: edits to a video do not move it, so a lookback or periodic full refresh is still needed for updated metadata. |
 | video | medium | substream of `videos` | none | none | full_refresh_only | `videos.list` by ID has no date-based filtering; it fetches whatever IDs the parent supplies. Statistics fields (view/like counts) change constantly, so even with a cursor the data is inherently mutable. |
@@ -26,7 +26,7 @@ All five streams are currently full-refresh-only. The YouTube Data API v3 expose
 All five streams share the error handler defined on `definitions.base_requester` in `manifest.yaml`. YouTube reports its error taxonomy in two places, and the filters check both: legacy reasons in `error.errors[0].reason` and modern reasons in `error.details[0].reason`.
 
 | Response | Action | Failure type | Rationale |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `commentsDisabled`, `videoNotFound` | IGNORE | — | Per-video conditions on the comment streams: a video with comments disabled, or deleted between the parent fetch and the child request, is an empty partition, not an error. |
 | 401 | FAIL | `config_error` | Expired or revoked OAuth grant; re-authenticate. |
 | `keyInvalid` / `API_KEY_INVALID`, `accessNotConfigured` / `SERVICE_DISABLED`, `channelNotFound`, `ACCESS_TOKEN_SCOPE_INSUFFICIENT` | FAIL | `config_error` | User-correctable: invalid key, YouTube Data API v3 not enabled in the Google Cloud project, wrong Channel IDs, or missing OAuth scope. Surfaces Google's own message plus remediation steps. |
@@ -51,7 +51,7 @@ The manifest declares an `api_budget` sized to this model: `search.list` is capp
 Fivetran's YouTube coverage is [YouTube Analytics](https://fivetran.com/docs/connectors/applications/youtube-analytics), built on the YouTube **Analytics** API. This connector reads the YouTube **Data** API v3 — a different API surface (content metadata and comments, not performance reporting). Row-by-row verdicts:
 
 | Fivetran table (YouTube Analytics) | Verdict | Reason |
-|---|---|---|
+| --- | --- | --- |
 | Channel performance reports (views, watch time, subscriber deltas) | out-of-scope | Analytics API report; not exposed by the Data API. `channels.statistics` carries only current totals (view/subscriber/video counts), not time-series. |
 | Video performance reports (views, watch time, retention) | out-of-scope | Analytics API report; `video.statistics` carries only current totals. |
 | Playlist performance reports | out-of-scope | Analytics API report; this connector has no playlist streams. |
