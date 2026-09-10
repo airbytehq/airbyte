@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.salesforce.connector
-* airbyte_agent_sdk.connectors.salesforce.connector_model
-* airbyte_agent_sdk.connectors.salesforce.models
-* airbyte_agent_sdk.connectors.salesforce.types
+* [airbyte_agent_sdk.connectors.salesforce.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-connector)
+* [airbyte_agent_sdk.connectors.salesforce.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-connector_model)
+* [airbyte_agent_sdk.connectors.salesforce.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-models)
+* [airbyte_agent_sdk.connectors.salesforce.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/salesforce/airbyte_agent_sdk-connectors-salesforce-types)
 
 Classes
 -------
@@ -834,7 +834,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            instance_url: Your Salesforce instance URL (e.g., https://na1.salesforce.com)
     Examples:
         # Local mode (direct API calls)
-        connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."))
+        connector = SalesforceConnector(auth_config=SalesforceAuthConfig(refresh_token="...", client_id="...", client_secret="..."), instance_url="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = SalesforceConnector(
             auth_config=AirbyteAuthConfig(
@@ -1043,7 +1043,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'api_search', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
