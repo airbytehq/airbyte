@@ -1,4 +1,4 @@
-version: 6.33.0
+version: 6.59.0
 
 type: DeclarativeSource
 
@@ -50,9 +50,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -159,9 +157,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -212,9 +208,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -318,9 +312,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -371,9 +363,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -632,9 +622,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -716,9 +704,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -769,9 +755,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -884,9 +868,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -937,9 +919,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -1147,30 +1127,50 @@ streams:
 
 spec:
   type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/pipedrive
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - api_token
-      - replication_start_date
     properties:
       api_token:
         type: string
-        description: The Pipedrive API Token.
         title: API Token
+        description: >-
+          Your personal Pipedrive API token. In Pipedrive, click your name (top
+          right) > Company settings > Personal preferences > API and copy the
+          token. If the API tab is missing, ask your Pipedrive admin to enable
+          API access for your user.
         airbyte_secret: true
         order: 0
       replication_start_date:
         type: string
-        description: >-
-          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
-          this date will not be replicated. When specified and not None, then
-          stream will behave as incremental
         title: Start Date
+        description: >-
+          Only records created or updated on or after this UTC date and time are
+          replicated. Format YYYY-MM-DDTHH:MM:SSZ, for example
+          2017-01-25T00:00:00Z. Defaults to 2010-01-01T00:00:00Z when left
+          empty.
+        default: "2010-01-01T00:00:00Z"
         examples:
-          - "2017-01-25 00:00:00Z"
+          - "2017-01-25T00:00:00Z"
+        pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]+)?)?(Z|[+-][0-9]{2}:?[0-9]{2})?)?$'
+        pattern_descriptor: "YYYY-MM-DDTHH:MM:SSZ"
         order: 1
     additionalProperties: true
+  config_normalization_rules:
+    type: ConfigNormalizationRules
+    config_migrations:
+      - type: ConfigMigration
+        description: Lift the pre-2.0.0 `authorization.api_token` field to the top-level `api_token`.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["api_token"]
+                value: "{{ config.get('authorization', {}).get('api_token') }}"
+            condition: "{{ config.get('api_token') is none and config.get('authorization', {}).get('api_token') is not none }}"
 
 metadata:
   autoImportSchema:

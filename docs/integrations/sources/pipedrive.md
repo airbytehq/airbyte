@@ -6,7 +6,6 @@ This page contains the setup guide and reference information for the Pipedrive s
 
 - A Pipedrive account with API access enabled for your user
 - Your Pipedrive API Token
-- A Start Date (in UTC) from which to begin replicating data
 
 ## Setup guide
 
@@ -36,7 +35,7 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 <FieldAnchor field="replication_start_date">
 
-**Start Date**: A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
+**Start Date** (optional): A UTC date and time in the format `YYYY-MM-DDTHH:MM:SSZ`, for example `2017-01-25T00:00:00Z`. Defaults to `2010-01-01T00:00:00Z` when left empty. Streams that support incremental sync only replicate records modified on or after this date. Streams that don't support incremental sync ignore it and always return all records, except `deal_products`, which only expands the deals returned by the `deals` stream. A space instead of `T`, as in the example shown in the UI, also works. See [Incremental sync and Start Date](#incremental-sync-and-start-date).
 
 </FieldAnchor>
 
@@ -156,6 +155,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.7 | 2026-09-09 | [85774](https://github.com/airbytehq/airbyte/pull/85774) | Make Start Date optional with a default, rewrite the spec tooltips and migrate pre-2.0.0 configurations automatically |
 | 2.4.6 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors, wait on `x-ratelimit-reset` for 429s and skip inaccessible parent records in `deal_products` and `mail` |
 | 2.4.5 | 2026-09-09 | [85767](https://github.com/airbytehq/airbyte/pull/85767) | Restructure the documentation and add contributor guides |
 | 2.4.4 | 2026-09-09 | [85763](https://github.com/airbytehq/airbyte/pull/85763) | Set the heartbeat timeout, add a CODEOWNERS entry and tidy the changelog |
