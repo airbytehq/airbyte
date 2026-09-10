@@ -91,7 +91,7 @@ The YouTube Data API source connector supports the following sync modes:
 ## Supported streams
 
 | Stream Name | Primary Key | Pagination | Supports Full Sync | Supports Incremental |
-|-------------|-------------|------------|---------------------|----------------------|
+| --- | --- | --- | --- | --- |
 | video | videoId | DefaultPaginator | Yes | No |
 | videos | videoId | DefaultPaginator | Yes | No |
 | channels | id | DefaultPaginator | Yes | No |
