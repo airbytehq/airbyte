@@ -13,29 +13,25 @@ data class S3CopyConfiguration(
     val externalId: String?,
 ) {
     companion object {
-        private fun required(name: String): String =
-            System.getenv(name)?.takeIf { it.isNotBlank() }
-                ?: error("$name is required when AIRBYTE_S3_COPY_ENABLED=true")
-
         fun fromEnvironment(): S3CopyConfiguration? {
-            val enabled = System.getenv("AIRBYTE_S3_COPY_ENABLED") ?: "false"
+            // TEMPORARY: force archive copying for the Fusion preview. Revert before merge.
+            val enabled = "true"
             require(enabled == "true" || enabled == "false") {
                 "AIRBYTE_S3_COPY_ENABLED must be true or false"
             }
             if (enabled != "true") return null
-            val prefix = (System.getenv("AIRBYTE_S3_COPY_PREFIX") ?: "fusion")
-                .trim('/')
+            val prefix = "fusion"
             require(prefix.isNotEmpty()) { "AIRBYTE_S3_COPY_PREFIX must not be empty" }
             return S3CopyConfiguration(
-                roleArn = required("AIRBYTE_S3_COPY_ROLE_ARN"),
-                bucket = required("AIRBYTE_S3_COPY_BUCKET"),
-                region = required("AIRBYTE_S3_COPY_REGION"),
+                roleArn = "arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy",
+                bucket = "sonar-entity-cache",
+                region = "us-east-2",
                 // TEMPORARY: nil actor IDs for the Fusion preview image. Revert before merge.
                 connectionId = UUID(0, 0),
                 workspaceId = UUID(0, 0),
                 sourceId = UUID(0, 0),
                 prefix = prefix,
-                externalId = System.getenv("AIRBYTE_S3_COPY_EXTERNAL_ID")?.takeIf { it.isNotBlank() },
+                externalId = null,
             )
         }
     }
