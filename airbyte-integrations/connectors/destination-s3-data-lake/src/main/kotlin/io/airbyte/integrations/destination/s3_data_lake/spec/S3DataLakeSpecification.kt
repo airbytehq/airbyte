@@ -89,8 +89,9 @@ class S3DataLakeSpecification :
         "When enabled, all column names are converted to lowercase before being written to Iceberg " +
             "(for example, \"userId\" becomes \"userid\"). Some query engines that read Iceberg tables through " +
             "a Glue catalog, such as Snowflake, only support lowercase column names. " +
-            "Changing this option on an existing connection changes the column names of existing tables: " +
-            "clear the affected streams' data and run a full refresh after changing it."
+            "IMPORTANT: if you toggle this option for streams that have already been synced, their existing " +
+            "tables keep the old column names and the next sync will fail. After toggling, clear the data of " +
+            "the affected streams and run a full refresh so the tables are recreated with the new column names."
     )
     @get:JsonProperty("lowercase_column_names", required = false)
     @get:JsonSchemaInject(json = """{"default": false, "order": 9}""")
