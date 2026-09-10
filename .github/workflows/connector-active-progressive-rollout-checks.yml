@@ -57,6 +57,9 @@ jobs:
           if [[ "${checkout_repository}" == airbytehq/* ]]; then
             is_fork="false"
           fi
+          if [[ "${is_fork}" == "true" && -z "${INPUT_PR}" ]]; then
+            echo "::notice::Progressive rollout gate is skipped on fork PRs (org secrets and write tokens are unavailable). Maintainers can run this workflow via workflow_dispatch with pr=${pr_number} to evaluate the gate and add the bypass checkbox."
+          fi
 
           echo "pr-number=${pr_number}" | tee -a "${GITHUB_OUTPUT}"
           echo "pr-repository=${pr_repository}" | tee -a "${GITHUB_OUTPUT}"
@@ -103,9 +106,13 @@ jobs:
       connectors-matrix: ${{ steps.connector-matrix.outputs.connectors_matrix }}
       checkout-repository: ${{ steps.vars.outputs.checkout-repository }}
       checkout-ref: ${{ steps.vars.outputs.ref }}
+      is-fork: ${{ steps.vars.outputs.is-fork }}
 
   progressive-rollout-gate:
     needs: [generate-matrix]
+    if: >
+      github.event_name != 'pull_request' ||
+      needs.generate-matrix.outputs.is-fork != 'true'
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.connectors-matrix) }}
       max-parallel: 10
