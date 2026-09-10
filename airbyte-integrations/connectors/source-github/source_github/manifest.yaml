@@ -2566,16 +2566,19 @@ definitions:
   # it in four ways forced by the declarative components - deeper paging, a second read of the
   # listing, an inclusive cursor boundary, and how a newly added repository is seeded. AGENTS.md,
   # "Where the declarative run listing diverges from WorkflowRuns", has the detail.
+  # Internal parent of `workflow_run_attempts`, never registered in `streams`. Reads the same
+  # endpoint as the Python `WorkflowRuns` and mirrors its incremental contract; the four places
+  # it cannot are listed in AGENTS.md.
+  # API docs: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
   workflow_runs_for_attempts_stream:
     type: DeclarativeStream
     name: workflow_runs_for_attempts
     primary_key: "id"
     retriever:
       type: SimpleRetriever
-      # Deliberately no `created` request parameter, tempting though it is as a server-side form
-      # of the legacy pagination break: GitHub caps this endpoint at 1000 results whenever a
-      # filter parameter is present, and truncates invisibly. Measured, and why the 32-day window
-      # is a paginator stop condition instead - see AGENTS.md.
+      # No `created` request parameter on purpose: any filter parameter caps this endpoint at
+      # 1000 results and truncates invisibly (AGENTS.md), which is why the 32-day window below is
+      # a paginator stop condition instead.
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/actions/runs"
@@ -2588,21 +2591,13 @@ definitions:
         $ref: "#/definitions/page_link_paginator"
         pagination_strategy:
           $ref: "#/definitions/page_link_paginator/pagination_strategy"
-          # The legacy pagination break (streams.py::WorkflowRuns.read_records). The listing is
-          # `created_at` descending and GitHub stops allowing a re-run 30 days after creation - 32
-          # is legacy's margin (`WorkflowRuns.re_run_period`) - so once a page ends below
-          # `start_date - 32 days`, nothing below it can have been updated after `start_date`.
-          # `[-1]` is the page's oldest run; the head says nothing about the next page.
-          #
-          # Anchored on `start_date`, not the cursor, because a stop condition can only see
-          # `config`, `response`, `headers`, `last_record` and `last_page_size`. An incremental
-          # sync therefore pages back as deep as legacy's *first* sync did.
-          #
-          # It reads the raw page tail rather than `last_record`, which is assigned after the
-          # record selector - here the `is_client_side_incremental` filter - and so is None on
-          # exactly the deep pages a break has to fire on. The guards are not decoration either:
-          # a null renders as "None" and reads as true, and a comparison that raises also reads
-          # as true, so either would truncate the listing silently. Both are in AGENTS.md.
+          # Legacy's pagination break (streams.py::WorkflowRuns.read_records): the listing is
+          # `created_at` descending and a re-run is refused 30 days after creation, so once a page
+          # ends below `start_date - 32 days` (legacy's margin) nothing deeper can be newer.
+          # It reads the page tail rather than `last_record`, and anchors on `start_date` rather
+          # than the cursor, because a stop condition sees neither the cursor nor a filtered
+          # record; the type guards stop an expression that would read as true from silently
+          # truncating the listing. All three are explained in AGENTS.md.
           stop_condition: >-
             {{ (config.get('start_date') or '') != ''
             and (response.get('workflow_runs') or []) | length > 0
@@ -2618,19 +2613,17 @@ definitions:
       datetime_format: "%Y-%m-%dT%H:%M:%SZ"
       start_datetime:
         type: MinMaxDatetime
-        # Same `or` guard as `repositories`: a null `start_date` would otherwise reach
-        # MinMaxDatetime as the literal string "None" and abort the stream.
+        # Same `or` guard as `repositories`: a null `start_date` reaches MinMaxDatetime as the
+        # literal string "None" and aborts the stream.
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      # Filters on `updated_at` exactly as legacy's SemiIncrementalMixin did. Not `is_data_feed`:
-      # that stops paginating once a page ends at or below the cursor, but the listing is ordered
-      # by `created_at`, so an old run re-run yesterday sits deep and would be cut off.
+      # Filters on `updated_at` as legacy's SemiIncrementalMixin did. Not `is_data_feed`: that
+      # stops paginating at the first page ending below the cursor, but the listing is ordered by
+      # `created_at`, so an old run re-run yesterday sits deep and would be cut off.
       is_client_side_incremental: true
     schema_loader:
       type: InlineSchemaLoader
-      # Only what this stream is read for: the cursor, the run URL, and the attempt count the
-      # child slices on. `created_at` is documentation - the stop condition reads the decoded
-      # body, not the schema. These records are never emitted anywhere.
+      # Only what the child slices on: cursor, run URL, attempt count. Never emitted.
       schema:
         $schema: https://json-schema.org/draft-07/schema#
         type: object
@@ -2656,28 +2649,24 @@ definitions:
               - "null"
               - string
 
-  # The stream oncall#8827 asked for. `GET /repos/{owner}/{repo}/actions/runs` returns one record
-  # per run - the latest attempt - so a re-run erases every earlier attempt from `workflow_runs`,
-  # and no primary-key surgery there brings them back: they were never emitted. Only the
-  # per-attempt endpoint has them, one attempt per request.
-  # https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt
+  # oncall#8827. The run listing returns only a run's latest attempt, so a re-run erases the
+  # earlier ones from `workflow_runs` - they were never emitted, and no primary-key change there
+  # brings them back. Only the per-attempt endpoint has them, one attempt per request.
   workflow_run_attempts_stream:
+    # API docs: https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt
     type: DeclarativeStream
     name: workflow_run_attempts
     # Every attempt of a run carries the same `id`, so `run_attempt` is what makes a record unique.
-    primary_key:
-      - id
-      - run_attempt
+    primary_key: ["id", "run_attempt"]
     retriever:
       type: SimpleRetriever
       requester:
         $ref: "#/definitions/requester_base"
-        # `run_url` is the parent's absolute `url`, and HttpRequester._join_url lets an absolute
-        # path win, so this follows the configured host - GitHub Enterprise Server included.
-        # The first request targets the latest attempt and the paginator walks back from there,
-        # so the stream costs `run_attempt` requests per run. `or 1` because `run_attempt` is not
-        # required by GitHub's schema and a missing extra field renders as the literal "None",
-        # which would 404 and drop the run in full. A run without one has exactly one attempt.
+        # `run_url` is the parent's absolute `url` and HttpRequester._join_url lets it win, so
+        # GitHub Enterprise Server is followed too. The first request targets the latest attempt
+        # and the paginator walks back, costing `run_attempt` requests per run. `or 1` because
+        # `run_attempt` is optional in GitHub's schema and a missing extra field renders as the
+        # literal "None", which would 404 the whole run; such a run has exactly one attempt.
         path: "{{ stream_partition.run_url }}/attempts/{{ stream_slice.extra_fields.run_attempt or 1 }}"
         http_method: GET
         error_handler:
@@ -2688,18 +2677,17 @@ definitions:
           # Unlike the listing, the attempt endpoint returns a single workflow run object.
           type: DpathExtractor
           field_path: []
-        # `field_path: []` emits the body as-is, so a 200 carrying an envelope instead of a run
-        # (GitHub answers `{"message": ...}` with 200 on some redirect and deprecation paths)
-        # would land as a row with a null primary key. Both key fields are therefore required,
-        # and nothing invents a missing `run_attempt`: the attempt number is only knowable from
-        # the request path, so defaulting it to 1 would mislabel a mid-chain attempt and
-        # overwrite a good row. Skipping loses one attempt; the walk itself continues.
+        # `field_path: []` emits the body as-is, so a 200 carrying `{"message": ...}` - which
+        # GitHub sends on some redirect and deprecation paths - would land as a row with a null
+        # key. Nothing invents a missing `run_attempt` either: the attempt number is only knowable
+        # from the request path, so a default would mislabel a mid-chain attempt and overwrite a
+        # good row. Skipping loses one attempt; the walk continues.
         record_filter:
           type: RecordFilter
           condition: "{{ record.get('id') is integer and record.get('run_attempt') is integer }}"
       paginator:
-        # `previous_attempt_url` is the documented back-link, null on attempt 1, so the chain is
-        # literally a cursor pagination. There is no "list attempts" endpoint to page instead.
+        # `previous_attempt_url` is the documented back-link, null on attempt 1 - the chain is
+        # literally cursor pagination. There is no "list attempts" endpoint to page instead.
         type: DefaultPaginator
         page_token_option:
           type: RequestPath
@@ -2707,19 +2695,14 @@ definitions:
           type: CursorPagination
           cursor_value: "{{ response['previous_attempt_url'] }}"
           # First clause is the normal end of the walk: attempt 1 reports a null
-          # `previous_attempt_url`. The rest is a loop guard - `DefaultPaginator` has no page cap
-          # and the page token is not passed to `stop_condition`, so a link pointing at the
-          # current attempt, or oscillating between two, would page until the sync is killed.
-          #
-          # It stops only on proof the chain failed to descend. Everything else keeps walking: a
-          # missing or non-integer `run_attempt` yields False rather than truncating, and `<` is
-          # never evaluated on mismatched types, because an expression that raises reads as true
-          # and would silently end the walk (AGENTS.md). The regex is deliberately not
-          # end-anchored - `.../attempts/1/` and `.../attempts/1?x=1` descend perfectly well.
-          #
-          # One shape stays unbounded: no usable `run_attempt` plus a same-run link with a numeric
-          # segment. Bounding it would mean stopping on a payload this connector cannot reason
-          # about, and GitHub has never omitted `run_attempt` from a run object.
+          # `previous_attempt_url`. The rest is a loop guard - `DefaultPaginator` has no page cap,
+          # so a link pointing at the current attempt, or oscillating between two, would page
+          # until the sync is killed. It stops only on proof the chain failed to descend;
+          # anything unrecognised keeps walking, since an expression that raises reads as true
+          # and would silently end the walk (AGENTS.md). Not end-anchored, so `.../attempts/1/`
+          # and `.../attempts/1?x=1` still descend. One shape stays unbounded - no usable
+          # `run_attempt` plus a same-run link with a numeric segment - and bounding it would
+          # mean stopping on a payload this connector cannot reason about.
           stop_condition: >-
             {{ not response.get('previous_attempt_url')
             or (response.get('url') is string
@@ -2735,20 +2718,20 @@ definitions:
               $ref: "#/definitions/workflow_runs_for_attempts_stream"
             parent_key: "url"
             partition_field: "run_url"
-            # The latest attempt number, needed to address the first request of the chain. The
-            # listing already carries it, so it costs no extra call.
+            # Latest attempt number, addressing the first request of the chain. Already in the
+            # listing, so it costs no extra call.
             extra_fields:
               - - run_attempt
-            # What makes the stream incremental: the parent picks new runs by the run's own
-            # `updated_at`, and every attempt of a run it yields is emitted whatever that
-            # attempt's `updated_at` says. Filtering the attempts would drop exactly the records
-            # this stream exists for - see AGENTS.md, which is emphatic about it.
+            # What makes the stream incremental: the parent picks runs by the run's own
+            # `updated_at` and every attempt of a chosen run is emitted, whatever that attempt's
+            # `updated_at` says. Filtering the attempts would drop exactly the records this
+            # stream exists for - AGENTS.md is emphatic about it.
             incremental_dependency: true
     incremental_sync:
-      # Required for `incremental_dependency` to take effect: the CDK only persists parent state
-      # inside a child that declares a cursor of its own. This one deliberately filters nothing -
-      # no `is_client_side_incremental`, no request options - so it tracks the high-water mark
-      # and the parent state beside it is what narrows the next sync.
+      # Required for `incremental_dependency`: the CDK only persists parent state inside a child
+      # that declares a cursor of its own. This one filters nothing - no
+      # `is_client_side_incremental`, no request options - so the parent state beside it is what
+      # narrows the next sync.
       type: DatetimeBasedCursor
       cursor_field: "updated_at"
       cursor_datetime_formats:
@@ -2758,9 +2741,9 @@ definitions:
         type: MinMaxDatetime
         datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
         datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-      # One partition per run, so per-partition state would grow by an entry per run and be
-      # dropped again at ConcurrentPerPartitionCursor.DEFAULT_MAX_PARTITIONS_NUMBER. A run is
-      # never revisited, so the parent's per-repository state is the resumption point.
+      # One partition per run: per-partition state would grow by an entry per run and be dropped
+      # again at ConcurrentPerPartitionCursor.DEFAULT_MAX_PARTITIONS_NUMBER. A run is never
+      # revisited, so the parent's per-repository state is the resumption point.
       global_substream_cursor: true
     schema_loader:
       type: InlineSchemaLoader
@@ -3514,10 +3497,10 @@ streams:
   - $ref: "#/definitions/collaborators_stream"
   - $ref: "#/definitions/issue_labels_stream"
   - $ref: "#/definitions/tags_stream"
+  - $ref: "#/definitions/workflow_run_attempts_stream"
   - $ref: "#/definitions/organizations_stream"
   - $ref: "#/definitions/teams_stream"
   - $ref: "#/definitions/users_stream"
-  - $ref: "#/definitions/workflow_run_attempts_stream"
 
 check:
   type: CheckStream
