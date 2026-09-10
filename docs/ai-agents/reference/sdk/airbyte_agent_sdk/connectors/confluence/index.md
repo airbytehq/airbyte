@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.confluence.connector
-* airbyte_agent_sdk.connectors.confluence.connector_model
-* airbyte_agent_sdk.connectors.confluence.models
-* airbyte_agent_sdk.connectors.confluence.types
+* [airbyte_agent_sdk.connectors.confluence.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-connector)
+* [airbyte_agent_sdk.connectors.confluence.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-connector_model)
+* [airbyte_agent_sdk.connectors.confluence.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-models)
+* [airbyte_agent_sdk.connectors.confluence.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/confluence/airbyte_agent_sdk-connectors-confluence-types)
 
 Classes
 -------
@@ -394,7 +394,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            subdomain: Your Confluence Cloud subdomain (e.g., mycompany for mycompany.atlassian.net)
     Examples:
         # Local mode (direct API calls)
-        connector = ConfluenceConnector(auth_config=ConfluenceAuthConfig(username="...", password="..."))
+        connector = ConfluenceConnector(auth_config=ConfluenceAuthConfig(username="...", password="..."), subdomain="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ConfluenceConnector(
             auth_config=AirbyteAuthConfig(
@@ -603,7 +603,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
