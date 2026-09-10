@@ -103,6 +103,12 @@ data:
     - title: monday.com authentication
       url: https://developer.monday.com/api-reference/docs/authentication
       type: authentication_guide
+    - title: monday.com OAuth and permissions
+      url: https://developer.monday.com/apps/docs/oauth
+      type: authentication_guide
+    - title: monday.com OAuth 2.1 migration guide
+      url: https://developer.monday.com/apps/docs/migrating-to-the-new-oauth-flow
+      type: api_deprecations
     - title: monday.com rate limits
       url: https://developer.monday.com/api-reference/docs/rate-limits
       type: rate_limits
@@ -112,4 +118,7 @@ data:
     - title: monday.com GraphQL API schema repository
       url: https://github.com/mondaycom/monday-graphql-api
       type: spec_repository
+    - title: monday.com User entity migration guide (2026-04 to 2026-10)
+      url: https://developer.monday.com/api-reference/docs/migrating-user-entity-to-2026-10
+      type: api_deprecations
 metadataSpecVersion: "1.0"
