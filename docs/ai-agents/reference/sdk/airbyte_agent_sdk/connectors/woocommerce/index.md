@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.woocommerce.connector
-* airbyte_agent_sdk.connectors.woocommerce.connector_model
-* airbyte_agent_sdk.connectors.woocommerce.models
-* airbyte_agent_sdk.connectors.woocommerce.types
+* [airbyte_agent_sdk.connectors.woocommerce.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-connector)
+* [airbyte_agent_sdk.connectors.woocommerce.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-connector_model)
+* [airbyte_agent_sdk.connectors.woocommerce.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-models)
+* [airbyte_agent_sdk.connectors.woocommerce.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/woocommerce/airbyte_agent_sdk-connectors-woocommerce-types)
 
 Classes
 -------
@@ -1620,7 +1620,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            shop: The WooCommerce store domain (e.g., mystore.com)
     Examples:
         # Local mode (direct API calls)
-        connector = WoocommerceConnector(auth_config=WoocommerceAuthConfig(api_key="...", api_secret="..."))
+        connector = WoocommerceConnector(auth_config=WoocommerceAuthConfig(api_key="...", api_secret="..."), shop="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = WoocommerceConnector(
             auth_config=AirbyteAuthConfig(
@@ -1829,7 +1829,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
