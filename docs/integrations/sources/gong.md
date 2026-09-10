@@ -109,8 +109,8 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 <details>
   <summary>Expand to review</summary>
 
-| Version | Date       | Pull Request                                             | Subject                                                                         |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------ |
+| Version | Date | Pull Request | Subject |
+| :--- | :--- | :--- | :--- |
 | 1.4.0 | 2026-08-30 | [85192](https://github.com/airbytehq/airbyte/pull/85192) | Promote connector to certified |
 | 1.3.6 | 2026-09-08 | [85501](https://github.com/airbytehq/airbyte/pull/85501) | Update dependencies |
 | 1.3.5 | 2026-08-18 | [84600](https://github.com/airbytehq/airbyte/pull/84600) | Update dependencies |
