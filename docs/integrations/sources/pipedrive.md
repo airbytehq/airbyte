@@ -61,42 +61,52 @@ The Pipedrive source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-The connector uses the [Pipedrive API v1](https://developers.pipedrive.com/docs/api/v1). Ten streams support incremental sync; the rest are full refresh only. Stream names below match the names shown in Airbyte.
+Most streams read the [Pipedrive API v1](https://developers.pipedrive.com/docs/api/v1); `projects`, `tasks` and `deal_installments` read [API v2](https://developers.pipedrive.com/docs/api/v2). Eleven streams support incremental sync; the rest are full refresh only. Stream names below match the names shown in Airbyte.
 
 | Stream                | Sync modes                | Notes                                                                                                                                                                                                                                       |
 | :-------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `activities`          | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=activity`. Cursor: `update_time`.                                                                                                            |
 | `activity_fields`     | Full Refresh              | [ActivityFields](https://developers.pipedrive.com/docs/api/v1/ActivityFields#getActivityFields)                                                                                                                                              |
 | `activity_types`      | Full Refresh              | [ActivityTypes](https://developers.pipedrive.com/docs/api/v1/ActivityTypes#getActivityTypes)                                                                                                                                                 |
+| `call_logs`           | Full Refresh              | Call logs of the token's user ([CallLogs](https://developers.pipedrive.com/docs/api/v1/CallLogs#getUserCallLogs)). Empty unless a phone integration is connected in Pipedrive. |
 | `currencies`          | Full Refresh              | [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies)                                                                                                                                                          |
 | `deal_fields`         | Full Refresh              | [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)                                                                                                                                                          |
+| `deal_flow`           | Full Refresh, Incremental | Field change history of each deal returned by the `deals` stream ([Deals getDealUpdates](https://developers.pipedrive.com/docs/api/v1/Deals#getDealUpdates)), one request per deal, so it is slow on large accounts. Cursor: `log_time`. Only deals that the `deals` stream returns (changed within Pipedrive's Recents window) are visited. |
+| `deal_installments`   | Full Refresh              | Payment installments of the deals returned by the `deals` stream ([DealInstallments](https://developers.pipedrive.com/docs/api/v1/DealInstallments#getInstallments)), 100 deals per request. Requires a Pipedrive plan with installments; the stream is empty otherwise. Only deals that the `deals` stream returns are visited. |
 | `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal ([DealProducts](https://developers.pipedrive.com/docs/api/v1/DealProducts#getDealProducts)). The connector still calls the v1 path `GET /v1/deals/{id}/products`, which Pipedrive stopped supporting on 2026-08-01, and only expands deals returned by the `deals` stream. |
 | `deals`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=deal`. Cursor: `update_time`.                                                                                                                |
 | `files`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=file`. Cursor: `update_time`.                                                                                                                |
 | `filters`             | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=filter`. Cursor: `update_time`.                                                                                                              |
 | `goals`               | Full Refresh              | [Goals](https://developers.pipedrive.com/docs/api/v1/Goals#getGoals)                                                                                                                                                                         |
 | `lead_labels`         | Full Refresh              | [LeadLabels](https://developers.pipedrive.com/docs/api/v1/LeadLabels#getLeadLabels)                                                                                                                                                          |
+| `lead_sources`        | Full Refresh              | [LeadSources](https://developers.pipedrive.com/docs/api/v1/LeadSources#getLeadSources) |
 | `leads`               | Full Refresh              | [Leads](https://developers.pipedrive.com/docs/api/v1/Leads#getLeads)                                                                                                                                                                         |
+| `legacy_teams`        | Full Refresh              | [LegacyTeams](https://developers.pipedrive.com/docs/api/v1/LegacyTeams#getTeams). Pipedrive has deprecated this endpoint; the stream is empty when the Teams feature is disabled for your company or the endpoint has been retired. |
 | `mail`                | Full Refresh              | Messages in each mail thread, fetched with one request per thread ([Mailbox getMailThreadMessages](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreadMessages)). See [Mail streams](#mail-streams).                          |
 | `mailThreads`         | Full Refresh              | Mail threads from the `inbox`, `drafts`, `sent`, and `archive` folders ([Mailbox getMailThreads](https://developers.pipedrive.com/docs/api/v1/Mailbox#getMailThreads)). See [Mail streams](#mail-streams).                                    |
 | `notes`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=note`. Cursor: `update_time`.                                                                                                                |
 | `organization_fields` | Full Refresh              | [OrganizationFields](https://developers.pipedrive.com/docs/api/v1/OrganizationFields#getOrganizationFields)                                                                                                                                  |
 | `organizations`       | Full Refresh              | [Organizations](https://developers.pipedrive.com/docs/api/v1/Organizations#getOrganizations). The connector still calls the v1 path `GET /v1/organizations`, which Pipedrive stopped supporting on 2026-08-01. |
+| `permission_set_assignments` | Full Refresh       | Users assigned to each permission set ([PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSetAssignments)). Requires an admin API token; the stream is empty otherwise. |
 | `permission_sets`     | Full Refresh              | [PermissionSets](https://developers.pipedrive.com/docs/api/v1/PermissionSets#getPermissionSets)                                                                                                                                              |
 | `person_fields`       | Full Refresh              | [PersonFields](https://developers.pipedrive.com/docs/api/v1/PersonFields#getPersonFields)                                                                                                                                                    |
 | `persons`             | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=person`. Cursor: `update_time`.                                                                                                              |
 | `pipelines`           | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=pipeline`. Cursor: `update_time`.                                                                                                            |
 | `product_fields`      | Full Refresh              | [ProductFields](https://developers.pipedrive.com/docs/api/v1/ProductFields#getProductFields)                                                                                                                                                 |
 | `products`            | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=product`. Cursor: `update_time`.                                                                                                             |
+| `projects`            | Full Refresh              | Active and archived projects ([Projects](https://developers.pipedrive.com/docs/api/v1/Projects#getProjects)). Requires the Projects add-on; the stream is empty otherwise. |
 | `roles`               | Full Refresh              | [Roles](https://developers.pipedrive.com/docs/api/v1/Roles#getRoles)                                                                                                                                                                         |
 | `stages`              | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=stage`. Cursor: `update_time`.                                                                                                               |
+| `tasks`               | Full Refresh              | Project tasks ([Tasks](https://developers.pipedrive.com/docs/api/v1/Tasks#getTasks)). Requires the Projects add-on; the stream is empty otherwise. Pipedrive marks the Tasks API as beta. |
 | `users`               | Full Refresh, Incremental | Read from [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) with `items=user`. Cursor: `modified`.                                                                                                                   |
 
 ### Incremental sync and Start Date
 
-The ten incremental streams read from the Pipedrive [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) endpoint, which returns items changed since a given timestamp. On the first sync, Airbyte passes your Start Date as `since_timestamp`. On later incremental syncs, it passes the latest cursor value it saw (`update_time`, or `modified` for `users`). Records modified before the Start Date are never replicated by these streams, and the Start Date has no effect on the full refresh streams.
+Ten of the eleven incremental streams read from the Pipedrive [Recents](https://developers.pipedrive.com/docs/api/v1/Recents#getRecents) endpoint, which returns items changed since a given timestamp. On the first sync, Airbyte passes your Start Date as `since_timestamp`. On later incremental syncs, it passes the latest cursor value it saw (`update_time`, or `modified` for `users`). Records modified before the Start Date are never replicated by these streams, and the Start Date has no effect on the full refresh streams.
 
 Because these streams use the Recents endpoint, they return records that changed in the window, not only records that were created in it. For example, a deal created years before your Start Date shows up in `deals` as soon as anyone edits it.
+
+`deal_flow` is the exception: it reads the change history of every deal returned by the `deals` stream and keeps the entries whose `log_time` is on or after the Start Date, or after the last saved cursor on later syncs.
 
 Pipedrive's Recents endpoint returns at most one month of history, regardless of the Start Date. Records last modified more than a month before a sync are never backfilled by these streams, and moving the Start Date earlier does not retrieve them. The connector is being moved to Pipedrive API v2 to remove this limitation.
 
@@ -112,10 +122,12 @@ Pipedrive lets you add custom fields to deals, persons, organizations, products,
 
 Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. The connector throttles itself to 20 requests per rolling 2 seconds across all streams, the burst limit of Pipedrive's lowest plan, so bursts rarely trigger a 429 no matter how many workers you configure. When Pipedrive answers with HTTP 429, the connector waits for the window reported in the `x-ratelimit-reset` header, falls back to exponential backoff when the header is missing, and retries up to ten times before failing the sync. If the header asks for a wait of 300 seconds or more, the connector stops the sync with a retryable error instead of waiting. Two limits apply per API token: a rolling 2-second burst window (20 to 120 requests depending on your plan) that recovers after a short wait, and a daily token budget (30,000 tokens times the plan multiplier and the number of seats) that, once exhausted, rejects every request until midnight in Pipedrive's server timezone. Waiting does not help in the second case; the failure message says so. If your account is close to its limits, run fewer streams per connection or schedule syncs less often.
 
-Two streams make one request per parent record and can be slow on large accounts:
+Four streams make requests per parent record and can be slow on large accounts:
 
 - `deal_products` makes one request per deal.
 - `mail` makes one request per mail thread.
+- `deal_flow` makes one request per deal returned by the `deals` stream.
+- `deal_installments` makes one request per 100 deals returned by the `deals` stream.
 
 Consider leaving these streams disabled unless you need them.
 
@@ -130,18 +142,18 @@ How the connector treats Pipedrive HTTP errors:
 
 | HTTP status | Behavior |
 |:------------|:---------|
-| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products` and `mail`, a 403 on a single parent record is skipped and the sync continues. If the token can't read any deal products or mail messages at all, those two streams finish empty rather than failing. |
-| 404, 410 | For `deal_products` and `mail`, a parent deal or mail thread deleted after the parent stream was read is skipped. On other streams these fail the sync. |
+| 401, 402, 403 | The sync fails with a configuration error that includes Pipedrive's error text. For `deal_products`, `deal_flow` and `mail`, a 403 on a single parent record is skipped and the sync continues. If the token can't read any deal products, deal changes or mail messages at all, those three streams finish empty rather than failing. `legacy_teams`, `projects`, `tasks`, `deal_installments` and `permission_set_assignments` treat a 402 or 403 on the whole endpoint as a feature that isn't available on the account and return no records instead of failing. |
+| 404, 410 | For `deal_products`, `deal_flow` and `mail`, a parent deal or mail thread deleted after the parent stream was read is skipped. `legacy_teams` returns no records on 404 or 410, and `projects` and `tasks` on 404. On other streams these fail the sync. |
 | 429 | Rate limited; retried as described under [Performance considerations](#performance-considerations). |
 | 500, 502, 503, 504 | Temporary Pipedrive errors; retried with backoff. |
 
 - The connector doesn't replicate deletes. A record deleted in Pipedrive stays in your destination until you clear and resync the stream.
-- Only the ten streams marked Incremental above track state. The other sixteen streams are re-read in full on every sync.
+- Only the eleven streams marked Incremental above track state. The other twenty-three streams are re-read in full on every sync.
 - Full refresh streams ignore the Start Date, except `deal_products`, which only expands the deals returned by the `deals` stream.
 - The incremental streams read Pipedrive's Recents endpoint, which returns at most one month of history. Records last modified more than a month before a sync are not backfilled, whatever the Start Date.
 - `organizations` and `deal_products` call v1 endpoints that Pipedrive stopped supporting on 2026-08-01. They may stop working until the connector moves to API v2.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
-- The connector uses Pipedrive API v1. Newer fields that only exist in API v2 aren't available.
+- Only `projects`, `tasks` and `deal_installments` read Pipedrive API v2. Every other stream reads API v1, so newer fields that only exist in API v2 aren't available for them.
 
 ### Troubleshooting
 
@@ -161,8 +173,9 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 2.5.0 | 2026-09-09 | [85772](https://github.com/airbytehq/airbyte/pull/85772) | Throttle requests to Pipedrive's burst limit with one shared API budget and add the `num_workers` option for parallel streams |
-| 2.4.7 | 2026-09-09 | [85774](https://github.com/airbytehq/airbyte/pull/85774) | Make Start Date optional with a default, rewrite the spec tooltips and migrate pre-2.0.0 configurations automatically |
+| 2.6.0 | 2026-09-10 | [85775](https://github.com/airbytehq/airbyte/pull/85775) | Add the `call_logs`, `lead_sources`, `legacy_teams`, `projects`, `tasks`, `deal_installments`, `deal_flow` and `permission_set_assignments` streams |
+| 2.5.0 | 2026-09-10 | [85772](https://github.com/airbytehq/airbyte/pull/85772) | Throttle requests to Pipedrive's burst limit with one shared API budget and add the `num_workers` option for parallel streams |
+| 2.4.7 | 2026-09-10 | [85774](https://github.com/airbytehq/airbyte/pull/85774) | Make Start Date optional with a default, rewrite the spec tooltips and migrate pre-2.0.0 configurations automatically |
 | 2.4.6 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors, wait on `x-ratelimit-reset` for 429s and skip inaccessible parent records in `deal_products` and `mail` |
 | 2.4.5 | 2026-09-09 | [85767](https://github.com/airbytehq/airbyte/pull/85767) | Restructure the documentation and add contributor guides |
 | 2.4.4 | 2026-09-09 | [85763](https://github.com/airbytehq/airbyte/pull/85763) | Set the heartbeat timeout, add a CODEOWNERS entry and tidy the changelog |
