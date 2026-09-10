@@ -328,6 +328,16 @@ In particular, when using AWS Glue, the connector will:
 - Lowercase all stream [table names and namespaces](https://docs.aws.amazon.com/glue/latest/webapi/API_Table.html)
 - Change any non-alphanumeric character in a table name/namespace to an [underscore](https://docs.aws.amazon.com/glue/latest/dg/define-database.html) for compatibility with Athena
 
+### Column names
+
+By default, column names are written to Iceberg exactly as they appear in the source (for example `userId`). Some query engines only support lowercase column names when reading Iceberg tables through a Glue catalog. [Snowflake](https://docs.snowflake.com/en/sql-reference/sql/create-iceberg-table-glue) is one such engine, and tables with mixed-case column names cannot be queried from it.
+
+Enable the **Lowercase Column Names** option to convert every column name to lowercase before it is written. Only the letter case changes: `userId` becomes `userid`, `URLs` becomes `urls`, and `Foo.Bar` becomes `foo.bar`. Column names that only differ by case (for example `ID` and `id`) are made unique with a numeric suffix (`id` and `id_1`). Airbyte's own `_airbyte_*` columns are never renamed. The option applies to every catalog type.
+
+:::caution Changing the option on an existing connection
+Changing **Lowercase Column Names** on a connection whose tables already exist changes the column names of those tables. Because the connector treats a renamed column as a dropped column plus a new column, syncing without resetting would discard the data in the old columns. The connector therefore refuses to sync such a stream until you [clear its data](../../platform/operator-guides/clear) and run a full refresh, which recreates the table with the new column names.
+:::
+
 ## Deduplication
 
 This connector uses a merge-on-read strategy to support deduplication.
@@ -416,6 +426,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version     | Date       | Pull Request                                               | Subject                                                                                                                                                         |
 |:------------|:-----------|:-----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.3.54 | 2026-09-10 | [PR_NUMBER](https://github.com/airbytehq/airbyte/pull/PR_NUMBER) | Add `lowercase_column_names` option to lowercase all column names written to Iceberg. |
 | 0.3.53 | 2026-08-24 | [84994](https://github.com/airbytehq/airbyte/pull/84994) | Upgrade to Bulk CDK 1.0.25. |
 | 0.3.52 | 2026-06-23 | [80349](https://github.com/airbytehq/airbyte/pull/80349) | Remove awssdk:bundle fat jar to fix OOMKilled during CHECK operations |
 | 0.3.51 | 2026-06-15 | [79123](https://github.com/airbytehq/airbyte/pull/79123) | Update Apache Iceberg dependencies. |

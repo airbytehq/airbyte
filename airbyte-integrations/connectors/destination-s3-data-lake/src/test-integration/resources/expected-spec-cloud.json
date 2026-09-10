@@ -223,6 +223,13 @@
         "default" : 200,
         "order" : 8,
         "airbyte_hidden" : true
+      },
+      "lowercase_column_names" : {
+        "type" : "boolean",
+        "description" : "When enabled, all column names are converted to lowercase before being written to Iceberg (for example, \"userId\" becomes \"userid\"). Some query engines that read Iceberg tables through a Glue catalog, such as Snowflake, only support lowercase column names. Changing this option on an existing connection changes the column names of existing tables: clear the affected streams' data and run a full refresh after changing it.",
+        "title" : "Lowercase Column Names",
+        "default" : false,
+        "order" : 9
       }
     },
     "required" : [ "s3_bucket_name", "s3_bucket_region", "warehouse_location", "main_branch_name", "catalog_type" ]

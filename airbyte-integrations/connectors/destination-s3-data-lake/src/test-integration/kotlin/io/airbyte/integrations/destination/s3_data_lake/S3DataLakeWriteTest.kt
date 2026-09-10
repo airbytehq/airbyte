@@ -6,7 +6,9 @@ package io.airbyte.integrations.destination.s3_data_lake
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.airbyte.cdk.load.command.Append
+import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
 import io.airbyte.cdk.load.command.NamespaceMapper
@@ -58,7 +60,15 @@ abstract class S3DataLakeWriteTest(
         additionalMicronautEnvs = S3DataLakeDestination.additionalMicronautEnvs,
         micronautProperties = micronautProperties,
         enableSpeed = enableSpeed,
-    )
+    ) {
+    /** Returns [config] with the `lowercase_column_names` option enabled. */
+    protected fun withLowercaseColumnNames(config: String): String {
+        val mapper = ObjectMapper()
+        val node = mapper.readTree(config) as ObjectNode
+        node.put("lowercase_column_names", true)
+        return mapper.writeValueAsString(node)
+    }
+}
 
 class GlueWriteTest :
     S3DataLakeWriteTest(
@@ -178,6 +188,219 @@ class GlueWriteTest :
                 ),
             ),
             stream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    fun testLowercaseColumnNames() {
+        assumeTrue(verifyDataWriting)
+        val schema =
+            ObjectType(
+                linkedMapOf(
+                    "Id" to intType,
+                    "URLs" to stringType,
+                    "createdAt" to stringType,
+                    "Foo.Bar" to stringType,
+                    "already_lowercase" to stringType,
+                ),
+            )
+        fun makeStream(syncId: Long) =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_lowercase_columns",
+                generationId = 0,
+                minimumGenerationId = 0,
+                syncId = syncId,
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = makeTableSchema(schema, Append),
+            )
+        val config = withLowercaseColumnNames(updatedConfig)
+
+        val firstStream = makeStream(syncId = 42)
+        runSync(
+            config,
+            firstStream,
+            listOf(
+                InputRecord(
+                    firstStream,
+                    """{"Id": 1, "URLs": "https://a", "createdAt": "2000-01-01", "Foo.Bar": "foo", "already_lowercase": "bar"}""",
+                    emittedAtMs = 1000,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId,
+                ),
+            ),
+        )
+        // A second sync against the same table must not see the lowercased columns as a schema
+        // change (i.e. no drop + re-add).
+        val secondStream = makeStream(syncId = 43)
+        runSync(
+            config,
+            secondStream,
+            listOf(
+                InputRecord(
+                    secondStream,
+                    """{"Id": 2, "URLs": "https://b", "createdAt": "2001-01-01", "Foo.Bar": "baz", "already_lowercase": "qux"}""",
+                    emittedAtMs = 2000,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId,
+                ),
+            ),
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 1000,
+                    generationId = 0,
+                    data =
+                        mapOf(
+                            "id" to 1,
+                            "urls" to "https://a",
+                            "createdat" to "2000-01-01",
+                            "foo.bar" to "foo",
+                            "already_lowercase" to "bar",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+                OutputRecord(
+                    extractedAt = 2000,
+                    generationId = 0,
+                    data =
+                        mapOf(
+                            "id" to 2,
+                            "urls" to "https://b",
+                            "createdat" to "2001-01-01",
+                            "foo.bar" to "baz",
+                            "already_lowercase" to "qux",
+                        ),
+                    airbyteMeta = OutputRecord.Meta(syncId = 43),
+                ),
+            ),
+            secondStream,
+            primaryKey = listOf(listOf("id")),
+            cursor = null,
+        )
+    }
+
+    @Test
+    fun testLowercaseColumnNamesDedup() {
+        assumeTrue(verifyDataWriting)
+        val stream =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_lowercase_columns_dedup",
+                generationId = 42,
+                minimumGenerationId = 0,
+                syncId = 42,
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema =
+                    makeTableSchema(
+                        ObjectType(
+                            linkedMapOf(
+                                "RecordId" to intType,
+                                "updatedAt" to intType,
+                                "userName" to stringType,
+                            ),
+                        ),
+                        Dedupe(
+                            primaryKey = listOf(listOf("RecordId")),
+                            cursor = listOf("updatedAt")
+                        ),
+                    ),
+            )
+
+        runSync(
+            withLowercaseColumnNames(updatedConfig),
+            stream,
+            listOf(
+                InputRecord(
+                    stream,
+                    """{"RecordId": 1, "updatedAt": 1, "userName": "Alice1"}""",
+                    emittedAtMs = 1000,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId,
+                ),
+                InputRecord(
+                    stream,
+                    """{"RecordId": 1, "updatedAt": 2, "userName": "Alice2"}""",
+                    emittedAtMs = 2000,
+                    checkpointId = checkpointKeyForMedium()?.checkpointId,
+                ),
+            ),
+        )
+
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 2000,
+                    generationId = 42,
+                    data = mapOf("recordid" to 1, "updatedat" to 2, "username" to "Alice2"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 42),
+                ),
+            ),
+            stream,
+            primaryKey = listOf(listOf("recordid")),
+            cursor = listOf("updatedat"),
+        )
+    }
+
+    @Test
+    fun testLowercaseColumnNamesRequiresRefreshOnExistingTable() {
+        assumeTrue(verifyDataWriting)
+        val schema = ObjectType(linkedMapOf("Id" to intType, "userName" to stringType))
+        fun makeStream(syncId: Long, generationId: Long, minimumGenerationId: Long) =
+            DestinationStream(
+                unmappedNamespace = randomizedNamespace,
+                unmappedName = "test_lowercase_columns_existing_table",
+                generationId = generationId,
+                minimumGenerationId = minimumGenerationId,
+                syncId = syncId,
+                namespaceMapper = namespaceMapperForMedium(),
+                tableSchema = makeTableSchema(schema, Append),
+            )
+        fun record(stream: DestinationStream, id: Int, name: String, emittedAtMs: Long) =
+            InputRecord(
+                stream,
+                """{"Id": $id, "userName": "$name"}""",
+                emittedAtMs = emittedAtMs,
+                checkpointId = checkpointKeyForMedium()?.checkpointId,
+            )
+
+        // 1. Create the table with the option disabled: columns keep their original case.
+        val initialStream = makeStream(syncId = 42, generationId = 0, minimumGenerationId = 0)
+        runSync(updatedConfig, initialStream, listOf(record(initialStream, 1, "Alice", 1000)))
+
+        // 2. Enabling the option on an incremental sync must fail instead of dropping the
+        //    mixed-case columns.
+        val incrementalStream = makeStream(syncId = 43, generationId = 0, minimumGenerationId = 0)
+        val failure = expectFailure {
+            runSync(
+                withLowercaseColumnNames(updatedConfig),
+                incrementalStream,
+                listOf(record(incrementalStream, 2, "Bob", 2000)),
+            )
+        }
+        assertContains(failure.message, "userName -> username")
+
+        // 3. A truncate refresh recreates the table with lowercase column names.
+        val refreshStream = makeStream(syncId = 44, generationId = 1, minimumGenerationId = 1)
+        runSync(
+            withLowercaseColumnNames(updatedConfig),
+            refreshStream,
+            listOf(record(refreshStream, 3, "Carol", 3000)),
+        )
+        dumpAndDiffRecords(
+            parsedConfig,
+            listOf(
+                OutputRecord(
+                    extractedAt = 3000,
+                    generationId = 1,
+                    data = mapOf("id" to 3, "username" to "Carol"),
+                    airbyteMeta = OutputRecord.Meta(syncId = 44),
+                ),
+            ),
+            refreshStream,
             primaryKey = listOf(listOf("id")),
             cursor = null,
         )

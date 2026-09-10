@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.s3_data_lake.write
 
+import io.airbyte.cdk.ConfigErrorException
 import io.airbyte.cdk.load.command.Append
 import io.airbyte.cdk.load.command.Dedupe
 import io.airbyte.cdk.load.command.DestinationStream
@@ -41,9 +42,12 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.runs
+import io.mockk.slot
 import io.mockk.verify
+import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNotEquals
 import kotlin.test.assertTrue
 import kotlinx.coroutines.runBlocking
@@ -469,6 +473,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { lowercaseColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk { every { schema() } returns icebergSchema }
@@ -545,6 +550,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { lowercaseColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -714,6 +720,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { lowercaseColumnNames } returns false
         }
         val catalog: Catalog = mockk()
         val table: Table = mockk {
@@ -838,7 +845,213 @@ internal class S3DataLakeStreamLoaderTest {
         )
     }
 
-    private fun makeIcebergConfiguration(): S3DataLakeConfiguration {
+    @Test
+    fun testIncomingSchemaUsesFinalColumnNamesAndKeepsFieldIds() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "UserId" to FieldType(IntegerType, nullable = true),
+                    "URLs" to FieldType(StringType, nullable = true),
+                    "plain" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val finalColumnNames = mapOf("UserId" to "userid", "URLs" to "urls", "plain" to "plain")
+        val stream =
+            makeLowercasedStream(
+                objectSchema,
+                finalColumnNames,
+                Dedupe(primaryKey = listOf(listOf("UserId")), cursor = emptyList()),
+                generationId = 1,
+                minimumGenerationId = 0,
+            )
+        val inputNameSchema =
+            objectSchema.withAirbyteMeta(true).toIcebergSchema(listOf(listOf("UserId")))
+        val createdSchema = slot<Schema>()
+        val manageSnapshots: ManageSnapshots = mockk {
+            every { createBranch(any()) } returns this@mockk
+            every { commit() } just runs
+        }
+        val table: Table = mockk {
+            every { schema() } answers { createdSchema.captured }
+            every { manageSnapshots() } returns manageSnapshots
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns mockk<Catalog>()
+            every { createTable(any(), any(), capture(createdSchema)) } returns table
+            every { toIcebergSchema(any()) } returns inputNameSchema
+        }
+        val streamLoader =
+            makeStreamLoader(
+                stream,
+                makeIcebergConfiguration(lowercaseColumnNames = true),
+                icebergUtil
+            )
+
+        runBlocking { streamLoader.start() }
+
+        val schema = createdSchema.captured
+        assertEquals(
+            inputNameSchema.columns().map { finalColumnNames[it.name()] ?: it.name() },
+            schema.columns().map { it.name() },
+        )
+        assertEquals(
+            inputNameSchema.columns().map { it.fieldId() },
+            schema.columns().map { it.fieldId() },
+        )
+        assertEquals(inputNameSchema.identifierFieldIds(), schema.identifierFieldIds())
+        assertEquals(setOf("userid"), schema.identifierFieldNames())
+        assertFalse(schema.findField("userid").isOptional)
+        assertTrue(Meta.COLUMN_NAMES.all { schema.findField(it) != null })
+    }
+
+    @Test
+    fun testStartRejectsCaseOnlyColumnRenamesWhenLowercasingIsEnabled() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "UserName" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val stream =
+            makeLowercasedStream(
+                objectSchema,
+                mapOf("id" to "id", "UserName" to "username"),
+                Append,
+                generationId = 1,
+                minimumGenerationId = 0,
+            )
+        // The table was created before the option was enabled, so it still has "UserName".
+        val existingSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+        val table: Table = mockk { every { schema() } returns existingSchema }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns mockk<Catalog>()
+            every { createTable(any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns existingSchema
+        }
+        val streamLoader =
+            makeStreamLoader(
+                stream,
+                makeIcebergConfiguration(lowercaseColumnNames = true),
+                icebergUtil
+            )
+
+        val failure = assertFailsWith<ConfigErrorException> { runBlocking { streamLoader.start() } }
+
+        assertContains(failure.message!!, "UserName -> username")
+        assertContains(failure.message!!, "Clear this stream's data")
+        verify(exactly = 0) { streamStateStore.put(any(), any()) }
+    }
+
+    @Test
+    fun testStartAllowsCaseOnlyColumnRenamesOnTruncateRefresh() {
+        val objectSchema =
+            ObjectType(
+                linkedMapOf(
+                    "id" to FieldType(IntegerType, nullable = true),
+                    "UserName" to FieldType(StringType, nullable = true),
+                ),
+            )
+        val stream =
+            makeLowercasedStream(
+                objectSchema,
+                mapOf("id" to "id", "UserName" to "username"),
+                Append,
+                generationId = 1,
+                minimumGenerationId = 1,
+            )
+        val existingSchema = objectSchema.withAirbyteMeta(true).toIcebergSchema(emptyList())
+        val updateSchema: UpdateSchema = mockk {
+            every { deleteColumn(any()) } returns this@mockk
+            every { addColumn(any<String>(), any<String>(), any<Type.PrimitiveType>()) } returns
+                this@mockk
+            every { apply() } returns existingSchema
+        }
+        val manageSnapshots: ManageSnapshots = mockk {
+            every { createBranch(any()) } returns this@mockk
+            every { commit() } just runs
+        }
+        val table: Table = mockk {
+            every { schema() } returns existingSchema
+            every { sortOrder() } returns SortOrder.unsorted()
+            every { updateSchema().allowIncompatibleChanges() } returns updateSchema
+            every { manageSnapshots() } returns manageSnapshots
+        }
+        val icebergUtil: IcebergUtil = mockk {
+            every { createCatalog(any(), any()) } returns mockk<Catalog>()
+            every { createTable(any(), any(), any()) } returns table
+            every { toIcebergSchema(any()) } returns existingSchema
+        }
+        val streamLoader =
+            makeStreamLoader(
+                stream,
+                makeIcebergConfiguration(lowercaseColumnNames = true),
+                icebergUtil
+            )
+
+        runBlocking { streamLoader.start() }
+
+        assertEquals(ColumnTypeChangeBehavior.OVERWRITE, streamLoader.columnTypeChangeBehavior)
+        verify { updateSchema.deleteColumn("UserName") }
+        verify { updateSchema.addColumn(null, "username", Types.StringType.get()) }
+        verify(exactly = 0) { updateSchema.commit() }
+    }
+
+    private fun makeLowercasedStream(
+        objectSchema: ObjectType,
+        inputToFinalColumnNames: Map<String, String>,
+        importType: ImportType,
+        generationId: Long,
+        minimumGenerationId: Long,
+    ) =
+        DestinationStream(
+            generationId = generationId,
+            minimumGenerationId = minimumGenerationId,
+            syncId = 1,
+            unmappedNamespace = "namespace",
+            unmappedName = "name",
+            namespaceMapper =
+                NamespaceMapper(namespaceDefinitionType = NamespaceDefinitionType.SOURCE),
+            tableSchema =
+                StreamTableSchema(
+                    columnSchema =
+                        ColumnSchema(
+                            inputSchema = objectSchema.properties,
+                            inputToFinalColumnNames = inputToFinalColumnNames,
+                            finalSchema = mapOf(),
+                        ),
+                    importType = importType,
+                    tableNames = TableNames(finalTableName = TableName("namespace", "test")),
+                ),
+        )
+
+    private fun makeStreamLoader(
+        stream: DestinationStream,
+        icebergConfiguration: S3DataLakeConfiguration,
+        icebergUtil: IcebergUtil,
+    ): S3DataLakeStreamLoader {
+        val s3DataLakeUtil: S3DataLakeUtil = mockk {
+            every { createNamespaceWithGlueHandling(any(), any()) } just runs
+            every { toCatalogProperties(any()) } returns mapOf()
+        }
+        return S3DataLakeStreamLoader(
+            icebergConfiguration,
+            stream,
+            IcebergTableSynchronizer(
+                IcebergTypesComparator(),
+                IcebergSuperTypeFinder(IcebergTypesComparator()),
+            ),
+            s3DataLakeUtil,
+            icebergUtil,
+            stagingBranchName = "airbyte_staging_test",
+            mainBranchName = "main",
+            streamStateStore = streamStateStore,
+        )
+    }
+
+    private fun makeIcebergConfiguration(
+        lowercaseColumnNames: Boolean = false,
+    ): S3DataLakeConfiguration {
         val awsConfiguration: AWSAccessKeyConfiguration = mockk {
             every { accessKeyId } returns "access-key"
             every { secretAccessKey } returns "secret-access-key"
@@ -858,6 +1071,7 @@ internal class S3DataLakeStreamLoaderTest {
             every { awsAccessKeyConfiguration } returns awsConfiguration
             every { icebergCatalogConfiguration } returns icebergCatalogConfig
             every { s3BucketConfiguration } returns bucketConfiguration
+            every { this@mockk.lowercaseColumnNames } returns lowercaseColumnNames
         }
     }
 
