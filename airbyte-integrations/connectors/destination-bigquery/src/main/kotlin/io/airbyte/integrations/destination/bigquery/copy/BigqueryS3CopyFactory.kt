@@ -24,22 +24,7 @@ class BigqueryS3CopyFactory {
         configuredCatalog: ConfiguredAirbyteCatalog,
         @Named("dataChannelFormat") dataChannelFormat: DataChannelFormat,
     ): BigqueryS3Copy =
-        // TEMPORARY preview routing. Remove this override before merging.
-        // AWS bootstrap credentials must still be injected by the platform.
-        createForOperation(
-            operation,
-            mapOf(
-                "AIRBYTE_S3_COPY_ENABLED" to "true",
-                "AIRBYTE_S3_COPY_BUCKET" to "sonar-entity-cache",
-                "AIRBYTE_S3_COPY_REGION" to "us-east-2",
-                "AIRBYTE_S3_COPY_ROLE_ARN" to
-                    "arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy",
-                "AIRBYTE_S3_COPY_PREFIX" to "fusion",
-                "AIRBYTE_S3_COPY_WORKSPACE_ID" to "00000000-0000-0000-0000-000000000000",
-                "AIRBYTE_S3_COPY_SOURCE_ID" to "00000000-0000-0000-0000-000000000000",
-                "AIRBYTE_S3_COPY_CONNECTION_ID" to "00000000-0000-0000-0000-000000000000",
-            ),
-        ) { config ->
+        createForOperation(operation) { config ->
             val runId = UUID.randomUUID()
             EnabledBigqueryS3Copy(
                 config,
