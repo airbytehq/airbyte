@@ -185,6 +185,9 @@ class BigQueryDatabaseHandler(
                 if (e.errors.any { it.message.contains(BILLING_CONFIG_ERROR) }) {
                     return ConfigErrorException(e.reason, e)
                 }
+                if (e.errors.any { it.message.contains(CUSTOM_QUOTA_EXCEEDED_ERROR) }) {
+                    return ConfigErrorException(e.reason, e)
+                }
             }
         }
         return e
@@ -192,5 +195,6 @@ class BigQueryDatabaseHandler(
 
     companion object {
         private const val BILLING_CONFIG_ERROR = "Billing has not been enabled for this project"
+        private const val CUSTOM_QUOTA_EXCEEDED_ERROR = "Custom quota exceeded"
     }
 }

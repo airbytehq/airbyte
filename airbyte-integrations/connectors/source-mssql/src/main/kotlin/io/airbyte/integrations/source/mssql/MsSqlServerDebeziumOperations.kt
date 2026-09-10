@@ -789,6 +789,7 @@ class MsSqlServerDebeziumOperations(
             .with("include.schema.changes", "false")
             .with("provide.transaction.metadata", "false")
             .with("snapshot.isolation.mode", "read_committed")
+            .with("data.query.mode", "function")
             .with("schema.include.list", schemaList)
             .let { builder ->
                 if (messageKeyColumns.isNotEmpty()) {

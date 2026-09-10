@@ -1620,7 +1620,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            shop: The WooCommerce store domain (e.g., mystore.com)
     Examples:
         # Local mode (direct API calls)
-        connector = WoocommerceConnector(auth_config=WoocommerceAuthConfig(api_key="...", api_secret="..."))
+        connector = WoocommerceConnector(auth_config=WoocommerceAuthConfig(api_key="...", api_secret="..."), shop="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = WoocommerceConnector(
             auth_config=AirbyteAuthConfig(

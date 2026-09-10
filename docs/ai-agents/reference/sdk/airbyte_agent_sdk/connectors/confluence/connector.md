@@ -186,7 +186,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            subdomain: Your Confluence Cloud subdomain (e.g., mycompany for mycompany.atlassian.net)
     Examples:
         # Local mode (direct API calls)
-        connector = ConfluenceConnector(auth_config=ConfluenceAuthConfig(username="...", password="..."))
+        connector = ConfluenceConnector(auth_config=ConfluenceAuthConfig(username="...", password="..."), subdomain="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ConfluenceConnector(
             auth_config=AirbyteAuthConfig(
