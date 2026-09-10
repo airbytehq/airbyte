@@ -365,11 +365,10 @@ def test_contributor_activity_other_errors_are_not_swallowed(rate_limit_mock_res
 # ----------------------------------------------------------------------------------- workflow_runs
 
 
-def test_workflow_runs_ask_for_the_32_day_window_and_filter_on_updated_at(rate_limit_mock_response, requests_mock):
-    """`WorkflowRuns.read_records` stopped at the first run created more than 32 days before its
-    cursor (a run can be re-run for that long) and emitted the runs updated after the cursor.
-    The manifest asks GitHub for the same window with `created` and filters `updated_at` locally,
-    so a re-run of an old run (created before the window, updated inside it) is kept."""
+def test_workflow_runs_filter_on_updated_at_and_carry_the_window_start(rate_limit_mock_response, requests_mock):
+    """`WorkflowRuns.read_records` emitted the runs updated after its cursor, whatever their
+    `created_at`, so a re-run of an old run is kept. The slice start is sent as a header for the
+    pagination strategy to stop on; no `created` filter, which GitHub caps at 1,000 results."""
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(
@@ -386,13 +385,13 @@ def test_workflow_runs_ask_for_the_32_day_window_and_filter_on_updated_at(rate_l
     assert statuses[-1] == "COMPLETE"
     assert [record["id"] for record in records] == [3, 2]
     assert records[0]["repository"] == {"full_name": _REPO}, "legacy emitted the payload as is, no `repository` string"
-    assert _requested(requests_mock, "/actions/runs") == [
-        f"/repos/{_REPO}/actions/runs?per_page=100&created=%3e%3d2021-11-30t00%3a00%3a00z"
-    ]
+    (request,) = [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")]
+    assert request.qs == {"per_page": ["100"]}
+    assert request.headers["X-Airbyte-Window-Start"] == _START_DATE
     assert _partition_cursors(states[-1]) == {'{"repository": "docker/compose"}': _LATER}
 
 
-def test_workflow_runs_legacy_state_moves_the_window(rate_limit_mock_response, requests_mock):
+def test_workflow_runs_legacy_state_becomes_the_window_start(rate_limit_mock_response, requests_mock):
     config = _config(_REPO)
     _mock_repository_resolution(requests_mock, _REPO)
     requests_mock.get(f"{_API}/repos/{_REPO}/actions/runs", json={"total_count": 1, "workflow_runs": [_run(3, _LATER, _LATER)]})
@@ -401,9 +400,66 @@ def test_workflow_runs_legacy_state_moves_the_window(rate_limit_mock_response, r
 
     assert error is None
     assert [record["id"] for record in records] == [3]
-    assert _requested(requests_mock, "/actions/runs") == [
-        f"/repos/{_REPO}/actions/runs?per_page=100&created=%3e%3d2022-04-30t00%3a00%3a00z"
-    ]
+    (request,) = [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")]
+    assert request.headers["X-Airbyte-Window-Start"] == _AFTER_START
+
+
+def test_workflow_runs_stop_paging_at_the_first_run_older_than_the_window(rate_limit_mock_response, requests_mock):
+    """Legacy broke out of the page loop at the first run created more than 32 days before the
+    cursor; `WorkflowRunsPaginationStrategy` does the same, so a busy repository is not read back
+    to its first run on every sync."""
+    config = _config(_REPO)
+    _mock_repository_resolution(requests_mock, _REPO)
+    runs = f"{_API}/repos/{_REPO}/actions/runs"
+    requests_mock.get(
+        runs,
+        [
+            {
+                "json": {"total_count": 3, "workflow_runs": [_run(3, _LATER, _LATER), _run(2, "2021-12-15T00:00:00Z", _AFTER_START)]},
+                "headers": {"Link": f'<{runs}?page=2>; rel="next"'},
+            },
+            {
+                "json": {"total_count": 3, "workflow_runs": [_run(1, "2021-11-01T00:00:00Z", _AFTER_START)]},
+                "headers": {"Link": f'<{runs}?page=3>; rel="next"'},
+            },
+            {"json": {"total_count": 3, "workflow_runs": [_run(0, "2021-01-01T00:00:00Z", _LATER)]}},
+        ],
+    )
+
+    records, statuses, _, error = _read(config, "workflow_runs")
+
+    assert error is None
+    assert statuses[-1] == "COMPLETE"
+    # run 1 was created outside the window but is on the page that ends pagination, so it is still read; page 3 never is
+    assert [record["id"] for record in records] == [3, 2, 1]
+    assert [request.qs.get("page") for request in requests_mock.request_history if request.path.endswith("/actions/runs")] == [None, ["2"]]
+
+
+def test_workflow_runs_keep_paging_while_the_window_holds_even_if_nothing_is_emitted(rate_limit_mock_response, requests_mock):
+    """A page whose runs were all created inside the window but not updated since the cursor emits
+    nothing, yet pagination must go on: a re-run of an older run may sit on the next page. The
+    strategy reads the raw page, not the filtered records, which is what makes this work."""
+    config = _config(_REPO)
+    _mock_repository_resolution(requests_mock, _REPO)
+    runs = f"{_API}/repos/{_REPO}/actions/runs"
+    requests_mock.get(
+        runs,
+        [
+            {
+                "json": {"total_count": 2, "workflow_runs": [_run(2, _AFTER_START, _AFTER_START)]},
+                "headers": {"Link": f'<{runs}?page=2>; rel="next"'},
+            },
+            {"json": {"total_count": 2, "workflow_runs": [_run(1, "2022-05-20T00:00:00Z", _LATER)]}},
+        ],
+    )
+
+    records, _, _, error = _read(
+        config, "workflow_runs", state=_state_message("workflow_runs", {_REPO: {"updated_at": "2022-06-15T00:00:00Z"}})
+    )
+
+    assert error is None
+    assert [record["id"] for record in records] == [1]
+    assert len([request for request in requests_mock.request_history if request.path.endswith("/actions/runs")]) == 2
 
 
 def test_workflow_runs_two_syncs_legacy_scenario(rate_limit_mock_response, requests_mock):
@@ -434,10 +490,9 @@ def test_workflow_runs_two_syncs_legacy_scenario(rate_limit_mock_response, reque
     )
     assert error is None
     assert [record["id"] for record in records] == [5, 4, 3]
-    assert (
-        _requested(requests_mock, "/actions/runs")[-1]
-        == "/repos/org/repos/actions/runs?per_page=100&created=%3e%3d2022-01-04t00%3a00%3a00z"
-    )
+    assert [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")][-1].headers[
+        "X-Airbyte-Window-Start"
+    ] == "2022-02-05T00:00:00Z"
     assert _partition_cursors(states[-1]) == {'{"repository": "org/repos"}': "2022-02-08T00:00:00Z"}
 
 
@@ -543,11 +598,29 @@ def test_workflow_jobs_legacy_state_is_migrated(rate_limit_mock_response, reques
     assert _requested(requests_mock, "/jobs") == [
         "/repos/org/repo/actions/runs/1/jobs?per_page=100&filter=all"
     ], "run 2 predates the migrated parent cursor"
-    assert [request for request in _requested(requests_mock, "/actions/runs") if "/jobs" not in request] == [
-        "/repos/org/repo/actions/runs?per_page=100&created=%3e%3d2022-08-01t09%3a10%3a00z"
-    ]
+    assert [request for request in requests_mock.request_history if request.path.endswith("/actions/runs")][-1].headers[
+        "X-Airbyte-Window-Start"
+    ] == "2022-09-02T09:10:00Z"
     state = states[-1].stream.stream_state.__dict__
     assert state["use_global_cursor"] is True and state["state"] == {"completed_at": "2022-09-02T09:12:00Z"}
+
+
+def test_workflow_jobs_legacy_state_picks_the_earliest_instant():
+    """The global cursor must be the earliest instant across repositories, not the smallest string:
+    with offsets, text order and time order differ."""
+    from source_github.components import WorkflowJobsLegacyStateMigration
+
+    migration = WorkflowJobsLegacyStateMigration(config={}, parameters={})
+    legacy = {"org/a": {"completed_at": "2022-09-02T10:00:00+02:00"}, "org/b": {"completed_at": "2022-09-02T09:00:00Z"}}
+
+    assert migration.should_migrate(legacy)
+    migrated = migration.migrate(legacy)
+
+    assert migrated["state"] == {"completed_at": "2022-09-02T10:00:00+02:00"}, "08:00Z is earlier than 09:00Z"
+    assert migrated["parent_state"] == {
+        "workflow_runs": {"org/a": {"updated_at": "2022-09-02T10:00:00+02:00"}, "org/b": {"updated_at": "2022-09-02T09:00:00Z"}}
+    }
+    assert migrated["use_global_cursor"] is True
 
 
 @pytest.mark.parametrize(

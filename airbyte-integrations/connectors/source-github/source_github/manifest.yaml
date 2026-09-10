@@ -9478,17 +9478,25 @@ definitions:
       requester:
         $ref: "#/definitions/repository_scoped_requester"
         path: "repos/{{ stream_partition.repository }}/actions/runs"
-        # Runs are listed newest-created first and can be re-run for 32 days, so the legacy stream
-        # stopped at the first run created more than 32 days before its cursor. `created` asks
-        # GitHub for the same window.
-        request_parameters:
-          per_page: "100"
-          created: ">={{ format_datetime((timestamp(stream_slice['start_time']) - 2764800) | int, '%Y-%m-%dT%H:%M:%SZ') }}"
+        # The slice start is what `WorkflowRunsPaginationStrategy` stops on; GitHub ignores the header.
+        request_headers:
+          User-Agent: "PostmanRuntime/7.28.0"
+          X-Airbyte-Window-Start: "{{ stream_slice['start_time'] }}"
       record_selector:
         type: RecordSelector
         extractor:
           type: DpathExtractor
           field_path: ["workflow_runs"]
+      paginator:
+        type: DefaultPaginator
+        page_token_option:
+          type: RequestOption
+          inject_into: request_parameter
+          field_name: "page"
+        pagination_strategy:
+          type: CustomPaginationStrategy
+          class_name: source_github.components.WorkflowRunsPaginationStrategy
+          cursor_value: '{{ headers.get("link", {}).get("next", {}).get("url", "") | regex_search("[?&]page=([0-9]+)") }}'
     incremental_sync:
       $ref: "#/definitions/client_side_filtered_cursor"
     state_migrations:

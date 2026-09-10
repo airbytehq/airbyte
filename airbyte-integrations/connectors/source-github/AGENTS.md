@@ -51,10 +51,13 @@ Things worth knowing before touching either half:
 - Step 8 patterns worth knowing before touching those four streams:
   - `workflow_runs` cannot use `is_data_feed`: runs are listed by `created_at` while the cursor is
     `updated_at`, and a re-run of an old run appears deep in the list. Legacy stopped at the first
-    run created more than 32 days before the cursor; the manifest asks GitHub for that window with
-    `created=>=<slice start - 32 days>` (computed in Jinja with `timestamp`/`format_datetime`) and
-    filters `updated_at` client-side. `lookback_window` would not do: it moves the request window
-    but `ConcurrentCursor.should_be_synced` still compares against the un-shifted start.
+    run created more than 32 days before the cursor; `components.WorkflowRunsPaginationStrategy`
+    does the same from the raw page, reading the slice start from the `X-Airbyte-Window-Start`
+    request header (the paginator only sees records that survived the client-side filter, and
+    GitHub ignores the header). Do not replace this with GitHub's `created` filter: it caps the
+    result set at 1,000 runs, so a busy repository would silently lose runs. `lookback_window`
+    would not do either: it moves the request window but `ConcurrentCursor.should_be_synced` still
+    compares against the un-shifted start.
   - `workflow_jobs` is a substream of `workflow_runs` with `incremental_dependency: true` and
     `global_substream_cursor: true`: one `completed_at` cursor for the stream, and the parent
     resumes per repository from `parent_state`, which is what the Python class did by handing its
