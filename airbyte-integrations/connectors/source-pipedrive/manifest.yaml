@@ -55,6 +55,54 @@ definitions:
         schema:
           $ref: "#/schemas/deals"
 
+    # GET /api/v2/deals returns only not-archived deals; archived deals are served by /api/v2/deals/archived
+    # with the same parameters and record shape, so they are read as a separate stream (same schema).
+    deals_archived:
+      type: DeclarativeStream
+      name: deals_archived
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/deals/archived
+          http_method: GET
+          request_parameters:
+            api_token: "{{ config['api_token'] }}"
+            limit: "500"
+            sort_by: update_time
+            sort_direction: asc
+            status: "open,won,lost,deleted"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/v2_cursor_paginator"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%SZ"
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deals"
+
     deal_fields:
       type: DeclarativeStream
       name: deal_fields
@@ -221,6 +269,7 @@ definitions:
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "50"
+            sort: "update_time ASC"
         record_selector:
           type: RecordSelector
           extractor:
@@ -236,6 +285,21 @@ definitions:
           pagination_strategy:
             type: CursorPagination
             cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: update_time
+        cursor_datetime_formats:
+          - "%Y-%m-%dT%H:%M:%S.%fZ"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -275,12 +339,16 @@ definitions:
         cursor_field: update_time
         cursor_datetime_formats:
           - "%Y-%m-%d %H:%M:%S"
-        datetime_format: "%Y-%m-%d %H:%M:%S"
+          - "%Y-%m-%dT%H:%M:%SZ"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
         start_datetime:
           type: MinMaxDatetime
-          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
-          datetime_format: "%Y-%m-%d %H:%M:%S"
-        is_client_side_incremental: true
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%dT%H:%M:%SZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+        start_time_option:
+          type: RequestOption
+          field_name: updated_since
+          inject_into: request_parameter
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -862,6 +930,11 @@ definitions:
               partition_field: parent_id
               stream:
                 $ref: "#/definitions/streams/deals"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/deals_archived"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1136,6 +1209,11 @@ definitions:
                 partition_field: parent_id
                 stream:
                   $ref: "#/definitions/streams/deals"
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: parent_id
+                stream:
+                  $ref: "#/definitions/streams/deals_archived"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -1187,6 +1265,12 @@ definitions:
               incremental_dependency: true
               stream:
                 $ref: "#/definitions/streams/deals"
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              incremental_dependency: true
+              stream:
+                $ref: "#/definitions/streams/deals_archived"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: log_time
@@ -1345,6 +1429,7 @@ definitions:
 
 streams:
   - $ref: "#/definitions/streams/deals"
+  - $ref: "#/definitions/streams/deals_archived"
   - $ref: "#/definitions/streams/deal_fields"
   - $ref: "#/definitions/streams/goals"
   - $ref: "#/definitions/streams/files"
@@ -1806,7 +1891,8 @@ schemas:
         type:
           - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -1925,7 +2011,8 @@ schemas:
         type:
           - "null"
           - string
-        format: "%Y-%m-%d %H:%M:%S"
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       use_field:
         type:
           - "null"
@@ -2058,6 +2145,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       cid:
         type:
           - "null"
@@ -2185,6 +2274,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       custom_view_id:
         type:
           - "null"
@@ -2232,6 +2323,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       color:
         type:
           - "null"
@@ -2248,6 +2341,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
   leads:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
@@ -2257,6 +2352,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       creator_id:
         type:
           - "null"
@@ -2306,6 +2403,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_with_timezone
       value:
         type:
           - "null"
@@ -2336,6 +2435,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       content:
         type:
           - "null"
@@ -2675,6 +2776,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       color:
         type:
           - "null"
@@ -2722,6 +2825,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -2825,6 +2930,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
   currencies:
     type: object
     $schema: http://json-schema.org/schema#
@@ -3150,6 +3257,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -3505,6 +3614,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -3601,6 +3712,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       use_field:
         type:
           - "null"
@@ -3679,7 +3792,7 @@ schemas:
       visible_to:
         type:
           - "null"
-          - number
+          - integer
       owner_id:
         type:
           - "null"
@@ -3765,6 +3878,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       add_visible_flag:
         type:
           - "null"
@@ -3862,6 +3977,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       use_field:
         type:
           - "null"
@@ -3970,6 +4087,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       default_currency:
         type:
           - "null"
@@ -4030,6 +4149,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       locale:
         type:
           - "null"
@@ -4038,6 +4159,8 @@ schemas:
         type:
           - "null"
           - string
+        format: date-time
+        airbyte_type: timestamp_without_timezone
       name:
         type:
           - "null"

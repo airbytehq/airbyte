@@ -12,7 +12,17 @@ single missing or inaccessible parent instead of failing the whole sync.
 import logging
 
 import pytest
-from _helpers import CONFIG, collection, deals_request, get_source, pipedrive_error, read_stream, request
+from _helpers import (
+    CONFIG,
+    collection,
+    deals_archived_request,
+    deals_request,
+    empty_v2_page,
+    get_source,
+    pipedrive_error,
+    read_stream,
+    request,
+)
 
 from airbyte_cdk.models import FailureType, Status
 from airbyte_cdk.test.mock_http import HttpMocker, HttpResponse
@@ -162,6 +172,7 @@ def _deal_products_request(deal_id: int):
 def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, error: str) -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
+        http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(
             deals,
             collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}, {"id": 2, "update_time": "2024-02-01 00:00:00"}]),
@@ -181,6 +192,7 @@ def test_deal_products_skips_missing_or_forbidden_parent_deal(status_code: int, 
 def test_deal_products_still_fails_on_401() -> None:
     with HttpMocker() as http_mocker:
         deals = deals_request()
+        http_mocker.get(deals_archived_request(), empty_v2_page())
         http_mocker.get(deals, collection([{"id": 1, "update_time": "2024-02-01 00:00:00"}]))
         http_mocker.get(_deal_products_request(1), pipedrive_error(401, "unauthorized access"))
 

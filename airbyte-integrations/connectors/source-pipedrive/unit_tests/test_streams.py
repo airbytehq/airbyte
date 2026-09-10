@@ -46,20 +46,22 @@ def _deals_response():
     }
 
 
-def _mock_deals(http_mocker):
+_DEALS_QUERY = {
+    "api_token": "tok",
+    "limit": "500",
+    "sort_by": "update_time",
+    "sort_direction": "asc",
+    "status": "open,won,lost,deleted",
+    "updated_since": "2017-01-25T00:00:00Z",
+}
+
+
+def _mock_deals(http_mocker, archived=None):
+    """The deal child streams expand both parents: `deals` and `deals_archived`."""
+    http_mocker.get(_request("api/v2/deals", _DEALS_QUERY), _response(_deals_response()))
     http_mocker.get(
-        _request(
-            "api/v2/deals",
-            {
-                "api_token": "tok",
-                "limit": "500",
-                "sort_by": "update_time",
-                "sort_direction": "asc",
-                "status": "open,won,lost,deleted",
-                "updated_since": "2017-01-25T00:00:00Z",
-            },
-        ),
-        _response(_deals_response()),
+        _request("api/v2/deals/archived", _DEALS_QUERY),
+        _response({"success": True, "data": archived or [], "additional_data": {"next_cursor": None}}),
     )
 
 
@@ -364,7 +366,10 @@ def test_discover_lists_new_streams():
     catalog = get_source(CONFIG).discover(logging.getLogger(__name__), CONFIG)
     streams = {stream.name: stream for stream in catalog.streams}
 
-    assert len(streams) == 34
+    assert len(streams) == 35
+    assert streams["deals_archived"].source_defined_primary_key == [["id"]]
+    assert streams["deals_archived"].default_cursor_field == ["update_time"]
+    assert streams["leads"].default_cursor_field == ["update_time"]
     assert {
         "call_logs",
         "lead_sources",
@@ -477,18 +482,11 @@ def test_deals_legacy_state_is_normalized_to_rfc3339():
     assert _ids(output) == [1]
 
 
-@pytest.mark.parametrize(
-    "stream, limit",
-    [
-        ("notes", "500"),
-        ("files", "100"),
-    ],
-)
-def test_notes_and_files_filter_records_client_side(stream, limit):
-    state = StateBuilder().with_stream_state(stream, {"update_time": "2024-01-01 00:00:00"}).build()
+def test_files_filter_records_client_side():
+    state = StateBuilder().with_stream_state("files", {"update_time": "2024-01-01 00:00:00"}).build()
     with HttpMocker() as http_mocker:
         http_mocker.get(
-            _request(f"v1/{stream}", {"api_token": "tok", "limit": limit, "sort": "update_time ASC"}),
+            _request("v1/files", {"api_token": "tok", "limit": "100", "sort": "update_time ASC"}),
             _response(
                 {
                     "data": [
@@ -501,9 +499,122 @@ def test_notes_and_files_filter_records_client_side(stream, limit):
             ),
         )
 
-        output = _read_stream(stream, SyncMode.incremental, state)
+        output = _read_stream("files", SyncMode.incremental, state)
 
     assert _ids(output) == [2, 3]
+
+
+def test_notes_filter_server_side_with_updated_since_and_emit_rfc3339_state():
+    # `GET /v1/notes` accepts an inclusive RFC3339 `updated_since`; the legacy state format is still accepted.
+    state = StateBuilder().with_stream_state("notes", {"update_time": "2024-01-01 00:00:00"}).build()
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request(
+                "v1/notes",
+                {"api_token": "tok", "limit": "500", "sort": "update_time ASC", "updated_since": "2024-01-01T00:00:00Z"},
+            ),
+            _response(
+                {
+                    "data": [
+                        {"id": 2, "update_time": "2024-01-01 00:00:00"},
+                        {"id": 3, "update_time": "2024-01-05 10:00:00"},
+                    ],
+                    "additional_data": {"pagination": {"more_items_in_collection": False}},
+                }
+            ),
+        )
+
+        output = _read_stream("notes", SyncMode.incremental, state)
+
+    assert _ids(output) == [2, 3]
+    assert output.most_recent_state.stream_state.__dict__ == {"update_time": "2024-01-05T10:00:00Z"}
+
+
+def test_leads_filter_server_side_with_updated_since():
+    # `GET /v1/leads` accepts `updated_since` and sorts on `update_time`; values carry fractional seconds.
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request(
+                "v1/leads",
+                {"api_token": "tok", "limit": "50", "sort": "update_time ASC", "updated_since": "2017-01-25T00:00:00Z"},
+            ),
+            _response(
+                {
+                    "data": [
+                        {"id": "lead-1", "update_time": "2023-02-22T11:48:49.834Z"},
+                        {"id": "lead-2", "update_time": "2023-02-22T11:49:24.853Z"},
+                    ],
+                    "additional_data": {"pagination": {"more_items_in_collection": False}},
+                }
+            ),
+        )
+
+        output = _read_stream("leads", SyncMode.incremental)
+
+    assert _ids(output) == ["lead-1", "lead-2"]
+    assert output.most_recent_state.stream_state.__dict__ == {"update_time": "2023-02-22T11:49:24Z"}
+
+
+def test_deals_archived_reads_the_archived_collection():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request("api/v2/deals/archived", _DEALS_QUERY),
+            _response(
+                {
+                    "data": [{"id": 9, "update_time": "2024-02-01T00:00:00Z", "is_archived": True}],
+                    "additional_data": {"next_cursor": None},
+                }
+            ),
+        )
+
+        output = _read_stream("deals_archived", SyncMode.incremental)
+
+    assert _ids(output) == [9]
+    assert output.records[0].record.data["is_archived"] is True
+    assert output.most_recent_state.stream_state.__dict__ == {"update_time": "2024-02-01T00:00:00Z"}
+
+
+def test_deal_products_expands_archived_deals_too():
+    with HttpMocker() as http_mocker:
+        _mock_deals(http_mocker, archived=[{"id": 9, "update_time": "2024-02-01T00:00:00Z", "is_archived": True}])
+        for deal_id, products in ((1, [{"id": 10, "deal_id": 1}]), (2, []), (9, [{"id": 90, "deal_id": 9}])):
+            http_mocker.get(
+                _request(f"api/v2/deals/{deal_id}/products", {"api_token": "tok", "limit": "500"}),
+                _response({"data": products, "additional_data": {"next_cursor": None}}),
+            )
+
+        output = _read_stream("deal_products")
+
+    assert sorted(_ids(output)) == [10, 90]
+    assert output.errors == []
+
+
+def test_persons_page_without_additional_data_is_a_single_page():
+    with HttpMocker() as http_mocker:
+        http_mocker.get(
+            _request(
+                "api/v2/persons",
+                {
+                    "api_token": "tok",
+                    "limit": "500",
+                    "sort_by": "update_time",
+                    "sort_direction": "asc",
+                    "updated_since": "2017-01-25T00:00:00Z",
+                },
+            ),
+            _response({"success": True, "data": [{"id": 1, "update_time": "2024-01-01T00:00:00Z"}]}),
+        )
+
+        output = _read_stream("persons", SyncMode.incremental)
+
+    assert _ids(output) == [1]
+    assert output.errors == []
+
+
+def test_no_stream_uses_the_recents_endpoint():
+    from conftest import _YAML_FILE_PATH
+
+    assert "v1/recents" not in _YAML_FILE_PATH.read_text()
 
 
 @pytest.mark.parametrize(
