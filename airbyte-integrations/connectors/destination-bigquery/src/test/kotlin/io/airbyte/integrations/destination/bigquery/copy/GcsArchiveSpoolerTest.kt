@@ -71,13 +71,12 @@ class GcsArchiveSpoolerTest {
     @Test
     fun `accepts magic split across reads without parsing gzip`() = runBlocking {
         val bytes = byteArrayOf(0x1f, 0x8b.toByte(), 42)
-        val client =
-            Client {
-                object : ByteArrayInputStream(bytes) {
-                    override fun read(target: ByteArray, offset: Int, length: Int): Int =
-                        super.read(target, offset, minOf(length, 1))
-                }
+        val client = Client {
+            object : ByteArrayInputStream(bytes) {
+                override fun read(target: ByteArray, offset: Int, length: Int): Int =
+                    super.read(target, offset, minOf(length, 1))
             }
+        }
         val path = path()
         GcsArchiveSpooler().use { assertEquals(3L, it.download(client, blob, path)) }
         assertArrayEquals(bytes, Files.readAllBytes(path))
@@ -89,7 +88,8 @@ class GcsArchiveSpoolerTest {
             for (bytes in listOf("decoded,csv\n".toByteArray(), byteArrayOf(), byteArrayOf(0x1f))) {
                 val client = Client { ByteArrayInputStream(bytes) }
                 val path = path()
-                val error = assertThrows<IllegalStateException> { spooler.download(client, blob, path) }
+                val error =
+                    assertThrows<IllegalStateException> { spooler.download(client, blob, path) }
                 assertTrue(error.message!!.contains("gzip magic"))
                 assertEquals(1, client.attempts.get())
                 assertTrue(Files.exists(path))
@@ -98,19 +98,20 @@ class GcsArchiveSpoolerTest {
     }
 
     @Test
-    fun `retries a partial IOException from the start without append or stale tail`() = runBlocking {
-        val partial = gzipBytes(500)
-        val complete = gzipBytes(20)
-        val firstClosed = CountDownLatch(1)
-        val path = path()
-        Files.write(path, ByteArray(1000))
-        val client =
-            Client { attempt ->
+    fun `retries a partial IOException from the start without append or stale tail`() =
+        runBlocking {
+            val partial = gzipBytes(500)
+            val complete = gzipBytes(20)
+            val firstClosed = CountDownLatch(1)
+            val path = path()
+            Files.write(path, ByteArray(1000))
+            val client = Client { attempt ->
                 assertEquals(0L, Files.size(path), "Truncate before each GET")
                 if (attempt == 1) {
                     object : ByteArrayInputStream(partial) {
                         override fun read(target: ByteArray, offset: Int, length: Int): Int {
-                            if (available() == 0) throw IOException("connection reset after partial body")
+                            if (available() == 0)
+                                throw IOException("connection reset after partial body")
                             return super.read(target, offset, length)
                         }
 
@@ -121,17 +122,17 @@ class GcsArchiveSpoolerTest {
                     ByteArrayInputStream(complete)
                 }
             }
-        GcsArchiveSpooler().use { assertEquals(20L, it.download(client, blob, path)) }
-        assertEquals(2, client.attempts.get())
-        assertArrayEquals(complete, Files.readAllBytes(path))
-    }
+            GcsArchiveSpooler().use { assertEquals(20L, it.download(client, blob, path)) }
+            assertEquals(2, client.attempts.get())
+            assertArrayEquals(complete, Files.readAllBytes(path))
+        }
 
     @Test
-    fun `limits transient IO failures to three attempts and truncates before failed GET`() = runBlocking {
-        val path = path()
-        val failure = IOException("transient GET failure")
-        val client =
-            Client { attempt ->
+    fun `limits transient IO failures to three attempts and truncates before failed GET`() =
+        runBlocking {
+            val path = path()
+            val failure = IOException("transient GET failure")
+            val client = Client { attempt ->
                 assertEquals(0L, Files.size(path))
                 if (attempt == 1) {
                     object : ByteArrayInputStream(gzipBytes(20)) {
@@ -142,14 +143,14 @@ class GcsArchiveSpoolerTest {
                     }
                 } else throw failure
             }
-        GcsArchiveSpooler().use {
-            val error = assertThrows<IOException> { it.download(client, blob, path) }
-            assertEquals(failure.javaClass, error.javaClass)
-            assertEquals(failure.message, error.message)
+            GcsArchiveSpooler().use {
+                val error = assertThrows<IOException> { it.download(client, blob, path) }
+                assertEquals(failure.javaClass, error.javaClass)
+                assertEquals(failure.message, error.message)
+            }
+            assertEquals(3, client.attempts.get())
+            assertEquals(0L, Files.size(path))
         }
-        assertEquals(3, client.attempts.get())
-        assertEquals(0L, Files.size(path))
-    }
 
     @Test
     fun `fails before writing beyond the byte cap and does not retry`() = runBlocking {
@@ -165,7 +166,8 @@ class GcsArchiveSpoolerTest {
 
     @Test
     fun `does not retry permanent IO or non IO failures`() = runBlocking {
-        for (failure in listOf(FileNotFoundException("missing"), IllegalArgumentException("bad request"))) {
+        for (failure in
+            listOf(FileNotFoundException("missing"), IllegalArgumentException("bad request"))) {
             val client = Client { throw failure }
             GcsArchiveSpooler().use {
                 val error = assertThrows<Exception> { it.download(client, blob, path()) }
@@ -180,21 +182,18 @@ class GcsArchiveSpoolerTest {
     fun `does not create caller path or retry local file failures`() = runBlocking {
         val missing = directory.resolve("caller-did-not-create")
         val client = Client { ByteArrayInputStream(gzipBytes(20)) }
-        GcsArchiveSpooler().use {
-            assertThrows<IOException> { it.download(client, blob, missing) }
-        }
+        GcsArchiveSpooler().use { assertThrows<IOException> { it.download(client, blob, missing) } }
         assertEquals(0, client.attempts.get())
         assertFalse(Files.exists(missing))
     }
 
     @Test
     fun `one timeout covers all retry attempts`() = runBlocking {
-        val client =
-            Client { attempt ->
-                delay(300)
-                if (attempt == 1) throw IOException("retry")
-                ByteArrayInputStream(gzipBytes(20))
-            }
+        val client = Client { attempt ->
+            delay(300)
+            if (attempt == 1) throw IOException("retry")
+            ByteArrayInputStream(gzipBytes(20))
+        }
         GcsArchiveSpooler(downloadTimeoutMillis = 500, cleanupTimeoutMillis = 1000).use {
             assertThrows<TimeoutCancellationException> { it.download(client, blob, path()) }
         }
@@ -257,45 +256,50 @@ class GcsArchiveSpoolerTest {
         assertActiveReaderIsRetained(offThread = true)
     }
 
-    private suspend fun assertActiveReaderIsRetained(offThread: Boolean) = kotlinx.coroutines.coroutineScope {
-        val input = BlockingInput(blockClose = true)
-        val client = Client(offThread) { input }
-        val path = path()
-        val spooler = GcsArchiveSpooler(cleanupTimeoutMillis = 100)
-        val observed = CompletableDeferred<Throwable>()
-        val download = launch {
+    private suspend fun assertActiveReaderIsRetained(offThread: Boolean) =
+        kotlinx.coroutines.coroutineScope {
+            val input = BlockingInput(blockClose = true)
+            val client = Client(offThread) { input }
+            val path = path()
+            val spooler = GcsArchiveSpooler(cleanupTimeoutMillis = 100)
+            val observed = CompletableDeferred<Throwable>()
+            val download = launch {
+                try {
+                    spooler.download(client, blob, path)
+                } catch (e: Throwable) {
+                    observed.complete(e)
+                }
+            }
             try {
-                spooler.download(client, blob, path)
-            } catch (e: Throwable) {
-                observed.complete(e)
+                input.entered.awaitSuspending()
+                download.cancel()
+                val error = withTimeout(5000) { observed.await() }
+                assertTrue(error is GcsArchiveReaderStillActiveException)
+                assertEquals(path, (error as GcsArchiveReaderStillActiveException).path)
+                assertTrue(error.cause is CancellationException)
+                assertEquals(1L, input.exited.count, "Reader is still inside InputStream.read")
+                assertEquals(1L, input.closeExited.count, "close is also still blocked")
+                assertTrue(Files.exists(path))
+                assertSame(
+                    error,
+                    assertThrows<GcsArchiveReaderStillActiveException> {
+                        spooler.download(client, blob, path())
+                    },
+                )
+                assertEquals(
+                    1,
+                    client.attempts.get(),
+                    "Poisoned spooler must not start another reader",
+                )
+            } finally {
+                input.release()
+                download.cancel()
+                download.join()
+                input.exited.awaitSuspending()
+                input.closeExited.awaitSuspending()
+                spooler.close()
             }
         }
-        try {
-            input.entered.awaitSuspending()
-            download.cancel()
-            val error = withTimeout(5000) { observed.await() }
-            assertTrue(error is GcsArchiveReaderStillActiveException)
-            assertEquals(path, (error as GcsArchiveReaderStillActiveException).path)
-            assertTrue(error.cause is CancellationException)
-            assertEquals(1L, input.exited.count, "Reader is still inside InputStream.read")
-            assertEquals(1L, input.closeExited.count, "close is also still blocked")
-            assertTrue(Files.exists(path))
-            assertSame(
-                error,
-                assertThrows<GcsArchiveReaderStillActiveException> {
-                    spooler.download(client, blob, path())
-                },
-            )
-            assertEquals(1, client.attempts.get(), "Poisoned spooler must not start another reader")
-        } finally {
-            input.release()
-            download.cancel()
-            download.join()
-            input.exited.awaitSuspending()
-            input.closeExited.awaitSuspending()
-            spooler.close()
-        }
-    }
 
     @Test
     fun `parent close drains downloads is idempotent and rejects new work`(): Unit = runBlocking {
@@ -328,9 +332,8 @@ class GcsArchiveSpoolerTest {
     fun `four daemon workers bound concurrent reads and reject a fifth`() = runBlocking {
         val inputs = List(4) { BlockingInput(closeReleasesRead = true) }
         val spooler = GcsArchiveSpooler(cleanupTimeoutMillis = 1000)
-        val downloads = inputs.map { input ->
-            launch { spooler.download(Client { input }, blob, path()) }
-        }
+        val downloads =
+            inputs.map { input -> launch { spooler.download(Client { input }, blob, path()) } }
         try {
             inputs.forEach { it.entered.awaitSuspending() }
             val threads = inputs.map { it.thread.get() }
@@ -350,10 +353,11 @@ class GcsArchiveSpoolerTest {
     private fun path(): Path = Files.createTempFile(directory, "archive-", ".csv.gz")
 
     private fun gzipBytes(size: Int): ByteArray =
-        ByteArray(size) { it.toByte() }.apply {
-            this[0] = 0x1f
-            this[1] = 0x8b.toByte()
-        }
+        ByteArray(size) { it.toByte() }
+            .apply {
+                this[0] = 0x1f
+                this[1] = 0x8b.toByte()
+            }
 
     private class Client(
         private val offThread: Boolean = false,
@@ -428,7 +432,5 @@ class GcsArchiveSpoolerTest {
     }
 
     private suspend fun CountDownLatch.awaitSuspending() =
-        withTimeout(5000) {
-            while (count != 0L) delay(5)
-        }
+        withTimeout(5000) { while (count != 0L) delay(5) }
 }

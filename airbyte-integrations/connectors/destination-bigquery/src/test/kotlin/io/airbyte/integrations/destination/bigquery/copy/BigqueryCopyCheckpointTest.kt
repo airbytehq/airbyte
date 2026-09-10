@@ -391,8 +391,7 @@ class BigqueryCopyCheckpointTest {
                     launchTask(
                         taskFactory.createOnlyStep<
                             BigQueryBulkOneShotUploader.BigQueryOneShotUploaderState<
-                                ByteArrayOutputStream
-                            >,
+                                ByteArrayOutputStream>,
                             StreamKey,
                             BulkLoaderTableLoader.LoadResult,
                         >(
@@ -407,8 +406,7 @@ class BigqueryCopyCheckpointTest {
                     partitioned<PipelineEvent<ObjectKey, ObjectLoaderPartFormatter.FormattedPart>>()
                 val uploaded =
                     partitioned<
-                        PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<GcsBlob>>
-                    >()
+                        PipelineEvent<ObjectKey, ObjectLoaderPartLoader.PartResult<GcsBlob>>>()
                 val completed =
                     partitioned<
                         PipelineEvent<StreamKey, ObjectLoaderUploadCompleter.UploadResult<GcsBlob>>
@@ -421,9 +419,7 @@ class BigqueryCopyCheckpointTest {
                         0,
                         1,
                     )
-                ) {
-                    parts.close()
-                }
+                ) { parts.close() }
                 launchTask(
                     taskFactory.createIntermediateStep(
                         partLoader,
@@ -434,9 +430,7 @@ class BigqueryCopyCheckpointTest {
                         1,
                         "upload",
                     )
-                ) {
-                    uploaded.close()
-                }
+                ) { uploaded.close() }
                 val partitioner =
                     object :
                         OutputPartitioner<
@@ -463,9 +457,7 @@ class BigqueryCopyCheckpointTest {
                         1,
                         "complete-upload",
                     )
-                ) {
-                    completed.close()
-                }
+                ) { completed.close() }
                 launchTask(
                     taskFactory.createFinalStep(BulkLoaderTableLoader(bulkFactory), completed, 0, 1)
                 )
