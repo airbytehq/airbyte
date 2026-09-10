@@ -52,7 +52,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ClientsAnyCondition"></a>
@@ -109,10 +109,24 @@ Classes
     `updated_at: Any`
     :   When the client record was last updated
 
+<a id="ClientsArrayContainsCondition"></a>
+
+`ClientsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.ClientsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ClientsContainsCondition"></a>
 
 `ClientsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -350,7 +364,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ClientsOrCondition"></a>
@@ -372,7 +386,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ClientsSearchFilter"></a>
@@ -418,7 +432,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.ClientsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsInCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ClientsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.ClientsSortFilter]`
@@ -521,7 +535,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompanyAnyCondition"></a>
@@ -578,10 +592,24 @@ Classes
     `weekly_capacity: Any`
     :   Weekly capacity in seconds
 
+<a id="CompanyArrayContainsCondition"></a>
+
+`CompanyArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.CompanyAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="CompanyContainsCondition"></a>
 
 `CompanyContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -800,7 +828,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition`
     :   The type of the None singleton.
 
 <a id="CompanyOrCondition"></a>
@@ -822,7 +850,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition]`
     :   The type of the None singleton.
 
 <a id="CompanySearchFilter"></a>
@@ -868,7 +896,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.CompanyEqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNeqCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyGteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLtCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyLteCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyInCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyNotCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAndCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyOrCondition | airbyte_agent_sdk.connectors.harvest.types.CompanyAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.CompanySortFilter]`
@@ -971,7 +999,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsAnyCondition"></a>
@@ -1031,10 +1059,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="ContactsArrayContainsCondition"></a>
+
+`ContactsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.ContactsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1275,7 +1317,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ContactsOrCondition"></a>
@@ -1297,7 +1339,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsSearchFilter"></a>
@@ -1346,7 +1388,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.ContactsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsInCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.ContactsSortFilter]`
@@ -1455,7 +1497,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EstimateItemCategoriesAnyCondition"></a>
@@ -1503,10 +1545,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="EstimateItemCategoriesArrayContainsCondition"></a>
+
+`EstimateItemCategoriesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EstimateItemCategoriesContainsCondition"></a>
 
 `EstimateItemCategoriesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1735,7 +1791,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="EstimateItemCategoriesOrCondition"></a>
@@ -1757,7 +1813,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EstimateItemCategoriesSearchFilter"></a>
@@ -1794,7 +1850,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.EstimateItemCategoriesSortFilter]`
@@ -1879,7 +1935,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EstimatesAnyCondition"></a>
@@ -1945,10 +2001,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="EstimatesArrayContainsCondition"></a>
+
+`EstimatesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="EstimatesContainsCondition"></a>
 
 `EstimatesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2195,7 +2265,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition`
     :   The type of the None singleton.
 
 <a id="EstimatesOrCondition"></a>
@@ -2217,7 +2287,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="EstimatesSearchFilter"></a>
@@ -2272,7 +2342,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.EstimatesEqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesGteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLtCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesLteCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesInCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesNotCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAndCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesOrCondition | airbyte_agent_sdk.connectors.harvest.types.EstimatesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.EstimatesSortFilter]`
@@ -2393,7 +2463,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ExpenseCategoriesAnyCondition"></a>
@@ -2450,10 +2520,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="ExpenseCategoriesArrayContainsCondition"></a>
+
+`ExpenseCategoriesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ExpenseCategoriesContainsCondition"></a>
 
 `ExpenseCategoriesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -2691,7 +2775,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ExpenseCategoriesOrCondition"></a>
@@ -2713,7 +2797,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ExpenseCategoriesSearchFilter"></a>
@@ -2759,7 +2843,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.ExpenseCategoriesSortFilter]`
@@ -2862,7 +2946,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ExpensesAnyCondition"></a>
@@ -2934,10 +3018,24 @@ Classes
     `user: Any`
     :   Associated user
 
+<a id="ExpensesArrayContainsCondition"></a>
+
+`ExpensesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ExpensesContainsCondition"></a>
 
 `ExpensesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3190,7 +3288,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition`
     :   The type of the None singleton.
 
 <a id="ExpensesOrCondition"></a>
@@ -3212,7 +3310,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ExpensesSearchFilter"></a>
@@ -3273,7 +3371,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.ExpensesEqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesGteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLtCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesLteCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesInCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesNotCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAndCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesOrCondition | airbyte_agent_sdk.connectors.harvest.types.ExpensesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.ExpensesSortFilter]`
@@ -3406,7 +3504,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoiceItemCategoriesAnyCondition"></a>
@@ -3460,10 +3558,24 @@ Classes
     `use_as_service: Any`
     :   Whether used as service type
 
+<a id="InvoiceItemCategoriesArrayContainsCondition"></a>
+
+`InvoiceItemCategoriesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="InvoiceItemCategoriesContainsCondition"></a>
 
 `InvoiceItemCategoriesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3698,7 +3810,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="InvoiceItemCategoriesOrCondition"></a>
@@ -3720,7 +3832,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoiceItemCategoriesSearchFilter"></a>
@@ -3763,7 +3875,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.InvoiceItemCategoriesSortFilter]`
@@ -3860,7 +3972,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoicesAnyCondition"></a>
@@ -3932,10 +4044,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="InvoicesArrayContainsCondition"></a>
+
+`InvoicesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="InvoicesContainsCondition"></a>
 
 `InvoicesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4188,7 +4314,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition`
     :   The type of the None singleton.
 
 <a id="InvoicesOrCondition"></a>
@@ -4210,7 +4336,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="InvoicesSearchFilter"></a>
@@ -4271,7 +4397,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.InvoicesEqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesGteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLtCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesLteCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesInCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesNotCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAndCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesOrCondition | airbyte_agent_sdk.connectors.harvest.types.InvoicesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.InvoicesSortFilter]`
@@ -4404,7 +4530,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsAnyCondition"></a>
@@ -4473,10 +4599,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="ProjectsArrayContainsCondition"></a>
+
+`ProjectsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ProjectsContainsCondition"></a>
 
 `ProjectsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4726,7 +4866,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ProjectsOrCondition"></a>
@@ -4748,7 +4888,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ProjectsSearchFilter"></a>
@@ -4806,7 +4946,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.ProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.ProjectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.ProjectsSortFilter]`
@@ -4933,7 +5073,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RolesAnyCondition"></a>
@@ -4984,10 +5124,24 @@ Classes
     `user_ids: Any`
     :   User IDs with this role
 
+<a id="RolesArrayContainsCondition"></a>
+
+`RolesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.RolesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="RolesContainsCondition"></a>
 
 `RolesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5219,7 +5373,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition`
     :   The type of the None singleton.
 
 <a id="RolesOrCondition"></a>
@@ -5241,7 +5395,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="RolesSearchFilter"></a>
@@ -5281,7 +5435,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.RolesEqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesGteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLtCondition | airbyte_agent_sdk.connectors.harvest.types.RolesLteCondition | airbyte_agent_sdk.connectors.harvest.types.RolesInCondition | airbyte_agent_sdk.connectors.harvest.types.RolesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.RolesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.RolesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.RolesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.RolesNotCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAndCondition | airbyte_agent_sdk.connectors.harvest.types.RolesOrCondition | airbyte_agent_sdk.connectors.harvest.types.RolesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.RolesSortFilter]`
@@ -5372,7 +5526,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TaskAssignmentsAnyCondition"></a>
@@ -5432,10 +5586,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="TaskAssignmentsArrayContainsCondition"></a>
+
+`TaskAssignmentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TaskAssignmentsContainsCondition"></a>
 
 `TaskAssignmentsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5662,7 +5830,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TaskAssignmentsOrCondition"></a>
@@ -5684,7 +5852,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TaskAssignmentsSearchFilter"></a>
@@ -5733,7 +5901,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.TaskAssignmentsSortFilter]`
@@ -5842,7 +6010,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksAnyCondition"></a>
@@ -5899,10 +6067,24 @@ Classes
     `updated_at: Any`
     :   When last updated
 
+<a id="TasksArrayContainsCondition"></a>
+
+`TasksArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.TasksAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TasksContainsCondition"></a>
 
 `TasksContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6140,7 +6322,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition`
     :   The type of the None singleton.
 
 <a id="TasksOrCondition"></a>
@@ -6162,7 +6344,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksSearchFilter"></a>
@@ -6208,7 +6390,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.TasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TasksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.TasksSortFilter]`
@@ -6311,7 +6493,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeEntriesAnyCondition"></a>
@@ -6383,10 +6565,24 @@ Classes
     `user: Any`
     :   Associated user
 
+<a id="TimeEntriesArrayContainsCondition"></a>
+
+`TimeEntriesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TimeEntriesContainsCondition"></a>
 
 `TimeEntriesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6639,7 +6835,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition`
     :   The type of the None singleton.
 
 <a id="TimeEntriesOrCondition"></a>
@@ -6661,7 +6857,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeEntriesSearchFilter"></a>
@@ -6722,7 +6918,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeEntriesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.TimeEntriesSortFilter]`
@@ -6855,7 +7051,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeProjectsAnyCondition"></a>
@@ -6915,10 +7111,24 @@ Classes
     `total_hours: Any`
     :   Total hours spent
 
+<a id="TimeProjectsArrayContainsCondition"></a>
+
+`TimeProjectsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TimeProjectsContainsCondition"></a>
 
 `TimeProjectsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7151,7 +7361,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition`
     :   The type of the None singleton.
 
 <a id="TimeProjectsOrCondition"></a>
@@ -7173,7 +7383,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeProjectsSearchFilter"></a>
@@ -7222,7 +7432,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeProjectsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.TimeProjectsSortFilter]`
@@ -7331,7 +7541,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeTasksAnyCondition"></a>
@@ -7385,10 +7595,24 @@ Classes
     `total_hours: Any`
     :   Total hours spent
 
+<a id="TimeTasksArrayContainsCondition"></a>
+
+`TimeTasksArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TimeTasksContainsCondition"></a>
 
 `TimeTasksContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -7615,7 +7839,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition`
     :   The type of the None singleton.
 
 <a id="TimeTasksOrCondition"></a>
@@ -7637,7 +7861,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TimeTasksSearchFilter"></a>
@@ -7680,7 +7904,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.TimeTasksEqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNeqCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksGteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLtCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksLteCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksInCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksNotCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAndCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksOrCondition | airbyte_agent_sdk.connectors.harvest.types.TimeTasksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.TimeTasksSortFilter]`
@@ -7777,7 +8001,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UserAssignmentsAnyCondition"></a>
@@ -7840,10 +8064,24 @@ Classes
     `user: Any`
     :   Associated user
 
+<a id="UserAssignmentsArrayContainsCondition"></a>
+
+`UserAssignmentsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UserAssignmentsContainsCondition"></a>
 
 `UserAssignmentsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8073,7 +8311,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition`
     :   The type of the None singleton.
 
 <a id="UserAssignmentsOrCondition"></a>
@@ -8095,7 +8333,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UserAssignmentsSearchFilter"></a>
@@ -8147,7 +8385,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsGteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLtCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsLteCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsInCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsNotCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAndCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsOrCondition | airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.UserAssignmentsSortFilter]`
@@ -8262,7 +8500,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -8343,10 +8581,24 @@ Classes
     `weekly_capacity: Any`
     :   Weekly capacity in seconds
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.harvest.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -8608,7 +8860,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -8630,7 +8882,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -8700,7 +8952,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.harvest.types.UsersEqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNeqCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersGteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLtCondition | airbyte_agent_sdk.connectors.harvest.types.UsersLteCondition | airbyte_agent_sdk.connectors.harvest.types.UsersInCondition | airbyte_agent_sdk.connectors.harvest.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.harvest.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.harvest.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.harvest.types.UsersContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.harvest.types.UsersNotCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAndCondition | airbyte_agent_sdk.connectors.harvest.types.UsersOrCondition | airbyte_agent_sdk.connectors.harvest.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.harvest.types.UsersSortFilter]`
