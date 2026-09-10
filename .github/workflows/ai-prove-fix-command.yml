@@ -72,3 +72,355 @@ jobs:
           start-message: "🔍 **AI Prove Fix session starting...** Running readiness checks and testing against customer connections. [View playbook](https://github.com/airbytehq/ai-skills/blob/main/devin/playbooks/prove_fix.md)"
           tags: |
             ai-oncall
+          structured-output-schema: |
+            type: object
+            additionalProperties: false
+            properties:
+              progress:
+                type: integer
+                minimum: 0
+                maximum: 100
+                description: >-
+                  Rough progress toward completion of prove-fix validation, 0-100. Set to 100
+                  when the evidence report and cleanup are complete.
+              target_pr_url:
+                type: string
+                description: URL of the PR being validated. Empty string if unknown.
+              originating_issue_url:
+                type: string
+                description: URL of the linked oncall/internal issue containing private context. Empty string if none exists.
+              connector_name:
+                type: string
+                description: Connector being validated, eg source-snapchat-marketing. Empty string if not connector-specific.
+              prerelease_version:
+                type: string
+                description: Connector pre-release version or image tested. Empty string if no pre-release was used.
+              fix_proven:
+                type: boolean
+                description: >-
+                  Single final answer for whether the fix was proven. Set true only when after
+                  evidence satisfies the proving criteria without unresolved disproving evidence.
+                  Set false for failed, blocked, or inconclusive validations.
+              validation_summary:
+                type: string
+                description: One-paragraph factual summary of what was tested and observed.
+              proving_criteria:
+                type: array
+                items:
+                  type: string
+                description: Observable criteria that would prove the fix works.
+              disproving_criteria:
+                type: array
+                items:
+                  type: string
+                description: Observable criteria that would disprove the fix or show a regression.
+              before_evidence:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    type:
+                      type: string
+                      enum: [code, log, api_response, sync_result, test_result, ci_result, version_info, link, other]
+                      description: Kind of evidence captured.
+                    label:
+                      type: string
+                      description: Concise label for this evidence item.
+                    excerpt:
+                      type: string
+                      description: >-
+                        Exact collected evidence only: copy a real log line, status field/value,
+                        stack trace frame, code snippet, test output, CI output, or API response field.
+                        Do not put generated summaries or conclusions here.
+                    interpretation:
+                      type: string
+                      description: Brief commentary explaining what the excerpt proves. Empty string if self-explanatory.
+                    supports_claim:
+                      type: string
+                      enum: [before_failure, before_baseline, after_success, after_failure, regression_check, setup, cleanup]
+                      description: Which part of the prove-fix argument this evidence supports.
+                    references:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum: [airbyte_cloud_connection, airbyte_cloud_job, github_code, github_pr, github_check, sentry_issue, sentry_event, link, devin_session, mcp_tool_output]
+                          label:
+                            type: string
+                          workspace_id:
+                            type: string
+                          connection_id:
+                            type: string
+                          job_id:
+                            type: string
+                          attempt_number:
+                            type: integer
+                          repository:
+                            type: string
+                          git_ref:
+                            type: string
+                          file_path:
+                            type: string
+                          line_start:
+                            type: integer
+                          line_end:
+                            type: integer
+                          pr_number:
+                            type: integer
+                          check_name:
+                            type: string
+                          run_url:
+                            type: string
+                          organization:
+                            type: string
+                          project:
+                            type: string
+                          issue_id:
+                            type: string
+                          event_id:
+                            type: string
+                          url:
+                            type: string
+                          tool_name:
+                            type: string
+                        required:
+                          - type
+                          - label
+                          - workspace_id
+                          - connection_id
+                          - job_id
+                          - attempt_number
+                          - repository
+                          - git_ref
+                          - file_path
+                          - line_start
+                          - line_end
+                          - pr_number
+                          - check_name
+                          - run_url
+                          - organization
+                          - project
+                          - issue_id
+                          - event_id
+                          - url
+                          - tool_name
+                      description: Structured pointers to the exact evidence source.
+                  required: [type, label, excerpt, interpretation, supports_claim, references]
+                description: >-
+                  Evidence collected before applying the fix or from the known failing baseline.
+                  Use exact excerpts only: failed logs, API fields, stack traces, CI output, or
+                  code snippets that establish the prior behavior.
+              after_evidence:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    type:
+                      type: string
+                      enum: [code, log, api_response, sync_result, test_result, ci_result, version_info, link, other]
+                      description: Kind of evidence captured.
+                    label:
+                      type: string
+                      description: Concise label for this evidence item.
+                    excerpt:
+                      type: string
+                      description: >-
+                        Exact collected evidence only: copy a real log line, status field/value,
+                        stack trace frame, code snippet, test output, CI output, or API response field.
+                        Do not put generated summaries or conclusions here.
+                    interpretation:
+                      type: string
+                      description: Brief commentary explaining what the excerpt proves. Empty string if self-explanatory.
+                    supports_claim:
+                      type: string
+                      enum: [before_failure, before_baseline, after_success, after_failure, regression_check, setup, cleanup]
+                      description: Which part of the prove-fix argument this evidence supports.
+                    references:
+                      type: array
+                      minItems: 1
+                      items:
+                        type: object
+                        additionalProperties: false
+                        properties:
+                          type:
+                            type: string
+                            enum: [airbyte_cloud_connection, airbyte_cloud_job, github_code, github_pr, github_check, sentry_issue, sentry_event, link, devin_session, mcp_tool_output]
+                          label:
+                            type: string
+                          workspace_id:
+                            type: string
+                          connection_id:
+                            type: string
+                          job_id:
+                            type: string
+                          attempt_number:
+                            type: integer
+                          repository:
+                            type: string
+                          git_ref:
+                            type: string
+                          file_path:
+                            type: string
+                          line_start:
+                            type: integer
+                          line_end:
+                            type: integer
+                          pr_number:
+                            type: integer
+                          check_name:
+                            type: string
+                          run_url:
+                            type: string
+                          organization:
+                            type: string
+                          project:
+                            type: string
+                          issue_id:
+                            type: string
+                          event_id:
+                            type: string
+                          url:
+                            type: string
+                          tool_name:
+                            type: string
+                        required:
+                          - type
+                          - label
+                          - workspace_id
+                          - connection_id
+                          - job_id
+                          - attempt_number
+                          - repository
+                          - git_ref
+                          - file_path
+                          - line_start
+                          - line_end
+                          - pr_number
+                          - check_name
+                          - run_url
+                          - organization
+                          - project
+                          - issue_id
+                          - event_id
+                          - url
+                          - tool_name
+                      description: Structured pointers to the exact evidence source.
+                  required: [type, label, excerpt, interpretation, supports_claim, references]
+                description: >-
+                  Evidence collected after applying the fix/pre-release or from post-fix validation.
+                  Use exact excerpts only: successful sync status, changed log lines, passing tests,
+                  version checks, or API fields that establish the new behavior.
+              validation_attempts:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    attempt_number:
+                      type: integer
+                      minimum: 1
+                      description: Validation attempt number, matching the playbook retry path where applicable.
+                    validation_type:
+                      type: string
+                      enum: [regression_test, live_connection_test, ci_check, manual_review, other]
+                      description: Kind of validation performed in this attempt.
+                    credential_source:
+                      type: string
+                      enum: [gsm, customer_connection, different_customer_connection, none, unknown]
+                      description: Credential/config source used for this attempt.
+                    stream_scope:
+                      type: string
+                      enum: [all_streams, affected_streams_only, not_applicable, unknown]
+                      description: Stream scope used for the attempt.
+                    signal:
+                      type: string
+                      enum:
+                        - expected_difference_observed
+                        - no_behavioral_difference
+                        - both_versions_failed
+                        - target_failed
+                        - control_failed
+                        - timeout
+                        - live_sync_succeeded
+                        - live_sync_failed
+                        - blocked
+                        - other
+                      description: Observed signal that drives the retry/escalation decision.
+                    outcome:
+                      type: string
+                      enum: [supports_fix, disproves_fix, inconclusive, blocked]
+                      description: What this attempt says about the fix.
+                    next_action:
+                      type: string
+                      description: Playbook retry/escalation action to take next. Empty string for the final attempt.
+                  required:
+                    - attempt_number
+                    - validation_type
+                    - credential_source
+                    - stream_scope
+                    - signal
+                    - outcome
+                    - next_action
+                description: >-
+                  Ordered validation attempts, including retry/escalation decisions from the playbook
+                  such as GSM to customer connection, stream narrowing, artifact inspection, or stop.
+              comparison_summary:
+                type: string
+                description: >-
+                  Direct before/after comparison explaining whether the after evidence satisfies
+                  the proving criteria or matches the disproving criteria.
+              tested_cases:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: false
+                  properties:
+                    label:
+                      type: string
+                      description: Sanitized case label, eg Connection A or integration test.
+                    before_status:
+                      type: string
+                      description: Baseline status before the fix, or empty string if unavailable.
+                    after_status:
+                      type: string
+                      description: Post-fix status, or empty string if unavailable.
+                    outcome:
+                      type: string
+                      enum: [passed, failed, inconclusive, blocked]
+                      description: Outcome for this case.
+                    notes:
+                      type: string
+                      description: Short factual notes for this case.
+                  required: [label, before_status, after_status, outcome, notes]
+                description: Sanitized list of cases attempted.
+              cleanup_status:
+                type: string
+                description: What was cleaned up after testing, including version overrides removed. Empty string if no cleanup was needed.
+              remaining_gaps:
+                type: array
+                items:
+                  type: string
+                description: Missing evidence, blockers, or follow-up needed before merge/release.
+            required:
+              - progress
+              - target_pr_url
+              - originating_issue_url
+              - connector_name
+              - prerelease_version
+              - fix_proven
+              - validation_summary
+              - proving_criteria
+              - disproving_criteria
+              - before_evidence
+              - after_evidence
+              - validation_attempts
+              - comparison_summary
+              - tested_cases
+              - cleanup_status
+              - remaining_gaps
