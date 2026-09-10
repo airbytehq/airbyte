@@ -1,22 +1,24 @@
 # BigQuery load-input copies for Fusion
 
-Status: implemented for GCS staging on `johnny/bigquery-fusion-sync-copy`; standard inserts remain
-unsupported when copying is enabled. Copying defaults off. No deployment-specific settings or
-credentials are embedded in the connector. The sections below describe the implementation contract
+Status: GCS staging passed the Fusion pilot on `johnny/bigquery-fusion-sync-copy`. Batched standard
+inserts are implemented on the follow-up branch `johnny/bigquery-fusion-batched-inserts`. Copying
+defaults off; the new branch removes the pilot preview overrides. No deployment-specific settings
+or credentials are embedded in the connector. The sections below describe the implementation contract
 and rollout requirements.
 Reviewed September 10, 2026 against the BigQuery files at repository baseline `aa28ceeac4e`.
 The connector uses CDK `1.0.25`, `core = 'load'`, and `useLegacyTaskLoader = true`, with
 `legacy-task-load-gcs`, `legacy-task-load-db`, and `legacy-task-load-s3` toolkits.
 
-## 1. Start with GCS staging
+## 1. Load strategies
 
-Implement the **GCS staging load strategy first**, in both schema-table and legacy raw-table modes,
-and with both STDIO and socket ingestion. Keep batched standard inserts outside v1.
+The first implementation covered **GCS staging**, in schema-table and legacy raw-table modes, with
+STDIO and socket ingestion. The second phase adds **batched standard inserts** using the same run
+lifecycle and completion guarantee. Section 10 specifies its distinct NDJSON representation.
 
 | Strategy | Existing load representation | Archive work | Decision |
 | --- | --- | --- | --- |
 | GCS staging | Completed gzip CSV object, including a header, supplied to a BigQuery load job | Read the completed object, upload the same bytes to S3, delay completion and GCS deletion | First: one connector-local load hook covers both input paths |
-| Batched standard inserts | UTF-8 NDJSON, buffered initially and then streamed into `TableDataWriteChannel` | Capture every formatted byte before it is discarded, introduce spool ownership and an NDJSON contract, gate `finish()` | Later: more changes to byte production and lifetime |
+| Batched standard inserts | UTF-8 NDJSON, buffered initially and then streamed into `TableDataWriteChannel` | Capture every formatted byte before it is discarded, introduce spool ownership and an NDJSON contract, gate `finish()` | Second phase: exact NDJSON tee and bounded spool lifetime |
 
 Evidence: [BigQueryBulkLoader.kt](src/main/kotlin/io/airbyte/integrations/destination/bigquery/write/bulk_loader/BigQueryBulkLoader.kt)
 accepts a completed `GcsBlob`, submits a CSV load job, waits for completion, checks bad records,
@@ -34,8 +36,9 @@ changing paths, payload bytes, or the completion contract.
 
 ## 2. Guarantee and non-goals
 
-For an enabled GCS-staging write, every record covered by an emitted destination checkpoint must
-have its existing BigQuery staging CSV representation durably archived in S3. Before ingestion,
+For an enabled write, every record covered by an emitted destination checkpoint must have its
+existing BigQuery load representation durably archived in S3: gzip CSV for GCS staging, or
+uncompressed NDJSON for batched standard inserts. Before ingestion,
 the run must also have a durable schema descriptor and any requested generation cutoff.
 
 This is an at-least-once archive of load inputs. It is not a transaction across BigQuery and S3,
@@ -48,9 +51,8 @@ Do not change customer BigQuery configuration, ingestion thresholds, formatter s
 public specification, or the CDK version. Do not migrate BigQuery to the new dataflow engine as
 part of this work. A shared toolkit extraction from Snowflake is also unnecessary for v1.
 
-When copying is enabled with batched standard inserts, fail setup with a clear internal unsupported
-strategy error. Silently skipping the archive would violate opt-in. `spec`, `check`, and disabled
-writes must continue to work with either loading strategy and no AWS configuration.
+Enabled writes support both loading strategies. Silently skipping the archive would violate opt-in.
+`spec`, `check`, and disabled writes must continue to work with either strategy and no AWS configuration.
 
 ## 3. Object layout and event consumption
 
@@ -61,12 +63,14 @@ fusion/workspaces/<workspace_uuid>/sources/<source_uuid>/connections/<connection
   streams/<escaped_stream_name>/runs/<run_uuid>/
     schema.json
     generation-cutoff.json
-    batches/<batch_uuid>.csv.gz
+    batches/<batch_uuid>.csv.gz  # GCS staging
+    batches/<batch_uuid>.jsonl   # batched standard inserts
 ```
 
 The prefix is configurable, defaulting to `fusion`. IDs are supplied by the platform, never
 hardcoded or generated as a substitute for missing routing. A process generates one run UUID;
-each completed GCS object gets one batch UUID reused throughout that archive transfer's retries.
+each completed GCS object or standard-insert loader batch gets one batch UUID reused throughout
+that archive transfer's retries.
 Generation and sync IDs live in JSON/object metadata, not directory components. Exclude GCS
 staging keys and temporary BigQuery table names from stable routing.
 
@@ -82,13 +86,13 @@ same run descriptor. This preserves the selected layout without relying on an un
 assumption.
 
 Write `schema.json` first and any cutoff second, once per stream/run, before setup returns.
-Consumers of `batches/<uuid>.csv.gz` resolve `schema.json` in the parent run folder. Filter data
+Consumers of either batch format resolve `schema.json` in the parent run folder. Filter data
 notifications to batch objects. Cutoff consumers handle `generation-cutoff.json` separately.
 Do not rely on notification delivery order: the writes are ordered, but listeners must tolerate
 duplicate and reordered events. Completed objects do not imply a successful overall sync.
 
-Data objects use `application/gzip` without a `Content-Encoding` header. JSON uses
-`application/json`. Data metadata includes `format-version`, `workspace-id`, `source-id`,
+GCS data objects use `application/gzip` without a `Content-Encoding` header. Standard-insert data
+objects use `application/x-ndjson` with no compression. Control JSON uses `application/json`. Data metadata includes `format-version`, `workspace-id`, `source-id`,
 `connection-id`, `stream-key` (a short stable identity hash), `generation-id`, `sync-id`, `run-id`,
 `batch-id`, and `schema-id`. Keep rich names and schemas out of S3 metadata headers.
 
@@ -158,7 +162,7 @@ Use an injectable fake service for tests. Avoid a generic second batching system
 returns either CDK `DirectLoadTableWriter` or `TypingDedupingWriter`; there is no connector-local
 BigQuery writer to patch. Wrap the chosen writer with one connector-local delegating writer:
 
-1. Validate archive configuration, GCS strategy, stream-name uniqueness, and generation directives
+1. Validate archive configuration, stream-name uniqueness, and generation directives
    for the whole catalog. Disabled implementation does nothing.
 2. Call the existing writer's `setup()`.
 3. Derive contexts from the catalog and `TableCatalog`/column mapping without waiting for stream
@@ -350,7 +354,7 @@ Deterministic connector tests must cover:
    source/target primary key and cursor mapping, null namespace, escaped names, schema hash
    stability across runs, and layout changes changing the hash.
 6. Disabled/spec/check: no AWS construction, no extra GCS GET/spool, unchanged public specs.
-   Include checker-internal write operations. Enabled standard inserts fail before ingestion.
+   Include checker-internal write operations and both enabled load strategies.
 7. Lifetime and pressure: four copies max across socket partitions, metadata concurrency bounded,
    cancellation before/while reading, a cancelled future with an active reader, drained readers
    before unlink, client shutdown idempotence, no unbounded orphan copies.
@@ -392,7 +396,7 @@ pre-rollout checks; a small successful smoke test does not establish them.
 2. Add the delegating writer and durable run schema/cutoff preparation. Share layout derivation
    between descriptors and existing loader factories without rewriting record formatting.
 3. Add the common completed-GCS-object archive hook, spool/transfer limits, deferred GCS cleanup,
-   and deterministic load/checkpoint tests. Keep standard inserts explicitly unsupported when enabled.
+   and deterministic load/checkpoint tests. Then add standard inserts under the contract in section 10.
 4. Provision role/trust and prefix/lifecycle, inject IDs and bootstrap credentials for a pilot
    workspace, verify live role assumption, then test real GCS/BigQuery/S3 failure cases.
 5. Add startup enablement/version logging; log run/batch/key and archive start/success/failure,
@@ -408,13 +412,61 @@ cancellation, and verified credential refresh. Passing a unit suite or publishin
 does not establish this contract. Current Snowflake uploader cancellation/multipart gaps must not
 be copied as a production-ready implementation.
 
-## 10. Subsequent standard-insert work
+## 10. Batched standard-insert implementation
 
-After GCS staging passes the pilot, define `bigquery-load-ndjson-v1` and archive `.jsonl` (or a
-separately specified compressed representation) from exactly the UTF-8 bytes already produced in
-`BigqueryBatchStandardInsertsLoader.accept()`. Preserve the current line separator. Tee into an
-owned bounded spool while retaining the existing buffer/channel threshold; avoid a second record
-serialization. Gate `finish()` on both job completion and archive completion and test every buffer
-transition, empty batch, EOF, both record formatters, both table modes, and failure cleanup.
-Reuse run routing, control metadata, configuration, and consumer dispatch by format ID. Do not
-label NDJSON as CSV or infer its layout from a GCS CSV descriptor.
+Batched inserts use a `bigquery-load-ndjson-v1` descriptor and uncompressed `batches/<uuid>.jsonl`
+objects. `accept()` formats each record once and tees the exact UTF-8 byte array, including the
+existing platform line separator, into an owned local spool before passing those bytes to BigQuery.
+Preserve the 15 MiB in-memory/write-channel transition and existing CDK batch boundaries. Both
+buffer flushes and direct channel writes must drain partial writes; zero progress fails instead of
+silently discarding a suffix or spinning forever.
+
+The descriptor shares identity, source schema, primary-key/cursor mapping, target schema, schema hash,
+and generation semantics with GCS. Its format section describes NDJSON and no compression, without
+claiming CSV headers, quoting, or null-marker behavior. Raw JSON uses the actual raw table schema;
+raw CSV's special string representations do not apply. The format contract participates in the
+canonical layout hash so consumers cannot reuse a CSV parser for an NDJSON run.
+
+Each loader owns one lazy spool; no file exists before its first record. Each append opens and
+closes its file descriptor. Spool bytes are capped at 1 GiB per batch and 4 GiB across all active
+standard-insert batches in the process. These are uncompressed bytes. Reserving bytes fails
+immediately at the limit; it must never wait for another unfinished batch to finish. A batch with
+zero records produces no data object, but setup still writes schema and any generation cutoff.
+The service tracks all incomplete spools and closes them during teardown.
+
+Only completed-file transfers acquire the existing four process-wide upload slots. Holding a slot
+through `accept()` would deadlock interleaved streams or socket partitions that cannot reach their
+flush boundary. Complete the BigQuery load, require zero bad records, then upload the frozen spool
+and await final S3 completion before `finish()` returns. `input-record-count` counts successful
+formatter-byte appends; `loaded-record-count` remains BigQuery's reported output count. Batch UUID,
+key, and metadata are stable across SDK retries. Run UUID and routing rules are unchanged.
+
+Abandoned batches and failed/cancelled loads remove their spools. Closing a batch concurrently with
+an active upload must defer unlinking until the upload's reader-drain outcome is known. A failure
+indicating an active reader retains the spool and its disk reservation, poisons the archive service,
+and prevents further work. Deletion failures also retain the reservation. Preserve primary failures
+when cleanup fails. No covering checkpoint is emitted after a failed or unfinished composite batch;
+there is no transaction or rollback of an already successful BigQuery load.
+
+Validation covers exact NDJSON bytes and target metadata, raw/direct and JSON/protobuf formatters,
+buffer transition and partial writes, empty refreshes, aggregate/per-batch limits, interleaved
+batches, close/cancel races, and actual legacy pipeline checkpoint gating for standard inserts.
+Validation completed for this phase: 220 connector unit tests (including both formatters and both
+table modes), SpotBugs, and strict Kotlin compilation using a local Gradle init script. Six live/spec
+checks passed: direct standard inserts via JSON/STDIO and protobuf/socket, raw JSON standard inserts,
+empty truncate refresh, and both unchanged spec snapshots. Separate S3 inspection verified five run
+descriptors, four NDJSON batches with matching input/loaded counts, canonical schema hashes, and one
+empty run containing schema/cutoff only. Live tests used environment-only settings under a validation
+prefix; a local bypass of unrelated historical test-dataset cleanup was removed afterward. Raw
+protobuf is covered deterministically, not by this live smoke suite. Production-scale throughput,
+spool budgets, and long-duration credential refresh remain rollout validation requirements.
+
+## 11. Later CDK extraction
+
+Keep this phase connector-local and retain CDK `1.0.25`. Once both load strategies are established,
+extract reusable archive lifecycle, bounded spool ownership, closed-file S3 upload, routing and
+control-object serialization into the CDK as a separate change. Keep BigQuery-specific format/layout
+construction, Google write-channel and load-job handling, and loader/checkpoint adapters in the
+connector. The later extraction must preserve bytes, object paths, descriptor semantics, ownership
+and cancellation guarantees, and disabled behavior; it should not require a consumer migration.
+Do not combine that extraction or a loader-framework migration with this implementation.
