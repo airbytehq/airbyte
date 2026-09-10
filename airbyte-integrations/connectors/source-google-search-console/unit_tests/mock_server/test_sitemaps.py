@@ -17,11 +17,12 @@ from urllib.parse import quote
 from mock_server.config import ConfigBuilder
 from mock_server.response_builder import (
     GoogleSearchConsoleSitemapsResponseBuilder,
+    build_error_response,
     create_oauth_response,
     create_sitemaps_empty_response,
 )
 
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.test.entrypoint_wrapper import read
 from airbyte_cdk.test.mock_http import HttpMocker, HttpRequest
@@ -188,3 +189,26 @@ class TestSitemapsStream(TestCase):
         assert record["warnings"] == "0"
         assert record["errors"] == "0"
         assert "contents" in record
+
+    @HttpMocker()
+    def test_unverified_site_returns_config_error(self, http_mocker: HttpMocker) -> None:
+        site_url = "https://unverified.example.com/"
+        google_message = f"'{site_url}' is not a verified Search Console site in this account."
+        config = ConfigBuilder().with_site_urls([site_url]).build()
+
+        http_mocker.post(_oauth_request(), create_oauth_response())
+        http_mocker.get(
+            _sitemaps_request(site_url),
+            build_error_response(404, google_message, "notFound"),
+        )
+
+        source = get_source(config=config)
+        catalog = CatalogBuilder().with_stream(_STREAM_NAME, SyncMode.full_refresh).build()
+        output = read(source, config=config, catalog=catalog)
+
+        assert output.errors
+        error = output.errors[-1].trace.error
+        assert error.failure_type == FailureType.config_error
+        log_messages = "\n".join(log.log.message for log in output.logs)
+        assert "Configured site URL is not a verified Search Console property in this account." in log_messages
+        assert site_url in log_messages
