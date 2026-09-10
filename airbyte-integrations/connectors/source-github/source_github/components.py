@@ -3,13 +3,16 @@
 #
 
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, MutableMapping
+from itertools import groupby
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
 import requests
 
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.migrations.state_migration import StateMigration
-from airbyte_cdk.sources.types import Config
+from airbyte_cdk.sources.declarative.partition_routers.substream_partition_router import SubstreamPartitionRouter
+from airbyte_cdk.sources.declarative.transformations import RecordTransformation
+from airbyte_cdk.sources.types import Config, StreamSlice, StreamState
 
 
 @dataclass
@@ -51,6 +54,8 @@ class NestedLegacyToPerPartitionStateMigration(StateMigration):
     parameters: Mapping[str, Any]
     cursor_field: str
     partition_fields: List[str]
+    # GitHub ids were stored as strings and the routers carry them as integers; branch names stay strings.
+    integer_ids: bool = True
 
     def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
         if not stream_state or "states" in stream_state or "state" in stream_state:
@@ -78,6 +83,75 @@ class NestedLegacyToPerPartitionStateMigration(StateMigration):
             child_partition = {self.partition_fields[depth]: self._to_id(key), "parent_slice": partition}
             self._collect(child, child_partition, depth + 1, states)
 
-    @staticmethod
-    def _to_id(key: str) -> Any:
-        return int(key) if isinstance(key, str) and key.isdigit() else key
+    def _to_id(self, key: str) -> Any:
+        return int(key) if self.integer_ids and isinstance(key, str) and key.isdigit() else key
+
+
+@dataclass
+class WorkflowJobsLegacyStateMigration(StateMigration):
+    """Migrate the legacy `{repository: {completed_at: value}}` state of `workflow_jobs`.
+
+    The declarative stream keeps one global `completed_at` cursor and lets its parent
+    (`workflow_runs`) resume per repository, which is what the Python class did by handing its own
+    cursor to the parent as `updated_at`. The lowest repository cursor becomes the global one so no
+    repository skips jobs; the parent state keeps the per-repository values.
+    """
+
+    config: Config
+    parameters: Mapping[str, Any]
+
+    def should_migrate(self, stream_state: Mapping[str, Any]) -> bool:
+        if not stream_state or "state" in stream_state or "states" in stream_state or "parent_state" in stream_state:
+            return False
+        return all(isinstance(value, Mapping) and set(value) == {"completed_at"} for value in stream_state.values())
+
+    def migrate(self, stream_state: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursors = {repository: value["completed_at"] for repository, value in stream_state.items()}
+        return {
+            "use_global_cursor": True,
+            "state": {"completed_at": min(cursors.values())},
+            "parent_state": {"workflow_runs": {repository: {"updated_at": cursor} for repository, cursor in cursors.items()}},
+        }
+
+
+@dataclass
+class FlattenAuthorTransformation(RecordTransformation):
+    """`ContributorActivity.transform`: lift the `author` object's fields onto the record."""
+
+    config: Config
+    parameters: Mapping[str, Any]
+
+    def transform(
+        self,
+        record: Dict[str, Any],
+        config: Optional[Config] = None,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+    ) -> None:
+        author = record.pop("author", None)
+        if author:
+            record.update(author)
+
+
+@dataclass
+class CommitsBranchPartitionRouter(SubstreamPartitionRouter):
+    """One partition per branch to pull commits from, resolved the way `Commits.stream_slices` did.
+
+    The parent lists every branch of every repository. For a repository, the configured `branches`
+    entries (`owner/repo/branch`) that exist are used; when none is configured, or none of the
+    configured ones exists, the repository's default branch is used instead.
+    """
+
+    def stream_slices(self) -> Iterable[StreamSlice]:
+        configured = set(self.config.get("branches") or [])
+        for repository, branch_slices in groupby(super().stream_slices(), key=lambda s: s.partition["parent_slice"]["repository"]):
+            branch_slices = list(branch_slices)
+            wanted = [s for s in branch_slices if f"{repository}/{s.partition['branch']}" in configured]
+            if not wanted:
+                default_branch = next((s.extra_fields.get("default_branch") for s in branch_slices), None)
+                wanted = [s for s in branch_slices if s.partition["branch"] == default_branch]
+                if not wanted and default_branch:
+                    wanted = [
+                        StreamSlice(partition={"branch": default_branch, "parent_slice": {"repository": repository}}, cursor_slice={})
+                    ]
+            yield from wanted
