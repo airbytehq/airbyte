@@ -308,7 +308,7 @@ public class MongoUtilTest {
 
   @Test
   void testGetDebeziumEventQueueSize() {
-    final int queueSize = 5000;
+    final int queueSize = 256;
     final MongoDbSourceConfig validQueueSizeConfiguration = new MongoDbSourceConfig(
         Jsons.jsonNode(Map.of(MongoConstants.QUEUE_SIZE_CONFIGURATION_KEY, queueSize, DATABASE_CONFIG_CONFIGURATION_KEY, Map.of())));
     final MongoDbSourceConfig tooSmallQueueSizeConfiguration = new MongoDbSourceConfig(
