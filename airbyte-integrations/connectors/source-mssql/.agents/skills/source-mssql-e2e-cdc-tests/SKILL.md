@@ -46,6 +46,7 @@ source-mssql-e2e-cdc-tests/
 ├── SKILL.md
 ├── cases/
 │   ├── 11451.sh                      # airbytehq/oncall#11451 — LSN-range regression in 4.3.4+ (multi-phase; invalid-state case)
+│   ├── 13433.sh                      # airbytehq/oncall#13433 — heartbeats progress without records (multi-phase)
 │   ├── 12094.sh                      # airbytehq/oncall#12094 — schema-history bloat
 │   └── 12162.sh                      # airbytehq/oncall#12162 — whitespace in stream name
 └── fixtures/
@@ -56,6 +57,8 @@ source-mssql-e2e-cdc-tests/
     │   └── order-items-cdc.json
     └── sql/
         ├── 00-init-cdc.sql
+        ├── 13433-progressing-heartbeats-part1.sql
+        ├── 13433-progressing-heartbeats-part2.sql
         ├── repro-11451-lsn-cleanup.sql
         ├── repro-12094-schema-history.sql
         └── repro-12162-spaces-in-name.sql
@@ -121,6 +124,7 @@ export REPRO_OUT=/tmp/source-mssql-repro
 "$SKILL/cases/12162.sh"
 "$SKILL/cases/12094.sh"
 "$SKILL/cases/11451.sh"
+"$SKILL/cases/13433.sh"
 
 # 3. (After fix) verify by retargeting `dev` or a fixed version.
 VERSION=dev "$SKILL/cases/12162.sh"
@@ -206,6 +210,14 @@ past a saved offset on geo-replicas with aggressive cleanup. The
 saved-offset-rejection guard then fires even though the data is
 still present. Investigation lives at
 [`airbytehq/oncall#11451`](https://github.com/airbytehq/oncall/issues/11451).
+
+### 13433
+
+`cases/13433.sh` creates included and noise CDC tables, then adds a large
+backlog of transactions outside the catalog to exercise progressing heartbeats
+without records across two reads. Use `EXPECT=bug|fixed|fixed-unbounded`;
+after a local image build, run `VERSION=dev EXPECT=fixed "$SKILL/cases/13433.sh"`,
+or set `MAX_ITERATION_TRANSACTIONS=0` for the unbounded iteration case.
 
 #### Invalid-state case for LSN-availability fixes
 

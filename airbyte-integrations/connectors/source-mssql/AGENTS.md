@@ -48,7 +48,7 @@ MSSQL backend lifecycle, fixtures, and config templates:
     configured catalog).
   - `repro-11451.sh` — [`airbytehq/oncall#11451`](https://github.com/airbytehq/oncall/issues/11451)
     (saved CDC offset rejected after `min_lsn` advances past it).
-  - `repro-13433.sh` — [`airbytehq/oncall#13433`](https://github.com/airbytehq/oncall/issues/13433)
+  - `cases/13433.sh` — [`airbytehq/oncall#13433`](https://github.com/airbytehq/oncall/issues/13433)
     (CDC log full of transactions on capture instances outside the
     catalog → heartbeats progress for hours with no RECORD / STATE).
 
@@ -80,7 +80,7 @@ CDC_SKILL=airbyte-integrations/connectors/source-mssql/.agents/skills/source-mss
 "$CDC_SKILL/scripts/repro-12162.sh"
 "$CDC_SKILL/scripts/repro-12094.sh"
 "$CDC_SKILL/scripts/repro-11451.sh"
-"$CDC_SKILL/scripts/repro-13433.sh"
+"$CDC_SKILL/cases/13433.sh"
 
 # Cleanup
 BACKEND_NAME=source-mssql-db-backend \

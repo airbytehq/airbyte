@@ -6,16 +6,17 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 SKILL="$(cd "$HERE/.." && pwd)"
 GENERIC="$(cd "$SKILL/../source-mssql-e2e-tests" && pwd)"
-ROOT="$(git -C "$SKILL" rev-parse --show-toplevel)"
+REPO_ROOT="$(git -C "$HERE" rev-parse --show-toplevel)"
+LIB="$REPO_ROOT/airbyte-integrations/db-harness-lib"
 
-IMAGE_TAG="${IMAGE_TAG:-${1:-5.0.0}}"
+IMAGE_TAG="${VERSION:-${IMAGE_TAG:-${1:-5.0.1}}}"
 EXPECT="${EXPECT:-bug}"
 INCLUDED_TABLES="${INCLUDED_TABLES:-350}"
 NOISE_TRANSACTIONS="${NOISE_TRANSACTIONS:-20000}"
 INITIAL_WAITING_SECONDS="${INITIAL_WAITING_SECONDS:-120}"
 MAX_ITERATION_TRANSACTIONS="${MAX_ITERATION_TRANSACTIONS:-}"
 export INITIAL_WAITING_SECONDS MAX_ITERATION_TRANSACTIONS
-REPRO_OUT="${REPRO_OUT:-/home/ubuntu/repro13433/$EXPECT}"
+REPRO_OUT="${REPRO_OUT:-/tmp/source-mssql-repro/13433/$EXPECT}"
 export REPRO_OUT
 mkdir -p "$REPRO_OUT"
 
@@ -106,7 +107,7 @@ fi
   --config-template="$REPRO_OUT/config-template.json" \
   --catalog="$REPRO_OUT/catalog.json" \
   --keep-backend
-"$GENERIC/scripts/extract-state.py" "$REPRO_OUT/first/read/stdout.txt" \
+"$LIB/scripts/extract-state.py" "$REPRO_OUT/first/read/stdout.txt" \
   > "$REPRO_OUT/state.json"
 
 "$GENERIC/scripts/apply-sql.sh" "$PART2"
