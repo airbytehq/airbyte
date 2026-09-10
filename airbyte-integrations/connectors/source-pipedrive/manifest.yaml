@@ -2211,6 +2211,14 @@ schemas:
         type:
           - "null"
           - integer
+      filter_code:
+        type:
+          - "null"
+          - string
+      last_used_time:
+        type:
+          - "null"
+          - string
       visible_to:
         type:
           - "null"
@@ -3986,10 +3994,34 @@ schemas:
         type:
           - "null"
           - integer
+      is_deleted:
+        type:
+          - "null"
+          - boolean
       is_you:
         type:
           - "null"
           - boolean
+      access:
+        type:
+          - "null"
+          - array
+        items:
+          type: object
+          additionalProperties: true
+          properties:
+            app:
+              type:
+                - "null"
+                - string
+            admin:
+              type:
+                - "null"
+                - boolean
+            permission_set_id:
+              type:
+                - "null"
+                - string
       lang:
         type:
           - "null"

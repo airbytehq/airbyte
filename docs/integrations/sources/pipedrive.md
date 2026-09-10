@@ -61,7 +61,7 @@ The Pipedrive source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, and `deal_products` use API v2 `api/v2/...` paths. Five core entity streams support server-side incremental sync; `notes` and `files` use client-side incremental filtering; the remaining streams are full refresh. The connector uses the bare `https://api.pipedrive.com/` base because v1 leads, lead labels, lead sources, goals, and mailbox endpoints are unavailable under `/api/`. Stream names below match the names shown in Airbyte.
+Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, and `deal_products` use API v2 endpoints. Five core entity streams support server-side incremental sync; `notes` and `files` use client-side incremental filtering; the remaining streams are full refresh. Stream names below match the names shown in Airbyte.
 
 | Stream                | Sync modes                | Notes                                                                                                                                                                                                                                       |
 | :-------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -146,7 +146,6 @@ How the connector treats Pipedrive HTTP errors:
 - Deleted deals are replicated with `is_deleted: true` for up to 30 days after deletion. Other streams do not replicate deletion markers.
 - The five API v2 entity streams and notes/files track state; pipelines, stages, filters, and users are full refresh.
 - Full refresh streams ignore the Start Date, except `deal_products`, which only expands the deals returned by the `deals` stream.
-- API v2 entity streams use explicit `api/v2/...` paths on the shared bare-host base. v1 leads, lead labels, lead sources, goals, and mailbox endpoints also require the bare host.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
 - The core entity streams and deal-products use Pipedrive API v2; the remaining streams use API v1.
 
@@ -169,7 +168,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 2.6.0 | 2026-09-10 | [85775](https://github.com/airbytehq/airbyte/pull/85775) | Add the `call_logs`, `lead_sources`, `legacy_teams`, `projects`, `tasks`, `deal_installments`, `deal_flow` and `permission_set_assignments` streams |
-| 3.0.0 | 2026-09-10 | [PR#](https://github.com/airbytehq/airbyte/pull/PR#) | Migrate `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages` and `deal_products` to Pipedrive API v2, move `notes`, `files`, `filters`, `users` off the Recents endpoint, add primary keys and typed dates, and expose deleted deals |
+| 3.0.0 | 2026-09-10 | [85812](https://github.com/airbytehq/airbyte/pull/85812) | Migrate `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages` and `deal_products` to Pipedrive API v2, move `notes`, `files`, `filters`, `users` off the Recents endpoint, add primary keys and typed dates, and expose deleted deals |
 | 2.5.0 | 2026-09-10 | [85772](https://github.com/airbytehq/airbyte/pull/85772) | Throttle requests to Pipedrive's burst limit with one shared API budget and add the `num_workers` option for parallel streams |
 | 2.4.7 | 2026-09-10 | [85774](https://github.com/airbytehq/airbyte/pull/85774) | Make Start Date optional with a default, rewrite the spec tooltips and migrate pre-2.0.0 configurations automatically |
 | 2.4.6 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors, wait on `x-ratelimit-reset` for 429s and skip inaccessible parent records in `deal_products` and `mail` |
