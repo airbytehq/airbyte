@@ -46,6 +46,8 @@ By default, syncs are run with a slice period of 7 days. PayPal caps a transacti
 - Try lower the size of the slice period in your optional parameters in your connection configuration.
 - You can try to lower the scheduling sync window in case a day slice period is not enough. Lowering the sync period it may help avoid reaching the 10K limit.
 
+PayPal publishes transaction search data with a delay of up to 3 hours, so the connector ends `transactions` date windows 3 hours before now.
+
 :::
 
 ## Supported sync modes
@@ -268,6 +270,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                      |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------- |
+| 2.6.49 | 2026-09-10 | [PR](https://github.com/airbytehq/airbyte/pull/PR) | Fail fast with a transient error instead of retrying when PayPal has not yet published `transactions` data for the requested start date, and end `transactions` date windows 3 hours before now to allow for PayPal's data-availability delay |
 | 2.6.48 | 2026-09-08 | [84916](https://github.com/airbytehq/airbyte/pull/84916) | Retry oversized `transactions` date slices as smaller date ranges instead of failing the sync on the first `RESULTSET_TOO_LARGE` response |
 | 2.6.47 | 2026-09-08 | [85594](https://github.com/airbytehq/airbyte/pull/85594) | Update dependencies |
 | 2.6.46 | 2026-08-26 | [79676](https://github.com/airbytehq/airbyte/pull/79676) | Fix `transaction_id` primary key emitted as null for IDs resembling scientific notation |

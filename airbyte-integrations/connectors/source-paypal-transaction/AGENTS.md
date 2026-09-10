@@ -8,6 +8,10 @@ For general guidance on contributing to Airbyte connectors, see the [Connector D
 
 PayPal's transaction search rejects a query whose result set exceeds 10,000 transactions with HTTP 400 `RESULTSET_TOO_LARGE` and returns no page, so pagination cannot make progress and the cursor never advances. The `transactions` stream therefore uses the `DateWindowSplittingRetriever` custom component (`components.py`): `ResultSetTooLargeErrorHandler` detects that response and the retriever re-reads the rejected window as halves, recursing until each request is accepted. Because the retriever reconstructs `start_time`/`end_time` slices itself, its `partition_field_start`, `partition_field_end`, and `datetime_format` in `manifest.yaml` must stay in sync with the stream's `DatetimeBasedCursor`. A window that is still rejected at one second raises a `config_error`.
 
+## Transaction Data Availability Lag
+
+PayPal publishes transaction search data up to 3 hours late; a `start_date` newer than the last published data is rejected with `INVALID_REQUEST` "Data for the given start date is not available" (400 or 404). The `transactions` cursor ends 3 hours before now, and the response filter maps that message to a non-retried `transient_error` so the cursor never skips a window. The custom error handler must be listed first because `CompositeErrorHandler` keeps the last handler's resolution.
+
 ## Incremental Stream Considerations
 
 The PayPal API supports date-based filtering on transaction search (`start_date`/`end_date`) and balance endpoints, which the connector already uses for incremental streams. The remaining FR parent streams are `list_products` (catalog products listing) and `search_invoices` (invoice search). The products endpoint does not support date filtering. The invoices search endpoint supports date ranges but the connector currently uses full-refresh.
