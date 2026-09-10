@@ -2,13 +2,13 @@ import MigrationGuide from '@site/static/_migration_guides_upgrade_guide.md';
 
 # Youtube Data Migration Guide
 
-## Upgrading to 0.1.0
+## Upgrading to 1.0.0
 
 :::note
 This change affects all streams. The primary-key and result-set changes are limited to `comments`, `videos`, and `channel_comments`; the timestamp typing affects every stream.
 :::
 
-Version 0.1.0 makes three changes that alter what lands in your destination:
+Version 1.0.0 makes three changes that alter what lands in your destination:
 
 - **Primary keys declared.** `videos` is now keyed by `videoId`, and `comments` / `channel_comments` by composite keys (`[videoId, id]` / `[channelId, id]`), where `id` is a new top-level field carrying the comment-thread id. Deduplicating destinations will start keying these streams instead of appending.
 - **Timestamp fields typed.** Nine fields (`publishedAt`, `updatedAt`, `publishAt`, `timeLinked`, `datetime`, and their nested occurrences) now declare `format: date-time`, so destinations that map JSON-schema formats will change these columns from plain strings to timestamp types. The connector-synthesized `video.datetime` field also changed from Python's space-separated form to ISO-8601.

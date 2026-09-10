@@ -60,15 +60,15 @@ Fivetran's YouTube coverage is [YouTube Analytics](https://fivetran.com/docs/con
 
 Users needing the Analytics report tables should use the separate [YouTube Analytics connector](https://docs.airbyte.com/integrations/sources/youtube-analytics), which reads the Analytics API.
 
-## Breaking-change assessment (0.1.0)
+## Breaking-change assessment (1.0.0)
 
-Three 0.1.0 changes trip the breaking-change checklist and are declared in `metadata.yaml` `releases.breakingChanges` with a [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations):
+Three 1.0.0 changes trip the breaking-change checklist and are declared in `metadata.yaml` `releases.breakingChanges` with a [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations):
 
 - **Primary keys added** on `comments`, `videos`, `channel_comments` (with a new hoisted `id` field on the comment streams) — changes dedup behavior in destinations.
 - **`format: date-time` added to nine timestamp fields** — destinations that map JSON-schema formats change column types; data-lake destinations may need table recreation.
 - **`videos` pins `type=video`** — the stream stops returning channel/playlist id records it previously emitted (those records carried a null `videoId` and broke the new primary key).
 
-The 0.0.65 → 0.1.0 minor bump is the breaking magnitude for a pre-1.0 connector.
+The 0.0.66 → 1.0.0 major bump carries these breaking changes and marks the certified release.
 
 ## CI credential strategy
 

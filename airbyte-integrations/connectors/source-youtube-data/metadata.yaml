@@ -25,7 +25,7 @@ data:
   maxSecondsBetweenMessages: 5400
   connectorType: source
   definitionId: 743a2a44-fd13-4109-a8fe-fb0e68f467f5
-  dockerImageTag: 0.1.0
+  dockerImageTag: 1.0.0
   dockerRepository: airbyte/source-youtube-data
   githubIssueLabel: source-youtube-data
   icon: icon.svg
@@ -40,8 +40,8 @@ data:
         strategy: fast
       enableProgressiveRollout: true
     breakingChanges:
-      0.1.0:
-        message: "Version 0.1.0 declares primary keys on the `comments`, `videos`, and `channel_comments` streams, adds `date-time` formats to nine timestamp fields, and restricts the `videos` stream to actual video results (it previously also returned channel and playlist id records). After upgrading, refresh the source schema and reset the affected streams. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations)."
+      1.0.0:
+        message: "Version 1.0.0 declares primary keys on the `comments`, `videos`, and `channel_comments` streams, adds `date-time` formats to nine timestamp fields, and restricts the `videos` stream to actual video results (it previously also returned channel and playlist id records). After upgrading, refresh the source schema and reset the affected streams. For more information, see the [migration guide](https://docs.airbyte.com/integrations/sources/youtube-data-migrations)."
         upgradeDeadline: "2026-09-14"
         deadlineAction: "auto_upgrade"
         scopedImpact:
