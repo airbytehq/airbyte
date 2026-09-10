@@ -243,6 +243,8 @@ the prefix because it leaks an internal identifier type. Revisit when the
 prefix is dropped server-side.
 -->
 
+For a search across every eligible connector in a workspace, use [workspace-wide semantic search](../../concepts/semantic-search#search-across-your-whole-workspace) with `POST /api/v1/integrations/connectors/search` instead of a connector's `execute` action. It returns a flat `{data, meta}` body instead of the execute envelope.
+
 ### Paginate through results
 
 When `connector_metadata.has_next_page` is `true`, pass the `end_cursor` from the previous response as `params.cursor` to get the next page. `cursor` is the conventional request-side parameter name for pagination across Airbyte connectors. A small number of connectors use different request keys (for example, an offset-based pagination might accept `offset` and `limit`); check the connector's reference page if `cursor` is rejected.
