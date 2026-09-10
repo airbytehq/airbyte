@@ -21,6 +21,12 @@ data:
     - title: Deprecation and sunset dates
       url: https://developers.google.com/google-ads/api/docs/sunset-dates
       type: api_deprecations
+    - title: Feature deprecations and unversioned changes
+      url: https://developers.google.com/google-ads/api/docs/deprecations
+      type: api_deprecations
+    - title: OAuth2 authentication overview
+      url: https://developers.google.com/google-ads/api/docs/oauth/overview
+      type: authentication_guide
     - title: Developer blog
       url: https://ads-developers.googleblog.com/
       type: api_release_history
