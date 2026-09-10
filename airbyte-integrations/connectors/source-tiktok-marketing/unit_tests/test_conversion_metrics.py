@@ -10,9 +10,8 @@ figure requires all three legs. These tests pin the metric lists so a leg cannot
 without a failing test.
 """
 
-import yaml
-
 import pytest
+import yaml
 
 from .conftest import _YAML_FILE_PATH
 
