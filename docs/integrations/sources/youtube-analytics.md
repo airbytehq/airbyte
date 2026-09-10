@@ -25,7 +25,7 @@ This connector reads bulk reports from the [YouTube Reporting API](https://devel
 Self-managed deployments authenticate with your own Google OAuth client instead of Airbyte's.
 
 1. In your Google Cloud project, enable the [YouTube Reporting API](https://console.cloud.google.com/apis/api/youtubereporting.googleapis.com/overview) and create an OAuth 2.0 client ID of type **Web application** or **Desktop app**.
-2. Generate a refresh token for that client, granting the `https://www.googleapis.com/auth/yt-analytics.readonly` scope with the Google account that has access to your channel.
+2. Complete Google's [OAuth 2.0 authorization code flow](https://developers.google.com/identity/protocols/oauth2/web-server#offline) for that client with the Google account that has access to your channel, requesting the `https://www.googleapis.com/auth/yt-analytics.readonly` scope and offline access (`access_type=offline`). Exchange the authorization code for tokens and keep the refresh token. The [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/) can perform this flow with your own client ID and secret.
 3. In Airbyte, click **Sources** > **New source**, then select **YouTube Analytics**.
 4. Enter your **Client ID**, **Client Secret**, and **Refresh Token**.
 5. Optionally enter a **Content Owner ID**. See [Content Owner ID](#content-owner-id).
@@ -41,18 +41,18 @@ The **Content Owner ID** field is for YouTube partners who participate in the [Y
 - If you are a YouTube partner with a content owner account, enter your content owner ID to retrieve data for channels managed under that account.
 - To find your content owner ID, you can check the URL when logged into the [YouTube Studio](https://studio.youtube.com/) (look for the `o=` parameter), use the [YouTube Content ID API](https://developers.google.com/youtube/partner/docs/v1/contentOwners/list), or contact your YouTube partner manager.
 
-When you set this field, the connector adds the `onBehalfOfContentOwner` parameter to its requests. The streams themselves are still channel and playlist reports; the content owner-specific report types, such as `content_owner_basic_a4`, aren't available in this connector.
+When you set this field, the connector adds the `onBehalfOfContentOwner` parameter to the requests that list jobs, list reports, and download report files. The streams themselves are still channel and playlist reports; the content owner-specific report types, such as `content_owner_basic_a4`, aren't available in this connector.
 
 ## How reporting jobs affect your syncs
 
 YouTube doesn't generate a bulk report until a [reporting job](https://developers.google.com/youtube/reporting/v1/reports#step-3:-create-a-reporting-job) exists for that report type. For each stream you enable, the connector reuses an existing job or creates one named `Airbyte reporting job` during the first sync of that stream. Setting up the source doesn't create any jobs. This has a few consequences worth planning for:
 
-- **The first sync of a new source returns no report records.** It creates the reporting jobs; records begin to arrive on a sync that runs at least 48 hours later.
+- **The first sync returns no report records for streams that didn't have a job yet.** That sync creates the reporting job; records begin to arrive on a sync that runs at least 48 hours later. If a job for that report type already existed in the account, the first sync downloads its available reports right away.
 - **Recent days lag by about 48 hours.** The report for a given day is ready roughly two days later. If a job is created on September 1, the report for September 1 arrives on September 3, and the report for September 2 arrives on September 4.
 - **Historical data goes back 30 days.** When YouTube creates a job, it also generates reports covering the 30 days before that date, and the connector syncs them. There's no way to backfill further, so a stream you enable today can't return data from before last month.
 - **Reports expire.** YouTube keeps generated reports for 60 days, and historical reports for 30 days. If a connection is disabled or failing for longer than that, the missed days are gone permanently; only newly generated reports are synced when the connection resumes.
 - **Each report covers one day** in Pacific time, and the connector stores that day in the `date` field as an integer such as `20260730`.
-- **YouTube can re-issue a day's report.** When YouTube backfills corrected data, it publishes a new report file for the same day with a newer creation time. The connector downloads the re-issued file, so a day can appear more than once in your destination. Deduplicate on `date` plus the report's dimension columns, or use a deduplicating sync mode.
+- **YouTube can re-issue a day's report.** When YouTube backfills corrected data, it publishes a new report file for the same day with a newer creation time. The connector downloads the re-issued file, so the same day's rows can arrive more than once. Each report stream's primary key is `date` plus the report's dimension columns, so the Incremental | Append + Deduped sync mode replaces the earlier rows with the corrected ones; with Append modes, deduplicate on those columns downstream.
 - **Some rows are anonymized.** YouTube replaces dimension values with aggregated or null values when the underlying metrics don't meet its privacy threshold, so expect rows with empty `video_id` or `country_code` values.
 
 ## Supported sync modes
@@ -69,7 +69,7 @@ Incremental syncs track two cursors. The connector lists report files with the `
 
 ## Supported streams
 
-Each stream except `report_types` corresponds to one YouTube channel or playlist report. Enable only the reports you need: every enabled report stream creates a reporting job in your account.
+Each stream except `report_types` corresponds to one YouTube channel or playlist report. Enable only the reports you need: each enabled report stream requires a reporting job in your account, which the connector creates if one doesn't exist.
 
 - [report_types](https://developers.google.com/youtube/reporting/v1/reference/rest/v1/reportTypes/list) - the report types available to your channel or content owner. Full refresh only, and it doesn't require a reporting job.
 - [channel_annotations_a1](https://developers.google.com/youtube/reporting/v1/reports/channel_reports#video-annotations)
@@ -119,15 +119,11 @@ When using OAuth 2.0 authentication, this connector accesses authorized user dat
 
 ## Performance considerations
 
-The YouTube Reporting API has the following quota limits:
-
-- Free requests per day: 20,000
-- Free requests per 100 seconds: 100
-- Free requests per minute: 60
+Google enforces per-project request quotas on the YouTube Reporting API, including a daily limit and a per-minute limit. The exact figures vary by project; check them under **APIs & Services > YouTube Reporting API > Quotas** in the Google Cloud console.
 
 The connector retrieves bulk report data from YouTube's reporting jobs, which minimizes API quota usage compared to making individual queries for each metric. It also limits itself to 60 requests per minute and waits when YouTube returns a per-minute rate-limit response.
 
-If the daily project quota is exhausted (a `429` response mentioning `FreeQuotaRequestsPerDayPerProject`), the sync fails immediately with the message "Daily YouTube API project quota is exhausted" rather than retrying, and the next scheduled sync picks up where it left off. On self-managed Airbyte this quota belongs to your own Google Cloud project, so other applications that use the same project count against it.
+If the daily project quota is exhausted (a `429` response mentioning `FreeQuotaRequestsPerDayPerProject`), the sync fails immediately with the message "Daily YouTube API project quota is exhausted." rather than retrying, and the next scheduled sync picks up where it left off. On self-managed Airbyte this quota belongs to your own Google Cloud project, so other applications that use the same project count against it.
 
 ## IP allow list
 
