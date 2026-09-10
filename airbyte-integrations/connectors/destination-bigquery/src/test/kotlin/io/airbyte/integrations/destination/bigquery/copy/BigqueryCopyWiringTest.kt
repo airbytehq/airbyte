@@ -61,14 +61,14 @@ class BigqueryCopyWiringTest {
     }
 
     @Test
-    fun `disabled write resolves both loading strategies and table modes without AWS configuration`() {
+    fun `temporary preview write enables archive despite disabled environment`() {
         runProbe("write", "false")
     }
 
     /**
-     * The factory reads System.getenv(), not Micronaut properties. Isolate the process environment
-     * instead of globally mocking configuration parsing while other connector tests run in
-     * parallel.
+     * Isolate the process environment while other connector tests run in parallel. The temporary
+     * preview override must enable writes even when the environment disables copying, while
+     * spec/check must still ignore archive configuration.
      */
     private fun runProbe(scenario: String, enabled: String) {
         val classpath =
@@ -132,8 +132,8 @@ object BigqueryCopyWiringProbe {
                     context("write").use { context ->
                         registerConnectorInputs(context, gcs, raw)
                         context.start()
-                        assertSame(
-                            DisabledBigqueryS3Copy,
+                        assertInstanceOf(
+                            EnabledBigqueryS3Copy::class.java,
                             context.getBean(BigqueryS3Copy::class.java),
                         )
                         assertInstanceOf(
