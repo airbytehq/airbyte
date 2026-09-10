@@ -46,7 +46,7 @@ The two report streams also need `metrics:read`, because the connector lists you
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data. The `metrics` stream is an exception and always syncs all metric definitions (see [Metrics stream](#metrics-stream)).
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data. The `metrics` and `global_exclusions` streams ignore this date: their first sync reads all metric definitions and the full suppression list, and later incremental syncs pick up from the stored cursor (see [Metrics stream](#metrics-stream) and [GlobalExclusions stream](#globalexclusions-stream)).
 7. (Optional) Select **Disable Fetching Predictive Analytics** to stop the connector from requesting predictive analytics data. See [Performance considerations](#performance-considerations).
 8. For **Number of concurrent threads**, enter the number of worker threads the sync uses. Defaults to 10; the maximum is 50. Lower this value if syncs hit Klaviyo rate limits, and raise it only if your Klaviyo plan's [rate limit tier](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling) allows more throughput.
 9. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream; for Flow Series Reports, use **Reporting Lookback Window (Days)** instead.
@@ -62,7 +62,7 @@ The two report streams also need `metrics:read`, because the connector lists you
 3. On the Set up the source page, select Klaviyo from the Source type dropdown.
 4. Enter a name for the Klaviyo connector.
 5. For **Api Key**, enter the Klaviyo [Private API key](https://help.klaviyo.com/hc/en-us/articles/115005062267-How-to-Manage-Your-Account-s-API-Keys#your-private-api-keys3).
-6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data. The `metrics` stream is an exception and always syncs all metric definitions (see [Metrics stream](#metrics-stream)).
+6. For **Start Date**, enter a UTC date and time in `YYYY-MM-DDTHH:MM:SSZ` format (for example, `2017-01-25T00:00:00Z`). Airbyte replicates data added on or after this date. This field is optional; if you leave it blank, Airbyte replicates the last year of data. The `metrics` and `global_exclusions` streams ignore this date: their first sync reads all metric definitions and the full suppression list, and later incremental syncs pick up from the stored cursor (see [Metrics stream](#metrics-stream) and [GlobalExclusions stream](#globalexclusions-stream)).
 7. (Optional) Select **Disable Fetching Predictive Analytics** to stop the connector from requesting predictive analytics data. See [Performance considerations](#performance-considerations).
 8. For **Number of concurrent threads**, enter the number of worker threads the sync uses. Defaults to 10; the maximum is 50. Lower this value if syncs hit Klaviyo rate limits, and raise it only if your Klaviyo plan's [rate limit tier](https://developers.klaviyo.com/en/docs/rate_limits_and_error_handling) allows more throughput.
 9. For **Lookback Window (Days)**, enter the number of days to look back when syncing data in incremental mode. This helps capture any late-arriving data. Defaults to 0 days if not provided. Only applies to the events_detailed stream; for Flow Series Reports, use **Reporting Lookback Window (Days)** instead.
@@ -100,6 +100,16 @@ The Klaviyo source connector supports the following [sync modes](https://docs.ai
 ### Metrics stream
 
 The **Metrics** stream always syncs all metric definitions, regardless of the configured **Start Date**. Metric definitions are reference data needed to interpret other streams (for example, joining `relationships.data.metric.id` in `events` to a metric name), and the Klaviyo API does not support filtering metrics by date. On subsequent incremental syncs, only new and updated metric definitions are emitted. If older metric definitions are missing after upgrading from a previous connector version, clear/reset the `metrics` stream to backfill them.
+
+### GlobalExclusions stream
+
+The **GlobalExclusions** stream reads the same Klaviyo `/profiles` endpoint as **Profiles** but keeps only profiles whose email marketing subscription carries a suppression, such as an unsubscribe, a hard bounce, or a manual suppression. Each record holds the suppression details under `attributes.subscriptions.email.marketing.suppressions`.
+
+This stream ignores **Start Date**. A first sync, or a sync after you clear the stream, returns your account's complete suppression list. Later incremental syncs ask Klaviyo only for profiles whose `updated` timestamp changed since the previous sync, with a fixed one-hour lookback. The lookback exists because Klaviyo doesn't always advance a profile's `updated` timestamp at the moment a suppression is recorded; bounce-driven and API-driven suppressions can land shortly after it. As a result, each incremental sync emits again any suppressed profile whose `updated` timestamp falls in the previous hour. Destinations that deduplicate on the `id` primary key replace those rows in place; append-only destinations keep them as duplicate rows.
+
+The lookback doesn't cover every case. If Klaviyo records a suppression more than an hour after the profile's `updated` timestamp and never updates the profile again, incremental syncs don't pick up that suppression. Clear the stream to reload the full suppression list if you need to recover such rows.
+
+Connector versions 2.10.14 through 3.0.2 paged through every profile in your account on each sync and filtered them afterwards, so upgrading shortens this stream's incremental syncs considerably.
 
 ### Streams that filter incrementally after fetching
 
@@ -189,7 +199,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                                                |
 |:--------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 3.0.3 | 2026-09-08 | [85217](https://github.com/airbytehq/airbyte/pull/85217) | Send the `global_exclusions` cursor filter to Klaviyo, with a one-hour lookback window, so incremental syncs no longer re-page all profiles; a first/stateless sync still returns the full suppression list. |
+| 3.0.3 | 2026-09-10 | [85217](https://github.com/airbytehq/airbyte/pull/85217) | Send the `global_exclusions` cursor filter to Klaviyo, with a one-hour lookback window, so incremental syncs no longer re-page all profiles; a first/stateless sync still returns the full suppression list. |
 | 3.0.2 | 2026-09-08 | [84635](https://github.com/airbytehq/airbyte/pull/84635) | Update dependencies |
 | 3.0.1 | 2026-08-21 | [84908](https://github.com/airbytehq/airbyte/pull/84908) | Fail fast with a rate limit error instead of sleeping for hours when Klaviyo returns a daily-quota `Retry-After` |
 | 3.0.0 | 2026-08-14 | [75495](https://github.com/airbytehq/airbyte/pull/75495) | Emit one record per calendar day with scalar statistics in `flow_series_reports`, add a reporting lookback window for that stream, and align both report streams to whole-day windows to stop boundary double-counting (refresh the schema and clear both report streams) |
