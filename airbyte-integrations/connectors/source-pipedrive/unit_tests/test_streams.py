@@ -318,8 +318,20 @@ def test_permission_set_assignments_reads_each_permission_set():
             _response(
                 {
                     "data": [
-                        {"permission_set_id": "ps-1", "user_id": 1, "name": "Alice", "permission_set_app": "sales", "permission_set_type": "admin"},
-                        {"permission_set_id": "ps-1", "user_id": 2, "name": "Bob", "permission_set_app": "sales", "permission_set_type": "admin"},
+                        {
+                            "permission_set_id": "ps-1",
+                            "user_id": 1,
+                            "name": "Alice",
+                            "permission_set_app": "sales",
+                            "permission_set_type": "admin",
+                        },
+                        {
+                            "permission_set_id": "ps-1",
+                            "user_id": 2,
+                            "name": "Bob",
+                            "permission_set_app": "sales",
+                            "permission_set_type": "admin",
+                        },
                     ],
                     "additional_data": V1_PAGE_DONE,
                 }
