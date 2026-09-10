@@ -32,3 +32,27 @@
 {"stream":"product_fields","data":{"id":26,"key":"category","name":"Category","order_nr":0,"field_type":"enum","json_column_flag":false,"add_time":"2020-12-10 07:23:48","update_time":"2023-07-20 09:24:08","last_updated_by_user_id":11884360,"edit_flag":false,"details_visible_flag":true,"add_visible_flag":true,"important_flag":true,"bulk_edit_allowed":true,"filtering_allowed":true,"sortable_flag":true,"mandatory_flag":false,"searchable_flag":false,"active_flag":true,"options":[{"id":12,"label":"Food"}]},"emitted_at":1733742444467}
 {"stream":"product_fields","data":{"id":27,"key":"description","name":"Description","order_nr":0,"field_type":"text","json_column_flag":false,"add_time":"2020-12-10 07:23:48","update_time":"2023-07-20 09:24:08","last_updated_by_user_id":0,"edit_flag":false,"details_visible_flag":true,"add_visible_flag":false,"important_flag":true,"bulk_edit_allowed":true,"filtering_allowed":true,"sortable_flag":true,"mandatory_flag":false,"searchable_flag":false,"active_flag":true},"emitted_at":1733742444468}
 {"stream":"product_fields","data":{"id":28,"key":"unit_prices","name":"Unit prices","order_nr":0,"field_type":"double","json_column_flag":false,"add_time":"2020-12-10 07:23:48","update_time":"2023-09-21 07:51:19","last_updated_by_user_id":0,"edit_flag":false,"details_visible_flag":false,"add_visible_flag":true,"important_flag":true,"bulk_edit_allowed":false,"filtering_allowed":true,"sortable_flag":true,"mandatory_flag":true,"searchable_flag":false,"active_flag":true},"emitted_at":1733742444468}
+{"stream":"lead_sources","data":{"name":"Manually created"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Deal"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Web forms"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Prospector"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Leadbooster"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Live chat"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Import"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Website visitors"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Workflow automation"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"API"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Messaging inbox"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"Campaigns"},"emitted_at":1757426400000}
+{"stream":"lead_sources","data":{"name":"WhatsApp Business"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":11884360,"permission_set_id":"79b42bf0-fb6d-11eb-a18f-a7e2db4435cf","name":"Deals admin","permission_set_app":"sales","permission_set_type":"admin"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276123,"permission_set_id":"79b42bf1-fb6d-11eb-a18f-a7e2db4435cf","name":"Deals regular user","permission_set_app":"sales","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276134,"permission_set_id":"79b42bf1-fb6d-11eb-a18f-a7e2db4435cf","name":"Deals regular user","permission_set_app":"sales","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276145,"permission_set_id":"79b42bf1-fb6d-11eb-a18f-a7e2db4435cf","name":"Deals regular user","permission_set_app":"sales","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276156,"permission_set_id":"79b42bf1-fb6d-11eb-a18f-a7e2db4435cf","name":"Deals regular user","permission_set_app":"sales","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":11884360,"permission_set_id":"fa17fff0-db56-11ec-93f1-e9cfc58fcd59","name":"Global admin","permission_set_app":"global","permission_set_type":"admin"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276123,"permission_set_id":"fa287ab0-db56-11ec-93f1-e9cfc58fcd59","name":"Global regular user","permission_set_app":"global","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276134,"permission_set_id":"fa287ab0-db56-11ec-93f1-e9cfc58fcd59","name":"Global regular user","permission_set_app":"global","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276145,"permission_set_id":"fa287ab0-db56-11ec-93f1-e9cfc58fcd59","name":"Global regular user","permission_set_app":"global","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":18276156,"permission_set_id":"fa287ab0-db56-11ec-93f1-e9cfc58fcd59","name":"Global regular user","permission_set_app":"global","permission_set_type":"regular"},"emitted_at":1757426400000}
+{"stream":"permission_set_assignments","data":{"user_id":11884360,"permission_set_id":"57b60400-ed6c-11ec-88fb-4fe88bf2db36","name":"Account settings","permission_set_app":"account_settings","permission_set_type":"admin"},"emitted_at":1757426400000}
