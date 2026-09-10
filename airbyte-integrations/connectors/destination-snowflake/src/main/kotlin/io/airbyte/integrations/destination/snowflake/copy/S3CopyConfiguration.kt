@@ -13,25 +13,27 @@ data class S3CopyConfiguration(
     val externalId: String?,
 ) {
     companion object {
+        private fun required(name: String): String =
+            System.getenv(name)?.takeIf { it.isNotBlank() }
+                ?: error("$name is required when AIRBYTE_S3_COPY_ENABLED=true")
+
         fun fromEnvironment(): S3CopyConfiguration? {
-            // TEMPORARY: force archive copying for the Fusion preview. Revert before merge.
-            val enabled = "true"
+            val enabled = System.getenv("AIRBYTE_S3_COPY_ENABLED") ?: "false"
             require(enabled == "true" || enabled == "false") {
                 "AIRBYTE_S3_COPY_ENABLED must be true or false"
             }
             if (enabled != "true") return null
-            val prefix = "fusion"
+            val prefix = (System.getenv("AIRBYTE_S3_COPY_PREFIX") ?: "fusion").trim('/')
             require(prefix.isNotEmpty()) { "AIRBYTE_S3_COPY_PREFIX must not be empty" }
             return S3CopyConfiguration(
-                roleArn = "arn:aws:iam::506572016262:role/fusion-snowflake-sync-copy",
-                bucket = "sonar-entity-cache",
-                region = "us-east-2",
-                // TEMPORARY: nil actor IDs for the Fusion preview image. Revert before merge.
-                connectionId = UUID(0, 0),
-                workspaceId = UUID(0, 0),
-                sourceId = UUID(0, 0),
+                roleArn = required("AIRBYTE_S3_COPY_ROLE_ARN"),
+                bucket = required("AIRBYTE_S3_COPY_BUCKET"),
+                region = required("AIRBYTE_S3_COPY_REGION"),
+                connectionId = UUID.fromString(required("AIRBYTE_S3_COPY_CONNECTION_ID")),
+                workspaceId = UUID.fromString(required("AIRBYTE_S3_COPY_WORKSPACE_ID")),
+                sourceId = UUID.fromString(required("AIRBYTE_S3_COPY_SOURCE_ID")),
                 prefix = prefix,
-                externalId = null,
+                externalId = System.getenv("AIRBYTE_S3_COPY_EXTERNAL_ID")?.takeIf { it.isNotBlank() },
             )
         }
     }
