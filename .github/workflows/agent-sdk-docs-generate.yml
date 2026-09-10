@@ -225,6 +225,64 @@ jobs:
           print("Cross-reference resolution complete")
           PYEOF
 
+      - name: Link Sub-module Lists
+        run: |
+          # pdoc3 renders each package's "Sub-modules" section as bare dotted
+          # module names, which Docusaurus shows as plain text. Rewrite each
+          # bullet into an absolute docs link. A package resolves to its
+          # directory URL (index.md); a leaf module resolves to the doc id
+          # assigned by the frontmatter step.
+          python3 << 'PYEOF'
+          import re
+          from pathlib import Path
+
+          base_dir = Path("docs/ai-agents/reference/sdk")
+          route_base = "/ai-agents/reference/sdk"
+
+          def _module_url(module: str) -> str | None:
+              parts = module.split(".")
+              if base_dir.joinpath(*parts, "index.md").is_file():
+                  return f"{route_base}/{'/'.join(parts)}"
+              leaf = base_dir.joinpath(*parts).with_suffix(".md")
+              if not leaf.is_file():
+                  return None
+              m = re.search(r"^id: (\S+)$", leaf.read_text(encoding="utf-8"), re.MULTILINE)
+              if m is None:
+                  return None
+              return f"{route_base}/{'/'.join(parts[:-1])}/{m.group(1)}"
+
+          linked = 0
+          for md_path in base_dir.rglob("*.md"):
+              if md_path.name.lower() == "readme.md":
+                  continue
+              lines = md_path.read_text(encoding="utf-8").splitlines(keepends=True)
+              changed = False
+              in_section = False
+              for i, line in enumerate(lines):
+                  text = line.rstrip("\n")
+                  if text == "Sub-modules":
+                      in_section = True
+                      continue
+                  if not in_section or text == "" or set(text) == {"-"}:
+                      continue
+                  if not text.startswith("* "):
+                      in_section = False
+                      continue
+                  m = re.fullmatch(r"\* (\w+(?:\.\w+)+)\s*", text)
+                  if m is None:
+                      continue
+                  url = _module_url(m.group(1))
+                  if url is None:
+                      print(f"Unresolved sub-module {m.group(1)} in {md_path}")
+                      continue
+                  lines[i] = f"* [{m.group(1)}]({url})\n"
+                  changed = True
+                  linked += 1
+              if changed:
+                  md_path.write_text("".join(lines), encoding="utf-8")
+          print(f"Linked {linked} sub-module entries")
+          PYEOF
+
       - name: Sanitize for MDX Compatibility
         run: |
           # Docusaurus uses MDX which interprets { and } as JSX expressions,
