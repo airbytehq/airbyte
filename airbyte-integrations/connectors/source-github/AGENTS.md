@@ -163,6 +163,70 @@ streams and for slices that carry no `partition` key — several substreams read
 calling `read_records` directly with a bare mapping, and those parents are shared instances whose
 STATE would otherwise gain a meaningless `{"partition": {}}` entry.
 
+## Workflow run attempts: three traps, all silent
+
+`workflow_run_attempts` is the first manifest stream whose parent carries state
+(`incremental_dependency`, which appears nowhere else in the manifest), and so the first whose
+incremental behaviour is decided by a stream other than itself. Parent/child wiring on its own is
+not new — `repositories` slices on `organization_partition_router`, whose parent is the internal
+`repository_stats` stream — and the difference between that router and
+`organization_resolution_partition_router` is what broke 2.2.0, so read the manifest comment above
+them before adding another one.
+
+Each trap below cost a review round. They are enforced by
+`unit_tests/test_workflow_run_attempts.py`; if a test there starts failing, read this before
+"fixing" it.
+
+**Never filter the child on the attempt's own cursor.** `GET /actions/runs` returns one record per
+run — the latest attempt — so earlier attempts are only reachable through the per-attempt endpoint.
+A sync landing between the first attempt finishing and the re-run starting leaves the cursor above
+attempt 1's `updated_at`. If the child filters on its own records, attempt 1 is dropped and no later
+sync revisits it, because the run's cursor has already moved past. Gating belongs on the parent run;
+the child's cursor exists only so `incremental_dependency` persists parent state.
+
+**Never put a filter parameter on the run listing.** GitHub caps `GET /actions/runs` at 1000 results
+whenever `actor`, `branch`, `check_suite_id`, `created`, `event`, `head_sha` or `status` is present,
+and it truncates invisibly: measured on a 23352-run repository, `created=>=1970-01-01` served pages
+1-10 with `total_count: 23352` and then answered page 11 with an empty array, `total_count: 0` and no
+`rel="next"`. The unfiltered listing returned 100 records on page 20 of the same repository. The
+32-day re-run window is applied as a paginator `stop_condition` for this reason.
+
+**A JSON-Schema `$ref` to a file does not work inside a manifest.** The manifest reference resolver
+claims every `$ref` key, and for a non-`#/` target it returns the raw string and discards the sibling
+keys — so a property copied from `schemas/*.json` as `{$ref: user.json, description: ...}` collapses
+to the literal string `"user.json"` and the published schema stops being valid JSON Schema. Shared
+sub-schemas belong in `definitions` and are referenced with `#/definitions/...`.
+
+### Where the declarative run listing diverges from WorkflowRuns
+
+`workflow_runs_for_attempts` is an internal parent reading the same endpoint as the Python
+`WorkflowRuns`, and mirrors its incremental contract, but four behaviours could not be reproduced
+exactly with declarative components:
+
+- **The 32-day pagination break is anchored on `start_date`, not on the cursor**, because a
+  `stop_condition` cannot see the cursor. An incremental sync therefore pages back to
+  `start_date - 32 days` rather than `cursor - 32 days` — more pages than legacy spent
+  incrementally, and exactly what legacy spent on its first sync, or on every sync of a config
+  with no `start_date`.
+- **The run listing is read a second time when `workflow_runs` is also selected.** A manifest
+  stream and a Python stream cannot share a read; `use_cache` does not help, as the two build
+  separate cache backends.
+- **The cursor boundary is inclusive.** `ConcurrentCursor.should_be_synced` is
+  `start <= value <= end` where `SemiIncrementalMixin` used a strict `>`, so the newest run of each
+  repository is re-read once per sync. Deduplicating destinations absorb it.
+- **A repository added after the first sync starts from the global cursor, not from
+  `start_date`.** `ConcurrentPerPartitionCursor` seeds an unknown partition from the global cursor
+  — its own docstring: "The history data added after the initial sync will be missing" — where
+  legacy backfilled it. The `repositories` stream carries the same caveat for the same reason.
+
+Two more things that bite when reading that stream's manifest. A paginator `stop_condition` is
+evaluated with `config`, `response`, `headers`, `last_record` and `last_page_size` only — never the
+cursor or the slice — and `last_record` is assigned *after* the record selector has run, so on a
+client-side-incremental stream it is empty on exactly the pages a break needs to fire on. And
+`JinjaInterpolation._eval` swallows a `TypeError` and returns the raw template, which
+`InterpolatedBoolean` reads as **true**: an expression in a stop condition that can raise is an
+expression that silently ends pagination.
+
 ## Incremental Stream Considerations
 
 The GitHub REST and GraphQL APIs support `since` parameter on many list endpoints and `updated` sorting.

@@ -67,7 +67,7 @@ Log into [GitHub](https://github.com) and then generate a [personal access token
 
 7. **Start date (Optional)** - The date from which you'd like to replicate data for streams. For streams which support this configuration, only data generated on or after the start date will be replicated.
 
-   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_runs`, `workflows`.
+   - These streams will only sync records generated on or after the **Start Date**: `comments`, `commit_comment_reactions`, `commit_comments`, `commits`, `deployments`, `events`, `issue_comment_reactions`, `issue_events`, `issue_milestones`, `issue_reactions`, `issues`, `project_cards`, `project_columns`, `projects`, `pull_request_comment_reactions`, `pull_requests`, `pull_request_stats`, `releases`, `review_comments`, `reviews`, `stargazers`, `workflow_run_attempts`, `workflow_runs`, `workflows`.
 
    - The **Start Date** does not apply to the streams below and all data will be synced for these streams: `assignees`, `branches`, `collaborators`, `issue_labels`, `organizations`, `pull_request_commits`, `repositories`, `tags`, `teams`, `users`
 
@@ -140,6 +140,7 @@ This connector outputs the following incremental streams:
 - [Stargazers](https://docs.github.com/en/rest/activity/starring?apiVersion=2022-11-28#list-stargazers)
 - [WorkflowJobs](https://docs.github.com/en/rest/actions/workflow-jobs?apiVersion=2022-11-28#list-jobs-for-a-workflow-run)
 - [WorkflowRuns](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository)
+- [WorkflowRunAttempts](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#get-a-workflow-run-attempt)
 - [Workflows](https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#list-repository-workflows)
 
 ### Entity-Relationship Diagram (ERD)
@@ -152,13 +153,52 @@ This connector outputs the following incremental streams:
    - read only new records;
    - output only new records.
 
-2. Streams `workflow_runs` and `workflow_jobs` are almost pure incremental:
+2. Streams `workflow_runs`, `workflow_jobs` and `workflow_run_attempts` are almost pure incremental:
 
-   - read new records and some portion of old records (in past 30 days) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
+   - read new records and some portion of old records (the past 32 days — GitHub stops allowing a re-run 30 days after a run was created, and the connector keeps two days of margin, so an older run can no longer change) [docs](https://docs.github.com/en/actions/managing-workflow-runs/re-running-workflows-and-jobs);
    - the `workflow_jobs` depends on the `workflow_runs` to read the data, so they both follow the same logic [docs](https://docs.github.com/en/rest/actions/workflow-jobs#list-jobs-for-a-workflow-run);
    - output only new records.
 
-3. Other 19 incremental streams are also incremental but with one difference, they:
+   `workflow_runs` holds the latest attempt of each run and nothing else: the GitHub endpoint it reads returns a single
+   record per run, so when a workflow is re-run the earlier attempts never reach your destination, and the record you do
+   get mixes the latest attempt's status with the original attempt's `created_at`. Sync `workflow_run_attempts` if you
+   need the full re-run history. It emits one record per attempt, keyed on `[id, run_attempt]`, with each attempt's own
+   `created_at`, `conclusion`, `logs_url` and `jobs_url`.
+
+   `workflow_run_attempts` is by far the more expensive of the two, because GitHub has no endpoint that lists attempts:
+   every attempt costs one request, including the single attempt of a workflow that was never re-run. Which runs fall in
+   the window is decided as for `workflow_runs` - a run is re-read when its own `updated_at` moved - and all of that
+   run's attempts are then emitted, including ones last updated before the cursor.
+
+   Five things worth planning for before you enable it:
+
+   - **The first sync is the expensive one, and a repository is all-or-nothing.** It reads every attempt of every run
+     created since the **Start Date**, so budget about one request per run. An authenticated token is limited to 5,000
+     requests an hour, which puts a 100,000-run repository at roughly 20 hours. That work does not accumulate across
+     syncs: a repository's cursor only advances once that repository has been read to the end, so a sync interrupted
+     part-way through one starts that repository over. Repositories that did finish are not re-read.
+   - **Start Date bounds the recurring cost too, not just the first read.** Every sync pages the run listing back to
+     **Start Date** minus 32 days, whether or not anything changed, because GitHub allows a workflow to be re-run for 30
+     days after it was created (the connector keeps two days of margin) and the listing is ordered by creation date. On a repository producing ~275 runs a day, a
+     Start Date two years old costs about 2,100 listing requests on every sync before a single attempt is fetched, and
+     that figure grows as the Start Date recedes. Moving **Start Date** forward is the only lever that shrinks it.
+   - **The run listing is read more than once per sync, at different depths.** `workflow_run_attempts` pages it back to
+     Start Date minus 32 days; `workflow_runs` and `workflow_jobs`, if you also select them, each page it again but only
+     back to 32 days before their own cursor. The streams cannot share a read yet.
+   - **More tokens help only if they belong to different accounts.** GitHub's 5,000 requests an hour is per account,
+     and it scopes secondary rate limits per account too, so extra tokens on one account buy nothing. Above that, the
+     connector holds itself to one global budget of 900 requests per minute, which caps throughput at around eleven
+     tokens' worth; that budget covers this stream and the other manifest-backed streams, but not the Python
+     `workflow_runs` and `workflow_jobs`.
+   - **It runs before everything else.** Manifest-backed streams are read before the rest of the catalog, so enabling
+     this one puts every other stream behind it, and a rate-limit failure inside it ends the sync before they start. If
+     that matters, give it its own connection.
+
+   If the token cannot read Actions for a repository, GitHub answers 403 and the connector skips that repository with a
+   log line rather than failing the sync - so an empty `workflow_run_attempts` can also mean a missing `workflow` scope
+   (classic token) or `Actions: read` permission (fine-grained token), not just an absence of re-runs.
+
+3. Other 20 incremental streams are also incremental but with one difference, they:
 
    - read all records;
    - output only new records.
@@ -226,7 +266,7 @@ For example, a connection syncing `docker/*` since 2026-01-01 that you widen to 
 
 To pull the full history of a newly added repository or organization, clear the affected streams (or refresh the connection) after saving the new value, then sync. Each stream then re-reads from the beginning of the range it supports — your configured **Start date** for streams that honor it, and everything available for the streams listed above that do not.
 
-This currently affects the `repositories` stream. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
+This currently affects the `repositories` and `workflow_run_attempts` streams. Other streams still fall back to the **Start date** for a repository they have not seen before; they will follow the rule above as they move to the connector's declarative implementation.
 
 #### GitHub Enterprise Server with rate limiting disabled
 
@@ -267,6 +307,7 @@ Your token should have at least the `repo` scope. Depending on which streams you
 
 | Version    | Date       | Pull Request                                                                                                      | Subject                                                                                                                                                                |
 |:-----------|:-----------|:------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.4.0 | 2026-09-10 | [85378](https://github.com/airbytehq/airbyte/pull/85378) | Add `workflow_run_attempts` stream: every attempt of a workflow run, keyed on `[id, run_attempt]`, since `workflow_runs` only ever returns the latest attempt |
 | 2.3.0 | 2026-09-08 | [85746](https://github.com/airbytehq/airbyte/pull/85746) | Declarative migration Steps 3 and 4 - move the assignees, branches, collaborators, issue_labels, tags, organizations, teams and users streams to the manifest. For these eight streams, a repository or organization that keeps returning 502/504 after retries now fails the stream instead of being skipped with the sync still reported as successful, and a failed attempt restarts the stream instead of resuming from the repository or organization it stopped at. Also fixes a 2.2.0 regression where a `403` on one listed repository (SAML-protected organizations, most often) failed the sync instead of skipping that repository and syncing the rest |
 | 2.2.3 | 2026-09-08 | [85494](https://github.com/airbytehq/airbyte/pull/85494) | Update dependencies |
 | 2.2.2 | 2026-09-01 | [85253](https://github.com/airbytehq/airbyte/pull/85253) | Fix syncs hanging until the platform heartbeat timeout when a wildcard repository entry (`owner/*`) names a user account instead of an organization: the org-scoped streams no longer receive an unverified login, and a skipped stream slice can no longer be retried indefinitely |
