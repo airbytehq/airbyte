@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.amazon_seller_partner.connector
-* airbyte_agent_sdk.connectors.amazon_seller_partner.connector_model
-* airbyte_agent_sdk.connectors.amazon_seller_partner.models
-* airbyte_agent_sdk.connectors.amazon_seller_partner.types
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-connector)
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-connector_model)
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-models)
+* [airbyte_agent_sdk.connectors.amazon_seller_partner.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_seller_partner/airbyte_agent_sdk-connectors-amazon_seller_partner-types)
 
 Classes
 -------
@@ -283,7 +283,7 @@ Classes
     The region is automatically mapped to the correct API endpoint (na/eu/fe) and marketplace ID. You only need to specify your country code.
             Examples:
                 # Local mode (direct API calls)
-                connector = AmazonSellerPartnerConnector(auth_config=AmazonSellerPartnerAuthConfig(lwa_app_id="...", lwa_client_secret="...", refresh_token="...", access_token="..."))
+                connector = AmazonSellerPartnerConnector(auth_config=AmazonSellerPartnerAuthConfig(lwa_app_id="...", lwa_client_secret="...", refresh_token="...", access_token="..."), region="...")
                 # Hosted mode with explicit connector_id (no lookup needed)
                 connector = AmazonSellerPartnerConnector(
                     auth_config=AirbyteAuthConfig(
@@ -492,7 +492,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
