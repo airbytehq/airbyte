@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.destination.bigquery.copy
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.SystemErrorException
 import io.airbyte.cdk.load.command.DestinationCatalog
 import io.airbyte.cdk.load.command.DestinationStream
@@ -73,6 +74,10 @@ object DisabledBigqueryS3Copy : BigqueryS3Copy {
 }
 
 /** One process owns one run and four transfer slots, including socket partitions. */
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
+)
 class EnabledBigqueryS3Copy(
     private val config: S3CopyConfiguration,
     private val bigqueryConfiguration: BigqueryConfiguration,

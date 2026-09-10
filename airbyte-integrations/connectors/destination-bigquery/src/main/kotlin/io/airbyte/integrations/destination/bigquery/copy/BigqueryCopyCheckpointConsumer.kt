@@ -1,6 +1,7 @@
 /* Copyright (c) 2026 Airbyte, Inc., all rights reserved. */
 package io.airbyte.integrations.destination.bigquery.copy
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.Operation
 import io.airbyte.cdk.load.message.CheckpointMessage
 import io.airbyte.cdk.load.state.FreeingAnnotatingCheckpointConsumer
@@ -14,6 +15,10 @@ import jakarta.inject.Singleton
 @Singleton
 @Primary
 @Requires(property = Operation.PROPERTY, value = "write")
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
+)
 class BigqueryCopyCheckpointConsumer(
     private val archive: BigqueryS3Copy,
     private val delegate: FreeingAnnotatingCheckpointConsumer,

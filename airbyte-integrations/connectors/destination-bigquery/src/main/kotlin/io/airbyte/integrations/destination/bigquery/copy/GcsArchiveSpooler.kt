@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.bigquery.copy
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import io.airbyte.cdk.load.file.gcs.GcsBlob
 import io.airbyte.cdk.load.file.gcs.GcsClient
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -48,6 +49,10 @@ class GcsArchiveReaderStillActiveException(val path: Path, cause: Throwable? = n
  * registration for this service. On ordinary failure the path is safe to delete. On
  * [GcsArchiveReaderStillActiveException] it must be retained, and the archive must reject new work.
  */
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
+)
 class GcsArchiveSpooler(
     private val maxBytes: Long = 1024L * 1024 * 1024,
     private val downloadTimeoutMillis: Long = 10 * 60 * 1000L,
@@ -97,7 +102,8 @@ class GcsArchiveSpooler(
                     withTimeoutOrNull(cleanupTimeoutMillis) {
                         while (!download.drained()) delay(10)
                         true
-                    } ?: false
+                    }
+                        ?: false
                 }
             if (!drained) {
                 val unsafe = GcsArchiveReaderStillActiveException(path, failure)
@@ -106,9 +112,7 @@ class GcsArchiveSpooler(
             }
             throw failure
         } finally {
-            synchronized(lifecycle) {
-                if (download.drained()) active.remove(download)
-            }
+            synchronized(lifecycle) { if (download.drained()) active.remove(download) }
         }
     }
 
@@ -138,11 +142,13 @@ class GcsArchiveSpooler(
         } finally {
             closers.shutdownNow()
         }
-        downloads.firstOrNull { !it.drained() }?.let {
-            val unsafe = GcsArchiveReaderStillActiveException(it.path, interruption)
-            synchronized(lifecycle) { poisoned = unsafe }
-            throw unsafe
-        }
+        downloads
+            .firstOrNull { !it.drained() }
+            ?.let {
+                val unsafe = GcsArchiveReaderStillActiveException(it.path, interruption)
+                synchronized(lifecycle) { poisoned = unsafe }
+                throw unsafe
+            }
     }
 
     private inner class Download(
@@ -160,36 +166,38 @@ class GcsArchiveSpooler(
         private var cancelled = false
         private var stream: InputStream? = null
 
-        val future = FutureTask<Unit> {
-            synchronized(lock) {
-                if (cancelled) return@FutureTask
-                started = true
-            }
-            val outcome = runCatching {
-                runBlocking {
-                    synchronized(lock) {
-                        ensureRunning()
-                        running = true
-                    }
-                    try {
-                        copyWithRetries()
-                    } finally {
+        val future =
+            FutureTask<Unit> {
+                synchronized(lock) {
+                    if (cancelled) return@FutureTask
+                    started = true
+                }
+                val outcome = runCatching {
+                    runBlocking {
                         synchronized(lock) {
-                            running = false
-                            if (finished) stopped.countDown()
+                            ensureRunning()
+                            running = true
+                        }
+                        try {
+                            copyWithRetries()
+                        } finally {
+                            synchronized(lock) {
+                                running = false
+                                if (finished) stopped.countDown()
+                            }
                         }
                     }
                 }
+                synchronized(lock) {
+                    finished = true
+                    if (!running) stopped.countDown()
+                }
+                // A cancelled Future is not proof of completion. Also account for clients which
+                // invoke
+                // their callback on a different thread: runBlocking can exit on interruption first.
+                outcome.fold(result::complete, result::completeExceptionally)
+                Unit
             }
-            synchronized(lock) {
-                finished = true
-                if (!running) stopped.countDown()
-            }
-            // A cancelled Future is not proof of completion. Also account for clients which invoke
-            // their callback on a different thread: runBlocking can exit on interruption first.
-            outcome.fold(result::complete, result::completeExceptionally)
-            Unit
-        }
 
         fun drained(): Boolean =
             stopped.count == 0L && synchronized(lock) { !cancelled || closeStopped.count == 0L }
@@ -213,7 +221,8 @@ class GcsArchiveSpooler(
                         try {
                             input.close()
                         } catch (_: Exception) {
-                            // Only the stopped latch proves that abort actually released the reader.
+                            // Only the stopped latch proves that abort actually released the
+                            // reader.
                         } finally {
                             closeStopped.countDown()
                         }
@@ -283,7 +292,8 @@ class GcsArchiveSpooler(
         }
     }
 
-    private class SpoolIOException(cause: IOException) : IOException("Cannot write GCS spool", cause)
+    private class SpoolIOException(cause: IOException) :
+        IOException("Cannot write GCS spool", cause)
 
     private fun spoolOutput(path: Path): OutputStream =
         object : OutputStream() {
@@ -292,8 +302,9 @@ class GcsArchiveSpooler(
 
             override fun write(value: Int) = spoolIo { delegate.write(value) }
 
-            override fun write(bytes: ByteArray, offset: Int, length: Int) =
-                spoolIo { delegate.write(bytes, offset, length) }
+            override fun write(bytes: ByteArray, offset: Int, length: Int) = spoolIo {
+                delegate.write(bytes, offset, length)
+            }
 
             override fun close() = spoolIo { delegate.close() }
         }
@@ -322,7 +333,9 @@ class GcsArchiveSpooler(
                 0L,
                 TimeUnit.MILLISECONDS,
                 ArrayBlockingQueue(WORKERS),
-                { task -> Thread(task, "$name-${sequence.incrementAndGet()}").apply { isDaemon = true } },
+                { task ->
+                    Thread(task, "$name-${sequence.incrementAndGet()}").apply { isDaemon = true }
+                },
                 ThreadPoolExecutor.AbortPolicy(),
             )
         }

@@ -3,6 +3,7 @@
  */
 package io.airbyte.integrations.destination.bigquery.copy
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import java.io.FilterInputStream
 import java.io.InputStream
 import java.nio.ByteBuffer
@@ -83,6 +84,10 @@ class ArchiveReaderStillActiveException(val path: Path, cause: Throwable) :
     )
 
 /** Owns AWS clients independently of the existing GCS HMAC/Kotlin SDK beans. */
+@SuppressFBWarnings(
+    value = ["NP_NONNULL_PARAM_VIOLATION"],
+    justification = "Kotlin coroutine resume stubs pass null placeholders for saved arguments",
+)
 class S3ArchiveUploader
 internal constructor(
     private val bucket: String,
@@ -162,7 +167,8 @@ internal constructor(
             } finally {
                 // Cancelling an SDK future is not a reader-stop signal. The owned executor must
                 // drain.
-                transfer.future.get()?.cancel(true)
+                val future = transfer.future.get()
+                if (future != null) future.cancel(true)
                 withContext(NonCancellable + Dispatchers.IO) {
                     try {
                         transfer.body.stop(cleanupWorkers, cleanupTimeout)
@@ -530,17 +536,13 @@ internal class ArchiveFileBody(
                                     maxOf(0, deadline - System.nanoTime()),
                                     TimeUnit.NANOSECONDS,
                                 )
-                            ) {
-                                "Archive stream close executor did not terminate"
-                            }
+                            ) { "Archive stream close executor did not terminate" }
                             check(
                                 reader.awaitTermination(
                                     maxOf(0, deadline - System.nanoTime()),
                                     TimeUnit.NANOSECONDS,
                                 )
-                            ) {
-                                "Archive file reader executor did not terminate"
-                            }
+                            ) { "Archive file reader executor did not terminate" }
                             synchronized(lock) { closeFailure }?.let { throw it }
                         }
                         .also { cleanup = it }

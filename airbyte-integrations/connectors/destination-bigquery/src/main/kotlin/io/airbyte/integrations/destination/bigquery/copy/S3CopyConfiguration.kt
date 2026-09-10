@@ -48,9 +48,7 @@ data class S3CopyConfiguration(
             val externalId = env["AIRBYTE_S3_COPY_EXTERNAL_ID"]
             check(
                 externalId == null || (externalId.isNotBlank() && externalId == externalId.trim())
-            ) {
-                "AIRBYTE_S3_COPY_EXTERNAL_ID must be nonblank when supplied"
-            }
+            ) { "AIRBYTE_S3_COPY_EXTERNAL_ID must be nonblank when supplied" }
             return S3CopyConfiguration(
                 bucket = required("BUCKET"),
                 region = required("REGION"),
