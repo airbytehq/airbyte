@@ -226,7 +226,7 @@
       },
       "lowercase_column_names" : {
         "type" : "boolean",
-        "description" : "When enabled, all column names are converted to lowercase before being written to Iceberg (for example, \"userId\" becomes \"userid\"). Some query engines that read Iceberg tables through a Glue catalog, such as Snowflake, only support lowercase column names. IMPORTANT: if you toggle this option for streams that have already been synced, their existing tables keep the old column names and the next sync will fail. After toggling, clear the data of the affected streams and run a full refresh so the tables are recreated with the new column names.",
+        "description" : "When enabled, all column names are converted to lowercase before being written to Iceberg (for example, \"userId\" becomes \"userid\"). IMPORTANT: toggling this for streams that have already been synced requires clearing their data and running a full refresh.",
         "title" : "Lowercase Column Names",
         "default" : false,
         "order" : 9
