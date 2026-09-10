@@ -36,7 +36,16 @@ def request(path: str, params: Optional[Mapping[str, str]] = None) -> HttpReques
 
 
 def deals_request() -> HttpRequest:
-    return request("api/v2/deals", {"limit": "500", "sort_by": "update_time", "sort_direction": "asc", "status": "open,won,lost,deleted", "updated_since": "2024-01-01T00:00:00Z"})
+    return request(
+        "api/v2/deals",
+        {
+            "limit": "500",
+            "sort_by": "update_time",
+            "sort_direction": "asc",
+            "status": "open,won,lost,deleted",
+            "updated_since": "2024-01-01T00:00:00Z",
+        },
+    )
 
 
 def pipedrive_error(status_code: int, error: Optional[str], headers: Optional[Mapping[str, str]] = None) -> HttpResponse:
