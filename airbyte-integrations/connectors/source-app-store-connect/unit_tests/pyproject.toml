@@ -1,0 +1,39 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[project]
+name = "source-app-store-connect-tests"
+version = "0.1.0"
+description = "Unit tests for source-app-store-connect"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+  "airbyte-cdk==7.28.2",
+  "cryptography>=44,<51",
+  "pyjwt>=2.8,<3",
+  "pytest>=8,<9",
+  "requests-mock>=1.12.1,<2",
+]
+
+[tool.poetry]
+name = "source-app-store-connect-tests"
+version = "0.1.0"
+description = "Unit tests for source-app-store-connect"
+authors = ["Airbyte <contact@airbyte.io>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.14"
+airbyte-cdk = "7.28.2"
+cryptography = ">=44,<51"
+pyjwt = "^2.8"
+pytest = "^8"
+requests-mock = "^1.12.1"
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+filterwarnings = [
+  "ignore:This class is experimental*"
+]

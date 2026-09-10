@@ -1,0 +1,16 @@
+# See https://docs.airbyte.com/connector-development/testing-connectors/connector-acceptance-tests-reference
+connector_image: airbyte/source-app-store-connect:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: manifest.yaml
+  connection:
+    bypass_reason: No shared App Store Connect credentials are available yet.
+  discovery:
+    bypass_reason: No shared App Store Connect credentials are available yet.
+  basic_read:
+    bypass_reason: No shared App Store Connect credentials are available yet.
+  incremental:
+    bypass_reason: No shared App Store Connect credentials are available yet.
+  full_refresh:
+    bypass_reason: No shared App Store Connect credentials are available yet.
