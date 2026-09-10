@@ -10,6 +10,12 @@ This page contains the setup guide and reference information for the [Azure Blob
 Cloud storage may incur egress costs. Egress refers to data that is transferred out of the cloud storage system, such as when you download files or access them from a different location. For more information, see the [Azure Blob Storage pricing guide](https://azure.microsoft.com/en-us/pricing/details/storage/blobs/).
 :::
 
+:::warning Azure storage account retirements
+
+Microsoft is retiring general-purpose v1 (GPv1) and legacy Blob Storage (`BlobStorage` kind) accounts on October 13, 2026. Before that date, check the account kind of the storage account you sync from and [upgrade it to general-purpose v2 (GPv2)](https://learn.microsoft.com/en-us/azure/storage/common/storage-account-upgrade). Microsoft automatically migrates remaining accounts to GPv2 after the retirement date. The upgrade keeps your endpoint names and data, so no change to your Airbyte source configuration is needed, but automatic migration timing can vary, access may be temporarily interrupted, and legacy Blob Storage accounts may be billed differently after migration. See Microsoft's [GPv1 migration overview](https://learn.microsoft.com/en-us/azure/storage/common/general-purpose-version-1-account-migration-overview) and [legacy Blob Storage account migration overview](https://learn.microsoft.com/en-us/azure/storage/common/legacy-blob-storage-account-migration-overview).
+
+:::
+
 ## Prerequisites
 
 - [Tenant ID of the Microsoft Azure Application user](https://www.youtube.com/watch?v=WECmqC-MylA)
