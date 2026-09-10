@@ -43,6 +43,14 @@ The authorization-code exchange (`access_token_url`) **must also request `expire
 
 **Why this matters:** Removing `expires_in` from `extract_output` (or from the `access_token_url` request) reintroduces the premature-refresh loop. See `airbytehq/oncall#13130`.
 
+## 6. `num_workers` Minimum Is 2 — One Thread Leaves No Sibling to Beat the Heartbeat
+
+The `num_workers` spec field has `minimum: 2`, a config migration in `spec.config_normalization_rules` raises any stored value of `1` to `2`, and `concurrency_level.default_concurrency` clamps the interpolated value at 2. The clamp is needed because the CDK builds the concurrency level from the pre-migration config, so without it a stored `1` would still run one worker on the first sync after upgrading.
+
+With a single worker thread the concurrent framework runs one stream at a time, and `tickets` is a single unsliced partition against an endpoint capped at 10 requests per minute. The concurrent cursor only emits state when the partition closes, so nothing is emitted for the length of that walk — no records from a sibling stream, no state message — and the platform can cancel the attempt on the heartbeat timeout. Since the partition never closes, no cursor is saved and every retry repeats the same walk, so the connection stays wedged instead of making partial progress. A second thread lets another stream keep the heartbeat alive.
+
+**Why this matters:** do not lower the minimum below 2 or remove the migration. The symptom does not point at concurrency — the heartbeat error names whichever stream was queued behind `tickets`, not `tickets` itself. All wedged connections in `airbytehq/oncall#13250` ran 1 thread; the root cause of the long beat-free `tickets` walk itself is not confirmed, so the floor is a mitigation.
+
 ## Incremental Stream Considerations
 
 The Zendesk Support API supports incremental export endpoints (`/api/v2/incremental/...`) for tickets, users, organizations, and other high-volume resources. The connector uses Python custom components referenced from the manifest.
