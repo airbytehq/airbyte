@@ -39,6 +39,12 @@ If the **API** tab isn't visible, your company admin hasn't enabled API access f
 
 </FieldAnchor>
 
+<FieldAnchor field="num_workers">
+
+**Number of concurrent workers** (optional): How many streams Airbyte syncs in parallel, from 1 to 10. Defaults to 3. All requests share one client-side request budget sized to Pipedrive's lowest-plan burst limit, so higher values rarely make a sync faster.
+
+</FieldAnchor>
+
 When you click **Set up source**, Airbyte tests the connection by calling the [Currencies](https://developers.pipedrive.com/docs/api/v1/Currencies#getCurrencies) endpoint. Every API token can read it, so the test passes even on an account that has no deals yet.
 
 ## Supported sync modes
@@ -104,7 +110,7 @@ Pipedrive lets you add custom fields to deals, persons, organizations, products,
 
 ## Performance considerations
 
-Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. When Pipedrive answers with HTTP 429, the connector waits for the window reported in the `x-ratelimit-reset` header, falls back to exponential backoff when the header is missing, and retries up to ten times before failing the sync. If the header asks for a wait of 300 seconds or more, the connector stops the sync with a retryable error instead of waiting. Two limits apply per API token: a rolling 2-second burst window (20 to 120 requests depending on your plan) that recovers after a short wait, and a daily token budget (30,000 tokens times the plan multiplier and the number of seats) that, once exhausted, rejects every request until midnight in Pipedrive's server timezone. Waiting does not help in the second case; the failure message says so. If your account is close to its limits, run fewer streams per connection or schedule syncs less often.
+Pipedrive enforces per-company, token-based [rate limits](https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting) that depend on your plan and the number of seats. The connector throttles itself to 20 requests per rolling 2 seconds across all streams, the burst limit of Pipedrive's lowest plan, so bursts rarely trigger a 429 no matter how many workers you configure. When Pipedrive answers with HTTP 429, the connector waits for the window reported in the `x-ratelimit-reset` header, falls back to exponential backoff when the header is missing, and retries up to ten times before failing the sync. If the header asks for a wait of 300 seconds or more, the connector stops the sync with a retryable error instead of waiting. Two limits apply per API token: a rolling 2-second burst window (20 to 120 requests depending on your plan) that recovers after a short wait, and a daily token budget (30,000 tokens times the plan multiplier and the number of seats) that, once exhausted, rejects every request until midnight in Pipedrive's server timezone. Waiting does not help in the second case; the failure message says so. If your account is close to its limits, run fewer streams per connection or schedule syncs less often.
 
 Two streams make one request per parent record and can be slow on large accounts:
 
@@ -155,6 +161,7 @@ If you use Airbyte Cloud and your organization restricts access to specific IPs,
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                |
 |:--------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 2.5.0 | 2026-09-09 | [85772](https://github.com/airbytehq/airbyte/pull/85772) | Throttle requests to Pipedrive's burst limit with one shared API budget and add the `num_workers` option for parallel streams |
 | 2.4.7 | 2026-09-09 | [85774](https://github.com/airbytehq/airbyte/pull/85774) | Make Start Date optional with a default, rewrite the spec tooltips and migrate pre-2.0.0 configurations automatically |
 | 2.4.6 | 2026-09-09 | [85770](https://github.com/airbytehq/airbyte/pull/85770) | Classify Pipedrive HTTP errors, wait on `x-ratelimit-reset` for 429s and skip inaccessible parent records in `deal_products` and `mail` |
 | 2.4.5 | 2026-09-09 | [85767](https://github.com/airbytehq/airbyte/pull/85767) | Restructure the documentation and add contributor guides |
