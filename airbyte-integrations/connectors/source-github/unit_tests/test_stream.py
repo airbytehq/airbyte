@@ -17,16 +17,11 @@ from source_github import SourceGithub, constants
 from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
-    Comments,
     CommitCommentReactions,
     CommitComments,
     Commits,
     ContributorActivity,
-    Deployments,
     GithubStreamABCBackoffStrategy,
-    IssueEvents,
-    IssueMilestones,
-    Issues,
     IssueTimelineEvents,
     ProjectCards,
     ProjectColumns,
@@ -39,13 +34,11 @@ from source_github.streams import (
     Releases,
     RepositoryStats,
     Reviews,
-    Stargazers,
     TeamMembers,
     TeamMemberships,
     Teams,
     WorkflowJobs,
     WorkflowRuns,
-    Workflows,
 )
 from source_github.utils import read_full_refresh
 
@@ -54,7 +47,7 @@ from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, Res
 from airbyte_cdk.test.catalog_builder import CatalogBuilder
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 
-from .utils import ProjectsResponsesAPI, read_incremental
+from .utils import ProbeStream, ProjectsResponsesAPI, read_incremental
 
 
 DEFAULT_BACKOFF_DELAYS = [1, 2, 4, 8, 16]
@@ -391,17 +384,17 @@ def test_permission_403_raises_error(time_mock, requests_mock):
 @patch("time.sleep")
 def test_read_records_404_message_for_repository_stream(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/missing-repo"], "page_size_for_large_streams": 30}
-    stream = Deployments(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/missing-repo/deployments",
+        "https://api.github.com/repos/org/missing-repo/probe_stream",
         status_code=requests.codes.NOT_FOUND,
         json={"message": "Not Found"},
     )
 
     list(read_full_refresh(stream))
     assert any(
-        "Skipping `Deployments` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg
+        "Skipping `ProbeStream` for repository `org/missing-repo`" in msg and "GitHub returned 404 Not Found" in msg
         for msg in caplog.messages
     )
 
@@ -423,10 +416,10 @@ def test_read_records_403_message_for_org_stream(time_mock, caplog, requests_moc
 @patch("time.sleep")
 def test_read_records_403_raises_with_actionable_message(time_mock, requests_mock):
     args = {"authenticator": None, "repositories": ["org/private-repo"], "page_size_for_large_streams": 30}
-    stream = Deployments(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/private-repo/deployments",
+        "https://api.github.com/repos/org/private-repo/probe_stream",
         status_code=requests.codes.FORBIDDEN,
         json={"message": "Resource not accessible by integration"},
     )
@@ -440,17 +433,17 @@ def test_read_records_403_raises_with_actionable_message(time_mock, requests_moc
 @patch("time.sleep")
 def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/empty-repo"], "page_size_for_large_streams": 30}
-    stream = Deployments(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/empty-repo/deployments",
+        "https://api.github.com/repos/org/empty-repo/probe_stream",
         status_code=requests.codes.CONFLICT,
         json={"message": "Git Repository is not empty but not a conflict either"},
     )
 
     list(read_full_refresh(stream))
     assert any(
-        "Skipping `deployments` for repository `org/empty-repo`" in msg
+        "Skipping `probe_stream` for repository `org/empty-repo`" in msg
         and "GitHub returned 409 Conflict" in msg
         and "empty (no commits)" in msg
         for msg in caplog.messages
@@ -460,17 +453,17 @@ def test_read_records_409_conflict_message(time_mock, caplog, requests_mock):
 @patch("time.sleep")
 def test_read_records_502_message(time_mock, caplog, requests_mock):
     args = {"authenticator": None, "repositories": ["org/repo"], "page_size_for_large_streams": 30}
-    stream = Deployments(**args)
+    stream = ProbeStream(**args)
 
     requests_mock.get(
-        "https://api.github.com/repos/org/repo/deployments",
+        "https://api.github.com/repos/org/repo/probe_stream",
         status_code=requests.codes.BAD_GATEWAY,
         json={"message": "Server Error"},
     )
 
     list(read_full_refresh(stream))
     assert any(
-        "GitHub returned HTTP 502 Bad Gateway for stream `deployments`" in msg and "usually transient" in msg for msg in caplog.messages
+        "GitHub returned HTTP 502 Bad Gateway for stream `probe_stream`" in msg and "usually transient" in msg for msg in caplog.messages
     )
 
 
@@ -635,18 +628,25 @@ def test_stream_projects_disabled(requests_mock):
     ] == "https://api.github.com/repos/test_repo/projects?per_page=100&state=all"
 
 
-def test_stream_issues_disabled(requests_mock):
+def test_stream_feature_disabled(requests_mock):
+    """A 410 naming a disabled feature is swallowed and the stream yields nothing.
+
+    This pins `GithubStreamABCErrorHandler`/`is_gone_with_feature_disabled` on the Python side,
+    which used to be exercised through `Issues`. That stream is declarative as of Step 6 — its
+    equivalent lives in `test_manifest_repo_scoped_streams.py` — so this uses `Projects`, the
+    other stream GitHub answers this 410 for, which stays Python until Step 5.
+    """
     repository_args_with_start_date = {
         "start_date": "2022-01-01T00:00:00Z",
         "page_size_for_large_streams": 30,
         "repositories": ["test_repo"],
     }
 
-    stream = Issues(**repository_args_with_start_date)
+    stream = Projects(**repository_args_with_start_date)
     requests_mock.get(
-        "https://api.github.com/repos/test_repo/issues",
+        "https://api.github.com/repos/test_repo/projects",
         status_code=requests.codes.GONE,
-        json={"message": "Issues are disabled for this repo"},
+        json={"message": "Projects are disabled for this repo"},
     )
 
     assert list(read_full_refresh(stream)) == []
@@ -1058,111 +1058,6 @@ def test_stream_project_cards(requests_mock):
     ]
 
 
-def test_stream_comments(requests_mock):
-    repository_args_with_start_date = {
-        "repositories": ["organization/repository", "airbytehq/airbyte"],
-        "page_size_for_large_streams": 2,
-        "start_date": "2022-02-02T10:10:01Z",
-    }
-
-    stream = Comments(**repository_args_with_start_date)
-
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:12:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/organization/repository/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:10:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:10:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/organization/repository/issues/comments?per_page=2&since=2022-02-02T10%3A10%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(f"{api_url}?per_page=2&page=3&since=2022-02-02T10:10:04Z", json=data[5:])
-
-    data = [
-        {"id": 1, "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "updated_at": "2022-02-02T10:11:04Z"},
-        {"id": 3, "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-
-    api_url = "https://api.github.com/repos/airbytehq/airbyte/issues/comments"
-
-    requests_mock.get(f"{api_url}?per_page=2&since=2022-02-02T10:10:01Z", json=data[0:2])
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&since=2022-02-02T10:11:04Z",
-        json=data[1:3],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=2>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=2&since=2022-02-02T10:11:04Z",
-        json=data[3:5],
-        headers={
-            "Link": '<https://api.github.com/repos/airbytehq/airbyte/issues/comments?per_page=2&since=2022-02-02T10%3A11%3A04Z&page=3>; rel="next"'
-        },
-    )
-
-    requests_mock.get(
-        f"{api_url}?per_page=2&page=3&since=2022-02-02T10:11:04Z",
-        json=data[5:],
-    )
-
-    stream_state = {}
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 1, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:02Z"},
-        {"id": 2, "repository": "organization/repository", "updated_at": "2022-02-02T10:10:04Z"},
-        {"id": 1, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:02Z"},
-        {"id": 2, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:11:04Z"},
-    ]
-
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:11:04Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:10:04Z"},
-    }
-
-    records = read_incremental(stream, stream_state)
-    assert records == [
-        {"id": 3, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:06Z"},
-        {"id": 4, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:08Z"},
-        {"id": 5, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:10Z"},
-        {"id": 6, "repository": "organization/repository", "updated_at": "2022-02-02T10:12:12Z"},
-        {"id": 3, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:06Z"},
-        {"id": 4, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:08Z"},
-        {"id": 5, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:10Z"},
-        {"id": 6, "repository": "airbytehq/airbyte", "updated_at": "2022-02-02T10:13:12Z"},
-    ]
-    assert stream_state == {
-        "airbytehq/airbyte": {"updated_at": "2022-02-02T10:13:12Z"},
-        "organization/repository": {"updated_at": "2022-02-02T10:12:12Z"},
-    }
-
-
 def test_branches_technical_stream_still_answers_get_json_schema():
     """`Branches` is kept only so `Commits` can discover branches, and its schema file was
     deleted when the user-facing `branches` stream moved to the manifest. The class overrides
@@ -1197,11 +1092,10 @@ def test_streams_read_full_refresh(requests_mock):
             {"id": 2, cursor_field: "2022-02-02T00:00:00Z", "repository": "organization/repository"},
         ]
 
+    # `CommitComments` is the one semi-incremental REST class still in Python (a technical parent);
+    # the declarative streams are covered in `test_manifest_semi_incremental_streams.py`.
     for cls, url in [
-        (IssueEvents, "https://api.github.com/repos/organization/repository/issues/events"),
-        (IssueMilestones, "https://api.github.com/repos/organization/repository/milestones"),
         (CommitComments, "https://api.github.com/repos/organization/repository/comments"),
-        (Deployments, "https://api.github.com/repos/organization/repository/deployments"),
     ]:
         stream = cls(**repository_args_with_start_date)
         requests_mock.get(url, json=get_json_response(stream.cursor_field))
@@ -1287,18 +1181,6 @@ def test_streams_read_full_refresh(requests_mock):
     stream = Branches(**repository_args)
     requests_mock.get("https://api.github.com/repos/organization/repository/branches", json=get_json_response(stream.cursor_field))
     assert list(read_full_refresh(stream)) == get_records(stream.cursor_field)
-
-    requests_mock.get(
-        "https://api.github.com/repos/organization/repository/stargazers",
-        json=[
-            {"starred_at": "2022-02-01T00:00:00Z", "user": {"id": 1}},
-            {"starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}},
-        ],
-    )
-
-    stream = Stargazers(**repository_args_with_start_date)
-    records = list(read_full_refresh(stream))
-    assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
 
 
 def test_releases_draft_release_null_tag(requests_mock):
@@ -2203,25 +2085,6 @@ def _make_response(status_code=200, json_data=None, text=None):
 
 _REPO_ARGS = {"repositories": ["org/repo"], "page_size_for_large_streams": 30}
 _STREAM_SLICE = {"repository": "org/repo"}
-
-
-@pytest.mark.parametrize(
-    "json_data,text,expected_count",
-    [
-        pytest.param({"workflows": [{"id": 1, "updated_at": "2024-01-01T00:00:00Z"}]}, None, 1, id="valid_single_record"),
-        pytest.param({"workflows": []}, None, 0, id="valid_empty_list"),
-        pytest.param(None, "<html>Bad Gateway</html>", 0, id="html_body"),
-        pytest.param(None, "", 0, id="empty_body"),
-        pytest.param({"message": "error"}, None, 0, id="missing_key"),
-        pytest.param({"workflows": "not_a_list"}, None, 0, id="wrong_type"),
-        pytest.param({"workflows": None}, None, 0, id="key_is_none"),
-    ],
-)
-def test_workflows_parse_response_defensive(json_data, text, expected_count):
-    stream = Workflows(**_REPO_ARGS)
-    resp = _make_response(json_data=json_data, text=text)
-    records = list(stream.parse_response(resp, stream_slice=_STREAM_SLICE))
-    assert len(records) == expected_count
 
 
 @pytest.mark.parametrize(
