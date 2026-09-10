@@ -178,6 +178,7 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version    | Date       | Pull Request                                               | Subject                                                                                                                   |
 |:-----------|:-----------|:-----------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------|
+| 2.2.22 | 2026-09-09 | [85768](https://github.com/airbytehq/airbyte/pull/85768) | Report SQL Server permission-denied and string-truncation errors as configuration errors instead of system errors. |
 | 2.2.21 | 2026-09-01 | [84990](https://github.com/airbytehq/airbyte/pull/84990) | Upgrade to Bulk CDK 1.0.25. |
 | 2.2.20     | 2026-07-10 | [81536](https://github.com/airbytehq/airbyte/pull/81536)   | Add connectorIPCOptions to enable speed mode                                                                              |
 | 2.2.19     | 2026-06-30 | [80269](https://github.com/airbytehq/airbyte/pull/80269)   | Extract shared value coercion into MSSQLValueCoercer; enable acceptance tests                                             |

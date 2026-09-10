@@ -1,11 +1,11 @@
-version: 6.33.0
+version: 6.59.0
 
 type: DeclarativeSource
 
 check:
   type: CheckStream
   stream_names:
-    - deals
+    - currencies
 
 definitions:
   streams:
@@ -40,7 +40,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -49,9 +49,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -86,7 +84,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -146,7 +144,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -155,9 +153,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -198,7 +194,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -207,9 +203,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -265,7 +259,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -301,7 +295,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -310,9 +304,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -353,7 +345,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -362,9 +354,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -420,7 +410,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -459,6 +449,11 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "50"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - $ref: "#/definitions/substream_missing_parent_error_handler"
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -473,7 +468,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -514,7 +509,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -544,7 +539,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -601,7 +596,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -610,9 +605,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -647,7 +640,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -683,7 +676,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -692,9 +685,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -735,7 +726,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -744,9 +735,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -781,7 +770,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -811,7 +800,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       schema_loader:
         type: InlineSchemaLoader
         schema:
@@ -847,7 +836,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: update_time
@@ -856,9 +845,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -899,7 +886,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
       incremental_sync:
         type: DatetimeBasedCursor
         cursor_field: modified
@@ -908,9 +895,7 @@ definitions:
         datetime_format: "%Y-%m-%d %H:%M:%S"
         start_datetime:
           type: MinMaxDatetime
-          datetime: >-
-            {{ format_datetime(config['replication_start_date'], '%Y-%m-%d
-            %H:%M:%S') }}
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
           datetime_format: "%Y-%m-%d %H:%M:%S"
         start_time_option:
           type: RequestOption
@@ -931,6 +916,11 @@ definitions:
           http_method: GET
           request_parameters:
             limit: "50"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - $ref: "#/definitions/substream_missing_parent_error_handler"
+              - $ref: "#/definitions/base_error_handler"
         record_selector:
           type: RecordSelector
           extractor:
@@ -945,7 +935,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: SubstreamPartitionRouter
           parent_stream_configs:
@@ -985,7 +975,7 @@ definitions:
             field_name: start
           pagination_strategy:
             type: CursorPagination
-            cursor_value: "{{ response['additional_data']['pagination']['next_start'] }}"
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
         partition_router:
           type: ListPartitionRouter
           values:
@@ -1002,6 +992,339 @@ definitions:
         type: InlineSchemaLoader
         schema:
           $ref: "#/schemas/mailThreads"
+    call_logs:
+      type: DeclarativeStream
+      name: call_logs
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/callLogs
+          http_method: GET
+          request_parameters:
+            limit: "50"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/call_logs"
+    lead_sources:
+      type: DeclarativeStream
+      name: lead_sources
+      primary_key:
+        - name
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/leadSources
+          http_method: GET
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/lead_sources"
+    legacy_teams:
+      type: DeclarativeStream
+      name: legacy_teams
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/legacyTeams
+          http_method: GET
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                      - 404
+                      - 410
+                    error_message: "The legacy Teams feature is disabled for this Pipedrive company or the endpoint has been retired ({{ response.get('error', 'not available') }}); skipping legacy_teams."
+              - $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/legacy_teams"
+    projects:
+      type: DeclarativeStream
+      name: projects
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/{{ stream_slice['path_segment'] }}
+          http_method: GET
+          request_parameters:
+            limit: "500"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 403
+                      - 404
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read projects ({{ response.get('error', 'not available') }}); skipping projects."
+              - $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/v2_cursor_paginator"
+        partition_router:
+          type: ListPartitionRouter
+          cursor_field: path_segment
+          values:
+            - projects
+            - projects/archived
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/projects"
+    tasks:
+      type: DeclarativeStream
+      name: tasks
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/tasks
+          http_method: GET
+          request_parameters:
+            limit: "500"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 403
+                      - 404
+                    error_message: "The Projects add-on is not included in this Pipedrive plan or the token cannot read tasks ({{ response.get('error', 'not available') }}); skipping tasks."
+              - $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/v2_cursor_paginator"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/tasks"
+    deal_installments:
+      type: DeclarativeStream
+      name: deal_installments
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: api/v2/deals/installments
+          http_method: GET
+          request_parameters:
+            deal_ids: "{{ stream_slice['parent_id'] | join(',') }}"
+            limit: "500"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 402
+                      - 403
+                    error_message: "Installments are not included in this Pipedrive plan or the token cannot read deals ({{ response.get('error', 'not available') }}); skipping deal_installments."
+              - $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          $ref: "#/definitions/v2_cursor_paginator"
+        partition_router:
+          # GET /api/v2/deals/installments accepts up to 100 deal ids per request.
+          type: GroupingPartitionRouter
+          group_size: 100
+          deduplicate: true
+          underlying_partition_router:
+            type: SubstreamPartitionRouter
+            parent_stream_configs:
+              - type: ParentStreamConfig
+                parent_key: id
+                partition_field: parent_id
+                stream:
+                  $ref: "#/definitions/streams/deals"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deal_installments"
+    deal_flow:
+      type: DeclarativeStream
+      name: deal_flow
+      primary_key:
+        - id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/deals/{{ stream_slice['parent_id'] }}/flow
+          http_method: GET
+          request_parameters:
+            limit: "500"
+            items: dealChange
+            all_changes: "1"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - $ref: "#/definitions/substream_missing_parent_error_handler"
+              - $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+              - "*"
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              incremental_dependency: true
+              stream:
+                $ref: "#/definitions/streams/deals"
+      incremental_sync:
+        type: DatetimeBasedCursor
+        cursor_field: log_time
+        cursor_datetime_formats:
+          - "%Y-%m-%d %H:%M:%S"
+        datetime_format: "%Y-%m-%d %H:%M:%S"
+        start_datetime:
+          type: MinMaxDatetime
+          datetime: "{{ format_datetime(config.get('replication_start_date') or '2010-01-01T00:00:00Z', '%Y-%m-%d %H:%M:%S') }}"
+          datetime_format: "%Y-%m-%d %H:%M:%S"
+        is_client_side_incremental: true
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/deal_flow"
+    permission_set_assignments:
+      type: DeclarativeStream
+      name: permission_set_assignments
+      primary_key:
+        - permission_set_id
+        - user_id
+      retriever:
+        type: SimpleRetriever
+        requester:
+          $ref: "#/definitions/base_requester"
+          path: v1/permissionSets/{{ stream_slice['parent_id'] }}/assignments
+          http_method: GET
+          request_parameters:
+            limit: "500"
+          error_handler:
+            type: CompositeErrorHandler
+            error_handlers:
+              - type: DefaultErrorHandler
+                response_filters:
+                  - type: HttpResponseFilter
+                    action: IGNORE
+                    http_codes:
+                      - 403
+                    error_message: "Permission set assignments require an admin API token ({{ response.get('error', 'forbidden') }}); skipping permission_set_assignments."
+              - $ref: "#/definitions/base_error_handler"
+        record_selector:
+          type: RecordSelector
+          extractor:
+            type: DpathExtractor
+            field_path:
+              - data
+        paginator:
+          type: DefaultPaginator
+          page_token_option:
+            type: RequestOption
+            inject_into: request_parameter
+            field_name: start
+          pagination_strategy:
+            type: CursorPagination
+            cursor_value: "{{ ((response.get('additional_data') or {}).get('pagination') or {}).get('next_start') }}"
+        partition_router:
+          type: SubstreamPartitionRouter
+          parent_stream_configs:
+            - type: ParentStreamConfig
+              parent_key: id
+              partition_field: parent_id
+              stream:
+                $ref: "#/definitions/streams/permission_sets"
+      schema_loader:
+        type: InlineSchemaLoader
+        schema:
+          $ref: "#/schemas/permission_set_assignments"
   base_requester:
     type: HttpRequester
     url_base: "{{ (config['credentials']['api_domain'] ~ '/api/') if config.get('credentials', {}).get('api_domain') else 'https://api.pipedrive.com/' }}"
@@ -1038,6 +1361,90 @@ definitions:
             type: RequestOption
             inject_into: header
             field_name: x-api-token
+    error_handler:
+      $ref: "#/definitions/base_error_handler"
+  base_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    backoff_strategies:
+      - type: WaitTimeFromHeader
+        header: x-ratelimit-reset
+        max_waiting_time_in_seconds: 300
+      - type: ExponentialBackoffStrategy
+        factor: 5
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [401]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Pipedrive rejected the API token (401: {{ response.get('error', 'unauthorized access') }}).
+          In Pipedrive, open Company settings > Personal preferences > API, copy the current API token
+          and update it in the connector configuration. If the API tab is missing, ask a Pipedrive
+          company admin to enable API access for your user.
+      - type: HttpResponseFilter
+        http_codes: [402]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Your Pipedrive company account is not active (402: {{ response.get('error', 'payment required') }}).
+          The trial has expired or billing details are missing. Reactivate the company account in
+          Pipedrive billing settings, then retry the sync.
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: FAIL
+        failure_type: config_error
+        error_message: >-
+          Pipedrive refused the request (403{{ ': ' ~ response['error'] if response.get('error') else '' }}).
+          The token owner does not have permission to read this data, the Pipedrive plan does not include it,
+          or Pipedrive's Cloudflare protection blocked the token after repeated rate-limit violations. Use an
+          API token from a user with access to this data, upgrade the plan, or reduce the sync frequency and
+          retry later.
+      - type: HttpResponseFilter
+        http_codes: [410]
+        action: FAIL
+        error_message: >-
+          Pipedrive reports this resource as permanently removed (410{{ ': ' ~ response['error'] if response.get('error') else '' }}).
+          The endpoint may have been retired by Pipedrive. Upgrade to the latest connector version or
+          disable the affected stream.
+      - type: HttpResponseFilter
+        http_codes: [429]
+        action: RATE_LIMITED
+        error_message: >-
+          Pipedrive rate limit reached (429: {{ response.get('error', 'request over limit') }}). Airbyte waits for
+          the window reported by the x-ratelimit-reset header and retries. Burst limits are 20-120 requests
+          per 2 seconds per token depending on plan. If every request is rejected, the daily API token budget
+          is exhausted and resets at midnight (Pipedrive server time): reduce sync frequency or upgrade the plan.
+      - type: HttpResponseFilter
+        http_codes: [500, 502, 503, 504]
+        action: RETRY
+        error_message: Pipedrive returned a temporary server error; retrying.
+  substream_missing_parent_error_handler:
+    type: DefaultErrorHandler
+    max_retries: 10
+    response_filters:
+      - type: HttpResponseFilter
+        http_codes: [404, 410]
+        action: IGNORE
+        error_message: >-
+          Pipedrive no longer has the parent record for this request ({{ response.get('error', 'not found') }});
+          it was deleted or merged after the parent stream was read. Skipping its child records and continuing.
+      - type: HttpResponseFilter
+        http_codes: [403]
+        action: IGNORE
+        error_message: >-
+          Pipedrive denied access to the parent record for this request ({{ response.get('error', 'forbidden') }});
+          the API token owner cannot see it. Skipping its child records and continuing. Use a token from a user
+          with wider visibility to sync these records.
+  v2_cursor_paginator:
+    type: DefaultPaginator
+    page_token_option:
+      type: RequestOption
+      inject_into: request_parameter
+      field_name: cursor
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ (response.get('additional_data') or {}).get('next_cursor') }}"
 
 streams:
   - $ref: "#/definitions/streams/deals"
@@ -1066,15 +1473,49 @@ streams:
   - $ref: "#/definitions/streams/users"
   - $ref: "#/definitions/streams/deal_products"
   - $ref: "#/definitions/streams/mailThreads"
+  - $ref: "#/definitions/streams/call_logs"
+  - $ref: "#/definitions/streams/lead_sources"
+  - $ref: "#/definitions/streams/legacy_teams"
+  - $ref: "#/definitions/streams/projects"
+  - $ref: "#/definitions/streams/tasks"
+  - $ref: "#/definitions/streams/deal_installments"
+  - $ref: "#/definitions/streams/deal_flow"
+  - $ref: "#/definitions/streams/permission_set_assignments"
+
+# Rate limits: https://pipedrive.readme.io/docs/core-api-concepts-rate-limiting
+# Burst limit is per API token on a rolling 2-second window; the lowest plan (Essential/Lite)
+# allows 20 requests per 2 seconds, so the budget uses that floor since the plan is not knowable
+# from config. `x-ratelimit-reset` is intentionally not used: Pipedrive sends a relative window
+# in seconds while the CDK parses that header as an epoch timestamp. `x-ratelimit-remaining` and a
+# 429 only nudge the bucket when Pipedrive reports zero calls left; the fixed window below is the
+# actual throttle. The matcher is path-based so it also covers the per-company hosts that OAuth
+# uses (`https://<company>.pipedrive.com/api/...`).
+api_budget:
+  type: HTTPAPIBudget
+  ratelimit_remaining_header: x-ratelimit-remaining
+  status_codes_for_ratelimit_hit: [429]
+  policies:
+    - type: MovingWindowCallRatePolicy
+      rates:
+        - limit: 20
+          interval: PT2S
+      matchers:
+        - type: HttpRequestRegexMatcher
+          url_path_pattern: "^(/api)?/v[12]/"
+
+concurrency_level:
+  type: ConcurrencyLevel
+  default_concurrency: "{{ config.get('num_workers') or 3 }}"
+  max_concurrency: 10
 
 spec:
   type: Spec
+  documentation_url: https://docs.airbyte.com/integrations/sources/pipedrive
   connection_specification:
     type: object
     $schema: http://json-schema.org/draft-07/schema#
     required:
       - credentials
-      - replication_start_date
     properties:
       credentials:
         type: object
@@ -1145,20 +1586,39 @@ spec:
               api_token:
                 type: string
                 title: API Token
-                description: The Pipedrive API Token.
+                description: >-
+                  Your personal Pipedrive API token. In Pipedrive, click your name (top
+                  right) > Company settings > Personal preferences > API and copy the
+                  token. If the API tab is missing, ask your Pipedrive admin to enable
+                  API access for your user.
                 airbyte_secret: true
                 order: 1
             additionalProperties: true
       replication_start_date:
         type: string
-        description: >-
-          UTC date and time in the format 2017-01-25T00:00:00Z. Any data before
-          this date will not be replicated. When specified and not None, then
-          stream will behave as incremental
         title: Start Date
+        description: >-
+          Only records created or updated on or after this UTC date and time are
+          replicated. Format YYYY-MM-DDTHH:MM:SSZ, for example
+          2017-01-25T00:00:00Z. Defaults to 2010-01-01T00:00:00Z when left
+          empty.
+        default: "2010-01-01T00:00:00Z"
         examples:
-          - "2017-01-25 00:00:00Z"
+          - "2017-01-25T00:00:00Z"
+        pattern: '^[0-9]{4}-[0-9]{2}-[0-9]{2}([T ][0-9]{2}:[0-9]{2}(:[0-9]{2}(\.[0-9]+)?)?(Z|[+-][0-9]{2}:?[0-9]{2})?)?$'
+        pattern_descriptor: "YYYY-MM-DDTHH:MM:SSZ"
         order: 1
+      num_workers:
+        type: integer
+        title: Number of concurrent workers
+        description: >-
+          Number of streams synced in parallel (1-10). All requests share one client-side request
+          budget sized to Pipedrive's lowest-plan burst limit, so higher values rarely make a sync
+          faster.
+        minimum: 1
+        maximum: 10
+        default: 3
+        order: 2
     additionalProperties: true
   advanced_auth:
     auth_flow_type: oauth2.0
@@ -1232,6 +1692,15 @@ spec:
     type: ConfigNormalizationRules
     config_migrations:
       - type: ConfigMigration
+        description: Lift the pre-2.0.0 `authorization.api_token` field to the top-level `api_token`.
+        transformations:
+          - type: ConfigAddFields
+            fields:
+              - type: AddedFieldDefinition
+                path: ["api_token"]
+                value: "{{ config.get('authorization', {}).get('api_token') }}"
+            condition: "{{ config.get('api_token') is none and config.get('authorization', {}).get('api_token') is not none }}"
+      - type: ConfigMigration
         description: |
           Wraps the legacy flat API token config into the credentials object.
           OLD: {"api_token": ...}
@@ -1278,6 +1747,14 @@ metadata:
     users: false
     deal_products: false
     mailThreads: false
+    call_logs: false
+    lead_sources: false
+    legacy_teams: false
+    projects: false
+    tasks: false
+    deal_installments: false
+    deal_flow: false
+    permission_set_assignments: false
   yamlComponents:
     streams:
       deals:
@@ -4433,3 +4910,411 @@ schemas:
         type: string
       user_id:
         type: integer
+  call_logs:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      activity_id:
+        type:
+          - "null"
+          - integer
+      company_id:
+        type:
+          - "null"
+          - integer
+      deal_id:
+        type:
+          - "null"
+          - integer
+      duration:
+        type:
+          - "null"
+          - string
+      end_time:
+        type:
+          - "null"
+          - string
+      from_phone_number:
+        type:
+          - "null"
+          - string
+      has_recording:
+        type:
+          - "null"
+          - boolean
+      id:
+        type:
+          - "null"
+          - string
+      lead_id:
+        type:
+          - "null"
+          - string
+      note:
+        type:
+          - "null"
+          - string
+      org_id:
+        type:
+          - "null"
+          - integer
+      outcome:
+        type:
+          - "null"
+          - string
+      person_id:
+        type:
+          - "null"
+          - integer
+      start_time:
+        type:
+          - "null"
+          - string
+      subject:
+        type:
+          - "null"
+          - string
+      to_phone_number:
+        type:
+          - "null"
+          - string
+      user_id:
+        type:
+          - "null"
+          - integer
+  deal_flow:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      additional_data:
+        type:
+          - "null"
+          - array
+          - object
+      change_source:
+        type:
+          - "null"
+          - string
+      change_source_user_agent:
+        type:
+          - "null"
+          - string
+      field_key:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_bulk_update_flag:
+        type:
+          - "null"
+          - boolean
+          - integer
+      item_id:
+        type:
+          - "null"
+          - integer
+      log_time:
+        type:
+          - "null"
+          - string
+      new_value:
+        type:
+          - "null"
+          - string
+          - number
+          - boolean
+      origin:
+        type:
+          - "null"
+          - string
+      origin_id:
+        type:
+          - "null"
+          - integer
+          - string
+      old_value:
+        type:
+          - "null"
+          - string
+          - number
+          - boolean
+      user_id:
+        type:
+          - "null"
+          - integer
+  deal_installments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      amount:
+        type:
+          - "null"
+          - number
+      billing_date:
+        type:
+          - "null"
+          - string
+      deal_id:
+        type:
+          - "null"
+          - integer
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+  lead_sources:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+  legacy_teams:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      active_flag:
+        type:
+          - "null"
+          - integer
+      add_time:
+        type:
+          - "null"
+          - string
+      created_by_user_id:
+        type:
+          - "null"
+          - integer
+      deleted_flag:
+        type:
+          - "null"
+          - integer
+      description:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      manager_id:
+        type:
+          - "null"
+          - integer
+      name:
+        type:
+          - "null"
+          - string
+      users:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+  permission_set_assignments:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      name:
+        type:
+          - "null"
+          - string
+      permission_set_app:
+        type:
+          - "null"
+          - string
+      permission_set_id:
+        type:
+          - "null"
+          - string
+      permission_set_type:
+        type:
+          - "null"
+          - string
+      user_id:
+        type:
+          - "null"
+          - integer
+  projects:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      add_time:
+        type:
+          - "null"
+          - string
+      archive_time:
+        type:
+          - "null"
+          - string
+      board_id:
+        type:
+          - "null"
+          - integer
+      custom_fields:
+        type:
+          - "null"
+          - object
+        additionalProperties: true
+      deal_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      description:
+        type:
+          - "null"
+          - string
+      end_date:
+        type:
+          - "null"
+          - string
+      health_status:
+        type:
+          - "null"
+          - integer
+      id:
+        type:
+          - "null"
+          - integer
+      label_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      org_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      owner_id:
+        type:
+          - "null"
+          - integer
+      person_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      phase_id:
+        type:
+          - "null"
+          - integer
+      start_date:
+        type:
+          - "null"
+          - string
+      status:
+        type:
+          - "null"
+          - string
+      status_change_time:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string
+  tasks:
+    type: object
+    $schema: http://json-schema.org/schema#
+    additionalProperties: true
+    properties:
+      add_time:
+        type:
+          - "null"
+          - string
+      assignee_ids:
+        type:
+          - "null"
+          - array
+        items:
+          type:
+            - "null"
+            - integer
+      creator_id:
+        type:
+          - "null"
+          - integer
+      description:
+        type:
+          - "null"
+          - string
+      due_date:
+        type:
+          - "null"
+          - string
+      id:
+        type:
+          - "null"
+          - integer
+      is_done:
+        type:
+          - "null"
+          - boolean
+      is_milestone:
+        type:
+          - "null"
+          - boolean
+      marked_as_done_time:
+        type:
+          - "null"
+          - string
+      parent_task_id:
+        type:
+          - "null"
+          - integer
+      priority:
+        type:
+          - "null"
+          - integer
+      project_id:
+        type:
+          - "null"
+          - integer
+      start_date:
+        type:
+          - "null"
+          - string
+      title:
+        type:
+          - "null"
+          - string
+      update_time:
+        type:
+          - "null"
+          - string

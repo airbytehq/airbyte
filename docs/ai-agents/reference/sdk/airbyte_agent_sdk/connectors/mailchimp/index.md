@@ -869,7 +869,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            data_center: The data center for your Mailchimp account (e.g., us1, us2, us6)
     Examples:
         # Local mode (direct API calls)
-        connector = MailchimpConnector(auth_config=MailchimpAuthConfig(api_key="..."))
+        connector = MailchimpConnector(auth_config=MailchimpAuthConfig(api_key="..."), data_center="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = MailchimpConnector(
             auth_config=AirbyteAuthConfig(
