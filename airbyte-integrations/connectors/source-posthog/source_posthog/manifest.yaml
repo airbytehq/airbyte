@@ -132,15 +132,13 @@ definitions:
     schema_loader:
       $ref: "#/definitions/schema_loader"
     retriever:
-      transformations:
-        - class_name: "source_posthog.components.EventsSimpleRetriever"
-          fields:
-            - path: ["name"]
-              value: "{{ parameters['name'] }}"
-            - path: ["primary_key"]
-              value: "{{ parameters['primary_key'] }}"
-      name: "{{ parameters['name'] }}"
-      primary_key: "{{ parameters['primary_key'] }}"
+      type: SimpleRetriever
+      # The /events/ endpoint paginates by timestamp keyset and advertises the next
+      # page as a `next` URL that preserves `after` (window start) and advances `before`.
+      # Drop the slice's own `after`/`before` once paginating so they don't collide with
+      # the `next` URL: page 1 is bounded by the slice window (after + before), and every
+      # following page is driven by the `next` link.
+      ignore_stream_slicer_parameters_on_paginated_requests: true
       record_selector:
         $ref: "#/definitions/selector"
       requester:
@@ -152,12 +150,12 @@ definitions:
           inject_into: "request_parameter"
           field_name: "limit"
         pagination_strategy:
-          type: "OffsetIncrement"
-          page_size: 10000
+          type: "CursorPagination"
+          cursor_value: "{{ response.get('next') }}"
+          stop_condition: "{{ not response.get('next') }}"
+          page_size: 1000
         page_token_option:
-          type: RequestOption
-          field_name: "offset"
-          inject_into: "request_parameter"
+          type: RequestPath
 
 streams:
   - "#/definitions/projects_stream"
