@@ -16,6 +16,10 @@ tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-Xlint:-this-escape")
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    compilerOptions.allWarningsAsErrors.set(true)
+}
+
 application {
     mainClass = "io.airbyte.integrations.destination.snowflake.SnowflakeDestinationKt"
 // enable when profiling

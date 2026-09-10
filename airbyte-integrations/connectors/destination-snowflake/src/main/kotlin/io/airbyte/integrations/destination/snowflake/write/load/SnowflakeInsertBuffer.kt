@@ -104,7 +104,7 @@ class SnowflakeInsertBuffer(
                     try {
                         archive.await()
                     } catch (t: Throwable) {
-                        if (failure == null) failure = t else failure!!.addSuppressed(t)
+                        if (failure == null) failure = t else failure.addSuppressed(t)
                     }
                     failure?.let { throw it }
                 }

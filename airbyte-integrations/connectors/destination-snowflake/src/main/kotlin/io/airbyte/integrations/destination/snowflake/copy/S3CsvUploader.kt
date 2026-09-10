@@ -5,7 +5,7 @@ import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import software.amazon.awssdk.core.async.AsyncRequestBody
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
-import software.amazon.awssdk.core.retry.RetryPolicy
+import software.amazon.awssdk.retries.StandardRetryStrategy
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.s3.S3AsyncClient
@@ -16,7 +16,7 @@ import software.amazon.awssdk.services.sts.model.AssumeRoleRequest
 import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
 
 internal class S3CsvUploader(private val config: S3CopyConfiguration) : AutoCloseable {
-    private val bootstrap = DefaultCredentialsProvider.create()
+    private val bootstrap = DefaultCredentialsProvider.builder().build()
     private val sts = StsClient.builder()
         .region(Region.of(config.region))
         .credentialsProvider(bootstrap)
@@ -38,7 +38,7 @@ internal class S3CsvUploader(private val config: S3CopyConfiguration) : AutoClos
                 .connectionTimeout(Duration.ofSeconds(10)).build()
         )
         .overrideConfiguration(
-            ClientOverrideConfiguration.builder().retryPolicy(RetryPolicy.builder().numRetries(2).build())
+            ClientOverrideConfiguration.builder().retryStrategy(StandardRetryStrategy.builder().maxAttempts(3).build())
                 .apiCallAttemptTimeout(Duration.ofMinutes(2))
                 .apiCallTimeout(Duration.ofMinutes(30)).build()
         ).build()
