@@ -1791,6 +1791,7 @@ Classes
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[AdGroupsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignLabelsSearchData]
     * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[CampaignsSearchData]
+    * airbyte_agent_sdk.connectors.google_ads.models.AirbyteSearchResult[dict[str, Any]]
 
     ### Class variables
 

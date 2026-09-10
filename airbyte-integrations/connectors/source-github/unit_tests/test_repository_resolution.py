@@ -26,6 +26,25 @@ def _resolve(config):
     return source._resolve_repositories_and_organizations(normalized)
 
 
+def test_check_connection_still_fails_when_every_explicit_repository_is_forbidden(requests_mock):
+    """`repository_stats` skips a 403 rather than failing, so that one SAML-protected repository
+    does not take the healthy ones down with it (`resolve_explicit_repository_error_handler`).
+    That must not cost `check` its ability to reject a token that can read nothing: with every
+    entry skipped the resolved list is empty, which `check_connection` already reports."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get(
+        "https://api.github.com/repos/saml/protected-repo",
+        status_code=403,
+        json={"message": "Resource protected by organization SAML enforcement."},
+    )
+    config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["saml/protected-repo"]}
+
+    ok, message = SourceGithub(config=dict(config)).check_connection(logging.getLogger("airbyte"), dict(config))
+
+    assert ok is False
+    assert "couldn't be found" in message
+
+
 def test_check_connection_fails_fast_when_quota_exhausted(requests_mock):
     """`check` is interactive, so an exhausted quota must return an actionable error in seconds
     rather than sleeping up to `max_waiting_time` (120 minutes by default) and surfacing as a
@@ -83,7 +102,7 @@ def test_sync_still_waits_out_a_rate_limit_within_the_budget(requests_mock):
                 "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(int(time.time()) + 120)},
                 "json": {"message": "API rate limit exceeded for user ID 1."},
             },
-            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+            {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"]}
@@ -106,7 +125,7 @@ def test_transient_error_still_retries_on_the_smallest_wait_budget(requests_mock
         "https://api.github.com/orgs/org/repos",
         [
             {"status_code": 500, "json": {"message": "Server Error"}},
-            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+            {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "max_waiting_time": 1}
@@ -140,7 +159,7 @@ def test_short_wait_budget_does_not_cost_token_rotation(requests_mock):
                 "headers": {"X-RateLimit-Remaining": "0", "X-RateLimit-Reset": str(reset_at)},
                 "json": {"message": "API rate limit exceeded for user ID 1."},
             },
-            {"json": [{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}]},
+            {"json": [{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}]},
         ],
     )
     config = {
@@ -251,7 +270,7 @@ def test_github_enterprise_with_rate_limiting_disabled_still_resolves(requests_m
     requests_mock.get(f"{api_url}/rate_limit", status_code=404, json={"message": "Rate limiting is not enabled."})
     requests_mock.get(
         f"{api_url}/orgs/org/repos",
-        json=[{"id": 1, "full_name": "org/repo", "organization": {"login": "org"}}],
+        json=[{"id": 1, "full_name": "org/repo", "owner": {"login": "org"}}],
     )
     config = {"credentials": {"personal_access_token": "test_token"}, "repositories": ["org/*"], "api_url": api_url}
 
@@ -309,7 +328,9 @@ def test_every_max_waiting_time_the_spec_allows_builds(requests_mock, max_waitin
     python_stream = source.streams(config)[0]
     streams = ConcurrentDeclarativeSource.streams(source, config)
 
-    assert [stream.name for stream in streams] == ["repositories"]
+    # Building at all is the assertion: every manifest stream shares the authenticator and the
+    # backoff strategies, so a value one of those interpolations cannot render fails here.
+    assert "repositories" in [stream.name for stream in streams]
     max_waiting_time = max_waiting_time_config.get("max_waiting_time")
     expected_wait_time = max_waiting_time if max_waiting_time is not None else 120
     assert python_stream.max_wait_time_seconds == expected_wait_time * 60
@@ -526,3 +547,27 @@ def test_resolution_stops_without_next_link(requests_mock):
 
     assert len(repositories) == 100
     assert listing.call_count == 1
+
+
+def test_wildcard_on_user_account_resolves_no_organization(requests_mock):
+    """A wildcard naming a user account contributes repositories but no organization.
+
+    `orgs/{user}/repos` 404s, so the wildcard expands to nothing and the repo is reachable
+    only through its explicit entry. Handing `octocat` to the org-scoped streams anyway made
+    every `orgs/octocat` request 404, and the swallowed 404 on those full-refresh streams
+    retried the same partition until the platform's source heartbeat killed the sync. The
+    legacy resolver collected orgs from fetched repo metadata, which is why 2.1.x synced this
+    config fine."""
+    _mock_rate_limit(requests_mock)
+    requests_mock.get("https://api.github.com/orgs/octocat/repos", status_code=404, json={"message": "Not Found"})
+    requests_mock.get(
+        "https://api.github.com/repos/octocat/hello-world",
+        json={"full_name": "octocat/hello-world", "owner": {"login": "octocat"}},
+    )
+
+    organizations, repositories = _resolve(
+        {"credentials": {"personal_access_token": "test_token"}, "repositories": ["octocat/*", "octocat/hello-world"]}
+    )
+
+    assert repositories == ["octocat/hello-world"]
+    assert organizations == []
