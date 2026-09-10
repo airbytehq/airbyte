@@ -186,6 +186,20 @@
     },
     {
       "stream": {
+        "name": "asset_group",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["segments.date"],
+        "source_defined_primary_key": [["asset_group.id"], ["segments.date"]]
+      },
+      "sync_mode": "incremental",
+      "destination_sync_mode": "overwrite",
+      "cursor_field": ["segments.date"],
+      "primary_key": [["asset_group.id"], ["segments.date"]]
+    },
+    {
+      "stream": {
         "name": "customer",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
