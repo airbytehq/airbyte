@@ -61,7 +61,7 @@ The Pipedrive source connector supports the following [sync modes](https://docs.
 
 ## Supported Streams
 
-Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, and `deal_products` use API v2 endpoints. Five core entity streams support server-side incremental sync; `notes` and `files` use client-side incremental filtering; the remaining streams are full refresh. Stream names below match the names shown in Airbyte.
+Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `activities`, `products`, `pipelines`, `stages`, `projects`, `tasks`, `deal_installments`, and `deal_products` use API v2 endpoints. Five core entity streams support server-side incremental sync; `notes` and `files` use client-side incremental filtering; the remaining streams are full refresh. Stream names below match the names shown in Airbyte.
 
 | Stream                | Sync modes                | Notes                                                                                                                                                                                                                                       |
 | :-------------------- | :------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -73,7 +73,7 @@ Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `
 | `deal_fields`         | Full Refresh              | [DealFields](https://developers.pipedrive.com/docs/api/v1/DealFields#getDealFields)                                                                                                                                                          |
 | `deal_flow`           | Full Refresh, Incremental | Field change history of each deal returned by the `deals` stream ([Deals getDealUpdates](https://developers.pipedrive.com/docs/api/v1/Deals#getDealUpdates)), one request per deal, so it is slow on large accounts. Cursor: `log_time`. Only deals returned by the `deals` parent stream are visited. |
 | `deal_installments`   | Full Refresh              | Payment installments of the deals returned by the `deals` stream ([DealInstallments](https://developers.pipedrive.com/docs/api/v1/DealInstallments#getInstallments)), 100 deals per request. Requires a Pipedrive plan with installments; the stream is empty otherwise. Only deals that the `deals` stream returns are visited. |
-| `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal from API v2 `GET /deals/{id}/products`, and only expands deals returned by the `deals` stream. |
+| `deal_products`       | Full Refresh              | Products attached to each deal, fetched with one request per deal from API v2 `GET /api/v2/deals/{id}/products`, and only expands deals returned by the `deals` stream. |
 | `deals`               | Full Refresh, Incremental | API v2 `api/v2/deals`, cursor: `update_time`; includes deleted records. |
 | `files`               | Full Refresh, Incremental | API v1 `/files`, client-side `update_time` filtering. |
 | `filters`             | Full Refresh              | API v1 `/filters`. |
@@ -102,9 +102,9 @@ Most streams read Pipedrive API v1, while `deals`, `persons`, `organizations`, `
 
 ### Incremental sync and Start Date
 
-The five API v2 entity streams pass `updated_since` to Pipedrive and use inclusive RFC3339 `update_time` cursors. `notes` and `files` are read from v1 list endpoints and filtered client-side by `update_time`; they do not use Start Date as a server-side filter. Pipelines, stages, filters, and users are full refresh.
+The five API v2 entity streams pass `updated_since` to Pipedrive and use inclusive RFC3339 `update_time` cursors. `notes` and `files` are read from v1 list endpoints and filtered client-side by `update_time`; they do not use Start Date as a server-side filter. `deal_flow` is incremental and filters its per-deal history client-side by `log_time`. Pipelines, stages, filters, and users are full refresh.
 
-Deleted deals are included by requesting `status=open,won,lost,deleted`; Pipedrive exposes deleted deals with `is_deleted: true` for up to 30 days after deletion. API v2 records may include `is_deleted`, and users can expose their deletion flag. Other streams do not replicate deletion markers.
+Deleted deals are included by requesting `status=open,won,lost,deleted`; Pipedrive exposes deleted deals with `is_deleted: true` for up to 30 days after deletion. API v2 records may include `is_deleted`, and users can expose their deletion flag. Only deleted deals are enumerated as records; other streams may carry a vendor `is_deleted` flag, but deleted records are not enumerated.
 
 ## Custom fields
 
@@ -143,11 +143,11 @@ How the connector treats Pipedrive HTTP errors:
 | 429 | Rate limited; retried as described under [Performance considerations](#performance-considerations). |
 | 500, 502, 503, 504 | Temporary Pipedrive errors; retried with backoff. |
 
-- Deleted deals are replicated with `is_deleted: true` for up to 30 days after deletion. Other streams do not replicate deletion markers.
-- The five API v2 entity streams and notes/files track state; pipelines, stages, filters, and users are full refresh.
+- Deleted deals are replicated with `is_deleted: true` for up to 30 days after deletion. Only deleted deals are enumerated as records; other streams may carry a vendor `is_deleted` flag, but deleted records are not enumerated.
+- The five API v2 entity streams, notes/files, and deal_flow track state; pipelines, stages, filters, and users are full refresh.
 - Full refresh streams ignore the Start Date, except `deal_products`, which only expands the deals returned by the `deals` stream.
 - The connector authenticates with a personal API token only. It doesn't support OAuth.
-- The core entity streams and deal-products use Pipedrive API v2; the remaining streams use API v1.
+- The core entity streams, projects, tasks, deal-installments, and deal-products use Pipedrive API v2; the remaining streams use API v1.
 
 ### Troubleshooting
 

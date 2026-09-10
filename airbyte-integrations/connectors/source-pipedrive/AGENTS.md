@@ -56,6 +56,6 @@ The manifest declares a top-level `api_budget` (`HTTPAPIBudget` with one `Moving
 
 ## 8. Deletes
 
-The deals stream requests `status=open,won,lost,deleted`; deleted deals are emitted with `is_deleted: true` for up to 30 days after deletion. API v2 records include `is_deleted` where provided, and users may expose their deletion flag. Other streams do not replicate deletion markers.
+The deals stream requests `status=open,won,lost,deleted`; deleted deals are emitted with `is_deleted: true` for up to 30 days after deletion. API v2 records include `is_deleted` where provided, and users may expose their deletion flag. Only deleted deals are enumerated as records; other streams may carry a vendor `is_deleted` flag, but deleted records are not enumerated.
 
 Child streams tolerate missing or deleted parent records through their stream-specific `CompositeErrorHandler`, which ignores documented parent-level 403/404/410 responses before falling through to the shared base handler.

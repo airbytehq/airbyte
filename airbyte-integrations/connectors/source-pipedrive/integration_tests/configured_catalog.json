@@ -745,7 +745,9 @@
         ],
         "source_defined_primary_key": [
           [
-            "permission_set_id",
+            "permission_set_id"
+          ],
+          [
             "user_id"
           ]
         ]
@@ -754,7 +756,9 @@
       "destination_sync_mode": "overwrite",
       "primary_key": [
         [
-          "permission_set_id",
+          "permission_set_id"
+        ],
+        [
           "user_id"
         ]
       ]

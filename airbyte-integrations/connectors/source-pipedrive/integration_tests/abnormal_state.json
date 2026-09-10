@@ -14,7 +14,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26T21:20:07Z"
+        "update_time": "2217-06-26 21:20:07"
       },
       "stream_descriptor": {
         "name": "files"
@@ -36,7 +36,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26T21:20:07Z"
+        "update_time": "2217-06-26 21:20:07"
       },
       "stream_descriptor": {
         "name": "notes"
@@ -124,10 +124,21 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "update_time": "2217-06-26T21:20:07Z"
+        "update_time": "2217-06-26 21:20:07"
       },
       "stream_descriptor": {
         "name": "organizations"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "log_time": "2217-06-26 21:20:07"
+      },
+      "stream_descriptor": {
+        "name": "deal_flow"
       }
     }
   }

@@ -3,10 +3,10 @@
     "update_time": "2017-06-01T10:10:10Z"
   },
   "files": {
-    "update_time": "2017-06-01T10:10:10Z"
+    "update_time": "2017-06-01 10:10:10"
   },
   "notes": {
-    "update_time": "2017-06-01T10:10:10Z"
+    "update_time": "2017-06-01 10:10:10"
   },
   "persons": {
     "update_time": "2017-06-01T10:10:10Z"
@@ -21,6 +21,6 @@
     "update_time": "2017-06-01T10:10:10Z"
   },
   "deal_flow": {
-    "log_time": "2017-06-01T10:10:10Z"
+    "log_time": "2017-06-01 10:10:10"
   }
 }
