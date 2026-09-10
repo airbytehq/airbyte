@@ -2448,6 +2448,819 @@ definitions:
               - "null"
               - boolean
 
+  # --- GraphQL streams ------------------------------------------------------------
+  #
+  # The GraphQL streams post a parameterized document to `/graphql` and let the paginator
+  # inject `variables.first` and `variables.after`. Injecting into `variables` (rather than
+  # inlining the values into the query text, as the legacy sgqlc builders did) is what makes
+  # `REDUCE_PAGE_SIZE` work: the CDK rebuilds the request body on the retry, so a reduced
+  # page size actually reaches GitHub.
+  #
+  # `combine_mappings` merges nested body_json paths when the values do not collide, so the
+  # requester owning `variables.owner`/`variables.name` and the paginator owning
+  # `variables.first`/`variables.after` compose without either clobbering the other.
+
+  # GitHub answers 502/504 when a GraphQL query is too expensive to resolve inside its
+  # internal deadline — it is a statement about the size of *this* request, not a transient
+  # server fault, so retrying the identical query just burns the budget and times out again.
+  # The legacy handler (`errors_handlers.GitHubGraphQLErrorHandler`) tried to halve
+  # `stream.page_size` and return RETRY, but HttpClient replays the same PreparedRequest and
+  # the oversized `first` was already serialized into the body, so the retry never benefited;
+  # only a later page saw the smaller size, and any non-502/504 response reset it. This action
+  # re-enters the fetch with a smaller `first`, which is the behavior that was intended.
+  graphql_reduce_page_size_filter:
+    type: HttpResponseFilter
+    http_codes: [502, 504]
+    action: REDUCE_PAGE_SIZE
+    failure_type: transient_error
+    error_message: >-
+      GitHub could not resolve the GraphQL query within its deadline. Retrying the same page
+      with a smaller page size.
+
+  graphql_error_handler:
+    type: DefaultErrorHandler
+    backoff_strategies:
+      $ref: "#/definitions/rate_limit_backoff_strategies"
+    response_filters:
+      - $ref: "#/definitions/success_filter"
+      - $ref: "#/definitions/retry_after_rate_limit_filter"
+      - $ref: "#/definitions/primary_rate_limit_filter"
+      - $ref: "#/definitions/secondary_rate_limit_filter"
+      - $ref: "#/definitions/exhausted_quota_filter"
+      # Must precede the skip/fail filters below: those match on status alone, and a 502/504
+      # that reached one of them first would be retried unchanged or skipped outright.
+      - $ref: "#/definitions/graphql_reduce_page_size_filter"
+      - $ref: "#/definitions/not_found_skip_filter"
+      - $ref: "#/definitions/forbidden_skip_filter"
+      - $ref: "#/definitions/gone_fail_filter"
+
+  graphql_requester:
+    $ref: "#/definitions/requester_base"
+    http_method: POST
+    path: "graphql"
+    error_handler:
+      $ref: "#/definitions/graphql_error_handler"
+
+  # Halving on every 502/504, floored at 1, giving up after 5 reductions in a single page
+  # loop. `reset_policy: NEVER` keeps the reduced size for the rest of the partition:
+  # restoring it after each good page re-triggers the timeout on the next page, which is the
+  # ineffective behavior the legacy handler had. The size is local to one `_read_pages` call,
+  # so one repository reducing does not change the page size any other repository is using.
+  graphql_page_size_reduction:
+    type: PageSizeReduction
+    reduction_factor: 2
+    minimum_page_size: 1
+    max_attempts: 5
+    reset_policy: NEVER
+
+  graphql_paginator:
+    type: DefaultPaginator
+    page_size_option:
+      type: RequestOption
+      inject_into: body_json
+      field_path: ["variables", "first"]
+    page_token_option:
+      type: RequestOption
+      inject_into: body_json
+      field_path: ["variables", "after"]
+
+  # `page_size_for_large_streams` is deprecated but still honored, and the legacy default of
+  # 10 is preserved deliberately: this migration is meant to be behavior-preserving, and
+  # `REDUCE_PAGE_SIZE` is the safety net rather than a licence to raise the default. Raising
+  # it is a separate, measurable change.
+  graphql_large_stream_page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+
+  releases_stream:
+    # API docs: https://docs.github.com/en/graphql/reference/objects#release
+    # GraphQL rather than REST, to get past the REST listing's 10,000-result pagination cap.
+    type: DeclarativeStream
+    name: releases
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      page_size_reduction:
+        $ref: "#/definitions/graphql_page_size_reduction"
+      requester:
+        $ref: "#/definitions/graphql_requester"
+        request_body_json:
+          query: |
+            query Releases($owner: String!, $name: String!, $first: Int!, $after: String) {
+              repository(owner: $owner, name: $name) {
+                name
+                owner { login }
+                releases(first: $first, after: $after, orderBy: {field: CREATED_AT, direction: ASC}) {
+                  nodes {
+                    node_id: id
+                    id: databaseId
+                    name
+                    tag_name: tagName
+                    created_at: createdAt
+                    published_at: publishedAt
+                    updated_at: updatedAt
+                    draft: isDraft
+                    prerelease: isPrerelease
+                    body: description
+                    body_html: descriptionHTML
+                    html_url: url
+                    tagCommit { target_commitish: oid }
+                    author {
+                      __typename
+                      ... on User {
+                        node_id: id
+                        id: databaseId
+                        login
+                        avatar_url: avatarUrl
+                        html_url: url
+                        site_admin: isSiteAdmin
+                      }
+                    }
+                    assets: releaseAssets(first: 100) {
+                      nodes {
+                        node_id: id
+                        name
+                        content_type: contentType
+                        size
+                        download_count: downloadCount
+                        created_at: createdAt
+                        updated_at: updatedAt
+                        browser_download_url: downloadUrl
+                        url
+                        uploader: uploadedBy {
+                          __typename
+                          ... on User { id: databaseId }
+                        }
+                      }
+                      pageInfo { hasNextPage }
+                    }
+                    reaction_groups: reactionGroups {
+                      content
+                      reactors { totalCount }
+                    }
+                    mentions_connection: mentions(first: 0) { totalCount }
+                  }
+                  pageInfo { hasNextPage endCursor }
+                }
+              }
+            }
+          variables:
+            owner: "{{ stream_partition.repository.split('/')[0] }}"
+            name: "{{ stream_partition.repository.split('/')[1] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "repository", "releases", "nodes"]
+      paginator:
+        $ref: "#/definitions/graphql_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          # `repository` is null when the token cannot see the repo, so every hop is
+          # null-guarded; a bare `response.data.repository.releases` would raise instead of
+          # ending the partition cleanly.
+          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          cursor_value: "{{ ((((response.get('data') or {}).get('repository') or {}).get('releases') or {}).get('pageInfo') or {}).get('endCursor') }}"
+          stop_condition: "{{ not ((((response.get('data') or {}).get('repository') or {}).get('releases') or {}).get('pageInfo') or {}).get('hasNextPage') }}"
+      partition_router:
+        $ref: "#/definitions/repository_partition_router"
+    transformations:
+      - type: CustomTransformation
+        class_name: source_github.components.ReleasesRecordTransformation
+    incremental_sync:
+      # Semi-incremental, matching legacy `SemiIncrementalMixin`: the query is ordered
+      # CREATED_AT ASC and every page is read, with records at or below the partition cursor
+      # dropped client-side. Ascending order means there is no early exit to take, so
+      # `is_data_feed` would be wrong here.
+      type: DatetimeBasedCursor
+      cursor_field: "created_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: The repository associated with the release.
+            type: string
+          url:
+            description: The REST API URL for the release (synthesized from GraphQL data).
+            type:
+            - 'null'
+            - string
+          html_url:
+            description: The HTML URL for the release.
+            type:
+            - 'null'
+            - string
+          assets_url:
+            description: The URL to fetch information about the assets linked to this release (synthesized from GraphQL
+              data).
+            type:
+            - 'null'
+            - string
+          upload_url:
+            description: The URL for uploading assets to the release (synthesized from GraphQL data).
+            type:
+            - 'null'
+            - string
+          tarball_url:
+            description: The URL for the tarball file of the release (synthesized from GraphQL data).
+            type:
+            - 'null'
+            - string
+          zipball_url:
+            description: The URL for the zipball file of the release (synthesized from GraphQL data).
+            type:
+            - 'null'
+            - string
+          id:
+            description: The unique identifier for the release
+            type:
+            - 'null'
+            - integer
+          node_id:
+            description: The node ID of the release.
+            type:
+            - 'null'
+            - string
+          tag_name:
+            description: The tag name of the release.
+            type:
+            - 'null'
+            - string
+          target_commitish:
+            description: 'The commit SHA the release is based on. Note: the GraphQL API returns the commit SHA here, not
+              the branch name returned by the REST API.'
+            type:
+            - 'null'
+            - string
+          name:
+            description: The name of the release.
+            type:
+            - 'null'
+            - string
+          body:
+            description: The body of the release.
+            type:
+            - 'null'
+            - string
+          draft:
+            description: Indicates if the release is a draft.
+            type:
+            - 'null'
+            - boolean
+          prerelease:
+            description: Indicates if the release is a prerelease.
+            type:
+            - 'null'
+            - boolean
+          created_at:
+            description: The timestamp of when the release was created.
+            type: string
+            format: date-time
+          published_at:
+            description: The timestamp of when the release was published.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          updated_at:
+            description: The timestamp of when the release was last updated.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          author:
+            description: The author of the release.
+            $ref: user.json
+          assets:
+            description: List of assets (e.g., downloadable files) associated with the release. Capped at 100 per release.
+            type:
+            - 'null'
+            - array
+            items:
+              description: Details of an individual asset
+              type:
+              - 'null'
+              - object
+              properties:
+                url:
+                  description: The URL of the asset.
+                  type:
+                  - 'null'
+                  - string
+                browser_download_url:
+                  description: The URL for downloading the asset linked to this release.
+                  type:
+                  - 'null'
+                  - string
+                id:
+                  description: The unique numeric identifier of the asset (extracted from the GraphQL Node ID).
+                  type:
+                  - 'null'
+                  - integer
+                node_id:
+                  description: The node ID of the asset.
+                  type:
+                  - 'null'
+                  - string
+                name:
+                  description: The name of the asset.
+                  type:
+                  - 'null'
+                  - string
+                content_type:
+                  description: The content type of the asset.
+                  type:
+                  - 'null'
+                  - string
+                size:
+                  description: The size of the asset in bytes.
+                  type:
+                  - 'null'
+                  - integer
+                download_count:
+                  description: The number of times the asset has been downloaded.
+                  type:
+                  - 'null'
+                  - integer
+                created_at:
+                  description: The timestamp of when the asset was created.
+                  type: string
+                  format: date-time
+                updated_at:
+                  description: The timestamp of when the asset was last updated.
+                  type: string
+                  format: date-time
+                uploader_id:
+                  description: The ID of the user who uploaded the asset.
+                  type:
+                  - 'null'
+                  - integer
+          body_html:
+            description: The HTML body of the release.
+            type:
+            - 'null'
+            - string
+          mentions_count:
+            description: The count of mentions in the release.
+            type:
+            - 'null'
+            - integer
+          reactions:
+            description: The reactions associated with the release.
+            $ref: reactions.json
+
+  projects_v2_stream:
+    # API docs: https://docs.github.com/en/graphql/reference/objects#projectv2
+    type: DeclarativeStream
+    name: projects_v2
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      page_size_reduction:
+        $ref: "#/definitions/graphql_page_size_reduction"
+      requester:
+        $ref: "#/definitions/graphql_requester"
+        request_body_json:
+          query: |
+            query ProjectsV2($owner: String!, $name: String!, $first: Int!, $after: String) {
+              repository(owner: $owner, name: $name) {
+                name
+                owner { login }
+                projectsV2(first: $first, after: $after, orderBy: {field: UPDATED_AT, direction: ASC}) {
+                  nodes {
+                    closed
+                    created_at: createdAt
+                    closed_at: closedAt
+                    updated_at: updatedAt
+                    creator {
+                      avatarUrl
+                      login
+                      resourcePath
+                      url
+                    }
+                    node_id: id
+                    id: databaseId
+                    number
+                    public
+                    readme
+                    short_description: shortDescription
+                    template
+                    title
+                    url
+                    viewerCanClose
+                    viewerCanReopen
+                    viewerCanUpdate
+                    owner { id }
+                  }
+                  pageInfo { hasNextPage endCursor }
+                }
+              }
+            }
+          variables:
+            owner: "{{ stream_partition.repository.split('/')[0] }}"
+            name: "{{ stream_partition.repository.split('/')[1] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "repository", "projectsV2", "nodes"]
+      paginator:
+        $ref: "#/definitions/graphql_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          # Not a `large_stream` in the legacy code, so it keeps constants.DEFAULT_PAGE_SIZE.
+          page_size: 100
+          cursor_value: "{{ ((((response.get('data') or {}).get('repository') or {}).get('projectsV2') or {}).get('pageInfo') or {}).get('endCursor') }}"
+          stop_condition: "{{ not ((((response.get('data') or {}).get('repository') or {}).get('projectsV2') or {}).get('pageInfo') or {}).get('hasNextPage') }}"
+      partition_router:
+        $ref: "#/definitions/repository_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["owner_id"]
+            value: "{{ (record.get('owner') or {}).get('id') }}"
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
+      - type: RemoveFields
+        field_pointers:
+          - ["owner"]
+    incremental_sync:
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_client_side_incremental: true
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          closed:
+            description: Indicates whether the project is closed or not.
+            type:
+            - 'null'
+            - boolean
+          created_at:
+            description: The date and time when the project was created.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          creator:
+            description: Information about the user who created the project.
+            type:
+            - 'null'
+            - object
+            properties:
+              avatarUrl:
+                description: The URL to the creator's avatar image.
+                type:
+                - 'null'
+                - string
+              login:
+                description: The username of the creator.
+                type:
+                - 'null'
+                - string
+              resourcePath:
+                description: The resource path for the creator's profile.
+                type:
+                - 'null'
+                - string
+              url:
+                description: The URL to the creator's profile.
+                type:
+                - 'null'
+                - string
+          closed_at:
+            description: The date and time when the project was closed.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          updated_at:
+            description: The date and time when the project was last updated.
+            type:
+            - 'null'
+            - string
+            format: date-time
+          node_id:
+            description: The node ID of the project.
+            type:
+            - 'null'
+            - string
+          id:
+            description: The unique identifier of the project.
+            type:
+            - 'null'
+            - integer
+          number:
+            description: The project number.
+            type:
+            - 'null'
+            - integer
+          public:
+            description: Indicates whether the project is public or private.
+            type:
+            - 'null'
+            - boolean
+          readme:
+            description: The README content of the project.
+            type:
+            - 'null'
+            - string
+          short_description:
+            description: A brief description of the project.
+            type:
+            - 'null'
+            - string
+          template:
+            description: Indicates whether the project is a template or not.
+            type:
+            - 'null'
+            - boolean
+          title:
+            description: The title of the project.
+            type:
+            - 'null'
+            - string
+          url:
+            description: The URL to access the project.
+            type:
+            - 'null'
+            - string
+          viewerCanClose:
+            description: Indicates whether the current viewer can close the project.
+            type:
+            - 'null'
+            - boolean
+          viewerCanReopen:
+            description: Indicates whether the current viewer can reopen the project.
+            type:
+            - 'null'
+            - boolean
+          viewerCanUpdate:
+            description: Indicates whether the current viewer can update the project.
+            type:
+            - 'null'
+            - boolean
+          owner_id:
+            description: The ID of the project owner.
+            type:
+            - 'null'
+            - string
+          repository:
+            description: Information about the repository associated with the project.
+            type: string
+
+  pull_request_stats_stream:
+    # API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
+    type: DeclarativeStream
+    name: pull_request_stats
+    primary_key: "id"
+    retriever:
+      type: SimpleRetriever
+      page_size_reduction:
+        $ref: "#/definitions/graphql_page_size_reduction"
+      requester:
+        $ref: "#/definitions/graphql_requester"
+        request_headers:
+          # https://docs.github.com/en/graphql/overview/schema-previews#merge-info-preview
+          User-Agent: "PostmanRuntime/7.28.0"
+          Accept: "application/vnd.github.merge-info-preview+json"
+        request_body_json:
+          query: |
+            query PullRequestStats($owner: String!, $name: String!, $first: Int!, $after: String) {
+              repository(owner: $owner, name: $name) {
+                name
+                owner { login }
+                pullRequests(first: $first, after: $after, orderBy: {field: UPDATED_AT, direction: DESC}) {
+                  nodes {
+                    node_id: id
+                    id: databaseId
+                    number
+                    updated_at: updatedAt
+                    changed_files: changedFiles
+                    deletions
+                    additions
+                    merged
+                    mergeable
+                    can_be_rebased: canBeRebased
+                    maintainer_can_modify: maintainerCanModify
+                    merge_state_status: mergeStateStatus
+                    comments { totalCount }
+                    commits { totalCount }
+                    review_comments: reviews(first: 100) {
+                      totalCount
+                      nodes { comments { totalCount } }
+                    }
+                    merged_by: mergedBy {
+                      type: __typename
+                      ... on User {
+                        node_id: id
+                        id: databaseId
+                        login
+                        avatar_url: avatarUrl
+                        html_url: url
+                        site_admin: isSiteAdmin
+                      }
+                    }
+                  }
+                  pageInfo { hasNextPage endCursor }
+                }
+              }
+            }
+          variables:
+            owner: "{{ stream_partition.repository.split('/')[0] }}"
+            name: "{{ stream_partition.repository.split('/')[1] }}"
+      record_selector:
+        type: RecordSelector
+        extractor:
+          type: DpathExtractor
+          field_path: ["data", "repository", "pullRequests", "nodes"]
+      paginator:
+        $ref: "#/definitions/graphql_paginator"
+        pagination_strategy:
+          type: CursorPagination
+          page_size: "{{ config['page_size_for_large_streams'] if config.get('page_size_for_large_streams') is not none else 10 }}"
+          cursor_value: "{{ ((((response.get('data') or {}).get('repository') or {}).get('pullRequests') or {}).get('pageInfo') or {}).get('endCursor') }}"
+          stop_condition: "{{ not ((((response.get('data') or {}).get('repository') or {}).get('pullRequests') or {}).get('pageInfo') or {}).get('hasNextPage') }}"
+      partition_router:
+        $ref: "#/definitions/repository_partition_router"
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["review_comments"]
+            value: "{{ (record['review_comments']['nodes'] or []) | sum(attribute='comments.totalCount') }}"
+          - path: ["comments"]
+            value: "{{ record['comments']['totalCount'] }}"
+          - path: ["commits"]
+            value: "{{ record['commits']['totalCount'] }}"
+          - path: ["repository"]
+            value: "{{ stream_partition.repository }}"
+    incremental_sync:
+      # The query is ordered UPDATED_AT DESC and `is_data_feed` ends the partition at the
+      # first record at or below the cursor. This is the declarative form of the legacy
+      # `is_sorted = "desc"` early exit, which exists because walking every pull request on
+      # each incremental sync exhausted the GraphQL point budget and tripped heartbeat
+      # timeouts on large organizations. The legacy stream used ASC on the very first read
+      # (no state) purely to get mid-partition checkpointing; DESC reads the same records.
+      type: DatetimeBasedCursor
+      cursor_field: "updated_at"
+      cursor_datetime_formats:
+        - "%Y-%m-%dT%H:%M:%SZ"
+      datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      start_datetime:
+        type: MinMaxDatetime
+        datetime: "{{ config.get('start_date') or '1970-01-01T00:00:00Z' }}"
+        datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+      is_data_feed: true
+    state_migrations:
+      - type: LegacyToPerPartitionStateMigration
+    schema_loader:
+      type: InlineSchemaLoader
+      schema:
+        $schema: https://json-schema.org/draft-07/schema#
+        type: object
+        properties:
+          repository:
+            description: The repository to which the pull request belongs.
+            type: string
+          id:
+            description: The unique identifier of the pull request.
+            type:
+            - 'null'
+            - integer
+          node_id:
+            description: The node ID of the pull request.
+            type:
+            - 'null'
+            - string
+          number:
+            description: The number of the pull request.
+            type:
+            - 'null'
+            - integer
+          merged:
+            description: Indicates if the pull request has been merged.
+            type:
+            - 'null'
+            - boolean
+          mergeable:
+            description: Indicates if the pull request is mergeable.
+            type:
+            - 'null'
+            - string
+          can_be_rebased:
+            description: Indicates whether the pull request can be rebased onto the base branch.
+            type:
+            - 'null'
+            - boolean
+          merge_state_status:
+            description: The status of the merge state for the pull request.
+            type:
+            - 'null'
+            - string
+          merged_by:
+            description: The user who merged the pull request.
+            type:
+            - 'null'
+            - object
+            properties:
+              login:
+                description: The username of the user who merged the pull request.
+                type:
+                - 'null'
+                - string
+              id:
+                description: The unique identifier of the user who merged the pull request.
+                type:
+                - 'null'
+                - integer
+              node_id:
+                description: The node ID of the user who merged the pull request.
+                type:
+                - 'null'
+                - string
+              avatar_url:
+                description: The URL of the avatar of the user who merged the pull request.
+                type:
+                - 'null'
+                - string
+              html_url:
+                description: The HTML URL of the user who merged the pull request.
+                type:
+                - 'null'
+                - string
+              type:
+                description: The type of user who merged the pull request.
+                type:
+                - 'null'
+                - string
+              site_admin:
+                description: Indicates if the user who merged the pull request is a site admin.
+                type:
+                - 'null'
+                - boolean
+          comments:
+            description: The total number of comments on the pull request.
+            type:
+            - 'null'
+            - integer
+          review_comments:
+            description: The total number of review comments on the pull request.
+            type:
+            - 'null'
+            - integer
+          maintainer_can_modify:
+            description: Indicates if maintainers can modify the pull request.
+            type:
+            - 'null'
+            - boolean
+          commits:
+            description: The total number of commits in the pull request.
+            type:
+            - 'null'
+            - integer
+          additions:
+            description: The total number of lines added in the pull request.
+            type:
+            - 'null'
+            - integer
+          deletions:
+            description: The total number of lines deleted in the pull request.
+            type:
+            - 'null'
+            - integer
+          changed_files:
+            description: The number of files changed in the pull request.
+            type:
+            - 'null'
+            - integer
+          updated_at:
+            description: The date and time when the pull request was last updated.
+            type: string
+            format: date-time
+
 # Deliberately one global budget, not one per token: GitHub's 900 points/min secondary limit
 # is per token, so this is conservative — a multi-token config could spend more than this
 # allows. Left global on purpose, because the CDK budget has no notion of which credential a
@@ -2487,6 +3300,9 @@ streams:
   - $ref: "#/definitions/organizations_stream"
   - $ref: "#/definitions/teams_stream"
   - $ref: "#/definitions/users_stream"
+  - $ref: "#/definitions/releases_stream"
+  - $ref: "#/definitions/projects_v2_stream"
+  - $ref: "#/definitions/pull_request_stats_stream"
 
 check:
   type: CheckStream

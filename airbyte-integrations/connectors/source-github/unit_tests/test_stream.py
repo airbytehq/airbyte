@@ -14,6 +14,7 @@ import responses
 from attr.validators import matches_re
 from responses import matchers
 from source_github import SourceGithub, constants
+from source_github.components import _extract_database_id_from_node_id
 from source_github.errors_handlers import GitHubGraphQLErrorHandler, is_conflict_with_empty_repository, is_gone_with_feature_disabled
 from source_github.streams import (
     Branches,
@@ -26,17 +27,15 @@ from source_github.streams import (
     GithubStreamABCBackoffStrategy,
     IssueEvents,
     IssueMilestones,
+    IssueReactions,
     Issues,
     IssueTimelineEvents,
     ProjectCards,
     ProjectColumns,
     Projects,
-    ProjectsV2,
     PullRequestCommentReactions,
     PullRequestCommits,
     PullRequests,
-    PullRequestStats,
-    Releases,
     RepositoryStats,
     Reviews,
     Stargazers,
@@ -148,7 +147,8 @@ def test_graphql_rate_limit_wait_applies():
     response_mock.headers = {"X-RateLimit-Resource": "graphql", "X-RateLimit-Reset": "1655804724"}
     response_mock.json.return_value = {"errors": [{"type": "RATE_LIMITED"}]}
     args = {"authenticator": None, "repositories": ["test_repo"], "page_size_for_large_streams": 30}
-    stream = ProjectsV2(**args)
+    # Any `GitHubGraphQLStream` subclass will do; `IssueReactions` is one that is still Python.
+    stream = IssueReactions(**args)
 
     with patch("time.time", return_value=1655804424.0):
         assert stream.get_backoff_strategy().backoff_time(response_mock) == 300.0
@@ -515,7 +515,7 @@ def test_graphql_rate_limited(time_mock, sleep_mock, requests_mock):
         text=request_callback,
     )
 
-    stream = PullRequestStats(repositories=["airbytehq/airbyte"], page_size_for_large_streams=30)
+    stream = IssueReactions(repositories=["airbytehq/airbyte"], page_size_for_large_streams=30)
     records = list(read_full_refresh(stream))
     assert records == []
     assert requests_mock.call_count == 2
@@ -1208,78 +1208,8 @@ def test_streams_read_full_refresh(requests_mock):
         records = list(read_full_refresh(stream))
         assert records == get_records(stream.cursor_field)[1:2]
 
-    graphql_releases_response = {
-        "data": {
-            "repository": {
-                "name": "repository",
-                "owner": {"login": "organization"},
-                "releases": {
-                    "nodes": [
-                        {
-                            "id": 1,
-                            "node_id": "R_1",
-                            "created_at": "2022-02-01T00:00:00Z",
-                            "published_at": "2022-02-01T00:00:00Z",
-                            "updated_at": "2022-02-01T00:00:00Z",
-                            "name": "v1.0",
-                            "tag_name": "v1.0",
-                            "draft": False,
-                            "prerelease": False,
-                            "body": "",
-                            "body_html": "",
-                            "html_url": "https://github.com/organization/repository/releases/tag/v1.0",
-                            "author": None,
-                            "assets": {"nodes": [], "pageInfo": {"hasNextPage": False}},
-                            "mentions_connection": {"totalCount": 0},
-                            "tagCommit": {"target_commitish": "abc123"},
-                            "reaction_groups": [],
-                        },
-                        {
-                            "id": 2,
-                            "node_id": "R_2",
-                            "created_at": "2022-02-02T00:00:00Z",
-                            "published_at": "2022-02-02T00:00:00Z",
-                            "updated_at": "2022-02-02T00:00:00Z",
-                            "name": "v2.0",
-                            "tag_name": "v2.0",
-                            "draft": False,
-                            "prerelease": False,
-                            "body": "",
-                            "body_html": "",
-                            "html_url": "https://github.com/organization/repository/releases/tag/v2.0",
-                            "author": None,
-                            "assets": {"nodes": [], "pageInfo": {"hasNextPage": False}},
-                            "mentions_connection": {"totalCount": 0},
-                            "tagCommit": {"target_commitish": "def456"},
-                            "reaction_groups": [{"content": "THUMBS_UP", "reactors": {"totalCount": 1}}],
-                        },
-                    ],
-                    "pageInfo": {"hasNextPage": False, "endCursor": None},
-                },
-            }
-        }
-    }
-    requests_mock.post("https://api.github.com/graphql", json=graphql_releases_response)
-    stream = Releases(**repository_args_with_start_date)
-    records = list(read_full_refresh(stream))
-    assert len(records) == 1
-    assert records[0]["id"] == 2
-    assert records[0]["repository"] == "organization/repository"
-    assert records[0]["url"] == "https://api.github.com/repos/organization/repository/releases/2"
-    assert records[0]["assets_url"] == "https://api.github.com/repos/organization/repository/releases/2/assets"
-    assert records[0]["tarball_url"] == "https://api.github.com/repos/organization/repository/tarball/v2.0"
-    assert records[0]["zipball_url"] == "https://api.github.com/repos/organization/repository/zipball/v2.0"
-    assert records[0]["reactions"] == {
-        "plus_one": 1,
-        "minus_one": 0,
-        "laugh": 0,
-        "hooray": 0,
-        "confused": 0,
-        "heart": 0,
-        "rocket": 0,
-        "eyes": 0,
-        "total_count": 1,
-    }
+    # `releases`, `projects_v2` and `pull_request_stats` moved to the manifest in Step 9;
+    # their read behavior is covered by test_manifest_graphql_streams.py.
 
     # `assignees`, `branches`, `collaborators`, `issue_labels` and `tags` moved to the
     # manifest; their read behavior is covered by test_manifest_repo_scoped_streams.py.
@@ -1301,128 +1231,6 @@ def test_streams_read_full_refresh(requests_mock):
     assert records == [{"repository": "organization/repository", "starred_at": "2022-02-02T00:00:00Z", "user": {"id": 2}, "user_id": 2}]
 
 
-def test_releases_draft_release_null_tag(requests_mock):
-    repository_args = {
-        "repositories": ["organization/repository"],
-        "page_size_for_large_streams": 100,
-        "start_date": "2022-01-01T00:00:00Z",
-    }
-    graphql_response = {
-        "data": {
-            "repository": {
-                "name": "repository",
-                "owner": {"login": "organization"},
-                "releases": {
-                    "nodes": [
-                        {
-                            "id": 10,
-                            "node_id": "R_draft",
-                            "created_at": "2022-03-01T00:00:00Z",
-                            "published_at": None,
-                            "updated_at": "2022-03-01T00:00:00Z",
-                            "name": "Draft Release",
-                            "tag_name": None,
-                            "draft": True,
-                            "prerelease": False,
-                            "body": "WIP",
-                            "body_html": "<p>WIP</p>",
-                            "html_url": "https://github.com/organization/repository/releases/tag/untagged",
-                            "author": {
-                                "id": 1,
-                                "login": "dev",
-                                "avatar_url": "",
-                                "html_url": "",
-                                "site_admin": False,
-                                "__typename": "User",
-                            },
-                            "assets": {"nodes": [], "pageInfo": {"hasNextPage": False}},
-                            "mentions_connection": {"totalCount": 0},
-                            "tagCommit": None,
-                            "reaction_groups": [],
-                        },
-                    ],
-                    "pageInfo": {"hasNextPage": False, "endCursor": None},
-                },
-            }
-        }
-    }
-    requests_mock.post("https://api.github.com/graphql", json=graphql_response)
-    stream = Releases(**repository_args)
-    records = list(read_full_refresh(stream))
-    assert len(records) == 1
-    record = records[0]
-    assert record["tag_name"] is None
-    assert record["draft"] is True
-    assert record["target_commitish"] is None
-    assert record["tarball_url"] is None
-    assert record["zipball_url"] is None
-    assert record["url"] == "https://api.github.com/repos/organization/repository/releases/10"
-    assert record["assets_url"] == "https://api.github.com/repos/organization/repository/releases/10/assets"
-
-
-def test_releases_asset_truncation_warning(requests_mock, caplog):
-    repository_args = {
-        "repositories": ["organization/repository"],
-        "page_size_for_large_streams": 100,
-        "start_date": "2022-01-01T00:00:00Z",
-    }
-    graphql_response = {
-        "data": {
-            "repository": {
-                "name": "repository",
-                "owner": {"login": "organization"},
-                "releases": {
-                    "nodes": [
-                        {
-                            "id": 20,
-                            "node_id": "R_many_assets",
-                            "created_at": "2022-04-01T00:00:00Z",
-                            "published_at": "2022-04-01T00:00:00Z",
-                            "updated_at": "2022-04-01T00:00:00Z",
-                            "name": "v3.0",
-                            "tag_name": "v3.0",
-                            "draft": False,
-                            "prerelease": False,
-                            "body": "",
-                            "body_html": "",
-                            "html_url": "https://github.com/organization/repository/releases/tag/v3.0",
-                            "author": None,
-                            "assets": {
-                                "nodes": [
-                                    {
-                                        "node_id": f"A_{i}",
-                                        "name": f"asset_{i}.zip",
-                                        "content_type": "application/zip",
-                                        "size": 1024,
-                                        "download_count": 0,
-                                        "created_at": "2022-04-01T00:00:00Z",
-                                        "updated_at": "2022-04-01T00:00:00Z",
-                                        "browser_download_url": f"https://example.com/asset_{i}.zip",
-                                        "url": f"https://api.github.com/repos/organization/repository/releases/assets/{i}",
-                                        "uploader": {"id": 1},
-                                    }
-                                    for i in range(100)
-                                ],
-                                "pageInfo": {"hasNextPage": True},
-                            },
-                            "mentions_connection": {"totalCount": 0},
-                            "tagCommit": {"target_commitish": "abc"},
-                            "reaction_groups": [],
-                        },
-                    ],
-                    "pageInfo": {"hasNextPage": False, "endCursor": None},
-                },
-            }
-        }
-    }
-    requests_mock.post("https://api.github.com/graphql", json=graphql_response)
-    stream = Releases(**repository_args)
-    records = list(read_full_refresh(stream))
-    assert len(records) == 1
-    assert len(records[0]["assets"]) == 100
-    assert any(">100 assets" in msg for msg in caplog.messages)
-
-
 @pytest.mark.parametrize(
     "node_id,expected_id",
     [
@@ -1434,69 +1242,7 @@ def test_releases_asset_truncation_warning(requests_mock, caplog):
     ],
 )
 def test_releases_extract_database_id_from_node_id(node_id, expected_id):
-    assert Releases._extract_database_id_from_node_id(node_id) == expected_id
-
-
-def test_releases_pagination(requests_mock):
-    repository_args = {
-        "repositories": ["organization/repository"],
-        "page_size_for_large_streams": 100,
-        "start_date": "2022-01-01T00:00:00Z",
-    }
-
-    def make_release(release_id, tag, date):
-        return {
-            "id": release_id,
-            "node_id": f"R_{release_id}",
-            "created_at": date,
-            "published_at": date,
-            "updated_at": date,
-            "name": tag,
-            "tag_name": tag,
-            "draft": False,
-            "prerelease": False,
-            "body": "",
-            "body_html": "",
-            "html_url": f"https://github.com/organization/repository/releases/tag/{tag}",
-            "author": None,
-            "assets": {"nodes": [], "pageInfo": {"hasNextPage": False}},
-            "mentions_connection": {"totalCount": 0},
-            "tagCommit": {"target_commitish": "abc"},
-            "reaction_groups": [],
-        }
-
-    page1 = {
-        "data": {
-            "repository": {
-                "name": "repository",
-                "owner": {"login": "organization"},
-                "releases": {
-                    "nodes": [make_release(1, "v1.0", "2022-02-01T00:00:00Z")],
-                    "pageInfo": {"hasNextPage": True, "endCursor": "cursor_1"},
-                },
-            }
-        }
-    }
-    page2 = {
-        "data": {
-            "repository": {
-                "name": "repository",
-                "owner": {"login": "organization"},
-                "releases": {
-                    "nodes": [make_release(2, "v2.0", "2022-03-01T00:00:00Z")],
-                    "pageInfo": {"hasNextPage": False, "endCursor": None},
-                },
-            }
-        }
-    }
-    requests_mock.post("https://api.github.com/graphql", [{"json": page1}, {"json": page2}])
-    stream = Releases(**repository_args)
-    records = list(read_full_refresh(stream))
-    assert len(records) == 2
-    assert records[0]["id"] == 1
-    assert records[0]["tag_name"] == "v1.0"
-    assert records[1]["id"] == 2
-    assert records[1]["tag_name"] == "v2.0"
+    assert _extract_database_id_from_node_id(node_id) == expected_id
 
 
 def test_stream_reviews_incremental_read(requests_mock):
@@ -1890,44 +1636,6 @@ def test_stream_pull_request_comment_reactions_read(requests_mock):
     assert stream_state == {"airbytehq/airbyte": {"created_at": "2022-01-02T00:00:01Z"}}
 
 
-@patch("time.sleep")
-def test_stream_projects_v2_graphql_retry(time_mock, rate_limit_mock_response, requests_mock):
-    repository_args_with_start_date = {
-        "start_date": "2022-01-01T00:00:00Z",
-        "page_size_for_large_streams": 20,
-        "repositories": ["airbytehq/airbyte"],
-    }
-    stream = ProjectsV2(**repository_args_with_start_date)
-    resp = requests_mock.post("https://api.github.com/graphql", json={"errors": "not found"}, status_code=200, headers={"Retry-After": "5"})
-
-    backoff_strategy = GithubStreamABCBackoffStrategy(stream)
-
-    with patch.object(backoff_strategy, "backoff_time", return_value=0.01), pytest.raises(AirbyteTracedException):
-        read_incremental(stream, stream_state={})
-    assert requests_mock.call_count == stream.max_retries + 1
-
-
-def test_stream_projects_v2_graphql_query(requests_mock):
-    repository_args_with_start_date = {
-        "start_date": "2022-01-01T00:00:00Z",
-        "page_size_for_large_streams": 20,
-        "repositories": ["airbytehq/airbyte"],
-    }
-    stream = ProjectsV2(**repository_args_with_start_date)
-    query = stream.request_body_json(stream_state={}, stream_slice={"repository": "airbytehq/airbyte"})
-    requests_mock.post(
-        "https://api.github.com/graphql",
-        json=json.load(open(Path(__file__).parent / "responses/projects_v2_response.json")),
-    )
-    f = Path(__file__).parent / "projects_v2_pull_requests_query.json"
-    expected_query = json.load(open(f))
-
-    records = list(read_full_refresh(stream))
-    assert query == expected_query
-    assert records[0].get("owner_id")
-    assert records[0].get("repository")
-
-
 def test_stream_contributor_activity_parse_empty_response(caplog, requests_mock):
     repository_args = {
         "page_size_for_large_streams": 20,
@@ -2029,24 +1737,6 @@ def test_issues_timeline_events(requests_mock):
     stream = IssueTimelineEvents(**repository_args)
     records = list(stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice={"repository": "airbytehq/airbyte", "number": 1}))
     assert expected_records == records
-
-
-def test_pull_request_stats(requests_mock):
-    repository_args = {
-        "page_size_for_large_streams": 10,
-        "repositories": ["airbytehq/airbyte"],
-    }
-    stream = PullRequestStats(**repository_args)
-    query = stream.request_body_json(stream_state={}, stream_slice={"repository": "airbytehq/airbyte"})
-    requests_mock.post(
-        "https://api.github.com/graphql",
-        json=json.load(open(Path(__file__).parent / "responses/pull_request_stats_response.json")),
-    )
-    f = Path(__file__).parent / "pull_request_stats_query.json"
-    expected_query = json.load(open(f))
-
-    list(read_full_refresh(stream))
-    assert query == expected_query
 
 
 # === Tests for error-swallowing bug fixes (oncall/issues/11907) ===
@@ -2167,7 +1857,7 @@ def test_releases_extract_database_id_does_not_catch_type_error():
             raise TypeError("split not supported")
 
     with pytest.raises(TypeError):
-        Releases._extract_database_id_from_node_id(BadNodeId())
+        _extract_database_id_from_node_id(BadNodeId())
 
 
 @pytest.mark.parametrize(
@@ -2179,7 +1869,7 @@ def test_releases_extract_database_id_does_not_catch_type_error():
 )
 def test_releases_extract_database_id_catches_expected_errors(node_id, expected_id):
     """Verify that expected decode/unpack errors still return None after narrowing the except."""
-    assert Releases._extract_database_id_from_node_id(node_id) == expected_id
+    assert _extract_database_id_from_node_id(node_id) == expected_id
 
 
 # === Tests for defensive parse_response (airbyte-internal-issues/issues/16281) ===
@@ -2364,18 +2054,6 @@ def test_graphql_rate_limit_check_with_valid_rate_limited_body():
     assert result.response_action == ResponseAction.RATE_LIMITED
 
 
-def test_releases_marked_as_large_stream():
-    """The Releases GraphQL query is high-cost, so the stream must be marked as
-    large_stream so that page_size defaults to the smaller large-stream value."""
-    assert Releases.large_stream is True
-    stream = Releases(
-        repositories=["org/repo"],
-        page_size_for_large_streams=constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM,
-        start_date="2022-01-01T00:00:00Z",
-    )
-    assert stream.page_size == constants.DEFAULT_PAGE_SIZE_FOR_LARGE_STREAM
-
-
 @pytest.mark.parametrize("status_code", [requests.codes.BAD_GATEWAY, requests.codes.GATEWAY_TIMEOUT])
 def test_graphql_error_handler_502_504_message_includes_stream_name(status_code):
     """502/504 responses should produce an error message that names the stream and
@@ -2416,28 +2094,6 @@ def test_graphql_error_handler_504_floors_page_size_at_one():
     resp.json = MagicMock(return_value={})
     handler.interpret_response(resp)
     assert stream.page_size == 1
-
-
-@patch("time.sleep")
-def test_read_records_504_message_for_releases(time_mock, caplog, requests_mock):
-    """After exhausting retries on 504s, the final user-facing log message for the
-    Releases stream should name the stream and mention the page-size remediation —
-    not the bare 'Response status code: 504. Retrying...' string."""
-    stream = Releases(
-        repositories=["org/repo"],
-        page_size_for_large_streams=10,
-        start_date="2022-01-01T00:00:00Z",
-    )
-    requests_mock.post(
-        "https://api.github.com/graphql",
-        status_code=requests.codes.GATEWAY_TIMEOUT,
-        json={"message": "Gateway Timeout"},
-    )
-    list(read_full_refresh(stream))
-    assert any(
-        "GitHub returned HTTP 504 Gateway Timeout for stream `releases`" in msg and "Page size for large streams" in msg
-        for msg in caplog.messages
-    )
 
 
 class _RequestLoopDetected(Exception):

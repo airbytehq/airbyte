@@ -27,75 +27,6 @@ def select_user_fields(user):
     )
 
 
-def get_query_pull_requests(owner, name, first, after, direction):
-    kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": direction}}
-    if after:
-        kwargs["after"] = after
-
-    op = sgqlc.operation.Operation(_schema_root.query_type)
-    repository = op.repository(owner=owner, name=name)
-    repository.name()
-    repository.owner.login()
-    pull_requests = repository.pull_requests(**kwargs)
-    pull_requests.nodes.__fields__(
-        id="node_id",
-        database_id="id",
-        number=True,
-        updated_at="updated_at",
-        changed_files="changed_files",
-        deletions=True,
-        additions=True,
-        merged=True,
-        mergeable=True,
-        can_be_rebased="can_be_rebased",
-        maintainer_can_modify="maintainer_can_modify",
-        merge_state_status="merge_state_status",
-    )
-    pull_requests.nodes.comments.__fields__(total_count=True)
-    pull_requests.nodes.commits.__fields__(total_count=True)
-    reviews = pull_requests.nodes.reviews(first=100, __alias__="review_comments")
-    reviews.total_count()
-    reviews.nodes.comments.__fields__(total_count=True)
-    user = pull_requests.nodes.merged_by(__alias__="merged_by").__as__(_schema_root.User)
-    select_user_fields(user)
-    pull_requests.page_info.__fields__(has_next_page=True, end_cursor=True)
-    return str(op)
-
-
-def get_query_projectsV2(owner, name, first, after, direction):
-    kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": direction}}
-    if after:
-        kwargs["after"] = after
-
-    op = sgqlc.operation.Operation(_schema_root.query_type)
-    repository = op.repository(owner=owner, name=name)
-    repository.name()
-    repository.owner.login()
-    projects_v2 = repository.projects_v2(**kwargs)
-    projects_v2.nodes.__fields__(
-        closed=True,
-        created_at="created_at",
-        closed_at="closed_at",
-        updated_at="updated_at",
-        creator="creator",
-        id="node_id",
-        database_id="id",
-        number=True,
-        public=True,
-        readme="readme",
-        short_description="short_description",
-        template=True,
-        title="title",
-        url="url",
-        viewer_can_close=True,
-        viewer_can_reopen=True,
-        viewer_can_update=True,
-    )
-    projects_v2.nodes.owner.__fields__(id="id")
-    projects_v2.page_info.__fields__(has_next_page=True, end_cursor=True)
-    return str(op)
-
-
 def get_query_reviews(owner, name, first, after, number=None):
     op = sgqlc.operation.Operation(_schema_root.query_type)
     repository = op.repository(owner=owner, name=name)
@@ -162,54 +93,6 @@ def get_query_issue_reactions(owner, name, first, after, number=None):
         created_at="created_at",
     )
     select_user_fields(reactions.nodes.user())
-    return str(op)
-
-
-def get_query_releases(owner, name, first, after):
-    kwargs = {"first": first, "order_by": {"field": "CREATED_AT", "direction": "ASC"}}
-    if after:
-        kwargs["after"] = after
-
-    op = sgqlc.operation.Operation(_schema_root.query_type)
-    repository = op.repository(owner=owner, name=name)
-    repository.name()
-    repository.owner.login()
-    releases = repository.releases(**kwargs)
-    releases.nodes.__fields__(
-        id="node_id",
-        database_id="id",
-        name=True,
-        tag_name="tag_name",
-        created_at="created_at",
-        published_at="published_at",
-        updated_at="updated_at",
-        is_draft="draft",
-        is_prerelease="prerelease",
-        description="body",
-        description_html="body_html",
-        url="html_url",
-    )
-    releases.nodes.tag_commit.oid(__alias__="target_commitish")
-    author = releases.nodes.author(__alias__="author").__as__(_schema_root.User)
-    select_user_fields(author)
-    release_assets = releases.nodes.release_assets(first=100, __alias__="assets")
-    release_assets.nodes.__fields__(
-        id="node_id",
-        name=True,
-        content_type="content_type",
-        size=True,
-        download_count="download_count",
-        created_at="created_at",
-        updated_at="updated_at",
-        download_url="browser_download_url",
-        url=True,
-    )
-    release_assets.nodes.uploaded_by(__alias__="uploader").__as__(_schema_root.User).__fields__(database_id="id")
-    release_assets.page_info.__fields__(has_next_page=True)
-    releases.nodes.reaction_groups(__alias__="reaction_groups").__fields__(content=True)
-    releases.nodes.reaction_groups(__alias__="reaction_groups").reactors.__fields__(total_count=True)
-    releases.nodes.mentions(first=0, __alias__="mentions_connection").total_count()
-    releases.page_info.__fields__(has_next_page=True, end_cursor=True)
     return str(op)
 
 
