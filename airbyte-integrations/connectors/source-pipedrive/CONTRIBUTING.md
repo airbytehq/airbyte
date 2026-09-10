@@ -7,12 +7,13 @@ For general guidance on contributing to Airbyte connectors, see the
 
 Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
 
-1. **Incremental Streams Read From the Recents Endpoint, Not the Entity Endpoints** -- the ten
-   incremental streams poll `/v1/recents` for anything modified since the start date, so they
+1. **Incremental Streams Read From the Recents Endpoint, Not the Entity Endpoints** -- ten of the
+   eleven incremental streams poll `/v1/recents` for anything modified since the start date, so they
    pick up edits to old records but never see untouched records created before the start date.
    Pipedrive caps the Recents endpoint at one month of history, so older records are never
-   backfilled. The other sixteen streams are full refresh and ignore the start date, except
-   `deal_products`, which only expands the deals returned by `deals`.
+   backfilled. `deal_flow` reads each deal's change log and filters on `log_time` client-side.
+   The other twenty-three streams are full refresh and ignore the start date, except
+   `deal_products` and `deal_installments`, which only expand the deals returned by `deals`.
 2. **Null-Payload Records From Recents Are Kept as Tombstones** -- when Pipedrive returns a
    `null` payload for a recent item, the connector emits a sparse record with just `id` and
    `item` instead of failing; don't filter these out or swap the custom extractor without
@@ -29,12 +30,16 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    thread; both only see the token owner's mailbox.
 6. **HTTP Errors Are Classified on the Shared Base Requester** -- 401/402/403 fail as
    configuration errors carrying Pipedrive's `error` text, 410 fails as a system error, 429 waits on
-   `x-ratelimit-reset` then backs off, 5xx retry; `deal_products` and `mail` skip a single
-   inaccessible or deleted parent instead of failing the sync. Details in AGENTS.md section 6.
-7. **No API Budget or Concurrency Tuning** -- there is no client-side throttling against
-   Pipedrive's per-company token budget, so adding fan-out or concurrency raises the risk of
-   company-wide rate limiting. Owned by
-   [airbyte-internal-issues#17200](https://github.com/airbytehq/airbyte-internal-issues/issues/17200).
+   `x-ratelimit-reset` then backs off, 5xx retry; `deal_products`, `deal_flow` and `mail` skip a
+   single inaccessible or deleted parent instead of failing the sync; `legacy_teams`, `projects`,
+   `tasks`, `deal_installments` and `permission_set_assignments` return no records when Pipedrive
+   reports the feature as unavailable (402/403, plus 404/410 where the endpoint may be retired).
+   Per-stream handlers must be a `CompositeErrorHandler` that falls through to the shared
+   `base_error_handler`. Details in AGENTS.md section 6.
+7. **One Shared Request Budget and a Small Thread Pool** -- `api_budget` throttles every stream to
+   20 requests per rolling 2 seconds (Pipedrive's lowest-plan burst limit, matched by URL path so
+   OAuth company hosts are covered too) and `concurrency_level` runs `num_workers` streams in
+   parallel (default 3, max 10). Details in AGENTS.md section 7.
 8. **Deletes Are Not Replicated** -- deleted Pipedrive records stay in destinations until the
    stream is cleared. Any change here comes with the API v2 migration in
    [airbyte-internal-issues#17204](https://github.com/airbytehq/airbyte-internal-issues/issues/17204).
