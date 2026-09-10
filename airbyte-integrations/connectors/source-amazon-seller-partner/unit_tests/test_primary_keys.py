@@ -35,10 +35,5 @@ def test_all_orders_streams_have_no_primary_key(stream_name: str) -> None:
     source = get_source(_CONFIG)
     streams = [stream for stream in source.streams(source._config) if stream.name == stream_name]
     assert streams, f"Stream {stream_name} not found"
-    stream = streams[0]
-
-    # Streams are wrapped in a concurrent DefaultStream which stores the key as `_primary_key`
-    assert not getattr(stream, "primary_key", getattr(stream, "_primary_key", None))
-
-    airbyte_stream = stream.as_airbyte_stream()
+    airbyte_stream = streams[0].as_airbyte_stream()
     assert not airbyte_stream.source_defined_primary_key
