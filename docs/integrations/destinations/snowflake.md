@@ -166,7 +166,7 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 | [Role](https://docs.snowflake.com/en/user-guide/security-access-control-overview.html#roles) | The role you created in Step 2 for Airbyte to access Snowflake. Example: `AIRBYTE_ROLE` |
 | [Warehouse](https://docs.snowflake.com/en/user-guide/warehouses-overview.html#overview-of-warehouses) | The warehouse you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_WAREHOUSE` |
 | [Database](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The database you created in Step 2 for Airbyte to sync data into. Example: `AIRBYTE_DATABASE` |
-| [Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
+| [Default Schema](https://docs.snowflake.com/en/sql-reference/ddl-database.html#database-schema-share-ddl) | The default schema used as the target schema for all statements issued from the connection that do not explicitly specify a schema name. |
 | Username | The service user you created in Step 2 to allow Airbyte to access the database. Example: `AIRBYTE_USER` |
 | Private Key | The private key from the key pair you generated in Step 1. Paste the full contents of your `rsa_key.p8` file, including the `-----BEGIN ... PRIVATE KEY-----` header and footer. |
 | Passphrase (Optional) | The passphrase for the private key, if the key was generated with encryption. Leave blank if the key is unencrypted. |
@@ -174,7 +174,7 @@ in [Step 1](#step-1-set-up-key-pair-authentication) to authenticate.
 | [JDBC URL Params](https://docs.snowflake.com/en/user-guide/jdbc-parameters.html) (Optional) | Additional properties to pass to the JDBC URL string when connecting to the database formatted as `key=value` pairs separated by the symbol `&`. Example: `key1=value1&key2=value2&key3=value3` |
 | Legacy raw tables (Optional) | Write the legacy raw tables format for backwards compatibility with older versions of this connector. See [Output schema](#output-schema). The data format in `_airbyte_data` is fairly stable but there are no guarantees that other metadata columns will remain the same in future versions. |
 | Airbyte Internal Table Dataset Name (Optional) | The schema used for Airbyte's internal tables. In legacy raw tables mode, the raw tables are stored in this schema. Defaults to `airbyte_internal`. |
-| Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
+| Trim Whitespace from String Fields (Optional) | Whether Snowflake should trim leading and trailing whitespace from fields during data loading. Enabled by default. Disable this option if leading or trailing whitespace in string fields is meaningful and should be preserved. |
 | [Data Retention Period](https://docs.snowflake.com/en/user-guide/data-time-travel#data-retention-period) (Optional) | The number of days of Snowflake Time Travel to enable on tables. A nonzero value incurs increased storage costs in your Snowflake instance. Defaults to `1`. |
 | Decimal Data Type (Optional) | Determines which Snowflake data type Airbyte uses for columns with the Airbyte `number` type: `NUMBER(38,9)` (recommended) or `FLOAT` (default). See [Data type map](#data-type-map) for guidance on choosing between them. |
 
@@ -227,6 +227,17 @@ The final table contains these fields, in addition to the columns declared in yo
 
 Again, see [here](/platform/understanding-airbyte/airbyte-metadata-fields) for more information about these fields.
 
+### Table and column naming
+
+Snowflake identifiers aren't case-sensitive unless you quote them, so the connector writes the namespace, table, and column names in uppercase. A stream called `users` with a field called `created_at` becomes the table `USERS` with the column `CREATED_AT`.
+
+Two transformations change more than the case:
+
+- Snowflake rejects a small set of ANSI reserved words as column names, even when they're quoted. If a field is named `constraint`, `current_date`, `current_time`, `current_timestamp`, `current_user`, `localtime`, or `localtimestamp`, the connector prefixes the column with an underscore, so `current_date` becomes `_CURRENT_DATE`. Only exact matches are prefixed: `my_current_date` stays `MY_CURRENT_DATE`. For the full list of Snowflake restrictions, see [Reserved and limited keywords](https://docs.snowflake.com/en/sql-reference/reserved-keywords). Version 4.1.1 added this behavior; before that, a stream containing one of these fields failed with a SQL compilation error.
+- If a stream, namespace, or field name contains the `${` sequence, the connector replaces every `$`, `{`, and `}` in that name with underscores, because Snowflake's scripting language treats `${` specially. A field named `${foo}` becomes the column `__FOO_`.
+
+In **Legacy raw tables** mode, the connector doesn't transform column names. Record data stays in the `_airbyte_data` column with the original field names from the source.
+
 ## Data type map
 
 | Airbyte type                        | Snowflake type |
@@ -261,7 +272,7 @@ The **Decimal Data Type** setting determines which Snowflake data type Airbyte u
 :::warning
 We recommend running a full refresh after changing this setting on an existing connection. Otherwise, on the next sync, Airbyte attempts to convert existing number columns in place. Because FLOAT and NUMBER(38,9) have different range and precision characteristics, this conversion can result in data loss, including reduced precision, truncated values, or values being set to NULL:
 
-- Switching to **NUMBER(38,9)**: Stored FLOAT values with more than 29 digits before the decimal point are set to NULL during the conversion. Because Snowflake converts the column in place, Airbyte does not process the individual rows, so no `_airbyte_meta` entry is added for these changes. Values that lost precision when they were originally loaded as FLOAT (rows flagged `TRUNCATED` in `_airbyte_meta`) remain imprecise, because the conversion cannot restore digits that were never stored. Only a full refresh re-syncs the original values from the source.
+- Switching to **NUMBER(38,9)**: Stored FLOAT values with more than 29 digits before the decimal point are set to NULL during the conversion, as are any `NaN` and infinity values in the column. Because Snowflake converts the column in place, Airbyte does not process the individual rows, so no `_airbyte_meta` entry is added for these changes. Values that lost precision when they were originally loaded as FLOAT (rows flagged `TRUNCATED` in `_airbyte_meta`) remain imprecise, because the conversion cannot restore digits that were never stored. Only a full refresh re-syncs the original values from the source.
 - Switching to **FLOAT**: Values silently become approximate again, and query results may differ slightly.
 
 :::
@@ -271,7 +282,7 @@ We recommend running a full refresh after changing this setting on an existing c
 Snowflake has precision limits for numeric types:
 
 - **FLOAT**: Standard 64-bit floating point value.
-- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are truncated and flagged in `_airbyte_meta`.
+- **NUMBER(38,9)** (if selected as the number data type): Maximum 29 digits before the decimal point. Larger values are nulled and flagged in `_airbyte_meta`; if your data contains values this large, use the FLOAT option instead. Values with more than 9 decimal places are rounded to 9 decimal places, rounding half away from zero. When rounding changes the value, `_airbyte_meta` records a `TRUNCATED` change with the reason `DESTINATION_FIELD_SIZE_LIMITATION`.
 - **NUMBER (INTEGER)**: Maximum 38 digits.
 
 When a value exceeds the bounds of these types, Airbyte nulls it out. Values within the minimum/maximum boundaries but with excessive precision are rounded. In both cases, the `_airbyte_meta` column contains a `changes` entry to reflect this.
@@ -338,10 +349,10 @@ This destination supports [namespaces](https://docs.airbyte.com/platform/using-a
 
 | Version         | Date       | Pull Request                                               | Subject                                                                                                                                                                                |
 |:----------------|:-----------|:-----------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 5.0.0           | 2026-09-02 | [85314](https://github.com/airbytehq/airbyte/pull/85314)   | Deprecate username/password authentication; key pair authentication is now the only recommended auth method. Username/password will be removed in a future release.                      |
+| 5.0.0           | 2026-09-03 | [85314](https://github.com/airbytehq/airbyte/pull/85314)   | Deprecate username/password authentication; key pair authentication is now the only recommended auth method. Username/password will be removed in a future release.                      |
 | 4.1.2           | 2026-08-24 | [84979](https://github.com/airbytehq/airbyte/pull/84979)   | Upgrade CDK to 1.0.25 (prevents truncate-refresh retries from replacing a populated table with an empty one)                                                                            |
 | 4.1.1           | 2026-08-18 | [76313](https://github.com/airbytehq/airbyte/pull/76313)   | Handle ANSI reserved keywords as column names by prefixing with underscore                                                                                                             |
-| 4.1.0           | 2026-08-05 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
+| 4.1.0           | 2026-08-18 | [83713](https://github.com/airbytehq/airbyte/pull/83713)   | Add opt-in NUMBER(38,9) data type for number columns via the new "Decimal Data Type" option. |
 | 4.0.49          | 2026-08-05 | [83740](https://github.com/airbytehq/airbyte/pull/83740)   | Upgrade CDK to 1.0.21                                                                                                                                                                  |
 | 4.0.48          | 2026-07-23 | [82272](https://github.com/airbytehq/airbyte/pull/82272)   | Columns removed from the source schema are now preserved in the destination table instead of being dropped to prevent unintentional data loss due to source schema changes. |
 | 4.0.47          | 2026-07-23 | [82294](https://github.com/airbytehq/airbyte/pull/82294)   | Replace ALTER TABLE SWAP WITH with CREATE OR REPLACE TABLE CLONE COPY GRANTS to preserve table grants |
