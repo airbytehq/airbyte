@@ -403,7 +403,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            site: Your Chargebee site name (subdomain)
     Examples:
         # Local mode (direct API calls)
-        connector = ChargebeeConnector(auth_config=ChargebeeAuthConfig(api_key="..."))
+        connector = ChargebeeConnector(auth_config=ChargebeeAuthConfig(api_key="..."), site="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = ChargebeeConnector(
             auth_config=AirbyteAuthConfig(
