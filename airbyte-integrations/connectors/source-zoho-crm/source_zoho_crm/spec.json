@@ -70,7 +70,10 @@
     "auth_flow_type": "oauth2.0",
     "oauth_config_specification": {
       "oauth_connector_input_specification": {
-        "scopes": [{ "scope": "ZohoCRM.settings.READ" }, { "scope": "ZohoCRM.modules.READ" }],
+        "scopes": [
+          { "scope": "ZohoCRM.settings.READ" },
+          { "scope": "ZohoCRM.modules.READ" }
+        ],
         "scopes_join_strategy": "comma",
         "consent_url": "https://accounts.zoho.{{ {'US': 'com', 'AU': 'com.au', 'EU': 'eu', 'IN': 'in', 'CN': 'com.cn', 'JP': 'jp'}[dc_region] }}/oauth/v2/auth?response_type=code&access_type=offline&prompt=consent&{{client_id_param}}&{{redirect_uri_param}}&{{scopes_param}}&{{state_param}}",
         "access_token_url": "https://accounts.zoho.{{ {'US': 'com', 'AU': 'com.au', 'EU': 'eu', 'IN': 'in', 'CN': 'com.cn', 'JP': 'jp'}[dc_region] }}/oauth/v2/token?grant_type=authorization_code&{{client_id_param}}&{{client_secret_param}}&{{auth_code_param}}&{{redirect_uri_param}}",
