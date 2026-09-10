@@ -216,6 +216,8 @@ def test_teams_listing_is_read_once_for_both_teams_and_team_members(rate_limit_m
     from one request; `organization_scoped_requester` caches it (`use_cache: true`), so drop that
     and the listing is fetched once per organization per selected stream instead."""
     config = _config("airbytehq/airbyte")
+    # One worker: with two partitions in flight the second request can go out before the first response is cached.
+    config["num_workers"] = 1
     _mock_repository_resolution(requests_mock, *config["repositories"])
     listing = requests_mock.get(
         "https://api.github.com/orgs/airbytehq/teams",

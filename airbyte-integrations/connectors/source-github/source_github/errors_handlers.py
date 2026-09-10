@@ -9,7 +9,7 @@ import requests
 
 from airbyte_cdk.models import FailureType
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.error_handlers import ErrorHandler, ErrorResolution, HttpStatusErrorHandler, ResponseAction
+from airbyte_cdk.sources.streams.http.error_handlers import ErrorResolution, HttpStatusErrorHandler, ResponseAction
 from airbyte_cdk.sources.streams.http.error_handlers.default_error_mapping import DEFAULT_ERROR_MAPPING
 
 from . import constants
@@ -170,27 +170,6 @@ class GithubStreamABCErrorHandler(HttpStatusErrorHandler):
                     failure_type=FailureType.config_error,
                     error_message=log_message,
                 )
-
-        return super().interpret_response(response_or_exception)
-
-
-class ContributorActivityErrorHandler(GithubStreamABCErrorHandler):
-    """
-    This custom error handler is needed for streams based on repository statistics endpoints like ContributorActivity because
-    when requesting data that hasn't been cached yet when the request is made, you'll receive a 202 response. And these requests
-    need to retried to get the actual results.
-
-    See the docs for more info:
-    https://docs.github.com/en/rest/metrics/statistics?apiVersion=2022-11-28#a-word-about-caching
-    """
-
-    def interpret_response(self, response_or_exception: Optional[Union[requests.Response, Exception]] = None) -> ErrorResolution:
-        if isinstance(response_or_exception, requests.Response) and response_or_exception.status_code == requests.codes.ACCEPTED:
-            return ErrorResolution(
-                response_action=ResponseAction.RETRY,
-                failure_type=FailureType.transient_error,
-                error_message=f"Response status code: {response_or_exception.status_code}. Retrying...",
-            )
 
         return super().interpret_response(response_or_exception)
 
