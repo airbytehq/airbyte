@@ -26,14 +26,18 @@ class GoogleApi:
     config: Mapping[str, Any]
     scopes: List[str]
     _access_token: str = None
+    _token_expiry: int = 0
 
     def get(self, url: str, params: Mapping = None) -> Mapping[str, Any]:
         """Sends a GET request"""
         token = self.get_access_token()
         headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json", "X-Goog-User-Project": self.project_id}
-        # Making a get request
         response = requests.get(url, headers=headers, params=params)
-        response.raise_for_status()
+        try:
+            response.raise_for_status()
+        except Exception:
+            self.logger.error(f"error body: {response.text}")
+            raise
         return response.json()
 
     def post(self, url: str, json: Mapping = None, params: Mapping = None) -> Mapping[str, Any]:
@@ -41,7 +45,6 @@ class GoogleApi:
         token = self.get_access_token()
 
         headers = {"Authorization": f"Bearer {token}", "X-Goog-User-Project": self.project_id}
-        # Making a get request
         response = requests.post(url, headers=headers, json=json, params=params)
         try:
             response.raise_for_status()
@@ -71,10 +74,17 @@ class GoogleApi:
         return jwt.encode(claim, self.config["private_key"].encode(), algorithm="RS256")
 
     def get_access_token(self) -> str:
-        """Generates an access token by a service account json file and scopes"""
+        """Generates an access token by a service account json file and scopes.
 
-        if self._access_token is None:
+        The token is refreshed automatically before it expires
+        (Google service-account tokens are valid for TOKEN_TTL seconds).
+        """
+
+        now = int(time.time())
+        if self._access_token is None or now >= self._token_expiry:
             self._access_token = self.__get_access_token()
+            # refresh slightly before actual expiry to avoid edge-case 401s
+            self._token_expiry = now + TOKEN_TTL - 60
 
         return self._access_token
 
@@ -87,4 +97,9 @@ class GoogleApi:
                 "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
             },
         )
+        try:
+            resp.raise_for_status()
+        except Exception:
+            self.logger.error(f"error body: {resp.text}")
+            raise
         return resp.json()["access_token"]
