@@ -239,7 +239,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'download', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'create', 'get', 'update', 'delete', 'download', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
@@ -333,7 +333,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -345,6 +345,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against attachments records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `download(self, attachment_gid: str, range_header: str | None = None, **kwargs) ‑> AsyncIterator[bytes]`
     :   Downloads the file content of an attachment. This operation first retrieves the attachment
@@ -504,7 +519,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -516,6 +531,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against projects records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, data: ProjectsCreateParamsData, **kwargs) ‑> airbyte_agent_sdk.connectors.asana.models.Project`
     :   Create a new project in a workspace or team. Every project is required to be
@@ -638,7 +668,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -650,6 +680,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against sections records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `delete(self, section_gid: str, **kwargs) ‑> dict[str, typing.Any]`
     :   A specific, existing section can be deleted by making a DELETE request on the URL
@@ -737,7 +782,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -749,6 +794,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tags records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `delete(self, tag_gid: str, **kwargs) ‑> dict[str, typing.Any]`
     :   A specific, existing tag can be deleted by making a DELETE request on the URL
@@ -980,7 +1040,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -992,6 +1052,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against tasks records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `create(self, data: TasksCreateParamsData, **kwargs) ‑> airbyte_agent_sdk.connectors.asana.models.Task`
     :   Creates a new task. Every task is required to be created in a specific workspace,
@@ -1129,7 +1204,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -1141,6 +1216,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against teams records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, team_gid: str, **kwargs) ‑> airbyte_agent_sdk.connectors.asana.models.Team`
     :   Get a single team by its ID
@@ -1199,7 +1289,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -1211,6 +1301,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against users records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, user_gid: str, **kwargs) ‑> airbyte_agent_sdk.connectors.asana.models.User`
     :   Get a single user by their ID
@@ -1421,7 +1526,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -1433,6 +1538,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.asana.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against workspaces records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, workspace_gid: str, **kwargs) ‑> airbyte_agent_sdk.connectors.asana.models.Workspace`
     :   Get a single workspace by its ID

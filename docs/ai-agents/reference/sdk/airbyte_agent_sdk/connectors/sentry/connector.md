@@ -58,7 +58,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -70,6 +70,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against events records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, organization_slug: str, project_slug: str, event_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.sentry.models.Event`
     :   Return details on an individual event.
@@ -146,7 +161,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -158,6 +173,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against issues records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, organization_slug: str, issue_id: str, **kwargs) ‑> airbyte_agent_sdk.connectors.sentry.models.Issue`
     :   Return details on an individual issue. This returns the basic stats for the issue (title, last seen, first seen), some overall numbers (number of comments, user reports) as well as the summarized event data.
@@ -249,7 +279,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -261,6 +291,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against projects records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, organization_slug: str, project_slug: str, **kwargs) ‑> airbyte_agent_sdk.connectors.sentry.models.ProjectDetail`
     :   Return details on an individual project.
@@ -325,7 +370,7 @@ Classes
         
         Args:
             query: Filter and sort conditions. Supports operators such as eq, neq, gt, gte, lt, lte,
-                   in, startswith, endswith, contains, fuzzy, keyword, not, and, or.
+                   in, startswith, endswith, contains, array_contains, fuzzy, keyword, not, and, or.
                    Example: \{"filter": \{"eq": \{"status": "active"\}\}\}
             limit: Maximum results to return (default 1000)
             cursor: Pagination cursor from previous response's meta.cursor
@@ -337,6 +382,21 @@ Classes
         
         Raises:
             NotImplementedError: If called in local execution mode
+
+    `context_store_sql_query(self, sql: str, limit: int | None = None) ‑> airbyte_agent_sdk.connectors.sentry.models.AirbyteSearchResult[dict[str, Any]]`
+    :   Run a SQL query against releases records in the Airbyte Context Store.
+        
+        Only available in hosted execution mode.
+        
+        Args:
+            sql: SQL query to execute.
+            limit: Maximum results to return.
+        
+        Returns:
+            AirbyteSearchResult containing the projected rows and query metadata.
+        
+        Raises:
+            NotImplementedError: If called in local execution mode.
 
     `get(self, organization_slug: str, version: str, **kwargs) ‑> airbyte_agent_sdk.connectors.sentry.models.Release`
     :   Return a release for a given organization.
@@ -381,7 +441,7 @@ Classes
             Example: lambda tokens: save_to_database(tokens)            hostname: Host name of Sentry API server. For self-hosted instances, specify your host name here. Otherwise, leave as sentry.io.
     Examples:
         # Local mode (direct API calls)
-        connector = SentryConnector(auth_config=SentryAuthConfig(auth_token="..."))
+        connector = SentryConnector(auth_config=SentryAuthConfig(auth_token="..."), hostname="...")
         # Hosted mode with explicit connector_id (no lookup needed)
         connector = SentryConnector(
             auth_config=AirbyteAuthConfig(
@@ -590,7 +650,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:

@@ -3,8 +3,9 @@
  * and exposes their slugs via global plugin data.
  *
  * The `AgentConnectorRegistry` React component reads this data with
- * `usePluginData("agent-connectors-plugin")` — no JSON file is written to disk
- * and no prebuild script is required. Docusaurus/Rspack invalidates the build
+ * `usePluginData("agent-connectors-plugin")`, and the `connectorTypeBanner`
+ * remark plugin calls `discoverAgentConnectorSlugs` directly — no JSON file is
+ * written to disk and no prebuild script is required. Docusaurus/Rspack invalidates the build
  * when `loadContent` re-runs (e.g. on restart or when watched files change).
  */
 const fs = require("fs");
@@ -45,3 +46,4 @@ function agentConnectorsPlugin(_context, _options) {
 }
 
 module.exports = agentConnectorsPlugin;
+module.exports.discoverAgentConnectorSlugs = discoverAgentConnectorSlugs;

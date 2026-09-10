@@ -29,7 +29,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsAnyCondition"></a>
@@ -169,10 +169,24 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="AccountsArrayContainsCondition"></a>
+
+`AccountsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="AccountsContainsCondition"></a>
 
 `AccountsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -555,7 +569,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
 <a id="AccountsOrCondition"></a>
@@ -577,7 +591,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="AccountsSearchFilter"></a>
@@ -692,7 +706,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.AccountsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsInCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.AccountsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.AccountsSortFilter]`
@@ -1408,7 +1422,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsAnyCondition"></a>
@@ -1536,10 +1550,24 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="ContactsArrayContainsCondition"></a>
+
+`ContactsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="ContactsContainsCondition"></a>
 
 `ContactsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -1907,7 +1935,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
 <a id="ContactsOrCondition"></a>
@@ -1929,7 +1957,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="ContactsSearchFilter"></a>
@@ -2032,7 +2060,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.ContactsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsInCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.ContactsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.ContactsSortFilter]`
@@ -2506,7 +2534,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LeadsAnyCondition"></a>
@@ -2658,10 +2686,24 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="LeadsArrayContainsCondition"></a>
+
+`LeadsArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="LeadsContainsCondition"></a>
 
 `LeadsContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -3071,7 +3113,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition`
+    `not: airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition`
     :   The type of the None singleton.
 
 <a id="LeadsOrCondition"></a>
@@ -3093,7 +3135,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition]`
     :   The type of the None singleton.
 
 <a id="LeadsSearchFilter"></a>
@@ -3220,7 +3262,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.LeadsEqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsGteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLtCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsLteCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsInCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsNotCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAndCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsOrCondition | airbyte_agent_sdk.connectors.salesforce.types.LeadsAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.LeadsSortFilter]`
@@ -3673,7 +3715,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OpportunitiesAnyCondition"></a>
@@ -3801,10 +3843,24 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="OpportunitiesArrayContainsCondition"></a>
+
+`OpportunitiesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OpportunitiesContainsCondition"></a>
 
 `OpportunitiesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4166,7 +4222,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition`
     :   The type of the None singleton.
 
 <a id="OpportunitiesOrCondition"></a>
@@ -4188,7 +4244,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OpportunitiesSearchFilter"></a>
@@ -4291,7 +4347,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunitiesSortFilter]`
@@ -4561,7 +4617,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OpportunityStagesAnyCondition"></a>
@@ -4645,10 +4701,24 @@ Classes
     `system_modstamp: Any`
     :   System timestamp when the record was last modified
 
+<a id="OpportunityStagesArrayContainsCondition"></a>
+
+`OpportunityStagesArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="OpportunityStagesContainsCondition"></a>
 
 `OpportunityStagesContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -4916,7 +4986,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition`
+    `not: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition`
     :   The type of the None singleton.
 
 <a id="OpportunityStagesOrCondition"></a>
@@ -4938,7 +5008,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition]`
     :   The type of the None singleton.
 
 <a id="OpportunityStagesSearchFilter"></a>
@@ -5011,7 +5081,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesGteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLtCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesLteCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesInCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesNotCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAndCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesOrCondition | airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.OpportunityStagesSortFilter]`
@@ -5285,7 +5355,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksAnyCondition"></a>
@@ -5407,10 +5477,24 @@ Classes
     `q: str`
     :   The type of the None singleton.
 
+<a id="TasksArrayContainsCondition"></a>
+
+`TasksArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.salesforce.types.TasksAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="TasksContainsCondition"></a>
 
 `TasksContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -5760,7 +5844,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition`
+    `not: airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition`
     :   The type of the None singleton.
 
 <a id="TasksOrCondition"></a>
@@ -5782,7 +5866,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition]`
     :   The type of the None singleton.
 
 <a id="TasksSearchFilter"></a>
@@ -5879,7 +5963,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.TasksEqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksGteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLtCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksLteCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksInCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksNotCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAndCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksOrCondition | airbyte_agent_sdk.connectors.salesforce.types.TasksAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.TasksSortFilter]`
@@ -6131,7 +6215,7 @@ Classes
 
     ### Class variables
 
-    `and: list[airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition]`
+    `and: list[airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersAnyCondition"></a>
@@ -6263,10 +6347,24 @@ Classes
     `username: Any`
     :   Username for logging into Salesforce (unique across all orgs)
 
+<a id="UsersArrayContainsCondition"></a>
+
+`UsersArrayContainsCondition(*args, **kwargs)`
+:   Exact membership test on an array field. Example: \{"array_contains": \{"tags": "premium"\}\}
+
+    ### Ancestors (in MRO)
+
+    * builtins.dict
+
+    ### Class variables
+
+    `array_contains: airbyte_agent_sdk.connectors.salesforce.types.UsersAnyValueFilter`
+    :   The type of the None singleton.
+
 <a id="UsersContainsCondition"></a>
 
 `UsersContainsCondition(*args, **kwargs)`
-:   Literal case-insensitive substring on scalar fields or exact array membership.
+:   Case-insensitive substring match on a scalar field. Example: \{"contains": \{"subject": "billing"\}\}
 
     ### Ancestors (in MRO)
 
@@ -6644,7 +6742,7 @@ Classes
 
     ### Class variables
 
-    `not: airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition`
+    `not: airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition`
     :   The type of the None singleton.
 
 <a id="UsersOrCondition"></a>
@@ -6666,7 +6764,7 @@ Classes
 
     ### Class variables
 
-    `or: list[airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition]`
+    `or: list[airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition]`
     :   The type of the None singleton.
 
 <a id="UsersSearchFilter"></a>
@@ -6787,7 +6885,7 @@ Classes
 
     ### Class variables
 
-    `filter: airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition`
+    `filter: airbyte_agent_sdk.connectors.salesforce.types.UsersEqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNeqCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersGteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLtCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersLteCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersInCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersStartswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersEndswithCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersFuzzyCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersKeywordCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersArrayContainsCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersNotCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAndCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersOrCondition | airbyte_agent_sdk.connectors.salesforce.types.UsersAnyCondition`
     :   The type of the None singleton.
 
     `sort: list[airbyte_agent_sdk.connectors.salesforce.types.UsersSortFilter]`

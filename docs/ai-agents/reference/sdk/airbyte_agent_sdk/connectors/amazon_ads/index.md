@@ -11,10 +11,10 @@ Auto-generated from OpenAPI specification.
 
 Sub-modules
 -----------
-* airbyte_agent_sdk.connectors.amazon_ads.connector
-* airbyte_agent_sdk.connectors.amazon_ads.connector_model
-* airbyte_agent_sdk.connectors.amazon_ads.models
-* airbyte_agent_sdk.connectors.amazon_ads.types
+* [airbyte_agent_sdk.connectors.amazon_ads.connector](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_ads/airbyte_agent_sdk-connectors-amazon_ads-connector)
+* [airbyte_agent_sdk.connectors.amazon_ads.connector_model](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_ads/airbyte_agent_sdk-connectors-amazon_ads-connector_model)
+* [airbyte_agent_sdk.connectors.amazon_ads.models](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_ads/airbyte_agent_sdk-connectors-amazon_ads-models)
+* [airbyte_agent_sdk.connectors.amazon_ads.types](/ai-agents/reference/sdk/airbyte_agent_sdk/connectors/amazon_ads/airbyte_agent_sdk-connectors-amazon_ads-types)
 
 Classes
 -------
@@ -223,7 +223,7 @@ Classes
     
             Examples:
                 # Local mode (direct API calls)
-                connector = AmazonAdsConnector(auth_config=AmazonAdsAuthConfig(client_id="...", client_secret="...", refresh_token="..."))
+                connector = AmazonAdsConnector(auth_config=AmazonAdsAuthConfig(client_id="...", client_secret="...", refresh_token="..."), region="...")
                 # Hosted mode with explicit connector_id (no lookup needed)
                 connector = AmazonAdsConnector(
                     auth_config=AirbyteAuthConfig(
@@ -432,7 +432,7 @@ Classes
             if schema:
                 print(f"Contact properties: \{list(schema.get('properties', \{\}).keys())\}")
 
-    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
+    `execute(self, entity: str, action: "Literal['list', 'get', 'context_store_search', 'context_store_sql_query']", params: Mapping[str, Any] | None = None, *, select_fields: list[str] | None = None, exclude_fields: list[str] | None = None, skip_truncation: bool = True) ‑> Any`
     :   Execute an entity operation with full type safety.
         
         This is the recommended interface for blessed connectors as it:
