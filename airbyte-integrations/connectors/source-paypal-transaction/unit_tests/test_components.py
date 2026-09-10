@@ -2,6 +2,7 @@
 
 import logging
 import time
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -11,6 +12,11 @@ import requests
 import yaml
 
 from airbyte_cdk.sources.declarative.interpolation.jinja import JinjaInterpolation
+from airbyte_cdk.sources.declarative.manifest_declarative_source import ManifestDeclarativeSource
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies.constant_backoff_strategy import (
+    ConstantBackoffStrategy,
+)
+from airbyte_cdk.sources.declarative.requesters.error_handlers.default_error_handler import DefaultErrorHandler
 
 
 @pytest.fixture
@@ -177,6 +183,34 @@ def test_manifest_transaction_id_has_value_type_string(manifest):
     assert tid_fields[0].get("value_type") == "string", (
         "transaction_id AddFields must set value_type: string to prevent " "scientific-notation IDs from being coerced to float('inf')"
     )
+
+
+def test_transactions_rate_limits_use_long_backoff(manifest):
+    """Transactions must retry rate limits instead of failing after the default delay."""
+    transactions = manifest["definitions"]["streams"]["transactions"]
+    error_handler = transactions["retriever"]["requester"]["error_handler"]
+    default_handler = next(handler for handler in error_handler["error_handlers"] if handler["type"] == "DefaultErrorHandler")
+
+    backoff_strategies = default_handler["backoff_strategies"]
+    assert {
+        strategy["type"]: strategy["backoff_time_in_seconds"]
+        for strategy in backoff_strategies
+        if strategy["type"] == "ConstantBackoffStrategy"
+    } == {"ConstantBackoffStrategy": 100}
+
+
+def test_transactions_rate_limits_use_long_backoff_at_runtime(config, manifest_path):
+    source_config = deepcopy(yaml.safe_load(manifest_path.read_text()))
+    source_config["definitions"]["base_requester"].pop("authenticator")
+    source = ManifestDeclarativeSource(source_config=source_config)
+    transactions = next(stream for stream in source.streams(config) if stream.name == "transactions")
+    requester = transactions.retriever.requester
+    error_handler = requester.error_handler
+    default_handler = next(handler for handler in error_handler.error_handlers if isinstance(handler, DefaultErrorHandler))
+
+    constant_strategies = [strategy for strategy in default_handler.backoff_strategies if isinstance(strategy, ConstantBackoffStrategy)]
+    assert len(constant_strategies) == 1
+    assert constant_strategies[0].backoff_time_in_seconds.eval(config) == 100
 
 
 @pytest.mark.parametrize(
