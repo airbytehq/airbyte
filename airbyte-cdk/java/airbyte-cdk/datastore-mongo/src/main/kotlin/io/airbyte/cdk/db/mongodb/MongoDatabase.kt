@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.google.common.annotations.VisibleForTesting
 import com.mongodb.ConnectionString
 import com.mongodb.MongoConfigurationException
+import com.mongodb.MongoDriverInformation
 import com.mongodb.ReadConcern
 import com.mongodb.client.*
 import io.airbyte.cdk.db.AbstractDatabase
@@ -34,7 +35,7 @@ class MongoDatabase(connectionString: String, databaseName: String) :
     init {
         try {
             this.connectionString = ConnectionString(connectionString)
-            mongoClient = MongoClients.create(this.connectionString)
+            mongoClient = MongoClients.create(this.connectionString, DRIVER_INFO)
             database = mongoClient.getDatabase(databaseName)
         } catch (e: MongoConfigurationException) {
             LOGGER.error(e) { e.message }
@@ -135,5 +136,15 @@ class MongoDatabase(connectionString: String, databaseName: String) :
 
         private const val BATCH_SIZE = 1000
         private const val MONGO_RESERVED_COLLECTION_PREFIX = "system."
+
+        private val DRIVER_INFO: MongoDriverInformation =
+            MongoDriverInformation.builder()
+                .driverName("Airbyte")
+                .apply {
+                    MongoDatabase::class.java.`package`.implementationVersion?.let {
+                        driverVersion(it)
+                    }
+                }
+                .build()
     }
 }
