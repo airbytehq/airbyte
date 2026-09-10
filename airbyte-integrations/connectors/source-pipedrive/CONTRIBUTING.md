@@ -31,7 +31,9 @@ Full technical detail for each item lives in [AGENTS.md](./AGENTS.md).
    don't add or document it early. Details in AGENTS.md section 4.
 5. **Mail Streams Are Scoped to One User's Mailbox and Fan Out per Folder and Thread** --
    `mailThreads` queries four folders (so threads can repeat) and `mail` makes one request per
-   thread; both only see the token owner's mailbox. Details in AGENTS.md section 5.
+   thread; both only see the token owner's mailbox. `mailThreads` keeps `use_cache: false` because
+   concurrent folder partitions corrupt the CDK's cached-parent sqlite file. Details in AGENTS.md
+   section 5.
 6. **HTTP Errors Are Classified on the Shared Base Requester** -- 401/402/403 fail as
    configuration errors carrying Pipedrive's `error` text, 410 fails as a system error, 429 waits on
    `x-ratelimit-reset` then backs off, 5xx retry; `deal_products`, `deal_flow` and `mail` skip a

@@ -675,3 +675,33 @@ def test_deal_products_uses_v2_nested_endpoint():
 
     assert _ids(output) == [10]
     assert output.errors == []
+
+
+def _threads_request(folder, start=None):
+    params = {"api_token": "tok", "limit": "50", "folder": folder}
+    if start is not None:
+        params["start"] = str(start)
+    return _request("v1/mailbox/mailThreads", params)
+
+
+def _v1_page(records, next_start=None):
+    pagination = {"start": 0, "limit": 50, "more_items_in_collection": next_start is not None}
+    if next_start is not None:
+        pagination["next_start"] = next_start
+    return {"success": True, "data": records, "additional_data": {"pagination": pagination}}
+
+
+def test_mail_threads_reads_every_folder_and_paginates_with_default_concurrency():
+    # `mailThreads` is a cached parent with four folder partitions; with the CDK's request cache enabled the
+    # concurrent partitions corrupt the shared sqlite cache, so the requester sets `use_cache: false`.
+    with HttpMocker() as http_mocker:
+        http_mocker.get(_threads_request("inbox"), _response(_v1_page([{"id": 1, "subject": "a"}], next_start=50)))
+        http_mocker.get(_threads_request("inbox", start=50), _response(_v1_page([{"id": 2, "subject": "b"}])))
+        http_mocker.get(_threads_request("drafts"), _response(_v1_page([])))
+        http_mocker.get(_threads_request("sent"), _response(_v1_page([{"id": 3, "subject": "c"}])))
+        http_mocker.get(_threads_request("archive"), _response({"success": True, "data": []}))
+
+        output = _read_stream("mailThreads")
+
+    assert sorted(_ids(output)) == [1, 2, 3]
+    assert output.errors == []

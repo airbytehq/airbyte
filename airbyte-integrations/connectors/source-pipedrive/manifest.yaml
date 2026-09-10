@@ -951,6 +951,9 @@ definitions:
           $ref: "#/definitions/base_requester"
           path: v1/mailbox/mailThreads
           http_method: GET
+          # The CDK caches parent streams in one sqlite file per stream; the four folder partitions of this
+          # parent are read concurrently and corrupt that cache, so the cache stays off for mailThreads.
+          use_cache: false
           request_parameters:
             api_token: "{{ config['api_token'] }}"
             limit: "50"
